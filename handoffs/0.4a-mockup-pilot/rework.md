@@ -143,6 +143,37 @@ project is that the reviewer was the weakest link, not the builder —
 
 ---
 
+---
+
+# Rework 2 — after the Phase 1 rework audit (`559db61`)
+
+**Audit:** `findings/0.4a-2026-07-26-audit.md`, Amendment · **Verdict:** Phase 1 gate PASS
+with findings. `0.4a-001` closed and verified in a clean worktree; `-002`, `-004`, `-005`,
+`-006`, `-007` closed. Four items remain and **none may be left hanging.**
+
+**The closure rule this packet enforces.** A finding is closed when it is fixed, or when it
+is *written into the spec of the module that will fix it* — not when it is mentioned in a
+findings file. `GOVERNANCE.md §8`: *"Unapplied deltas are letters nobody opened."* A finding
+parked in `findings/` with the note "carry to 0.6" is such a letter.
+
+| # | Item | Owner | Closes when |
+|---|---|---|---|
+| 0.4a-008 | Pre-flight row 6 marked PASS while `fc-match "IBM Plex Sans"` returns Noto and `fonts-ibm-plex` is not installed. Row 6's own instruction — install, re-check, **report** — was not followed | **builder** | `sudo apt install fonts-ibm-plex`, `fc-match` re-run and pasted, DoD row 1 re-stated to show all eight rows rather than two |
+| 0.4a-009 | Deprecation rows for `--font-body` and `--font-mono` read "role retained"; both values changed | **builder** | Notes corrected to state the change, matching the standard already set by the `--color-neutral` row twenty rows above |
+| 0.4a-010 | `'Arial'` cannot be the visible fallback v2 decision 4 asks for — `fc-match "Arial"` → Liberation Sans, a metric-compatible neutral grotesque indistinguishable in kind from Plex | **builder** | Either a fallback nobody mistakes for Plex, with the reasoning recorded in `dod.md`, or a stated decision that the `apt` install from -008 *is* the safeguard and the stack reverts. Not both |
+| 0.4a-011 | `IBM Plex Mono` is declared by `--p-font-mono` and delivered by nothing: `index.html:7` requests `IBM+Plex+Sans` only, no `@font-face`, no font file, no font package. Not a 0.4a defect — `index.html` is from 0.2 — but surfaced by this chain | **author** | The item is written into **0.6's spec** (font delivery: extend the CDN request, or self-host both faces and drop the third-party call). Until it is in that spec, it is open. Hard-stops at Phase 7 pilot readiness |
+
+**Verification obligations carry over unchanged** from the Rework 1 block above — browser
+check, the orphan assertion, I2/I3/I8 re-run, `git ls-files` for screenshots, `dod.md`
+appended not overwritten, push verified by ref *and* tree.
+
+**One addition:** the 15-check harness the auditor derived from spec v2 exists and passes 13
+of 15, the two failures being `-008` and `-009`. Ask for it rather than rebuilding it — and
+if the author wants it in-repo as `tools/check-tokens.mjs`, 0.4b and 0.6 inherit the checks
+instead of re-deriving them.
+
+---
+
 ## Protocol gap this exposed
 
 `handoffs/README.md` carries verbatim opening instructions for **BUILDER** and **AUDITOR**,
