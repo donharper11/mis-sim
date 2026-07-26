@@ -97,6 +97,23 @@ invariant I3 greps the result.
 | `business_process_mapping` | 112 | **discarded** (O1) | — |
 | per-domain `*_decisions` tables | 0 | **discarded** — runtime shape, superseded | — |
 
+### 5.1a Content gaps 1.1 left — MUST be closed here *(added 2026-07-27)*
+
+From `findings/content-coverage-2026-07-27.md`. None of these were in the original
+transform map; all five are authoring, not transformation.
+
+| Gap | Required output | Why it cannot wait |
+|---|---|---|
+| **CG-1** | A watch rule for **every** capability | 5 of 7 have none, so they can never raise a signal, are invisible to signal responsiveness, and can never arm an event. Validator **E20** fires on the current pack |
+| **CG-2** | An event deck sized so **every strategy draws in most rounds** | Three cards across six rounds and four strategies. Events draw by `strategy_affinity`; a strategy no card targets faces an empty deck, and 1.7 cannot distinguish strategies never tested |
+| **CG-3** | Resolve project duration — authored catalog field or runtime state, **stated either way** | `grep duration_rounds` returns zero across `models.py`, 1.1 and 1.6. Follow-through needs to detect *abandoned mid-flight* and nothing says how long anything takes |
+| **CG-4** | Six policy switches, each with its stated cost | Three exist. Design settled on collection · retention · access · logging · egress · staff monitoring. A switch with no stated cost is a morality quiz, not a trade-off |
+| **CG-5** | `obligation_rules.yaml` | **Load-bearing for Chapter 4.** Without rules, sensitive data under permissive policy raises nothing, ignored obligations arm nothing, and the policy switches change no outcome. The ethics layer would be decorative |
+
+**CG-5 is the one to get right.** The whole privacy design rides the signal machinery —
+obligations raised like signals, cleared like signals, arming events like signals. The
+rules are what connect a policy switch to a consequence.
+
 ### 5.2 The judged part — catalog items
 
 The ~19 buildable rows carry only `cost_value` in mis_lite. Everything else in the
@@ -154,6 +171,10 @@ demonstrate provenance table: rows in, rows out, mode, per source table
 | I3 | No textbook prose in student-visible labels | `grep -rniE "traditional\|suitable for\|optimized for\|designed for" packs/riverside_grocery/labels.yaml` | zero |
 | I4 | Weights normalised, not copied | every strategy's `capability_weights` sums to 1.0 ±0.001 | 4/4 |
 | I5 | Every discarded table appears in PROVENANCE | cross-check §5.1 discards vs the file | all present |
+| I8 | **Every capability has a watch rule** (CG-1) | `validate_casepack packs/riverside_grocery \| grep E20` | no E20 error |
+| I9 | **Every strategy is targeted by ≥1 event in ≥4 of 6 rounds** (CG-2) | script over `events.yaml` × `strategies.yaml` | all 4 strategies |
+| I10 | **Six policy switches, each with a stated cost** (CG-4) | `grep -c "^- key:" policies.yaml` and read each | 6, none bare |
+| I11 | **`obligation_rules.yaml` exists and references real entities and policies** (CG-5) | cross-reference against `entities.yaml`, `policies.yaml` | zero orphans |
 | I6 | Pack passes 1.2 with zero ERRORs | `validate_casepack packs/riverside_grocery` | exit 0 |
 | I7 | §5.4 figures match the pack | script comparing the 0.3 fixed data to loaded pack values | exact |
 
@@ -202,6 +223,11 @@ looks for it in all nine.
 | I4 weights normalised | | |
 | I5 discards documented | | |
 | I6 validator exit 0 | | |
+| I8 every capability watched — CG-1 | | |
+| I9 event deck reaches every strategy — CG-2 | | |
+| I10 six policies with costs — CG-4 | | |
+| I11 obligation rules present and resolving — CG-5 | | |
+| CG-3 project duration resolved and stated | | |
 | I7 0.3 figures match | | |
 | O1, O2, O3 recorded | | |
 | `PROVENANCE.md` complete | | |
