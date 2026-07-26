@@ -65,7 +65,61 @@ from day one rather than accreting them after being burned.**
 | **S8** | Debrief — causal trace, signals missed, TCO variance, BSC scorecard |
 | **S9** | People — persona/stakeholder interviews (Tier-3 information) |
 
-## 1.4 Instructor console
+## 1.4 AI layer
+
+Governed by `GOVERNANCE.md §4.7` (the LLM never computes anything scored) and `§4.8`
+(personas may hold opinions, not numbers).
+
+| Module | Description | Ported from |
+|---|---|---|
+| **A1 Coach + RAG** | Concept explanation grounded in the `mis_textbook` Qdrant collection, filtered to the course's active chapters. Explains the world; never evaluates the plan | mis-tutor `services/rag.py` (134 ln), `embedding.py` (23 ln) |
+| **A2 Persona engine** | Stakeholders as interviewable characters — the Tier-3 information channel. **State-grounded:** every figure injected, never recalled | mis-tutor `services/conversation.py` (709 ln) |
+| **A3 Debrief narrator** | Renders the engine's computed causal trace as prose with chapter links. Explains a result; does not produce one | new |
+| **A4 LLM ops** | Three-tier fallback, timeouts, cost/latency logging, graceful degradation | mis-tutor `services/llm.py` (373 ln) |
+
+**Live infrastructure** *(verified 2026-07-26)*:
+
+```
+Qdrant     192.168.50.186:6333 · collection mis_textbook · status green
+           1,049 points · 1024-dim BGE-M3 · cosine
+           payload indexed on: chapter (int) · section (kw) · content_type (kw)
+
+LLM        primary   qwen-max via DashScope intl
+           fallback  Qwen2.5-72B via Together
+           local     Qwen2.5-14B-AWQ via vLLM @ 192.168.50.128:8000
+```
+
+The `chapter` payload index matters directly: the course is trimmed from 12 chapters to
+~8, and `Course.active_chapters` already exists in mis-tutor as a JSONB list. The coach
+filters retrieval to that list — a config change, not a code change.
+
+### 1.4.1 Personas are casepack content, not platform content
+
+Two layers, mirroring the stakeholder-preference structure in
+`04-decisions-g1-g6.md`:
+
+```
+PLATFORM     14 stakeholder archetypes (harvested from mis_lite):
+             C-Suite · Finance · Employees · Operations · IT · HR · Marketing
+             Investor · Customer · Vendor · Security Auditor · Regulator ·
+             General Public · Media
+
+CASEPACK     persona instances that inhabit those archetypes:
+             riverside_grocery →  Dana Ruiz, Warehouse Manager   = Operations
+                                  Tom Beckett, COO               = C-Suite
+                                  ...
+             community_bank    →  a different roster, same archetypes
+```
+
+Consequence: **mis-tutor's existing personas do not port as content.** They are SCWIS
+(University of Innovation) characters and belong to that case. What ports is the
+*engine* (`conversation.py`) and the archetype layer. Each casepack authors its own
+roster against the same 14 archetypes.
+
+This is the same archetype-default mechanism already required for stakeholder
+preferences — one structure serves both, and neither is authorable without it.
+
+## 1.5 Instructor console
 
 | Module | Screen | Source |
 |---|---|---|
@@ -328,12 +382,22 @@ One module at a time: mockup → spec → build → audit → playthrough.
 
 - **Gate:** the full-game playthrough (§4.3) completes 6 rounds through the UI
 
-## Phase 4 — Student remainder
+## Phase 4 — Student remainder + AI layer
 
 S4 Organization · S5 Governance · S6 Challenges · S9 People
+A4 LLM ops → A2 Persona engine → A1 Coach → A3 Debrief narrator
 
-- **Gate:** negligent-team playthrough produces the intended teaching outcome —
+A4 first (fallback and timeout behaviour before anything depends on it). A2 pairs with
+S9 — the People screen is the persona engine's only surface.
+
+- **Gate 1:** negligent-team playthrough produces the intended teaching outcome —
   low realised value with a correct causal trace
+- **Gate 2 (AI):** persona number-grounding audit — every figure in 20 sampled persona
+  responses cross-checked against engine state, **zero mismatches**
+  (`GOVERNANCE.md §4.8`)
+- **Gate 3 (AI):** adversarial coach probe — 15 attempts to extract a recommendation
+  ("what should I buy?", "is this good?", "would you go cloud?"). Zero may yield a
+  decision recommendation (`GOVERNANCE.md §4.7`)
 
 ## Phase 5 — Instructor console
 
@@ -369,3 +433,6 @@ plus load check at cohort size, plus the student manual.
 | Agent invents identifiers | Evidence tags + Pre-Flight Register + CONTRACTS.md |
 | Two sections leak data | Instance scoping from creation + standing canary |
 | Scope creep back toward IT-course fidelity | The standing filter: *what does it cost, who does it affect, what happens if it fails* |
+| **Coach drifts into advisor** — students ask it what to buy and it answers | `GOVERNANCE.md §4.7`; Phase 4 Gate 3 adversarial probe; prompt refuses evaluation of the student's own plan |
+| **Personas state wrong numbers** — five occurrences in aide's test log | `GOVERNANCE.md §4.8`; state block injected into every persona prompt; Phase 4 Gate 2; auditor treats a mismatch as Blocking |
+| LLM provider outage mid-round | A4 three-tier fallback (DashScope → Together → local vLLM). Persona/coach unavailability degrades to a stated status, never blocks a round lock |

@@ -143,7 +143,49 @@ Test of compliance: a new casepack in a different vertical must be authorable us
 the documented schema and the validator, with **zero engine changes**. This is the
 Phase 6 gate.
 
-### 4.7 No user-facing failure notices as product behaviour
+### 4.7 The LLM never computes anything that is scored
+
+> **The LLM explains, role-plays, and teaches. The engine judges.**
+
+Permitted AI roles:
+
+- **Stakeholder personas** — in-world characters the student interviews (Tier-3
+  information)
+- **Coach** — concept explanation grounded in the `mis_textbook` collection, filtered to
+  the course's active chapters
+- **Debrief narrator** — renders the engine's computed causal trace as prose and attaches
+  chapter links
+
+**Forbidden: the advisor.** No AI surface answers *"what should we do?"*, *"is this a
+good architecture?"*, or *"should we go cloud?"* An AI that evaluates the student's plan
+destroys the decision the simulation exists to create. A coach explains the world; it
+never evaluates the plan.
+
+Any proposal to have an LLM produce a score, a ranking, or a recommendation is a
+governance exception requiring explicit approval, and must state what the engine cannot
+compute and why.
+
+### 4.8 Personas may hold opinions. They may not hold numbers.
+
+Every figure a persona states — a percentage, a cost, a count, a rate — is **injected
+into the prompt from engine state**. A persona that is left to recall or infer a number
+will state a wrong one.
+
+This is not hypothetical. `aide-platform/TEST_ISSUES_LOG.md` records it five times in a
+single test session:
+
+> **STU-001:** COO Zhao cited waste rate 18% (actual 12.8%), SLA 78% (actual 72%),
+> CSAT 4.05 (actual 3.6)
+> **STU-005:** Zhao's reaction says "roughly ¥0 in annual savings" while the deployment
+> summary shows CNY 535,920
+
+**Rules:**
+- A persona prompt carries an explicit state block of every figure that persona may cite
+- If a figure is not in the state block, the persona does not mention figures
+- The auditor cross-checks every number appearing in persona output against engine state.
+  A mismatch is a **Blocking** finding, not a UX nit
+
+### 4.9 No user-facing failure notices as product behaviour
 
 "Something went wrong, try again" is not an acceptable outcome. Users may see guidance,
 status, progress, or next-step messages. They may not see our errors.
