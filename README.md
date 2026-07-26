@@ -15,7 +15,9 @@ Realised Value  =  Technology Capability × Organisational Readiness × Manageme
 Multiplication, not addition — Laudon's complementary-assets argument made mechanical.
 Buy the ideal system, train nobody, realise almost nothing.
 
-**Status:** Phase 0 (governance and foundation). No application code yet.
+**Status:** Phase 0 **closed** · Phase 1 in progress · 4 of 47 packets complete.
+FastAPI + React scaffold, two-tier design tokens, 19 reference mockups, and the casepack
+module with a populated `riverside_grocery` pack are on `main`.
 
 ---
 
@@ -56,6 +58,7 @@ screenshots/  evidence attached to playthroughs
 | 03 | `design/03-scoring-frame-options.md` | Balanced Scorecard vs Ch 1 objectives; recommendation |
 | 04 | `design/04-decisions-g1-g6.md` | IT staffing as a load pool; stakeholder layer adopted, market layer deferred |
 | 05 | `design/05-implementation-plan.md` | Module inventory, phases, gates, risks |
+| 06 | `design/06-plan-index.md` | **The authoritative packet list** — every packet, one page |
 
 ---
 
@@ -86,21 +89,36 @@ Never guess at these — they are all inspectable. Full table in `GOVERNANCE.md 
 
 | # | Decision | Notes |
 |---|---|---|
-| 1 | **Repository location** | Extend `mis-tutor` (reuses auth, teams, personas, catalogue, React Flow canvas — but has no Course/Section/Instance layer) or new repo borrowing pieces. Blocks Phase 0.2 |
-| 2 | Casepack verticals for packs 2–5 | Candidates: hospital, community bank, logistics, light manufacturing. Needed by Phase 6 |
+| 1 | Casepack verticals for packs 2–5 | Candidates: hospital, community bank, logistics, light manufacturing. Needed by Phase 6 |
+| 2 | `G2` — the ±10% LLM rationale modifier | The only LLM-scored surface in the design. Cutting it remains defensible |
+
+**Settled:** repository location (new repo, pieces ported from `mis-tutor`) ·
+stack (FastAPI + React + Ant Design + Vite) · Balanced Scorecard as the visible score ·
+stakeholder layer adopted, market layer deferred.
+
+## Open blockers
+
+See `BATTLECARD.md` §6. Briefly: **`1.1-001`** — module 1.1's implementation reached `main`
+inside a commit documenting other work and has never passed an audit. Five content gaps in
+the shipped pack (`findings/content-coverage-2026-07-27.md`) and six scoring factors with
+no capture point anywhere (`findings/field-coverage-2026-07-27.md`).
 
 ---
 
 ## Phase gates
 
 ```
-0  Governance · design system · 10 mockups              ← current
-1  Domain + engine + calibration harness  (headless)
+0  Foundation             4 packets    CLOSED
+1  Engine                 7 packets    ← current. 1.1 built, audit blocking
    GATE: 6 rounds × 4 scripted teams, no dominant strategy
-2  Platform scaffolding — hierarchy, scoping, scheduling
-3  Student core loop      S0 S1 S2 S3 S7 S8
-4  Student remainder      S4 S5 S6 S9
-5  Instructor console     I1–I7
-6  Second casepack, different vertical, zero engine changes
-7  Pilot readiness audit
+2  Platform scaffolding   5 packets    specced
+3  Student core loop      8 packets    direction only
+4  Student + AI          11 packets    direction only
+5  Instructor console     7 packets    direction only
+6  Second casepack        2 packets    direction only
+7  Pilot readiness        3 packets    direction only
+                         ──
+                         47 · 4 complete
 ```
+
+Authoritative packet list: `design/06-plan-index.md`.
