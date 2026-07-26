@@ -2,96 +2,166 @@ import { useEffect, useState } from "react";
 import { Button, Select, Table } from "antd";
 import { useTranslation } from "react-i18next";
 
-const cssVariables = [
-  "--bg-sidebar",
-  "--bg-sidebar-active",
-  "--bg-content",
-  "--bg-card",
-  "--bg-table-header",
-  "--bg-table-alt",
-  "--bg-topbar",
-  "--bg-highlight-row",
-  "--text-primary",
-  "--text-secondary",
-  "--text-muted",
-  "--text-hint",
-  "--text-sidebar",
-  "--text-sidebar-muted",
-  "--text-sidebar-section",
-  "--text-link",
-  "--accent-green",
-  "--accent-blue",
-  "--accent-purple",
-  "--accent-amber",
-  "--accent-red",
-  "--accent-teal",
-  "--accent-navy",
-  "--status-compliant-bg",
-  "--status-compliant-text",
-  "--status-risk-bg",
-  "--status-risk-text",
-  "--status-danger-bg",
-  "--status-danger-text",
-  "--status-pending-bg",
-  "--status-pending-text",
-  "--status-active-bg",
-  "--status-active-text",
-  "--status-inactive-bg",
-  "--status-inactive-text",
-  "--color-surface-50",
-  "--color-surface-100",
-  "--color-surface-200",
-  "--color-surface-300",
-  "--color-surface-400",
-  "--color-surface-500",
-  "--color-surface-600",
-  "--color-surface-700",
-  "--color-surface-800",
-  "--color-surface-900",
-  "--topbar-bg",
-  "--topbar-text",
-  "--topbar-text-secondary",
-  "--topbar-border",
-  "--brand-primary",
-  "--color-header-financial",
-  "--color-header-strategic",
-  "--color-header-market",
-  "--color-header-decision",
-  "--color-header-results",
-  "--color-header-neutral",
-  "--color-positive",
-  "--color-negative",
-  "--color-warning",
-  "--color-info",
-  "--color-neutral",
-  "--color-primary",
-  "--color-primary-hover",
-  "--color-primary-light",
-  "--color-input-bg",
-  "--color-input-border",
-  "--color-input-focus",
-  "--color-input-editable",
-  "--color-text-primary",
-  "--color-text-secondary",
-  "--color-text-inverse",
-  "--color-text-link",
-  "--chart-1",
-  "--chart-2",
-  "--chart-3",
-  "--chart-4",
-  "--chart-5",
-  "--chart-6",
-  "--chart-your-team",
-  "--font-body",
-  "--font-mono",
-  "--space-xs",
-  "--space-sm",
-  "--space-md",
-  "--space-lg",
-  "--space-xl",
-  "--space-2xl",
-  "--space-3xl",
-  "--space-4xl"
+const semanticGroups = [
+  {
+    label: "Surface roles",
+    tokens: [
+      "--surface-page",
+      "--surface-card",
+      "--surface-raised",
+      "--surface-sunken",
+      "--surface-sidebar",
+      "--surface-sidebar-active",
+      "--surface-topbar",
+      "--surface-table-header",
+      "--surface-table-stripe",
+      "--surface-row-highlight",
+      "--overlay-scrim"
+    ]
+  },
+  {
+    label: "Text roles",
+    tokens: [
+      "--text-primary",
+      "--text-secondary",
+      "--text-muted",
+      "--text-hint",
+      "--text-inverse",
+      "--text-link",
+      "--text-on-sidebar",
+      "--text-on-sidebar-muted",
+      "--text-on-sidebar-section"
+    ]
+  },
+  {
+    label: "Border roles",
+    tokens: ["--border-default", "--border-strong", "--border-focus", "--border-annotation"]
+  },
+  {
+    label: "Status roles",
+    tokens: [
+      "--status-ok-bg",
+      "--status-ok-text",
+      "--status-ok-marker",
+      "--status-warn-bg",
+      "--status-warn-text",
+      "--status-warn-marker",
+      "--status-danger-bg",
+      "--status-danger-text",
+      "--status-danger-marker",
+      "--status-info-bg",
+      "--status-info-text",
+      "--status-info-marker",
+      "--status-neutral-bg",
+      "--status-neutral-text",
+      "--status-neutral-marker"
+    ]
+  },
+  {
+    label: "Accent roles",
+    tokens: ["--accent-1", "--accent-2", "--accent-3", "--accent-4", "--accent-5", "--accent-6", "--accent-7"]
+  },
+  {
+    label: "Chart roles",
+    tokens: ["--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5", "--chart-6", "--chart-highlight"]
+  },
+  {
+    label: "Action roles",
+    tokens: [
+      "--action-primary",
+      "--action-primary-hover",
+      "--action-primary-text",
+      "--action-secondary",
+      "--action-secondary-hover",
+      "--action-disabled",
+      "--action-disabled-text"
+    ]
+  },
+  {
+    label: "Input roles",
+    tokens: [
+      "--input-bg",
+      "--input-border",
+      "--input-border-focus",
+      "--input-text",
+      "--input-editable-bg",
+      "--input-disabled-bg"
+    ]
+  },
+  {
+    label: "Font roles",
+    tokens: ["--font-body", "--font-mono"]
+  },
+  {
+    label: "Space roles",
+    tokens: [
+      "--space-xs",
+      "--space-sm",
+      "--space-md",
+      "--space-lg",
+      "--space-xl",
+      "--space-2xl",
+      "--space-3xl",
+      "--space-4xl"
+    ]
+  },
+  {
+    label: "Radius roles",
+    tokens: ["--radius"]
+  }
+];
+
+const primitiveGroups = [
+  {
+    label: "Primitive colours",
+    tokens: [
+      "--p-white",
+      "--p-slate-25",
+      "--p-slate-50",
+      "--p-slate-100",
+      "--p-slate-200",
+      "--p-slate-300",
+      "--p-slate-400",
+      "--p-slate-500",
+      "--p-slate-600",
+      "--p-slate-700",
+      "--p-slate-800",
+      "--p-slate-900",
+      "--p-navy-900",
+      "--p-blue-50",
+      "--p-blue-500",
+      "--p-blue-700",
+      "--p-blue-800",
+      "--p-green-50",
+      "--p-green-500",
+      "--p-green-800",
+      "--p-amber-50",
+      "--p-amber-500",
+      "--p-amber-800",
+      "--p-red-50",
+      "--p-red-500",
+      "--p-red-800",
+      "--p-purple-500",
+      "--p-teal-500"
+    ]
+  },
+  {
+    label: "Primitive fonts",
+    tokens: ["--p-font-body", "--p-font-mono"]
+  },
+  {
+    label: "Primitive sizes",
+    tokens: [
+      "--p-size-4",
+      "--p-size-8",
+      "--p-size-12",
+      "--p-size-16",
+      "--p-size-20",
+      "--p-size-24",
+      "--p-size-32",
+      "--p-size-40"
+    ]
+  }
 ];
 
 const rows = [
@@ -105,17 +175,22 @@ const columns = [
   { title: "State", dataIndex: "state", key: "state" }
 ];
 
+const tokenGroups = [...semanticGroups, ...primitiveGroups];
+
+export const devTokenGroups = tokenGroups;
+
 export default function DevTokens() {
   const { t } = useTranslation();
-  const [tokens, setTokens] = useState([]);
+  const [tokens, setTokens] = useState(new Map());
 
   useEffect(() => {
     const styles = getComputedStyle(document.documentElement);
     setTokens(
-      cssVariables.map((name) => ({
-        name,
-        value: styles.getPropertyValue(name).trim()
-      }))
+      new Map(
+        tokenGroups.flatMap((group) =>
+          group.tokens.map((name) => [name, styles.getPropertyValue(name).trim()])
+        )
+      )
     );
   }, []);
 
@@ -144,18 +219,26 @@ export default function DevTokens() {
         size="small"
       />
 
-      <section className="swatch-grid" aria-label="CSS variables">
-        {tokens.map((item) => (
-          <article className="swatch-card" key={item.name}>
-            <div className="swatch-sample" style={{ background: item.value }} />
-            <div className="swatch-copy">
-              <strong>{item.name}</strong>
-              <span>{item.value}</span>
-            </div>
-          </article>
-        ))}
-      </section>
+      {tokenGroups.map((group) => (
+        <section className="token-section" aria-label={group.label} key={group.label}>
+          <h2>{group.label}</h2>
+          <div className="swatch-grid">
+            {group.tokens.map((name) => {
+              const value = tokens.get(name) ?? "";
+
+              return (
+                <article className="swatch-card" key={name}>
+                  <div className="swatch-sample" style={{ background: value }} />
+                  <div className="swatch-copy">
+                    <strong>{name}</strong>
+                    <span>{value}</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ))}
     </main>
   );
 }
-

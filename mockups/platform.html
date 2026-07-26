@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform</title>
+    <link rel="stylesheet" href="../frontend/src/styles/theme.css">
+    <style>
+      body { min-width: 1000px; }
+      .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; background: var(--surface-page); color: var(--text-primary); font-family: var(--font-body); }
+      .sidebar { background: var(--surface-sidebar); color: var(--text-on-sidebar); padding: var(--space-xl) var(--space-lg); }
+      .brand { font-weight: 700; margin-bottom: var(--space-xl); }
+      [data-casepack] { border-bottom: 1px dotted var(--border-annotation); }
+      .section { color: var(--text-on-sidebar-section); font-size: 11px; font-weight: 700; margin: var(--space-lg) 0 var(--space-xs); text-transform: uppercase; }
+      .nav { display: grid; gap: var(--space-xs); }
+      .nav span { padding: var(--space-sm) var(--space-md); color: var(--text-on-sidebar-muted); }
+      .nav .active { background: var(--surface-sidebar-active); color: var(--text-on-sidebar); }
+      main { padding: var(--space-xl); display: grid; gap: var(--space-lg); }
+      .top { background: var(--surface-topbar); border: 1px solid var(--border-default); display: flex; justify-content: space-between; align-items: center; padding: var(--space-lg) var(--space-xl); }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: 28px; line-height: 1.15; }
+      h2 { font-size: 18px; }
+      h3 { font-size: 15px; }
+      .muted { color: var(--text-muted); }
+      .chip { border: 1px solid var(--border-default); background: var(--surface-sunken); padding: var(--space-xs) var(--space-sm); font-weight: 600; }
+      .strip { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: var(--space-lg); padding: var(--space-sm) 0; border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default); }
+      .label { display: block; color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+      .value { font-size: 22px; font-weight: 700; }
+      .banner { background: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-marker); padding: var(--space-md); display: flex; justify-content: space-between; }
+      .hosting { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+      .panel, .missing, .line, .actions { background: var(--surface-card); border: 1px solid var(--border-default); padding: var(--space-lg); }
+      .panel { min-height: 360px; display: grid; align-content: start; gap: var(--space-md); }
+      .service { background: var(--surface-sunken); border: 1px solid var(--border-default); padding: var(--space-md); display: grid; gap: var(--space-xs); }
+      .bar { height: 8px; background: var(--surface-raised); border: 1px solid var(--border-default); }
+      .fill { height: 100%; background: var(--status-warn-marker); }
+      .full { width: 100%; }
+      .most { width: 70%; }
+      .badge { display: inline-flex; width: fit-content; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--border-default); font-size: 12px; font-weight: 700; }
+      .complete { background: var(--status-ok-bg); color: var(--status-ok-text); border-color: var(--status-ok-marker); }
+      .partial { background: var(--status-info-bg); color: var(--status-info-text); border-color: var(--status-info-marker); }
+      .attention { background: var(--status-warn-bg); color: var(--status-warn-text); border-color: var(--status-warn-marker); }
+      .neutral { background: var(--status-neutral-bg); color: var(--status-neutral-text); border-color: var(--status-neutral-marker); }
+      .missing { display: grid; gap: var(--space-md); background: var(--surface-sunken); }
+      .missing-grid, .actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+      .miss { border: 1px solid var(--border-strong); background: var(--surface-card); padding: var(--space-md); }
+      .line { display: flex; justify-content: space-between; gap: var(--space-lg); color: var(--text-secondary); }
+      .button { background: var(--action-primary); color: var(--action-primary-text); border: 1px solid var(--action-primary); padding: var(--space-sm) var(--space-lg); font-weight: 700; text-align: center; }
+      .legend { color: var(--text-muted); font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand" data-casepack>Riverside Grocers</div>
+        <nav class="nav">
+          <span>Dashboard</span><div class="section">DECISIONS</div><span>Strategy</span><span class="active">Platform</span><span>Components</span><span>Rollout</span><span>Security</span><span>Services</span><span>People</span><span>Challenges</span><span>Review</span><span>Debrief</span>
+        </nav>
+      </aside>
+      <main>
+        <header class="top">
+          <div><h1>Platform</h1><p class="muted">What the whole firm runs on · Round 3 of 6</p></div>
+          <div><div class="chip">Low-Cost Leadership · locked in round 2</div><p class="legend">Dotted underline = supplied by the case, not the platform</p></div>
+        </header>
+        <section class="strip">
+          <div><span class="label">Capital remaining</span><span class="value">$44,000 of $220,000</span></div>
+          <div><span class="label">Run-rate</span><span class="value">$58,300</span></div>
+          <div><span class="label">Run-rate rises every round it is not managed</span>R1 $47,000 → R2 $53,000 → R3 $58,300</div>
+        </section>
+        <section class="banner"><strong>You are running a hybrid platform.</strong><span>1 service in cloud · 4 on-premises</span></section>
+        <section class="hosting">
+          <div class="panel">
+            <h2>Cloud</h2>
+            <article class="service"><h3 data-casepack>End-user email</h3><p>placed R2</p><span class="badge complete">Complete</span></article>
+          </div>
+          <div class="panel">
+            <h2>On-Premises</h2>
+            <article class="service"><h3 data-casepack>Compute pool</h3><span class="label">Capacity used</span><strong>100% used</strong><div class="bar"><div class="fill full"></div></div><p>No headroom. The next component will not fit.</p><span class="badge attention">Needs attention</span></article>
+            <article class="service"><h3 data-casepack>Storage pool</h3><span class="label">Capacity used</span><strong>70% used</strong><div class="bar"><div class="fill most"></div></div><span class="badge partial">Partly done</span></article>
+            <article class="service"><h3 data-casepack>Network &amp; WAN</h3><p>10 single points of failure</p><span class="badge attention">Needs attention</span></article>
+            <article class="service"><h3 data-casepack>Backup &amp; recovery</h3><p>never restore-tested</p><span class="badge attention">Needs attention</span></article>
+          </div>
+        </section>
+        <section class="missing">
+          <h2>Not provisioned</h2>
+          <div class="missing-grid">
+            <div class="miss"><h3 data-casepack>Central sign-on</h3><p>Nothing provides this yet</p><span class="badge neutral">Not started</span></div>
+            <div class="miss"><h3 data-casepack>Data platform</h3><p>Nothing provides this yet</p><span class="badge neutral">Not started</span></div>
+          </div>
+        </section>
+        <section class="line"><span>What determines the split?</span><span>Workload profile — steady on-premises, bursty in cloud · Data sensitivity — regulated on-premises, rest in cloud · Lifecycle — legacy stays, new builds go to cloud · Cost profile — high-utilisation workloads on-premises · No rule yet — case by case</span></section>
+        <section class="line"><strong>7 connections between systems · $3,100 per round</strong><strong>10 single points of failure</strong></section>
+        <section class="actions"><div class="button">Add firm-wide component</div><div class="button">Add firm-wide service</div></section>
+      </main>
+    </div>
+  </body>
+</html>

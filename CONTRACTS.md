@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-07-27 (status badge scale added — finding `0.3-013`).
+**Last updated:** 2026-07-27 (design-token two-tier contract; status badge scale added — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -127,6 +127,22 @@ converted on ingest, not stored raw.
 
 **Rule:** engine code **never** branches on `pack_key`. Enforced by the Phase 6 gate and
 by the falsification check in `SPEC_PROTOCOL.md §4`.
+
+---
+
+## Design tokens — two-tier — PROSPECTIVE
+
+Canonical: components reference SEMANTIC ROLES only (`--surface-page`, `--text-muted`,
+`--status-danger-bg`). Never primitives (`--p-slate-100`, `--p-navy-900`), never raw
+values.
+
+Roles resolve to primitives in exactly one step. A role defined as another role is a
+defect — it reintroduces the aliasing this replaced.
+
+Producers: `frontend/src/styles/theme.css` — the only file that may declare either tier.
+Consumers: every component, every mockup.
+
+Adding a role: entry here + spec change. Adding a primitive: `theme.css` only.
 
 ---
 

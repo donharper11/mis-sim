@@ -13,9 +13,9 @@ The old module codes (`E4`, `S3`, `I1`, `A2`) survive only as **labels** so the
 implementation plan's §1 inventory stays readable. They are not identifiers. Folder names
 under `handoffs/` use the packet ID.
 
-> **Numbering corrected, 2026-07-26.** Phase 0 previously used `0.4a`, `0.4b`, `0.6` —
+> **Numbering corrected, 2026-07-26.** Phase 0 previously used `0.3`, `0.4`, `0.5` —
 > an artefact of reordering the mockups ahead of the component library. Now sequential:
-> `0.3` = token map + mockup pilot (formerly `0.4a`), `0.4` = mockups ×7, `0.5` =
+> `0.3` = token map + mockup pilot (formerly `0.3`), `0.4` = mockups ×7, `0.5` =
 > component library. Folder `handoffs/0.3-mockup-pilot/` renamed accordingly.
 >
 > **"Phase" now means one thing.** Build steps inside a spec are **Steps**, not Phases —
@@ -37,6 +37,24 @@ under `handoffs/` use the packet ID.
 | 0.5 | Design-system component library | S0 lib | blocked on 0.4 |
 
 **Gate:** governance reviewed · 10 mockups approved · library renders a mockup pixel-close
+
+### Carried findings — must be consumed by the packet named, not just read here
+
+Written in by the auditor of `0.3`, per `GOVERNANCE.md §8` — a finding parked in
+`findings/` is a letter nobody opened. **Whoever authors the component-library spec must
+fold these into it and say so in that spec's Spec Basis.** Until then they are open.
+
+| Source | Item | Destination packet |
+|---|---|---|
+| `0.3-011` | **`IBM Plex Mono` is declared and never delivered.** `frontend/index.html:7` requests `IBM+Plex+Sans` only; `frontend/src/styles/theme.css:32` declares `--p-font-mono: 'IBM Plex Mono', 'Courier New', monospace`. No `@font-face`, no font file tracked, no font package in `package.json` — all three verified 2026-07-26. Body text is correct in production; **every monospace surface renders Courier New** (Liberation Mono on Linux). Only `/_dev/tokens` consumes the mono role today, so nothing student-facing is affected yet. **The spec must settle font delivery:** extend the CDN request to both faces, or self-host both and drop the third-party call — which for a BNBU cohort also removes a Google Fonts request from every student's browser. Hard-stops at Phase 7 pilot readiness | **component library** *(`0.5`)* |
+| `0.3-002`, `0.3-009` | Both were value drift hidden under a deprecation note reading "rename". The 89-row table in `handoffs/0.3-mockup-pilot/dod.md` is the **only** map from the old token names to the new ones, and this packet ports globalstrat components against it. Read the notes, not just the columns | **component library** |
+
+> **Numbering conflict, unresolved — flagged, not decided.** The correction block above states
+> Phase 0 keeps its historical IDs (`0.3` · `0.4` · `0.5`); the Phase 0 table immediately
+> below uses the clean scheme (`0.3` · `0.4` · `0.5`). `handoffs/README.md:159-162` and
+> **RESOLVED 2026-07-26.** The contradiction is gone: Phase 0 is now `0.1 · 0.2 · 0.3 ·
+> 0.4 · 0.5` everywhere — table, prose, README, spec, and folder name. Finding `0.3-012`
+> is closed.
 
 ---
 
