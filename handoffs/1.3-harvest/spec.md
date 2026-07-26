@@ -114,6 +114,35 @@ transform map; all five are authoring, not transformation.
 obligations raised like signals, cleared like signals, arming events like signals. The
 rules are what connect a policy switch to a consequence.
 
+**CG-6 — derive the capital roll-ups; do not author them twice.** *(carried from
+`findings/1.1-2026-07-27-audit.md` § 1.1-002, 2026-07-27)*
+
+`pack.yaml` currently authors round-3 capital remaining in two places, and they disagree:
+
+```
+:22   initial_state.budget.capital_remaining:   44000     (round 3, available 220000)
+:82   initial_state.review.capital_committed:  174000     (area lines sum to exactly this)
+:84   initial_state.review.capital_remaining:   46000     (= 220000 − 174000)
+```
+
+No `$2,000` item exists anywhere in the round-3 blocks — the two figures were authored
+independently and one is stale. **Not a blocker at 1.1:** nothing consumes them. `seed.py`
+persists nothing, the 0.2 baseline migration is still `pass`, and no engine exists to compute
+against. They are display fixtures pinned to the 0.4 mockups.
+
+It becomes real here, because §5.4a reads the pinned figures back and matches them against
+0.4 §5.4. Required output:
+
+- `capex_per_round` and the review **area lines** are the authored facts;
+- **both** `capital_remaining` values are **derived** — `available − committed` — not authored.
+  `SPEC_PROTOCOL.md §3`: eliminate the second home rather than reconcile it. This makes the
+  drift structurally impossible instead of corrected once;
+- derived, round 3 resolves to **46000**. **16 mockups currently display `$44,000`** and two
+  display both — so the read-back in §5.4a will fail against them until either the mockups
+  take the derived figure or the authored lines change. **Report which, do not silently pick.**
+
+Closing CG-6 also closes `0.4-002`, which is the same two figures on `review.html`.
+
 ### 5.2 The judged part — catalog items
 
 The ~19 buildable rows carry only `cost_value` in mis_lite. Everything else in the
