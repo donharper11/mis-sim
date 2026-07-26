@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications</title>
+    <link rel="stylesheet" href="../frontend/src/styles/theme.css">
+    <style>
+      body { min-width: 1000px; }
+      .mock-shell { display: grid; grid-template-columns: 216px 1fr; min-height: 100vh; background: var(--surface-page); color: var(--text-primary); font-family: var(--font-body); }
+      .sidebar { background: var(--surface-sidebar); color: var(--text-on-sidebar); padding: var(--space-xl) var(--space-lg); }
+      .case { color: var(--text-on-sidebar); font-weight: 700; margin-bottom: var(--space-2xl); }
+      .nav { display: grid; gap: var(--space-xs); }
+      .nav span { padding: var(--space-sm) var(--space-md); color: var(--text-on-sidebar-muted); border-radius: var(--radius); }
+      .nav .active { background: var(--surface-sidebar-active); color: var(--text-on-sidebar); }
+      main { display: grid; gap: var(--space-lg); padding: var(--space-xl); }
+      .topbar, .budget, .panel, .activity, .slot, .wizard, .mode { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius); }
+      .topbar { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: 28px; line-height: 1.15; }
+      h2 { font-size: 16px; }
+      h3 { font-size: 14px; }
+      .muted, .legend { color: var(--text-muted); }
+      .legend { font-size: 12px; }
+      [data-casepack] { border-bottom: 1px dotted var(--border-annotation); }
+      .budget { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg); padding: var(--space-lg) var(--space-xl); }
+      .label { color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+      .value { font-size: 22px; font-weight: 700; }
+      .state { display: grid; gap: var(--space-md); }
+      .chain { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: var(--space-lg); }
+      .panel { padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; }
+      .activities { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
+      .activity, .slot, .mode { padding: var(--space-md); display: grid; gap: var(--space-xs); background: var(--surface-sunken); }
+      .weighted { border-color: var(--border-focus); background: var(--surface-row-highlight); }
+      .slots { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-sm); }
+      .pill { display: inline-flex; align-items: center; align-self: start; width: fit-content; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--border-default); border-radius: var(--radius); background: var(--status-neutral-bg); color: var(--status-neutral-text); font-size: 12px; font-weight: 600; }
+      .pill.warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
+      .pill.danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
+      .button { display: inline-flex; align-items: center; justify-content: center; width: fit-content; padding: var(--space-sm) var(--space-lg); background: var(--action-primary); color: var(--action-primary-text); border: 1px solid var(--action-primary); border-radius: var(--radius); font-weight: 600; }
+      .wizard { padding: var(--space-lg); background: var(--surface-raised); display: grid; gap: var(--space-md); }
+      .modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); }
+    </style>
+  </head>
+  <body>
+    <div class="mock-shell">
+      <aside class="sidebar">
+        <div class="case" data-casepack>Riverside Grocers</div>
+        <nav class="nav">
+          <span>Situation</span><span>Platform</span><span class="active">Applications</span><span>Organisation</span><span>Governance</span><span>Challenges</span><span>Review &amp; Lock</span><span>Debrief</span><span>People</span>
+        </nav>
+      </aside>
+      <main>
+        <header class="topbar">
+          <div><h1>Applications</h1><p class="muted">Round 3 of 6</p></div>
+          <div><strong>Low-Cost Leadership · locked in round 2</strong><p class="legend">Dotted underline = supplied by the case, not the platform</p></div>
+        </header>
+        <section class="budget">
+          <div><span class="label">Capital remaining</span><div class="value">$44,000 of $220,000</div></div>
+          <div><span class="label">Run-rate</span><div class="value">$58,300</div></div>
+          <div><span class="label">Run-rate rises every round it is not managed</span><div>R1 $47,000 · R2 $53,000 · R3 $58,300</div></div>
+        </section>
+        <section class="state">
+          <h2>State: ready</h2>
+          <div class="chain">
+            <section class="panel">
+              <h2>Support activities</h2>
+              <div class="activities">
+                <article class="activity"><strong data-casepack>Firm infrastructure 3/4</strong><span class="pill">Partly done</span></article>
+                <article class="activity"><strong data-casepack>Human resources ok</strong><span class="pill">Complete</span></article>
+                <article class="activity"><strong data-casepack>Technology —</strong><span class="pill">Not started</span></article>
+                <article class="activity"><strong data-casepack>Procurement 0/3</strong><span class="pill danger">Needs attention</span></article>
+              </div>
+            </section>
+            <section class="panel">
+              <h2>Primary activities</h2>
+              <p>Weighted by your strategy</p>
+              <div class="activities">
+                <article class="activity"><strong data-casepack>Inbound logistics 1/4</strong><span class="pill">Partly done</span></article>
+                <article class="activity weighted"><strong data-casepack>Operations 2/4</strong><span>Weighted by your strategy</span></article>
+                <article class="activity weighted"><strong data-casepack>Outbound logistics 4/5</strong><span>Weighted by your strategy</span></article>
+                <article class="activity"><strong data-casepack>Marketing &amp; sales 5/5</strong><span class="pill">Complete</span></article>
+                <article class="activity"><strong data-casepack>Service 0/4</strong><span class="pill danger">Needs attention</span></article>
+              </div>
+            </section>
+          </div>
+        </section>
+        <section class="state">
+          <h2>State: empty slot</h2>
+          <section class="panel">
+            <h2 data-casepack>ORDER FULFILMENT</h2>
+            <div class="slots">
+              <article class="slot"><strong>Hardware</strong><span class="pill">Complete</span></article>
+              <article class="slot"><strong>Software</strong><span class="pill">Complete</span></article>
+              <article class="slot"><strong>Database</strong><span class="pill">Partly done</span></article>
+              <article class="slot"><strong>Network</strong><span class="pill">Complete</span></article>
+              <article class="slot"><strong>Integration</strong><span>Nothing fills this yet</span></article>
+            </div>
+          </section>
+        </section>
+        <section class="state">
+          <h2>State: owner unassigned</h2>
+          <div class="chain">
+            <article class="activity"><h3>No owner assigned</h3><span class="pill warn">Needs attention</span></article>
+            <article class="activity"><h3>No business sponsor</h3><span class="pill warn">Needs attention</span></article>
+          </div>
+        </section>
+        <section class="state">
+          <h2>State: wizard step 3</h2>
+          <div class="wizard">
+            <div>
+              <h2>How will this run?</h2>
+              <p data-casepack>Centraline IM 7 · Inventory Management · 34 warehouse staff</p>
+            </div>
+            <div class="modes">
+              <article class="mode"><h3>On our on-premises platform</h3><strong>$86,000 + $1,900/round</strong><span>available in 2 rounds</span><span class="pill danger">This would use all remaining platform capacity.</span></article>
+              <article class="mode"><h3>On our cloud subscription</h3><strong>$12,000 + $7,400/round</strong><span>available now</span><span class="pill warn">Inventory data would leave your systems.</span></article>
+              <article class="mode"><h3>Bought as a service</h3><strong>$0 + $9,100/round</strong><span>available now</span><span class="pill warn">A fourth separate login — you have no central sign-on.</span></article>
+            </div>
+            <div class="button">Add to plan</div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

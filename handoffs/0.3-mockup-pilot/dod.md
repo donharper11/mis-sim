@@ -5,17 +5,39 @@
 
 | Item | Status | Evidence |
 |---|---|---|
-| Pre-flight rows 1–8, especially row 3 | PASS | Rework 2 restates all eight rows below. Row 6 now passes after `sudo apt-get install -y fonts-ibm-plex`: `fc-match "IBM Plex Sans"` returns `IBMPlexSans-Regular.ttf: "IBM Plex Sans" "Regular"`. |
-| Step 1 — map, consumers, guard, deprecation table | PASS | `theme.css` rewritten as 38 `--p-` primitives + 77 v2 roles; `main.jsx` remapped to 11 live semantic roles and throws on empty token; `DevTokens.jsx` lists roles by category and primitives separately; 89-row deprecation table below has no missing, extra, or duplicate old tokens. |
-| `npm run build` clean after the consumer rewrite | PASS | `vite build` completed; output assets `index-Gy2TMCAE.css` and `index-DzAF3_YJ.js`; only the existing chunk-size warning appeared. |
-| antd still themed — screenshot | PASS | Browser at `http://127.0.0.1:5200/_dev/tokens`, viewport 1280: Button background `rgb(30, 64, 175)`, Select border `rgb(217, 217, 217)`, Table header bg `rgb(250, 250, 250)`, header text `rgb(15, 23, 42)`, zero console errors, zero failed requests. Screenshot: `screenshots/0.3/devtokens-rework-1280.png`. |
-| Phases 2–5 | N-A | Hard stop after Phase 1 per v2 §8; mockups not started. |
-| I1–I8 | PASS | I2: `declared tokens: 115`, `required roles: 77`, `I2 one-hop role resolution: PASS`. I3: `grep -rn -- "^[[:space:]]*--[a-z-]*:" frontend/src mockups \| grep -v styles/theme.css` produced no output. I8: `main.jsx token refs: 11`, `missing roles: 0`, `primitive refs: 0`, `PASS`. I1/I4/I5/I6/I7 are not exercisable until mockups exist. |
-| Strings not in §5.6, listed and justified | N-A | No mockups built in Phase 1. |
-| Screenshots ×9 in `screenshots/0.3/` | N-A | No mockups built in Phase 1; one dev-token proof screenshot produced for the Phase 1 consumer check. |
-| `docs/mockup-review.md`, including font install | N-A | Step 1 rework only; no mockups or review doc started. |
-| Files touched: only those named in §1 | PASS | Source/doc changes limited to `frontend/src/styles/theme.css`, `frontend/src/main.jsx`, `frontend/src/pages/DevTokens.jsx`, `CONTRACTS.md`, and this DoD; one verification screenshot added under `screenshots/0.3/`. |
+| Pre-flight rows 1–8, especially row 3 | PASS | Rows were run before writing. Row 1 baseline `89`; row 2 `11`; row 3 no output outside `main.jsx` / `DevTokens.jsx`; row 4 `>= 80`; row 5 no ignore match for `screenshots/0.3/x.png`; row 6 `npm view @ibm/plex version` returned `6.4.1`; row 6b showed Google Fonts lines 6-8 before removal; row 6c zero tracked WOFF2 before vendoring; row 6d no ignore match; row 7 no mockup HTML before writing; row 8 Balanced Scorecard present. |
+| Step 1 — map, consumers, guard, deprecation table | PASS | Earlier token map and consumer remap stand. Step 1b added five IBM Plex WOFF2 files + `LICENSE.txt`, added `@font-face` blocks with `font-display: swap`, and removed the Google Fonts calls from `frontend/index.html`. |
+| `npm run build` clean after the consumer rewrite | PASS | `vite build` completed; font assets emitted for IBM Plex Sans 400/500/600/700 and IBM Plex Mono 400. Existing chunk-size warning only. |
+| antd still themed — screenshot | PASS | Browser at `http://127.0.0.1:5204/_dev/tokens`, viewport 1280 with non-local requests blocked: Button `rgb(30, 64, 175)`, Table header `rgb(250, 250, 250)`, header text `rgb(15, 23, 42)`, `swatchCount: 115`, `blankSwatches: []`, Sans and Mono font checks true, zero console errors, zero failed requests. Screenshot: `screenshots/0.3/devtokens-fonts-offline-1280.png`. |
+| Phases 2–5 | PASS | v2.2 renames these to Steps 2-5 and removes the hard stop. Built `mockups/situation.html`, `mockups/platform.html`, and `mockups/applications.html`; ran the consistency pass across shared sidebar, header, budget strip, card grammar, zero radius, and type scale. |
+| I1–I8 | PASS | I1 no `var(--p-)` and no raw hex/rgb/hsl declarations in `mockups/*.html`. I2: `declared tokens: 115`, `roles checked: 77`, `literal exceptions: --radius: 0`, `PASS`. I3 no token declarations outside `theme.css`. I4 no forbidden engine vocabulary. I5: `visible text chunks: 125`, `unaccounted residue: 0`. I6 exactly one stylesheet link per mockup, all ending `styles/theme.css`. I7 Riverside/Grocers only appears with `data-casepack`. I8 `main.jsx token refs: 11`, `missing roles: 0`, `primitive refs: 0`, `PASS`. |
+| Strings not in §5.6, listed and justified | PASS | Justified residue below. All residue is from §5.4 fixed figures/content, §5.7 required state labels, repeated app chrome (`Round 3 of 6`, strategy, budget strip), or casepack-supplied labels marked with `data-casepack`. |
+| Screenshots ×9 in `screenshots/0.3/` | PASS | `situation`, `platform`, and `applications` captured at 1440, 1280, and 1024. Browser output for every screenshot: `linkCount: 1`, `scrollWidth` equals viewport, Sans and Mono ready, zero console errors, zero failed requests. |
+| `docs/mockup-review.md`, including font install | PASS | Added `docs/mockup-review.md`. v2.1 self-hosting means no font install is required for review; the doc states the file-open path and the in-repo font source. |
+| Files touched: only those named in §1 | PASS | Changes are limited to `frontend/index.html`, `frontend/src/styles/theme.css`, `frontend/src/styles/fonts/`, `mockups/`, `CONTRACTS.md`, `docs/mockup-review.md`, this DoD, and `screenshots/0.3/`. |
 | Auth / instance / casepack canaries | N-A | Static, no state, no auth. |
+
+---
+
+## Step 1b and Steps 2-5 Evidence
+
+| Check | Result | Evidence |
+|---|---|---|
+| Font vendoring | PASS | `frontend/src/styles/fonts/` contains `IBMPlexSans-Regular.woff2`, `IBMPlexSans-Medium.woff2`, `IBMPlexSans-SemiBold.woff2`, `IBMPlexSans-Bold.woff2`, `IBMPlexMono-Regular.woff2`, and `LICENSE.txt`. |
+| CDN removal | PASS | `git grep -nI -E "googleapis\|gstatic\|fonts\.google" -- frontend mockups` produced no output; `grep -rniE "googleapis\|gstatic\|fonts\.google" frontend/src frontend/index.html mockups/` produced no output. The exact broad I9 command over `frontend/` also scans `node_modules` and false-matches dependency text such as `existingStatic`, so product-file evidence is recorded here. |
+| Browser font proof | PASS | `/_dev/tokens` with non-local requests blocked: `h1FontFamily: "IBM Plex Sans", system-ui, -apple-system, sans-serif`; `monoFontFamily: "IBM Plex Mono", "Source Code Pro", monospace`; platform font inspection returned `familyName: IBM Plex Sans`, `isCustomFont: true`. |
+| Static mockups | PASS | `file://` browser run for all three files at 1440/1280/1024: one stylesheet link, no failed requests, no console errors, no horizontal overflow. |
+| I9 exact-command deviation | DEVIATION | `grep -rniE "googleapis\|gstatic\|fonts\.google" frontend/ mockups/` reports dependency-only noise from `frontend/node_modules`, including `existingStatic` under case-insensitive `gstatic`. Source and tracked product-file greps are zero. |
+| I10 after staging | PASS | `git ls-files "frontend/src/styles/fonts/*"` lists exactly `IBMPlexMono-Regular.woff2`, `IBMPlexSans-Bold.woff2`, `IBMPlexSans-Medium.woff2`, `IBMPlexSans-Regular.woff2`, `IBMPlexSans-SemiBold.woff2`, and `LICENSE.txt`. |
+
+### I5 justified residue
+
+| Residue class | Justification |
+|---|---|
+| §5.4 fixed data | Company details, round/budget figures, BSC scores, MOT factors, coverage, reliability, signal names, platform services, value-chain activities, deployment costs, availability timing, and affected staff are all fixed in §5.4. |
+| §5.7 state labels | `State: hybrid banner`, `State: unprovisioned`, `State: capacity 100%`, `State: empty slot`, `State: owner unassigned`, and `State: wizard step 3` are the required stacked states from §5.7. |
+| Repeated chrome | `Round 3 of 6`, `Low-Cost Leadership · locked in round 2`, `Capital remaining`, `Run-rate`, and `Run-rate rises every round it is not managed` are reused across Platform and Applications for Step 5 consistency. |
+| Casepack labels | `Riverside Grocers`, capability names, signal names, service names, activity names, `Centraline IM 7`, `Inventory Management`, and `34 warehouse staff` are marked with `data-casepack` and the dotted underline legend. |
 
 ---
 

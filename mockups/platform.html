@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform</title>
+    <link rel="stylesheet" href="../frontend/src/styles/theme.css">
+    <style>
+      body { min-width: 1000px; }
+      .mock-shell { display: grid; grid-template-columns: 216px 1fr; min-height: 100vh; background: var(--surface-page); color: var(--text-primary); font-family: var(--font-body); }
+      .sidebar { background: var(--surface-sidebar); color: var(--text-on-sidebar); padding: var(--space-xl) var(--space-lg); }
+      .case { color: var(--text-on-sidebar); font-weight: 700; margin-bottom: var(--space-2xl); }
+      .nav { display: grid; gap: var(--space-xs); }
+      .nav span { padding: var(--space-sm) var(--space-md); color: var(--text-on-sidebar-muted); border-radius: var(--radius); }
+      .nav .active { background: var(--surface-sidebar-active); color: var(--text-on-sidebar); }
+      main { display: grid; gap: var(--space-lg); padding: var(--space-xl); }
+      .topbar, .budget, .panel, .banner { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius); }
+      .topbar { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: 28px; line-height: 1.15; }
+      h2 { font-size: 16px; }
+      h3 { font-size: 14px; }
+      .muted, .legend { color: var(--text-muted); }
+      .legend { font-size: 12px; }
+      [data-casepack] { border-bottom: 1px dotted var(--border-annotation); }
+      .budget { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg); padding: var(--space-lg) var(--space-xl); }
+      .label { color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+      .value { font-size: 22px; font-weight: 700; }
+      .state { display: grid; gap: var(--space-md); }
+      .banner { padding: var(--space-lg); background: var(--status-info-bg); color: var(--status-info-text); display: flex; justify-content: space-between; gap: var(--space-xl); }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+      .panel { padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; }
+      .service, .option, .absence, .capacity { background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius); padding: var(--space-md); display: grid; gap: var(--space-sm); }
+      .pill { display: inline-flex; align-items: center; align-self: start; width: fit-content; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--border-default); border-radius: var(--radius); background: var(--status-neutral-bg); color: var(--status-neutral-text); font-size: 12px; font-weight: 600; }
+      .pill.warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
+      .pill.danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
+      .bar { height: 10px; background: var(--surface-raised); border: 1px solid var(--border-default); }
+      .fill { height: 100%; background: var(--status-danger-marker); }
+      .w100 { width: 100%; }
+      .w70 { width: 70%; background: var(--status-warn-marker); }
+      .options { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-sm); }
+    </style>
+  </head>
+  <body>
+    <div class="mock-shell">
+      <aside class="sidebar">
+        <div class="case" data-casepack>Riverside Grocers</div>
+        <nav class="nav">
+          <span>Situation</span><span class="active">Platform</span><span>Applications</span><span>Organisation</span><span>Governance</span><span>Challenges</span><span>Review &amp; Lock</span><span>Debrief</span><span>People</span>
+        </nav>
+      </aside>
+      <main>
+        <header class="topbar">
+          <div><h1>Platform</h1><p class="muted">Round 3 of 6</p></div>
+          <div><strong>Low-Cost Leadership · locked in round 2</strong><p class="legend">Dotted underline = supplied by the case, not the platform</p></div>
+        </header>
+        <section class="budget">
+          <div><span class="label">Capital remaining</span><div class="value">$44,000 of $220,000</div></div>
+          <div><span class="label">Run-rate</span><div class="value">$58,300</div></div>
+          <div><span class="label">Run-rate rises every round it is not managed</span><div>R1 $47,000 · R2 $53,000 · R3 $58,300</div></div>
+        </section>
+        <section class="state">
+          <h2>State: ready</h2>
+          <div class="grid2">
+            <section class="panel">
+              <h2>Cloud</h2>
+              <article class="service"><strong data-casepack>end-user email</strong><span class="pill">Complete</span></article>
+            </section>
+            <section class="panel">
+              <h2>On-Premises</h2>
+              <article class="service"><strong data-casepack>compute 100%</strong><span class="label">Capacity used</span><div class="bar"><div class="fill w100"></div></div><span class="pill danger">Needs attention</span></article>
+              <article class="service"><strong data-casepack>storage 70%</strong><span class="label">Capacity used</span><div class="bar"><div class="fill w70"></div></div><span class="pill warn">Partly done</span></article>
+              <article class="service"><strong data-casepack>network</strong><span class="pill">Partly done</span></article>
+              <article class="service"><strong data-casepack>backup</strong><span class="pill">Partly done</span></article>
+            </section>
+          </div>
+        </section>
+        <section class="state">
+          <h2>State: hybrid banner</h2>
+          <div class="banner"><strong>You are running a hybrid platform.</strong><span>1 service in cloud · 4 on-premises</span></div>
+          <section class="panel">
+            <h2>What determines the split?</h2>
+            <div class="options">
+              <div class="option">Workload profile — steady on-premises, bursty in cloud</div>
+              <div class="option">Data sensitivity — regulated on-premises, rest in cloud</div>
+              <div class="option">Lifecycle — legacy stays, new builds go to cloud</div>
+              <div class="option">Cost profile — high-utilisation workloads on-premises</div>
+              <div class="option">No rule yet — case by case</div>
+            </div>
+          </section>
+        </section>
+        <section class="state">
+          <h2>State: unprovisioned</h2>
+          <div class="grid2">
+            <article class="absence"><h3>Not provisioned</h3><strong data-casepack>central sign-on</strong></article>
+            <article class="absence"><h3>Not provisioned</h3><strong data-casepack>data platform</strong></article>
+          </div>
+        </section>
+        <section class="state">
+          <h2>State: capacity 100%</h2>
+          <article class="capacity"><span class="label">Capacity used</span><strong>100%</strong><div class="bar"><div class="fill w100"></div></div><p>No headroom. The next application will not fit.</p></article>
+          <div class="grid2">
+            <article class="absence"><strong>10 single points of failure</strong></article>
+            <article class="absence"><strong>7 connections between systems · $3,100 per round</strong></article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Situation</title>
+    <link rel="stylesheet" href="../frontend/src/styles/theme.css">
+    <style>
+      body { min-width: 1000px; }
+      .mock-shell { display: grid; grid-template-columns: 216px 1fr; min-height: 100vh; background: var(--surface-page); color: var(--text-primary); font-family: var(--font-body); }
+      .sidebar { background: var(--surface-sidebar); color: var(--text-on-sidebar); padding: var(--space-xl) var(--space-lg); }
+      .case { color: var(--text-on-sidebar); font-weight: 700; margin-bottom: var(--space-2xl); }
+      .nav { display: grid; gap: var(--space-xs); }
+      .nav span { padding: var(--space-sm) var(--space-md); color: var(--text-on-sidebar-muted); border-radius: var(--radius); }
+      .nav .active { background: var(--surface-sidebar-active); color: var(--text-on-sidebar); }
+      main { display: grid; gap: var(--space-lg); padding: var(--space-xl); }
+      .topbar, .budget, .panel, .state { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius); }
+      .topbar { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg) var(--space-xl); }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: 28px; line-height: 1.15; }
+      h2 { font-size: 16px; line-height: 1.25; }
+      h3 { font-size: 14px; line-height: 1.25; }
+      .muted { color: var(--text-muted); }
+      .legend { font-size: 12px; color: var(--text-secondary); }
+      [data-casepack] { border-bottom: 1px dotted var(--border-annotation); }
+      .budget { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg); padding: var(--space-lg) var(--space-xl); }
+      .metric { display: grid; gap: var(--space-xs); }
+      .label { color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+      .value { font-size: 22px; font-weight: 700; }
+      .section-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--space-lg); }
+      .panel { padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; }
+      .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
+      .score, .capability, .signal, .empty-card { background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius); padding: var(--space-md); display: grid; gap: var(--space-sm); }
+      .score strong { font-size: 24px; }
+      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); }
+      .line { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); }
+      .pill { display: inline-flex; align-items: center; align-self: start; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--border-default); border-radius: var(--radius); background: var(--status-neutral-bg); color: var(--status-neutral-text); font-size: 12px; font-weight: 600; }
+      .pill.ok { background: var(--status-ok-bg); color: var(--status-ok-text); }
+      .pill.warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
+      .pill.danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
+      .bar { height: 8px; background: var(--surface-raised); border: 1px solid var(--border-default); }
+      .fill { height: 100%; background: var(--chart-highlight); }
+      .w25 { width: 25%; }
+      .w61 { width: 61%; }
+      .w48 { width: 48%; }
+      .w39 { width: 39%; }
+      .w27 { width: 27%; }
+      .signals { display: grid; gap: var(--space-sm); }
+      .state { padding: var(--space-lg); display: grid; gap: var(--space-md); }
+      .locked { border-color: var(--status-info-marker); background: var(--status-info-bg); color: var(--status-info-text); padding: var(--space-md); }
+      .disabled { opacity: 0.55; }
+    </style>
+  </head>
+  <body>
+    <div class="mock-shell">
+      <aside class="sidebar">
+        <div class="case" data-casepack>Riverside Grocers</div>
+        <nav class="nav">
+          <span class="active">Situation</span><span>Platform</span><span>Applications</span><span>Organisation</span><span>Governance</span><span>Challenges</span><span>Review &amp; Lock</span><span>Debrief</span><span>People</span>
+        </nav>
+      </aside>
+      <main>
+        <header class="topbar">
+          <div><h1>Situation</h1><p class="muted">Round 3 of 6</p></div>
+          <div><strong>Low-Cost Leadership · locked in round 2</strong><p class="legend">Dotted underline = supplied by the case, not the platform</p></div>
+        </header>
+        <section class="budget">
+          <div class="metric"><span class="label">Capital remaining</span><span class="value">$44,000 of $220,000</span></div>
+          <div class="metric"><span class="label">Run-rate</span><span class="value">$58,300</span></div>
+          <div class="metric"><span class="label">Run-rate rises every round it is not managed</span><span>R1 $47,000 · R2 $53,000 · R3 $58,300</span></div>
+        </section>
+        <section class="state">
+          <h2>State: ready</h2>
+          <div class="panel">
+            <h2>Financial · Customer · Internal Process · Learning &amp; Growth</h2>
+            <div class="score-grid">
+              <article class="score"><span>Financial</span><strong>61</strong><div class="bar"><div class="fill w61"></div></div></article>
+              <article class="score"><span>Customer</span><strong>48</strong><div class="bar"><div class="fill w48"></div></div></article>
+              <article class="score"><span>Internal Process</span><strong>39</strong><div class="bar"><div class="fill w39"></div></div></article>
+              <article class="score"><span>Learning &amp; Growth</span><strong>27</strong><div class="bar"><div class="fill w27"></div></div></article>
+            </div>
+          </div>
+          <div class="section-grid">
+            <section class="panel">
+              <h2>Technology × Organisation × Management</h2>
+              <div class="cards">
+                <article class="capability"><h3 data-casepack>ORDER FULFILMENT</h3><div class="value">25%</div><div>Tech 0.75 · Org 0.51 · Mgmt 0.65</div><div>Held back by: Organisation</div><div>49 of 140 trained · coverage 4/5 · reliability 94.0% · 4 single points of failure</div><span class="pill ok">Partly done</span><div class="bar"><div class="fill w25"></div></div></article>
+                <article class="capability"><h3 data-casepack>CUSTOMER INSIGHT</h3><div>not built · coverage 0/4 · strategy weight 0.10</div><span class="pill">Not started</span></article>
+                <article class="capability"><h3 data-casepack>POINT OF SALE</h3><div>stable · coverage 5/5 · reliability 97.2%</div><span class="pill ok">Complete</span></article>
+              </div>
+            </section>
+            <section class="panel">
+              <h2>Critical · Warning</h2>
+              <div class="signals">
+                <article class="signal"><div class="line"><strong data-casepack>Order system near capacity</strong><span class="pill danger">Critical</span></div><div>R2 · Open 2 rounds</div></article>
+                <article class="signal"><div class="line"><strong data-casepack>Product data inconsistent</strong><span class="pill warn">Warning</span></div><div>R2 · Open 2 rounds</div></article>
+                <article class="signal"><div class="line"><strong data-casepack>Point-of-sale vendor support ending</strong><span class="pill warn">Warning</span></div><div>R3 · Open 1 round</div></article>
+              </div>
+              <h2>3 items waiting</h2>
+            </section>
+          </div>
+        </section>
+        <section class="state">
+          <h2>State: round 1, before any results</h2>
+          <div class="budget">
+            <div class="metric"><span class="label">Capital remaining</span><span class="value">$400,000 of $400,000</span></div>
+            <div class="metric"><span class="label">Run-rate</span><span class="value">$47,000</span></div>
+            <div class="metric"><span class="label">Run-rate rises every round it is not managed</span><span class="muted">No results yet — your first round runs at the deadline.</span></div>
+          </div>
+          <div class="score-grid">
+            <article class="empty-card"><strong>Financial</strong><span>No results yet — your first round runs at the deadline.</span></article>
+            <article class="empty-card"><strong>Customer</strong><span>No results yet — your first round runs at the deadline.</span></article>
+            <article class="empty-card"><strong>Internal Process</strong><span>No results yet — your first round runs at the deadline.</span></article>
+            <article class="empty-card"><strong>Learning &amp; Growth</strong><span>No results yet — your first round runs at the deadline.</span></article>
+          </div>
+          <div class="cards">
+            <article class="capability"><h3 data-casepack>ORDER FULFILMENT</h3><div>coverage 4/5</div></article>
+            <article class="capability"><h3 data-casepack>CUSTOMER INSIGHT</h3><div>coverage 0/4</div></article>
+            <article class="capability"><h3 data-casepack>POINT OF SALE</h3><div>coverage 5/5</div></article>
+          </div>
+          <div class="signals">
+            <article class="signal"><strong data-casepack>Order system near capacity</strong><div>R1 · Open 0 rounds</div></article>
+            <article class="signal"><strong data-casepack>Product data inconsistent</strong><div>R1 · Open 0 rounds</div></article>
+            <article class="signal"><strong data-casepack>Point-of-sale vendor support ending</strong><div>R1 · Open 0 rounds</div></article>
+          </div>
+        </section>
+        <section class="state">
+          <h2>State: round locked</h2>
+          <div class="locked">This round is locked. Decisions reopen when the round advances.</div>
+          <div class="section-grid disabled">
+            <section class="panel"><h2>Technology × Organisation × Management</h2><article class="capability"><h3 data-casepack>ORDER FULFILMENT</h3><div class="value">25%</div><div>Tech 0.75 · Org 0.51 · Mgmt 0.65</div><div>Held back by: Organisation</div></article></section>
+            <section class="panel"><h2>3 items waiting</h2><article class="signal"><strong data-casepack>Order system near capacity</strong><div>R2 · Open 2 rounds</div></article></section>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
