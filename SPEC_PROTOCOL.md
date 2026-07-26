@@ -56,6 +56,45 @@ Rules:
 - **Extractions expire.** State the extraction date. Builders re-verify against the
   working tree.
 
+### 2.1 Findings carry their proof — the same rule, applied to reviewers
+
+Evidence discipline binds **every claim that reaches a builder**, not only claims inside
+a spec. A finding filed by a reviewer or auditor is an instruction in practice, and it
+is held to the standard its author would demand of a spec.
+
+| Claim about | Requirement |
+|---|---|
+| **Repository state** — code, schema, config | Cite `file:line`, or the grep and its output |
+| **External state** — package registries, security advisories, upstream versions, live services, another platform's schema | **Ship the command and paste its output.** Run it *before* filing, not after |
+
+**Never file a remediation instruction on an unverified external claim.** "A fix is
+available", "version X is clean", "the endpoint returns Y" — each is a claim about a
+system that can be queried. Query it.
+
+**Why this is stricter for findings than for specs.** A spec's `[A]` gets caught by the
+Pre-Flight Register: the builder runs the check and stops on FAIL. A finding has no such
+gate. It arrives as a correction from a reviewer, and a builder following instructions
+has no standing to push back — so an unverified finding propagates straight into the
+build with nothing between it and the code.
+
+**Proven, 2026-07-26, module 0.2 (`findings/0.2-2026-07-26-author-review.md`).** A
+reviewer asserted twice that a dependency fix was available — first "`npm audit fix` is
+non-breaking" (it did nothing), then "7.11.0 is below the advisory floor" (true of that
+one advisory, false of the version's exposure: 14 advisories against the installed
+version's 1). Both were npm's own phrasing and a range comparison, repeated without
+query. The builder ran the registry check, stopped, and was right. **The weakest link in
+that chain was the reviewer.**
+
+### 2.2 Reviewer self-check before filing a findings file
+
+1. Every finding cites `file:line`, a grep with output, or a command with output
+2. Every claim about external state was **queried during this session**, not recalled
+3. Every remediation instruction was checked to actually achieve what it claims
+4. Findings that assert a version, range, or availability show the query
+5. The reviewer's own authorship of the spec is declared if applicable
+   (`GOVERNANCE.md §6`)
+6. Anything unverifiable in-session is filed as a **question**, not a finding
+
 ---
 
 ## 3. Decision discipline
@@ -183,5 +222,10 @@ Every spec in this project additionally states:
 
 ## Changelog
 
+- **1.1** (2026-07-26) — added §2.1 *Findings carry their proof* and §2.2 *Reviewer
+  self-check*. Extends evidence discipline from specs to findings: any claim about
+  external state ships the command and its output, run before filing. Prompted by a
+  reviewer error in module 0.2 that reached a builder unchecked — see
+  `findings/0.2-2026-07-26-author-review.md`, Amendment 2.
 - **1.0** (2026-07-26) — initial. Adapted from
   `nexus/handoffs_v2/nexus-spec-authoring-protocol.md` v2.0.

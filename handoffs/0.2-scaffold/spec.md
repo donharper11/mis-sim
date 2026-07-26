@@ -1,6 +1,6 @@
 # 0.2 — Repository Scaffold, Backend Skeleton, Design Tokens · Build Spec
 
-**Authored under** `SPEC_PROTOCOL.md` v1.0
+**Authored under** `SPEC_PROTOCOL.md` v1.1
 **Author:** Claude (design session) · **Date:** 2026-07-26
 **Phase:** 0 · **Depends on:** none · **Blocks:** 0.4a mockups, 0.6 component library
 **Reference mockup:** none — no product screens in this module. See §4 O1.
