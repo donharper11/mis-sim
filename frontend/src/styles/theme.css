@@ -1,128 +1,130 @@
 :root {
   /* Primitives: value-named tokens. Components and mockups do not reference these. */
-  --white: #FFFFFF;
-  --slate-25: #FAFAFA;
-  --slate-50: #F8FAFC;
-  --slate-100: #F1F5F9;
-  --slate-200: #E2E8F0;
-  --slate-300: #CBD5E1;
-  --slate-400: #94A3B8;
-  --slate-500: #64748B;
-  --slate-600: #475569;
-  --slate-700: #334155;
-  --slate-800: #1E293B;
-  --slate-900: #0F172A;
-  --navy-900: #0F1724;
-  --blue-50: #EFF6FF;
-  --blue-500: #3B82F6;
-  --blue-700: #1E40AF;
-  --blue-800: #1E3A8A;
-  --green-50: #DCFCE7;
-  --green-500: #22C55E;
-  --green-800: #166534;
-  --amber-50: #FEF3C7;
-  --amber-500: #F59E0B;
-  --amber-800: #92400E;
-  --red-50: #FEF2F2;
-  --red-500: #EF4444;
-  --red-800: #991B1B;
-  --purple-500: #8B5CF6;
-  --teal-500: #06B6D4;
-  --font-stack-body: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-  --font-stack-mono: 'IBM Plex Mono', 'Source Code Pro', monospace;
-  --size-4: 4px;
-  --size-8: 8px;
-  --size-12: 12px;
-  --size-16: 16px;
-  --size-20: 20px;
-  --size-24: 24px;
-  --size-32: 32px;
-  --size-40: 40px;
+  --p-white: #FFFFFF;
+  --p-slate-25: #FAFAFA;
+  --p-slate-50: #F8FAFC;
+  --p-slate-100: #F1F5F9;
+  --p-slate-200: #E2E8F0;
+  --p-slate-300: #CBD5E1;
+  --p-slate-400: #94A3B8;
+  --p-slate-500: #64748B;
+  --p-slate-600: #475569;
+  --p-slate-700: #334155;
+  --p-slate-800: #1E293B;
+  --p-slate-900: #0F172A;
+  --p-navy-900: #0F1724;
+  --p-blue-50: #EFF6FF;
+  --p-blue-500: #3B82F6;
+  --p-blue-700: #1E40AF;
+  --p-blue-800: #1E3A8A;
+  --p-green-50: #DCFCE7;
+  --p-green-500: #22C55E;
+  --p-green-800: #166534;
+  --p-amber-50: #FEF3C7;
+  --p-amber-500: #F59E0B;
+  --p-amber-800: #92400E;
+  --p-red-50: #FEF2F2;
+  --p-red-500: #EF4444;
+  --p-red-800: #991B1B;
+  --p-purple-500: #8B5CF6;
+  --p-teal-500: #06B6D4;
+  --p-font-body: 'IBM Plex Sans', 'Arial', system-ui, -apple-system, sans-serif;
+  --p-font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --p-size-4: 4px;
+  --p-size-8: 8px;
+  --p-size-12: 12px;
+  --p-size-16: 16px;
+  --p-size-20: 20px;
+  --p-size-24: 24px;
+  --p-size-32: 32px;
+  --p-size-40: 40px;
 
   /* Semantic roles: the only tokens components and mockups may reference. */
-  --surface-page: var(--slate-100);
-  --surface-card: var(--white);
-  --surface-raised: var(--white);
-  --surface-sunken: var(--slate-50);
-  --surface-sidebar: var(--navy-900);
-  --surface-sidebar-active: var(--slate-800);
-  --surface-topbar: var(--white);
-  --surface-table-header: var(--slate-50);
-  --surface-table-stripe: var(--slate-25);
-  --surface-row-highlight: var(--blue-50);
+  --surface-page: var(--p-slate-100);
+  --surface-card: var(--p-white);
+  --surface-raised: var(--p-white);
+  --surface-sunken: var(--p-slate-50);
+  --surface-sidebar: var(--p-navy-900);
+  --surface-sidebar-active: var(--p-slate-800);
+  --surface-topbar: var(--p-white);
+  --surface-table-header: var(--p-slate-50);
+  --surface-table-stripe: var(--p-slate-25);
+  --surface-row-highlight: var(--p-blue-50);
+  --overlay-scrim: var(--p-navy-900);
 
-  --text-primary: var(--slate-900);
-  --text-secondary: var(--slate-700);
-  --text-muted: var(--slate-500);
-  --text-hint: var(--slate-400);
-  --text-inverse: var(--slate-200);
-  --text-link: var(--blue-700);
-  --text-on-sidebar: var(--slate-200);
-  --text-on-sidebar-muted: var(--slate-400);
-  --text-on-sidebar-section: var(--slate-600);
+  --text-primary: var(--p-slate-900);
+  --text-secondary: var(--p-slate-700);
+  --text-muted: var(--p-slate-500);
+  --text-hint: var(--p-slate-400);
+  --text-inverse: var(--p-slate-200);
+  --text-link: var(--p-blue-700);
+  --text-on-sidebar: var(--p-slate-200);
+  --text-on-sidebar-muted: var(--p-slate-400);
+  --text-on-sidebar-section: var(--p-slate-600);
 
-  --border-default: var(--slate-200);
-  --border-strong: var(--slate-300);
-  --border-focus: var(--blue-700);
+  --border-default: var(--p-slate-200);
+  --border-strong: var(--p-slate-300);
+  --border-focus: var(--p-blue-700);
+  --border-annotation: var(--p-slate-500);
 
-  --status-ok-bg: var(--green-50);
-  --status-ok-text: var(--green-800);
-  --status-ok-marker: var(--green-500);
-  --status-warn-bg: var(--amber-50);
-  --status-warn-text: var(--amber-800);
-  --status-warn-marker: var(--amber-500);
-  --status-danger-bg: var(--red-50);
-  --status-danger-text: var(--red-800);
-  --status-danger-marker: var(--red-500);
-  --status-info-bg: var(--blue-50);
-  --status-info-text: var(--blue-700);
-  --status-info-marker: var(--blue-500);
-  --status-neutral-bg: var(--slate-100);
-  --status-neutral-text: var(--slate-500);
-  --status-neutral-marker: var(--slate-400);
+  --status-ok-bg: var(--p-green-50);
+  --status-ok-text: var(--p-green-800);
+  --status-ok-marker: var(--p-green-500);
+  --status-warn-bg: var(--p-amber-50);
+  --status-warn-text: var(--p-amber-800);
+  --status-warn-marker: var(--p-amber-500);
+  --status-danger-bg: var(--p-red-50);
+  --status-danger-text: var(--p-red-800);
+  --status-danger-marker: var(--p-red-500);
+  --status-info-bg: var(--p-blue-50);
+  --status-info-text: var(--p-blue-700);
+  --status-info-marker: var(--p-blue-500);
+  --status-neutral-bg: var(--p-slate-100);
+  --status-neutral-text: var(--p-slate-500);
+  --status-neutral-marker: var(--p-slate-500);
 
-  --accent-1: var(--blue-500);
-  --accent-2: var(--green-500);
-  --accent-3: var(--amber-500);
-  --accent-4: var(--purple-500);
-  --accent-5: var(--teal-500);
-  --accent-6: var(--red-500);
-  --accent-7: var(--blue-700);
+  --accent-1: var(--p-blue-500);
+  --accent-2: var(--p-green-500);
+  --accent-3: var(--p-amber-500);
+  --accent-4: var(--p-purple-500);
+  --accent-5: var(--p-teal-500);
+  --accent-6: var(--p-red-500);
+  --accent-7: var(--p-blue-700);
 
-  --chart-1: var(--blue-500);
-  --chart-2: var(--red-500);
-  --chart-3: var(--green-500);
-  --chart-4: var(--amber-500);
-  --chart-5: var(--purple-500);
-  --chart-6: var(--teal-500);
-  --chart-highlight: var(--blue-700);
+  --chart-1: var(--p-blue-500);
+  --chart-2: var(--p-red-500);
+  --chart-3: var(--p-green-500);
+  --chart-4: var(--p-amber-500);
+  --chart-5: var(--p-purple-500);
+  --chart-6: var(--p-teal-500);
+  --chart-highlight: var(--p-blue-700);
 
-  --action-primary: var(--blue-700);
-  --action-primary-hover: var(--blue-800);
-  --action-primary-text: var(--white);
-  --action-secondary: var(--white);
-  --action-secondary-hover: var(--slate-50);
-  --action-disabled: var(--slate-200);
-  --action-disabled-text: var(--slate-400);
+  --action-primary: var(--p-blue-700);
+  --action-primary-hover: var(--p-blue-800);
+  --action-primary-text: var(--p-white);
+  --action-secondary: var(--p-white);
+  --action-secondary-hover: var(--p-slate-50);
+  --action-disabled: var(--p-slate-200);
+  --action-disabled-text: var(--p-slate-400);
 
-  --input-bg: var(--white);
-  --input-border: var(--slate-300);
-  --input-border-focus: var(--blue-700);
-  --input-text: var(--slate-900);
-  --input-editable-bg: var(--green-50);
-  --input-disabled-bg: var(--slate-100);
+  --input-bg: var(--p-white);
+  --input-border: var(--p-slate-300);
+  --input-border-focus: var(--p-blue-700);
+  --input-text: var(--p-slate-900);
+  --input-editable-bg: var(--p-green-50);
+  --input-disabled-bg: var(--p-slate-100);
 
-  --font-body: var(--font-stack-body);
-  --font-mono: var(--font-stack-mono);
+  --font-body: var(--p-font-body);
+  --font-mono: var(--p-font-mono);
 
-  --space-xs: var(--size-4);
-  --space-sm: var(--size-8);
-  --space-md: var(--size-12);
-  --space-lg: var(--size-16);
-  --space-xl: var(--size-20);
-  --space-2xl: var(--size-24);
-  --space-3xl: var(--size-32);
-  --space-4xl: var(--size-40);
+  --space-xs: var(--p-size-4);
+  --space-sm: var(--p-size-8);
+  --space-md: var(--p-size-12);
+  --space-lg: var(--p-size-16);
+  --space-xl: var(--p-size-20);
+  --space-2xl: var(--p-size-24);
+  --space-3xl: var(--p-size-32);
+  --space-4xl: var(--p-size-40);
 
   --radius: 0;
 }
@@ -182,6 +184,18 @@ select {
 
 .component-table {
   margin-bottom: var(--space-2xl);
+}
+
+.token-section {
+  margin-top: var(--space-2xl);
+}
+
+.token-section h2 {
+  margin: 0 0 var(--space-md);
+  color: var(--text-secondary);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .swatch-grid {

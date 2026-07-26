@@ -7,23 +7,29 @@ import "./styles/theme.css";
 import App from "./App.jsx";
 
 const rootStyles = getComputedStyle(document.documentElement);
-const token = (name) => rootStyles.getPropertyValue(name).trim();
+const token = (name) => {
+  const value = rootStyles.getPropertyValue(name).trim();
+  if (!value) {
+    throw new Error(`Missing design token: ${name}`);
+  }
+  return value;
+};
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: token("--accent-navy"),
-          colorPrimaryHover: token("--color-primary-hover"),
-          colorInfo: token("--accent-blue"),
-          colorSuccess: token("--accent-green"),
-          colorWarning: token("--accent-amber"),
-          colorError: token("--accent-red"),
+          colorPrimary: token("--action-primary"),
+          colorPrimaryHover: token("--action-primary-hover"),
+          colorInfo: token("--status-info-marker"),
+          colorSuccess: token("--status-ok-marker"),
+          colorWarning: token("--status-warn-marker"),
+          colorError: token("--status-danger-marker"),
           colorText: token("--text-primary"),
           colorTextSecondary: token("--text-secondary"),
-          colorBgLayout: token("--bg-content"),
-          colorBgContainer: token("--bg-card"),
+          colorBgLayout: token("--surface-page"),
+          colorBgContainer: token("--surface-card"),
           fontFamily: token("--font-body"),
           borderRadius: 0
         },

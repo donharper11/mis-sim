@@ -5,28 +5,30 @@
 
 | Item | Status | Evidence |
 |---|---|---|
-| Pre-flight rows 1–7 reported | PASS | Reported before edits. Row 2 verified `token declarations: 89` and `resolved distinct literal values: 38`. |
-| Phase 1 — token map + deprecation table + CONTRACTS entry | PASS | `frontend/src/styles/theme.css` rewritten as 38 primitives + 75 required semantic roles; `CONTRACTS.md` has `Design tokens — two-tier`; deprecation table below accounts for 89 original tokens. |
-| Phase 2 — Situation | N-A | Hard stop after Phase 1 per module instruction; not started. |
-| Phase 3 — Platform | N-A | Hard stop after Phase 1 per module instruction; not started. |
-| Phase 4 — Applications | N-A | Hard stop after Phase 1 per module instruction; not started. |
-| Phase 5 — consistency pass | N-A | Hard stop after Phase 1 per module instruction; not started. |
-| I1 no primitives or raw values in mockups | N-A | No mockups built in Phase 1. |
-| I2 roles resolve to primitives, one level | PASS | `primitive declarations: 38`; `required semantic roles: 75`; `all required roles declared exactly once: true`. `--radius: 0` is direct per spec §5.1. |
-| I3 no engine vocabulary | N-A | No mockups built in Phase 1. |
-| I4 Riverside is content, not structure | N-A | No mockups built in Phase 1. |
-| I5 no external requests | N-A | No mockups built in Phase 1. |
-| I6 every visible string is in §5.6 | N-A | No mockups built in Phase 1. |
-| I7 no tokens declared outside `theme.css` | PASS | `grep -rn -- "--[a-z-]*:" frontend/src mockups/ \| grep -v "styles/theme.css"` produced no output. |
-| O1 badge states — decision recorded | PASS | Default recorded for Phase 2+: all four states (`configured` / `partial` / `error` / `empty`), with illustrative states annotated. |
-| O2 state presentation — decision recorded | PASS | Default recorded for Phase 2+: stacked labelled sections in one file per screen. |
-| O3 percentage vs decimal — decision recorded | PASS | Default recorded for Phase 2+: realised value as percentage; decomposition factors as decimals. |
-| Screenshots ×9 (3 screens × 3 viewports) in `screenshots/0.4a/` | N-A | No mockups built in Phase 1. |
-| Every displayed metric traced to `design/02-traceability-matrix.md` | N-A | No metrics displayed in Phase 1. |
-| No files touched outside `theme.css`, `mockups/`, `CONTRACTS.md`, `dod.md` | PASS | `git diff --name-only` limited to `CONTRACTS.md`, `frontend/src/styles/theme.css`, and this DoD. |
-| Auth canary | N-A | Static HTML, no auth. |
-| Instance-isolation canary | N-A | No state. |
-| Casepack validator | N-A | No casepacks yet. |
+| Pre-flight rows 1–8, especially row 3 | PASS | v2 gate passed before edits: `HEAD c3a2709`; `handoffs/0.4a-mockup-pilot/spec.md` line 3 reads `**Version 2**`. Row 3 condition rechecked by consumer scan: only `frontend/src/main.jsx`, `frontend/src/pages/DevTokens.jsx`, and `frontend/src/styles/theme.css` reference token names. |
+| Phase 1 — map, consumers, guard, deprecation table | PASS | `theme.css` rewritten as 38 `--p-` primitives + 77 v2 roles; `main.jsx` remapped to 11 live semantic roles and throws on empty token; `DevTokens.jsx` lists roles by category and primitives separately; 89-row deprecation table below has no missing, extra, or duplicate old tokens. |
+| `npm run build` clean after the consumer rewrite | PASS | `vite build` completed; output assets `index-Gy2TMCAE.css` and `index-DzAF3_YJ.js`; only the existing chunk-size warning appeared. |
+| antd still themed — screenshot | PASS | Browser at `http://127.0.0.1:5200/_dev/tokens`, viewport 1280: Button background `rgb(30, 64, 175)`, Select border `rgb(217, 217, 217)`, Table header bg `rgb(250, 250, 250)`, header text `rgb(15, 23, 42)`, zero console errors, zero failed requests. Screenshot: `screenshots/0.4a/devtokens-rework-1280.png`. |
+| Phases 2–5 | N-A | Hard stop after Phase 1 per v2 §8; mockups not started. |
+| I1–I8 | PASS | I2: `declared tokens: 115`, `required roles: 77`, `I2 one-hop role resolution: PASS`. I3: `grep -rn -- "^[[:space:]]*--[a-z-]*:" frontend/src mockups \| grep -v styles/theme.css` produced no output. I8: `main.jsx token refs: 11`, `missing roles: 0`, `primitive refs: 0`, `PASS`. I1/I4/I5/I6/I7 are not exercisable until mockups exist. |
+| Strings not in §5.6, listed and justified | N-A | No mockups built in Phase 1. |
+| Screenshots ×9 in `screenshots/0.4a/` | N-A | No mockups built in Phase 1; one dev-token proof screenshot produced for the Phase 1 consumer check. |
+| `docs/mockup-review.md`, including font install | N-A | Phase 1 rework only; no mockups or review doc started. |
+| Files touched: only those named in §1 | PASS | Source/doc changes limited to `frontend/src/styles/theme.css`, `frontend/src/main.jsx`, `frontend/src/pages/DevTokens.jsx`, `CONTRACTS.md`, and this DoD; one verification screenshot added under `screenshots/0.4a/`. |
+| Auth / instance / casepack canaries | N-A | Static, no state, no auth. |
+
+---
+
+## Rework Phase 1 Evidence
+
+| Finding / check | Result | Evidence |
+|---|---|---|
+| `0.4a-001` token consumers | PASS | `main.jsx` uses the exact v2 §5.2 remap and throws `Missing design token: <name>` on empty. Browser verified Button, Select, and Table remain themed on `/_dev/tokens`. |
+| `0.4a-002` neutral marker | PASS | Chose value preservation: `--status-neutral-marker: var(--p-slate-500)`, preserving old `--color-neutral` resolved value `#64748B`. |
+| `0.4a-005` contract format | PASS | `CONTRACTS.md` header updated and design-token heading marked `PROSPECTIVE`; primitive examples use the v2 `--p-` prefix. |
+| Frontend token references | PASS | `frontend token references: 115`; `missing declarations: 0`. |
+| Deprecation accounting | PASS | `origin/main tokens: 89`; `deprecation rows: 89`; `missing: 0`; `extra: 0`; `duplicates: 0`. |
+| Browser swatches | PASS | `swatchCount: 115`; `blankSwatches: []`; sections include semantic role groups and primitive groups. |
 
 ---
 
@@ -69,16 +71,16 @@
 | `--status-active-text` | `--status-ok-text` | merged |
 | `--status-inactive-bg` | `--status-neutral-bg` | merged |
 | `--status-inactive-text` | `--status-neutral-text` | merged |
-| `--color-surface-50` | *(primitive)* `--slate-50` | tier demotion |
-| `--color-surface-100` | *(primitive)* `--slate-100` | tier demotion |
-| `--color-surface-200` | *(primitive)* `--slate-200` | tier demotion |
-| `--color-surface-300` | *(primitive)* `--slate-300` | tier demotion |
-| `--color-surface-400` | *(primitive)* `--slate-400` | tier demotion |
-| `--color-surface-500` | *(primitive)* `--slate-500` | tier demotion |
-| `--color-surface-600` | *(primitive)* `--slate-600` | tier demotion |
-| `--color-surface-700` | *(primitive)* `--slate-700` | tier demotion |
-| `--color-surface-800` | *(primitive)* `--slate-800` | tier demotion |
-| `--color-surface-900` | *(primitive)* `--navy-900` | tier demotion |
+| `--color-surface-50` | *(primitive)* `--p-slate-50` | tier demotion |
+| `--color-surface-100` | *(primitive)* `--p-slate-100` | tier demotion |
+| `--color-surface-200` | *(primitive)* `--p-slate-200` | tier demotion |
+| `--color-surface-300` | *(primitive)* `--p-slate-300` | tier demotion |
+| `--color-surface-400` | *(primitive)* `--p-slate-400` | tier demotion |
+| `--color-surface-500` | *(primitive)* `--p-slate-500` | tier demotion |
+| `--color-surface-600` | *(primitive)* `--p-slate-600` | tier demotion |
+| `--color-surface-700` | *(primitive)* `--p-slate-700` | tier demotion |
+| `--color-surface-800` | *(primitive)* `--p-slate-800` | tier demotion |
+| `--color-surface-900` | *(primitive)* `--p-navy-900` | tier demotion |
 | `--topbar-bg` | `--surface-topbar` | rename |
 | `--topbar-text` | `--text-primary` | rename |
 | `--topbar-text-secondary` | `--text-muted` | rename |
@@ -94,7 +96,7 @@
 | `--color-negative` | `--status-danger-marker` | status rename |
 | `--color-warning` | `--status-warn-marker` | status rename |
 | `--color-info` | `--status-info-marker` | status rename |
-| `--color-neutral` | `--status-neutral-marker` | status rename |
+| `--color-neutral` | `--status-neutral-marker` | status rename, value preserved at `#64748B` |
 | `--color-primary` | `--action-primary` | rename |
 | `--color-primary-hover` | `--action-primary-hover` | rename |
 | `--color-primary-light` | `--surface-row-highlight` | rename |

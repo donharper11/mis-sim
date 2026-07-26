@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-07-26 (seeded at Phase 0, before implementation).
+**Last updated:** 2026-07-26 (0.4a design-token contract added).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -130,10 +130,11 @@ by the falsification check in `SPEC_PROTOCOL.md §4`.
 
 ---
 
-## Design tokens — two-tier
+## Design tokens — two-tier — PROSPECTIVE
 
 Canonical: components reference SEMANTIC ROLES only (`--surface-page`, `--text-muted`,
-`--status-danger-bg`). Never primitives (`--slate-100`, `--navy-900`), never raw values.
+`--status-danger-bg`). Never primitives (`--p-slate-100`, `--p-navy-900`), never raw
+values.
 
 Roles resolve to primitives in exactly one step. A role defined as another role is a
 defect — it reintroduces the aliasing this replaced.
