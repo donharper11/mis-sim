@@ -1,6 +1,6 @@
 # 0.3 — Token Map + Mockup Pilot · Build Spec
 
-**Version 3.1** · **Authored under** `SPEC_PROTOCOL.md` v1.2
+**Version 3.2** · **Authored under** `SPEC_PROTOCOL.md` v1.2
 **Author:** Claude (design session) · **Date:** 2026-07-27
 **Phase:** 0 · **Depends on:** 0.2 (merged) · **Blocks:** 0.4, 0.5
 
@@ -247,6 +247,11 @@ computable — you declared what it is for and who it is for, so alignment can b
 
 ### 5.4 Component detail — tabs
 
+> **STRUCTURAL DESCRIPTION, NOT COPY.** The lines below say what each tab *contains*.
+> They are not strings to render. Rendering them verbatim was finding `0.3-021` — three
+> and a half of five panels shipped their own field list as visible text. The strings and
+> the values belong in §5.7 and §5.6.
+
 Clicking a table row. Tabs per BECSR's management page:
 
 ```
@@ -328,7 +333,14 @@ SHELL
               correct — rounds 1 and 3 of the budget curve — and read as a
               contradiction only when the round is unstated
   strategy    "Low-Cost Leadership · locked in round 2"
-  strip       "Capital remaining" · "Run-rate"
+              round-1 empty state: "Strategy not yet declared"
+              (v3.2 - platform-empty showed "Round 1 of 6" beside "locked in
+               round 2", an event that had not happened yet.)
+  strip       "Capital this round" · "Run-rate"
+              value reads "$44,000 remaining of $220,000"
+              (v3.2 - finding 0.3-018. The denominator is THIS ROUND'S allocation,
+               not a programme total. "Capital remaining $X of $Y" with Y changing
+               per round read as two programme totals for one company.)
   trend       "Run-rate rises every round it is not managed"
   legend      "Dotted underline = supplied by the case, not the platform"
   locked      "This round is locked. Decisions reopen when the round advances."
@@ -424,14 +436,16 @@ Eight files, one state each. **No file contains more than one state.**
 | I1 | Roles only, no primitives, no raw colour | `grep -nE "var\(--p-" mockups/*.html` and `grep -nE ":[[:space:]]*#[0-9a-fA-F]{3,8}\|rgb\(\|hsl\(" mockups/*.html` | zero both |
 | I2 | Roles resolve to primitives in one step | script over `theme.css` | all pass |
 | I3 | No token declared outside `theme.css` | `grep -rn -- "^[[:space:]]*--[a-z-]*:" mockups/` | zero |
-| I4 | No engine vocabulary visible | `git ls-files "mockups/*.html" \| xargs grep -niE "capability_key\|instance_id\|articulation\|SPOF\|RTO\|RPO\|EOL\b\|MOT\|realised"` | zero |
+| I4 | No engine vocabulary visible | `git ls-files "mockups/*.html" \| xargs grep -niE "capability_key\|instance_id\|articulation\|SPOF\|RTO\|RPO\|EOL\b\|MOT\|realised\|level of detail\|grain"` | zero |
 | I5 | Every string in §5.7 or justified in `dod.md` | text-node diff | zero unaccounted |
 | I6 | One external reference per file, `theme.css` | `grep -nE "<link\|@import\|src=\|https?://" mockups/*.html` | one `<link>` each |
 | I7 | Riverside marked as content | `grep -niE "riverside\|grocer" mockups/*.html \| grep -v data-casepack` | zero |
 | I8 | **One state per file** | `grep -cE "State:" mockups/*.html` | zero in every file |
 | I9 | **No scores on decision pages** | `grep -nE "[0-9]{1,3}%[^ ]*realis\|Tech [0-9]\|Org [0-9]\|Mgmt [0-9]\|Held back by" mockups/*.html` | zero |
 | I10 | **No bulk control on Rollout** | manual: every control in `rollout-detail.html` names one deployment | confirmed |
-| I11 | Wizard steps 3 and 4 not skippable | manual: no skip/later affordance | confirmed |
+| I11 | **Wizard enforces steps 3 and 4** *(rewritten v3.2 — the old wording, "no skip affordance", passed while the requirement failed: the wizard showed every step at once with a live commit button)* | one step visible at a time · current choice shows a selected state · *Add to plan* **disabled** until purpose and unit are both chosen, and says why | confirmed by attempting to commit with either unset |
+| I15 | **Selected state exists wherever a choice is offered** *(`CONTRACTS.md`; finding B9)* | every radio, tab, panel option and wizard step: chosen visibly distinct from unchosen | confirmed |
+| I16 | **Rows that open a detail view look like it** *(`CONTRACTS.md`; finding B3)* | chevron + `--text-link` on first cell + hover highlight, on Components and Rollout | confirmed |
 | I12 | **No third-party font request** *(restored — was v2.1 I9, dropped by the v3 renumber; finding `0.3-020`)* | `git ls-files \| grep -E "frontend/\|mockups/" \| xargs grep -niE "googleapis\|gstatic\|fonts\.google"` | zero |
 | I13 | **Both faces and the licence still shipped** *(restored — was v2.1 I10)* | `git ls-files "frontend/src/styles/fonts/*"` | 5 `.woff2` + `LICENSE.txt`. **OFL 1.1 requires the licence to accompany the fonts** |
 | I14 | **Badge scale conforms to `CONTRACTS.md`** *(finding `0.3-013`)* | `grep -oE "status-(ok\|info\|warn\|neutral\|danger)" mockups/*.html \| sort -u` then read each badge's label | `Complete→ok` `Partly done→info` `Needs attention→warn` `Not started→neutral`. **`Partly done` sharing `ok` with `Complete` is a FAIL.** Every status-bearing item carries a badge |
@@ -484,7 +498,7 @@ in §5.8.
 | Step 3 Components incl. wizard | | |
 | Step 4 Rollout | | |
 | Step 5 consistency; v2 files deleted | | |
-| I1–I14 | | |
+| I1–I16 | | |
 | `situation.html` and `applications.html` deleted | | |
 | Badge scale matches `CONTRACTS.md` — `0.3-013` | | |
 | Font guards restored and passing — `0.3-020` | | |
