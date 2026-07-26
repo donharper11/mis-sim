@@ -142,6 +142,22 @@ which do is where calibration effort belongs.
 
 ---
 
+## 5.5 Seed — archetypes are real decision sheets *(GOVERNANCE §4.9)*
+
+```
+seed        backend/calibrate/archetypes/*.yaml — real decision sheets per round,
+            loaded through the SAME path a student's decisions take
+command     calibrate packs/riverside_grocery
+demonstrate the §5.2 trajectory table, computed
+            G1-G4 gate results, computed
+            sensitivity sweep, computed
+```
+
+Archetypes as YAML rather than Python is what makes this a seed rather than a script — it
+exercises the real decision path.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -201,6 +217,7 @@ the harness doing its job.
 | Sensitivity report for every sub-factor | | |
 | **Gate outcome reported honestly, pass or fail** | | |
 | Any remaining `TODO: calibrate` listed | | |
+| **Seed** — archetypes are decision sheets on the real path, not scripted calls | | |
 | Browser / auth canaries | | **N-A** — headless |
 
 ---

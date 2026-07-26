@@ -142,6 +142,22 @@ $ validate_casepack packs/riverside_grocery
 
 ---
 
+## 5.5 Seed — real fixture packs *(GOVERNANCE §4.9)*
+
+```
+seed        backend/tests/fixtures/packs/
+              minimal_valid/     a small COHERENT pack that passes clean
+              broken_<CODE>/     one per error code, minimally broken
+command     validate_casepack backend/tests/fixtures/packs/<name>
+demonstrate exit 0 on minimal_valid · exit 1 with the named error on each broken pack
+            exit 0 on the real riverside_grocery from 1.1
+```
+
+`minimal_valid` is real content, not empty scaffolding — a two-capability company that
+would actually run.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -192,4 +208,6 @@ $ validate_casepack packs/riverside_grocery
 | I1–I5 | | |
 | O1, O2 recorded | | |
 | Riverside skeleton validates (errors only where 1.3 will fill stubs) | | |
+| **Seed** — fixture packs, one per error code, all exercised | | |
+| Real Riverside pack validates clean | | |
 | Browser / auth / instance canaries | | **N-A** — headless CLI |

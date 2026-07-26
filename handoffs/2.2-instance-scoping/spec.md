@@ -119,6 +119,20 @@ Lives at `backend/tests/test_instance_isolation.py` and is referenced by
 
 ---
 
+## 5.5 Seed — cross-section isolation with real data *(GOVERNANCE §4.9)*
+
+Uses 2.1's `--cohort` seed plus 1.6's `--full`, so **both sections hold real game state**.
+
+```
+demonstrate row counts per instance across every runtime table
+            section A's ScopedRepo returning zero of section B's rows
+            deleting A's instance raising IntegrityError, not cascading
+```
+
+An isolation canary run against empty tables proves nothing.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -166,4 +180,5 @@ Lives at `backend/tests/test_instance_isolation.py` and is referenced by
 | 1.6's six-round run still passes after the refactor | | |
 | Canary path referenced in `QUALITY_PROTOCOL.md §5` | | |
 | **Instance-isolation canary** | | **PASS required — this packet is where it becomes real** |
+| **Seed** — both sections hold real round state before the canary runs | | |
 | Auth / browser canaries | | **N-A** |

@@ -139,6 +139,22 @@ Everything the debrief and 1.7 need, with no recomputation:
 
 ---
 
+## 5.5 Seed — a full six-round game *(GOVERNANCE §4.9)*
+
+```
+seed        a course, section, instance, team, and six rounds of real decisions
+command     python -m app.seed.demo --full
+demonstrate six immutable RoundResults in the database
+            opex run-rate ratcheting 47,000 → 53,000 → 58,300 → …
+            missed_signals populated with first_shown_round
+            \d on every runtime table showing instance_id NOT NULL
+```
+
+**This is the command every later packet uses.** One step, clean database to complete
+demo state (`GOVERNANCE §4.9` rule 4).
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -197,4 +213,6 @@ Row 4 matters: this packet must not wait for 2.1, but it must not omit the colum
 | Migration up/down/up clean | | |
 | `CONTRACTS.md` updated if any field shape changed | | |
 | Instance-isolation canary | | **partial** — column enforced; full canary at 2.2 |
+| **Seed** — `--full` produces six rounds from a clean DB in one command | | |
+| Every later packet can reproduce the demo state with it | | |
 | Auth / browser canaries | | **N-A** — headless |

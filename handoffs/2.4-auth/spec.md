@@ -141,6 +141,20 @@ leak.
 
 ---
 
+## 5.5 Seed — real users with documented credentials *(GOVERNANCE §4.9)*
+
+```
+command     python -m app.seed.demo --cohort --users
+seeds       16 students · 2 instructors · 1 admin, credentials in docs/demo-accounts.md
+            DEV ONLY — the seed refuses to run when DATABASE_URL is not local
+demonstrate browser login as a seeded student · /me returning their instance
+            a student of section A receiving 403 on section B's data
+```
+
+The auth canary runs against seeded users, not a hand-made one.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -151,7 +165,9 @@ leak.
 | I4 | Cross-instance access is 403 | test: student of instance A requests a route resolving instance B | 403, not 200-with-empty |
 | I5 | Same message for unknown user and wrong password | test both | byte-identical bodies |
 | I6 | `SECRET_KEY` is not the 0.2 default in any committed env | `grep -rn "dev-secret-key-change-in-production" .env.example backend/` | present **only** in `.env.example` |
-| I7 | Auth canary passes | login via browser + one authenticated API call on the same host pair | passes |
+| I7 | **Seed** — `--users` seeds real accounts; auth canary uses them | | |
+| Seed refuses to run against a non-local `DATABASE_URL` | | |
+| Auth canary passes | login via browser + one authenticated API call on the same host pair | passes |
 
 ---
 

@@ -132,6 +132,19 @@ fit multipliers before normalisation.
 
 ---
 
+## 5.4a Seed — the harvest IS the seed *(GOVERNANCE §4.9)*
+
+```
+command     python -m app.casepack.harvest --from mis_lite --to riverside_grocery
+demonstrate provenance table: rows in, rows out, mode, per source table
+            the ~20 pinned figures read back and matched against 0.4 §5.4
+            every TODO: calibrate listed in the report
+```
+
+**No packet downstream may run against a pack containing unreported `TODO`s.**
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -193,5 +206,7 @@ looks for it in all nine.
 | O1, O2, O3 recorded | | |
 | `PROVENANCE.md` complete | | |
 | `docs/curriculum-coverage.md` — the 26 concepts | | |
+| Every `TODO: calibrate` listed in the report | | |
+| **Seed** — harvest command reproducible from a clean pack directory | | |
 | Every `TODO: calibrate` listed in the report | | |
 | Browser / auth / instance canaries | | **N-A** — headless |

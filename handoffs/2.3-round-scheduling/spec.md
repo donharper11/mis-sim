@@ -131,6 +131,19 @@ locked banner. This packet exposes them; it renders nothing.
 
 ---
 
+## 5.5 Seed — schedules with real deadlines *(GOVERNANCE §4.9)*
+
+```
+command     python -m app.seed.demo --cohort --schedule
+demonstrate tick(fixed_now) locking round 3 at its deadline
+            auto-advance firing after grace on the instance configured for it
+            and NOT firing on the one that is not
+```
+
+`now` is passed in, so the demonstration is reproducible rather than clock-dependent.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -177,4 +190,5 @@ locked banner. This packet exposes them; it renders nothing.
 | I1–I7 | | |
 | All seven §5.4 null/negative cases | | |
 | Instance-isolation canary still passes | | |
+| **Seed** — schedules seeded; lock and advance demonstrated at a fixed `now` | | |
 | Auth / browser canaries | | **N-A** — 2.4 adds auth; no UI |

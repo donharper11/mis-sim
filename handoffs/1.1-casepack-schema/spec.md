@@ -276,6 +276,26 @@ events:
 
 ---
 
+## 5.9 Seed — the Riverside pack is REAL, not a skeleton *(GOVERNANCE §4.9)*
+
+**Reverses this spec's earlier "content stubbed with TODO markers."** A pack of `TODO`
+markers cannot demonstrate that the loader works, and 1.2 would validate nothing.
+
+```
+seed        backend/packs/riverside_grocery/   fully populated
+command     python -m app.casepack.seed riverside_grocery
+demonstrate loader parses it and prints:
+              7 capabilities · N catalog items · 4 strategies
+              every strategy's weights summing to 1.000
+              the ~20 pinned figures from 0.4 spec §5.4, read back from the pack
+```
+
+Content sources, in order of preference: **harvested** from mis_lite (`design/01` §2),
+**pinned** to the mockup figures, or **authored with a stated rationale**. Anything that
+cannot be justified is `TODO: calibrate` **and listed in the report** — never silent.
+
+---
+
 ## 6. Invariants and their falsification checks
 
 | # | Invariant | Check | Expected |
@@ -362,3 +382,5 @@ functions 1.2 will wrap in a CLI. *Verify:* all eight run against the skeleton.
 No browser playthrough — this module is headless (`QUALITY_PROTOCOL.md §3`: playthroughs
 are for user-facing workflows). `verify.md` in this folder holds the CLI sequence the
 auditor re-runs.
+| **Seed** — Riverside pack populated, loader prints real counts, weights sum to 1.000 | | |
+| No unlisted `TODO` in shipped pack content | | |

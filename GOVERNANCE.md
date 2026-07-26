@@ -185,7 +185,45 @@ single test session:
 - The auditor cross-checks every number appearing in persona output against engine state.
   A mismatch is a **Blocking** finding, not a UX nit
 
-### 4.9 No user-facing failure notices as product behaviour
+### 4.9 Seed data, never stubs
+
+**A screenshot of a screen with hardcoded content proves the HTML renders. It proves
+nothing about whether the code works.** Roughly half the evidence gathered in Phase 0 was
+of that kind.
+
+The distinction is not pedantry:
+
+```
+STUB          a value written into the artifact to make it look complete
+              proves rendering · proves nothing about computation
+              e.g. <p>25%</p> in a mockup
+
+SEED          real, coherent demo content loaded into the database, schema or
+              config, from which the artifact COMPUTES what it shows
+              proves the path from data to display actually runs
+              e.g. a seeded team state the scorer reads and returns 0.249 from
+```
+
+**Rules:**
+
+1. **Every packet producing a user-visible surface or a computed result ships seed data**
+   and demonstrates the result computed *from* that seed. Not alongside it — from it.
+2. **`TODO` in shipped content is a defect**, not a placeholder. Content that cannot yet
+   be authored is marked `TODO: calibrate` **and listed in the report**, so it is visible
+   rather than assumed.
+3. **Evidence shows the seed in the loop.** A screenshot accompanied by the command that
+   produced the data, or it is not evidence.
+4. **One command produces a complete demo environment.** Any agent, any session, from a
+   clean database. If a builder cannot reproduce the demo state in one step, neither can
+   the next one.
+5. **Estimates are allowed; unmarked estimates are not.** An authored value carries its
+   rationale. Values that cannot be justified are marked and reported.
+
+Static mockups are the one exception — they have nothing to compute from, which is
+precisely why they cannot demonstrate that anything works, and why Phase 0's evidence is
+weaker than it looked.
+
+### 4.10 No user-facing failure notices as product behaviour
 
 "Something went wrong, try again" is not an acceptable outcome. Users may see guidance,
 status, progress, or next-step messages. They may not see our errors.
@@ -278,6 +316,9 @@ opened.
 
 ## Changelog
 
+- **1.2** (2026-07-27) — added §4.9 *Seed data, never stubs*. Every packet producing a
+  visible surface or computed result ships seed data and demonstrates the result computed
+  from it. One command produces a complete demo environment.
 - **1.1** (2026-07-26) — added §6.1: auditor independence scales with blast radius.
   Builder≠Auditor absolute; Author≠Auditor mandatory for E*/S*, permitted-with-caveat for
   infrastructure with no student surface and no scoring factor. User decision, applied to

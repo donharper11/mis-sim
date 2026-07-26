@@ -55,6 +55,8 @@ State the reason — do not silently skip.
 - **Casepack validator passes** on all packs the change could affect
 
 ### Rung 3 — Runtime verification
+- **Run the seed command from a clean database** (`GOVERNANCE §4.9`). Evidence that does
+  not show data flowing from a seed is evidence that the frontend exists, nothing more
 - Start the actual dev servers
 - Confirm health / readiness endpoints
 - **Auth canary** — browser login + one authenticated API call on the same host pair
@@ -168,7 +170,9 @@ Before any module lands:
 □  Definition-of-Done table filled with evidence (builder)
 □  Ladder rungs 1–5 complete or explicitly N/A with reason
 □  Playthrough Script passes end to end, zero console errors
-□  Screenshots attached
+□  Seed command reproduces the demo state from a clean database
+□  Evidence shows results computed from the seed, not hardcoded beside it
+□  Screenshots attached, each with the command that produced its data
 □  Auth canary passed (if browser-gated)
 □  Instance-isolation canary passed (if state-touching)
 □  Casepack validator clean
@@ -198,6 +202,8 @@ conflict, or mark something done that was not verified in a browser.
 
 ## Changelog
 
+- **1.3** (2026-07-27) — rung 3 and the pre-merge gate now require a seed command and
+  evidence computed from it. Half of Phase 0's screenshots proved only that HTML renders.
 - **1.2** (2026-07-26) — §1: an action is not done because the command exited 0; verify
   resulting state. Prompted by four false "pushed" claims.
 - **1.1** (2026-07-26) — §4 now requires findings to carry their proof; cross-references

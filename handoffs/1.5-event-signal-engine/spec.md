@@ -140,6 +140,21 @@ access request, employee snooping) exactly as capacity signals arm outages.
 
 ---
 
+## 5.5 Seed — a signal ledger with history *(GOVERNANCE §4.9)*
+
+```
+seed        extends riverside_r3 with rounds 1-3 of signal history
+command     python -m app.seed.demo --scenario riverside_r3 --with-signals
+demonstrate ORD-CAP-01 raised R2 at 0.83 · escalated R3 at 1.11
+            saturday_queue_collapse FIRES at R4 on the do-nothing path
+            and does NOT fire on a path where the signal was cleared at R3
+            blast radius computed by traversal, printed
+```
+
+Two paths from one seed is the demonstration — the same event card, opposite outcomes.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -193,4 +208,5 @@ access request, employee snooping) exactly as capacity signals arm outages.
 | Ledger carries both timestamps 1.4 needs | | |
 | `cheapest_fix_when_raised` populated | | |
 | Two-team divergence demonstrated from one event card | | |
+| **Seed** — signal history seeded; both paths demonstrated from one seed | | |
 | Browser / auth / instance canaries | | **N-A** — pure, headless |

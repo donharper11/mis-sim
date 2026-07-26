@@ -183,6 +183,23 @@ decomposition is not a deliverable.
 
 ---
 
+## 5.7 Seed — a scoreable team state *(GOVERNANCE §4.9)*
+
+```
+seed        backend/seeds/riverside_r3.py — the architecture that PRODUCES Tech 0.75
+              nodes, edges, deployments, org state, platform pools, governance
+command     python -m app.seed.demo --scenario riverside_r3
+demonstrate python -m app.engine.score riverside_r3
+              → Tech 0.750 · Org 0.507 · Mgmt 0.648 · realised 0.249
+              → throttle: org
+```
+
+**Computed from the seed, not asserted alongside it.** If the seeded architecture does not
+produce those figures, either the seed or the engine is wrong — **STOP and report**. That
+is the check that pins nineteen mockups to the engine.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -240,4 +257,5 @@ already-approved mockups either agree or expose a contradiction.
 | O1, O2, O3 recorded | | |
 | Every factor in `design/02` §A–D implemented or deferred with a reason | | |
 | Decomposition record emitted for every capability | | |
+| **Seed** — `riverside_r3` seeded; scorer COMPUTES 0.750/0.507/0.648/0.249 from it | | |
 | Browser / auth / instance canaries | | **N-A** — pure functions, headless |

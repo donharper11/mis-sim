@@ -142,6 +142,20 @@ covers it.
 
 ---
 
+## 5.5 Seed — two real packs registered *(GOVERNANCE §4.9)*
+
+```
+command     python -m app.seed.demo --packs
+registers   riverside_grocery (from 1.3) and a second REAL minimal pack
+demonstrate list_casepacks showing both with validation summaries
+            each bound to a different section from 2.1's cohort
+            registering a third version leaving running instances untouched
+```
+
+A registry exercised with one pack is not exercised.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -199,5 +213,6 @@ Row 7 matters: a registry tested with one pack is not tested.
 | Two packs registered and bound to two sections | | |
 | Instance-isolation canary still passes | | |
 | `docs/casepack-operations.md` incl. the append-only rule | | |
+| **Seed** — two real packs registered and bound to different sections | | |
 | Auth canary | | required if any route added; **N-A** if command-line only — state which |
 | Browser canaries | | **N-A** — no UI |

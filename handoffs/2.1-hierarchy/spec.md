@@ -130,6 +130,20 @@ deleting an instance does **not** delete its runtime state, it refuses while sta
 
 ---
 
+## 5.4 Seed — a populated cohort *(GOVERNANCE §4.9)*
+
+```
+command     python -m app.seed.demo --cohort
+seeds       1 course · 2 sections · 2 instances on DIFFERENT casepacks
+            4 teams · 16 enrolled students with real names and IDs
+demonstrate a query printing the full hierarchy, both sections side by side
+```
+
+The two-section fixture is not a test artifact — it is the seed 2.2's canary runs against
+and 2.5 binds packs to.
+
+---
+
 ## 6. Invariants
 
 | # | Invariant | Check | Expected |
@@ -180,6 +194,7 @@ silently.
 | Two-section two-casepack fixture exists | | |
 | Migration up/down/up clean | | |
 | `CONTRACTS.md` updated if any field shape changed | | |
+| **Seed** — `--cohort` produces two sections on two casepacks | | |
 | Auth canary | | **N-A** — 2.4 adds auth |
 | Instance-isolation canary | | **partial** — fixture built here, canary asserted at 2.2 |
 | Browser canaries | | **N-A** — no UI |

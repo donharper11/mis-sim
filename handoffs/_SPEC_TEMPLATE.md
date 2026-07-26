@@ -89,6 +89,18 @@ Warning:       "You added capacity but funded no training."
 Button:        "Add to plan"
 ```
 
+### 5.z Seed — real demo data *(GOVERNANCE §4.9 — REQUIRED)*
+
+```
+seed        what real content this packet loads, and where it lives
+command     the ONE command that produces it from a clean state
+demonstrate what is COMPUTED from that seed — not asserted alongside it
+```
+
+A stub proves rendering. A seed proves the path from data to display runs.
+`TODO` in shipped content is a defect; anything unauthorable is marked
+`TODO: calibrate` **and listed in the report**.
+
 ### 5.y Null paths and negative cases
 
 | Case | Expected behaviour | Verify step |
@@ -156,7 +168,9 @@ Derived mechanically from the body. Builder fills Status and Evidence.
 | Ladder rung 4 — zero console errors | | |
 | Ladder rung 5 — UX/navigation + viewports | | |
 | Playthrough Script passes end to end | | |
-| Screenshots attached | | |
+| **Seed command reproduces the demo state from a clean database** | | |
+| **Evidence shows results COMPUTED from the seed** | | |
+| Screenshots attached, each with the command that produced its data | | |
 | Instance-isolation canary *(if state-touching)* | | |
 | Design-system canary — no hardcoded colours/fonts | | |
 | `CONTRACTS.md` updated *(if cross-cutting field changed)* | | |
