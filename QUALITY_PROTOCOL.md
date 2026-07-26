@@ -15,6 +15,25 @@ without visible technical errors, and with audit evidence recorded.
 "Code written" is not completion. "Build passes" is not completion. "Route returns 200"
 is not completion.
 
+**And an action is not done because the command exited 0.** Verify the resulting state,
+not the exit code. `git push` succeeds silently when the ref has not moved; a migration
+"runs" against the wrong database; a container restarts without picking up the change.
+Check the thing you claim to have changed:
+
+```
+  claimed          verify with
+  ─────────────────────────────────────────────────────────
+  pushed           git ls-remote origin <branch>   — compare to local SHA
+  migrated         \d on the table, not the alembic exit code
+  deployed         the running artifact's version, not the deploy log
+  fixed            re-run the failing check, not the build
+```
+
+**Proven, 2026-07-26:** four consecutive "pushed" claims were false. The working
+directory was on a feature branch, so `git push origin main` pushed an unmoved `main`
+and exited 0 each time. Nothing reached `main` for four commits. Same error class as
+`SPEC_PROTOCOL.md §2.1` — asserting state from a proxy signal instead of checking it.
+
 ---
 
 ## 2. The verification ladder
@@ -179,6 +198,8 @@ conflict, or mark something done that was not verified in a browser.
 
 ## Changelog
 
+- **1.2** (2026-07-26) — §1: an action is not done because the command exited 0; verify
+  resulting state. Prompted by four false "pushed" claims.
 - **1.1** (2026-07-26) — §4 now requires findings to carry their proof; cross-references
   `SPEC_PROTOCOL.md` §2.1–2.2.
 - **1.0** (2026-07-26) — initial. Adapted from `worklab/docs/QUALITY_PROTOCOL.md`.
