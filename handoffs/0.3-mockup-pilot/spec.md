@@ -1,6 +1,6 @@
 # 0.3 — Canonical Token Map + Mockup Pilot (3 screens) · Build Spec
 
-**Version 2.1** · **Authored under** `SPEC_PROTOCOL.md` v1.2
+**Version 2.2** · **Authored under** `SPEC_PROTOCOL.md` v1.2
 **Author:** Claude (design session) · **Date:** 2026-07-26
 **Phase:** 0 · **Depends on:** 0.2 (merged) · **Blocks:** 0.4, 0.6
 
@@ -9,7 +9,11 @@
 > it also forbade, and omitted numbers and strings its own checks demanded. 17 defects,
 > found by audit before a builder was harmed. Full disposition in §12.
 >
-> **Phase 1 was already built against v1 (commit `76d5e3a`) and must be reworked.**
+> **Step 1 was already built against v1 (commit `76d5e3a`) and reworked under v2.**
+>
+> **v2.1** self-hosts IBM Plex and drops the CDN call (§5.8, closes `0.3-011`).
+> **v2.2** removes the Step 1 hard stop — Steps 1b–5 are now one pass, with a single
+> review gate after Step 5.
 
 ---
 
@@ -451,7 +455,16 @@ apply the §5.2 remap to `main.jsx` **and add the throw-on-empty guard**; rewrit
 antd Button/Select/Table still themed, with a screenshot proving it ·
 **I9, I10** · `/_dev/tokens` renders Plex Sans **and** Plex Mono **with the network
 disconnected**.
-**>>> STOP AND REPORT. Do not start Phase 2. <<<**
+*(v2.2 — the Step 1 hard stop is removed. Continue straight to Step 2.)*
+
+> **Why it went.** The stop existed so the token map could be reviewed before three
+> mockups referenced it. But 115 role names cannot be judged in the abstract — you cannot
+> tell whether `--surface-sunken` is right until you see something sunken. **The mockups
+> are the test of the vocabulary**, and a missing role surfaces as a builder question, not
+> a reviewer's prediction. That is exactly how `--overlay-scrim` was found in v2.
+>
+> The palette is not under review at all: every value is BECSR's, verified unchanged.
+> The single review gate is now **after Step 5**, where names appear in use.
 
 **Step 2 — Situation.** **Verify:** I1, I4, I5, I6, I7 · all three states · shots at
 1440/1280/1024.
