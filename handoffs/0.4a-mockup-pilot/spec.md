@@ -1,358 +1,379 @@
 # 0.4a — Canonical Token Map + Mockup Pilot (3 screens) · Build Spec
 
-**Authored under** `SPEC_PROTOCOL.md` v1.1
+**Version 2** · **Authored under** `SPEC_PROTOCOL.md` v1.2
 **Author:** Claude (design session) · **Date:** 2026-07-26
-**Phase:** 0 · **Depends on:** 0.2 (merged, `d638939`) · **Blocks:** 0.4b, 0.6
-**Reference mockup:** none — **this module produces them.** Acceptance is §10's checklist.
+**Phase:** 0 · **Depends on:** 0.2 (merged) · **Blocks:** 0.4b, 0.6
+
+> **v2 supersedes v1 entirely.** v1 was unbuildable: it forbade touching files that consume
+> the tokens it rewrote, shipped three jointly unsatisfiable invariants, required a metric
+> it also forbade, and omitted numbers and strings its own checks demanded. 17 defects,
+> found by audit before a builder was harmed. Full disposition in §12.
+>
+> **Phase 1 was already built against v1 (commit `76d5e3a`) and must be reworked.**
 
 ---
 
 ## 0. Spec Basis
 
 **Read in full:**
+- `frontend/src/styles/theme.css` @ `main` — 89 declarations over 38 distinct values
+- **`frontend/src/main.jsx` lines 10–35** — reads 11 token names at runtime via
+  `getPropertyValue` to build the antd `ConfigProvider` theme *(missed in v1)*
+- **`frontend/src/pages/DevTokens.jsx`** — enumerates all 89 names as string literals
+  *(missed in v1)*
+- `.gitignore` — line 16 `screenshots/**/*.png`, line 17 negates `0.2` only
+- `BECSR/becsr-design-system.md` 1–70 · `globalstrat/.../design-system/{index.js,theme.css}`
+  · `globalstrat/.../Sidebar.js` 1–120
+- `design/02-traceability-matrix.md` · `design/03-scoring-frame-options.md`
+- `findings/0.2-2026-07-26-author-review.md` (0.2-003, the defect this resolves)
 
-- `frontend/src/styles/theme.css` @ `origin/main` — all 89 declarations extracted and
-  analysed for value collisions (§5.1)
-- `BECSR/becsr-design-system.md` lines 1–70 — palette, IBM Plex Sans, zero-radius
-- `globalstrat/.../design-system/index.js` — the 12 components 0.6 will port
-- `globalstrat/.../design-system/theme.css` lines 1–80 — the variable grouping 0.2 adopted
-- `globalstrat/.../components/Sidebar.js` lines 1–120 — menu grouping, per-category status
-  badges via `getDecisionSummary`, `canLock` derivation, server-supplied `sidebarLabels`
-- `BECSR/frontend/csr-sim-frontend/src/components/` — file listing only
-- `design/05-implementation-plan.md §1.3` — the ten student screens
-- `findings/0.2-2026-07-26-author-review.md` — finding 0.2-003, which this module resolves
+**Verified commands, this session:**
+```
+fc-match "IBM Plex Sans"                    → NotoSans-Regular.ttf  (not installed)
+git check-ignore -v screenshots/0.4a/x.png  → .gitignore:16         (was blocked)
+echo '<a href="#add-to-plan">' | grep -cE "#[0-9a-fA-F]{3,8}"  → 1  (v1 I1 false positive)
+```
 
-**Cited from summary or prose:** none.
-
-**Extraction sufficiency:** covered all load-bearing surfaces. Deliberately not extracted:
-globalstrat component *implementations* (needed at 0.6) and BECSR's `reference-*.html`
-mockups — I have the design system doc they were built to, and copying their layout would
-import a CSR sim's information architecture into an MIS sim.
+**Extraction sufficiency:** covered all load-bearing surfaces, **including the consumers
+v1 omitted**.
 
 ---
 
 ## 1. Purpose and scope
 
-Two deliverables, in order. The first must be right before the second is built, because
-the mockups are how the first gets tested.
+1. Replace the flat 89-token set with a two-tier map — one name per semantic role.
+   Resolves finding `0.2-003`.
+2. Update every existing consumer of the old names so the application keeps working.
+3. Build three static reference mockups — Situation, Platform, Applications — using role
+   tokens only.
 
-1. **A canonical token map** — replaces the flat 89-token set with a two-tier system, one
-   name per semantic role. Resolves finding 0.2-003.
-2. **Three static reference mockups** — Situation, Platform, Applications — built using
-   only canonical role tokens.
+**In scope — explicitly including the consumers:**
+- `frontend/src/styles/theme.css` — rewritten
+- **`frontend/src/main.jsx`** — antd token mapping updated to the new role names
+- **`frontend/src/pages/DevTokens.jsx`** — enumeration updated
+- `mockups/` — three HTML files
+- `CONTRACTS.md` — the two-tier entry
+- `docs/mockup-review.md` — how to view them, including the font install
 
-These three establish the visual grammar the other seven copy. They are the pilot for a
-review gate, not the start of a batch.
-
-**In scope:**
-- Rewrite `frontend/src/styles/theme.css` as primitives + semantic roles
-- A deprecation table for every removed or renamed token
-- `CONTRACTS.md` entry making the tier rule binding
-- Three self-contained HTML mockups in `mockups/`
-- Verbatim student-facing copy for all three (§5.6)
-- Every screen state each mockup needs (§5.7)
-
-**Out of scope — do not build these:**
-- The other seven mockups — that is 0.4b, after the review gate
+**Out of scope:**
+- Mockups 4–10 — that is 0.4b, after the review gate
 - Any React component — that is 0.6
-- Any backend, route, or data fetch. Mockups are static HTML with inline sample data
-- Interactivity beyond what §5.7 requires to display a state
-- Changing `docker-compose.yml`, `backend/`, or anything under `frontend/src/` except
-  `styles/theme.css`
-- Fixing anything else noticed in 0.2. File it; do not repair it
+- Any backend, route, or data fetch
+- Any file under `frontend/src/` **other than the three named above**
+  *(pre-flight row 3 proves no others consume tokens)*
+- `.gitignore` — **already fixed on main**; do not touch
 
 ---
 
-## 2. Project-specific statements *(SPEC_PROTOCOL §9)*
+## 2. Project-specific statements
 
-**Scoring factors touched:** none captured — mockups are static. Factors **displayed**,
-which constrains what each screen must show:
+**Scoring factors displayed** — every number on a mockup traces to
+`design/02-traceability-matrix.md`:
 
-| Factor | Mockup | Direction |
+| Factor | Mockup | Matrix ref |
 |---|---|---|
-| Realised value per capability (Tech × Org × Mgmt) | Situation | displays |
-| Coverage, capacity, reliability, SPOF count | Situation, Applications | displays |
-| Open signals with round-first-shown | Situation | displays |
-| Platform capacity utilisation | Platform | displays |
-| Capex committed / opex run-rate | all three (budget strip) | displays |
-| Governance coverage (owner/sponsor assigned) | Applications | displays |
+| Realised value + MOT decomposition | Situation | §A/B/C |
+| Coverage · capacity · reliability · SPOF count | Situation, Applications | §A |
+| Open signals with first-shown round | Situation | §C |
+| **Balanced Scorecard, four perspectives** | Situation | **§E — row added 2026-07-26** |
+| Platform capacity utilisation | Platform | §A |
+| Capex remaining · opex run-rate | all three | §D |
+| Governance coverage | Applications | §C |
 
-Every number shown must be one the engine will actually produce. **Inventing a metric
-that has no home in `design/02-traceability-matrix.md` is a finding.**
-
-**Casepack keys read:** none directly — but all sample data is Riverside Grocers, and
-**every label that a casepack would supply must be visibly marked** (§5.5).
-**Casepack-identity branching:** N/A, no code. Invariant I4 checks the mockups do not
-present Riverside as structural.
-
-**Instance scoping:** N/A — no state, no tables, no queries.
-
-**Business-language check:** the whole point. Every string on every mockup passes the
-standing filter (`GOVERNANCE.md §2.1`). Invariant I3 greps for engine vocabulary.
+**Casepack keys read:** none directly; all sample content is marked per §5.5.
+**Instance scoping:** N/A — static HTML, no state.
+**Business-language check:** invariant I4.
 
 ---
 
 ## 3. Settled decisions
 
-1. **Two-tier tokens.** Primitives (value-named) and semantic roles (role-named).
-   **Components may reference only roles.** This is the 0.2-003 fix and it is not
-   optional — see §5.1.
-2. **Static HTML, no build step.** Each mockup opens in a browser from the filesystem.
-   No bundler, no npm, no framework, no external requests (`GOVERNANCE.md` — mockups must
-   be reviewable by a person with no toolchain).
-3. **One shared data state: Riverside Grocers, round 3 of 6, strategy = Low-Cost
-   Leadership.** All three mockups show the same company at the same moment, so they can
-   be read as one product. Numbers are in §5.4 and are **fixed** — do not invent others.
-4. **Ant Design is not used in the mockups.** Mockups define the target; 0.6 makes antd
-   match it. Hand-write the markup.
-5. **Desktop-first at 1440.** Must also hold at 1280 and 1024. No mobile in this phase.
-6. **`theme.css` is rewritten in place**, not forked. The 0.2 file is superseded.
+1. **Two-tier tokens.** Primitives `--p-<family>-<step>`; roles unprefixed and semantic.
+   **Components and mockups reference roles only.** The `--p-` prefix is mandatory and
+   makes the check exact — v1's grep guessed at family names and both false-negatived
+   (`--gray-100` passed) and false-positived (`href="#add-to-plan"`).
+2. **Mockups link `theme.css` with one relative `<link>`.** This is the named compliant
+   route (§4). v1 forbade it, making its invariant set unsatisfiable.
+3. **Static HTML, opened with `file://`.** No server, no bundler, no framework.
+4. **IBM Plex is installed, not embedded.** `sudo apt install fonts-ibm-plex`, documented
+   in `docs/mockup-review.md`. The font stack declares a visible fallback so absence
+   degrades noticeably rather than silently.
+5. **One shared data state:** Riverside Grocers, round 3 of 6, Low-Cost Leadership.
+   All figures fixed in §5.4 — including the three states v1 left numberless.
+6. **Ant Design is not used in the mockups.** Mockups define the target; 0.6 makes antd
+   match it.
+7. **Desktop-first at 1440**, holding at 1280 and 1024.
 
 ---
 
-## 4. Open decisions
+## 4. Named compliant route *(SPEC_PROTOCOL §4.1)*
 
-| # | Question | Decision criteria | Reporting obligation |
-|---|---|---|---|
-| **O1** | Sidebar shows five Decisions items with per-category status badges (globalstrat pattern). Should the pilot render badges for **all** states, or only the states round 3 would actually produce? | **Default: all four** (`configured` / `partial` / `error` / `empty`) even if round 3 wouldn't show all — the mockup's job is to define the vocabulary, and 0.6 needs to see every badge. Annotate the ones that are illustrative | Record in `dod.md` |
-| **O2** | Multiple screen states per screen: separate HTML files, or one file with visually stacked labelled sections? | **Default: stacked labelled sections in one file per screen.** A reviewer comparing empty-vs-ready shouldn't have to switch files. Label each section clearly as a state, not as page content | Record in `dod.md` |
-| **O3** | The Situation screen's capability cards show a realised-value figure. Two decimal (`0.25`) or percentage (`25%`)? | **Default: percentage.** `GOVERNANCE.md §2.1` — a business reader reads 25%, not 0.25. But show the three-factor decomposition as decimals since they are multiplied | Record in `dod.md` |
+One concrete implementation satisfying **every** invariant simultaneously. If the builder
+finds that it does not, that is a spec defect: **STOP and report.**
+
+```
+mockups/situation.html
+  <link rel="stylesheet" href="../frontend/src/styles/theme.css">   ← I6 permits exactly this
+  <style> .card { background: var(--surface-card); } </style>       ← roles only     → I1 ✓
+                                                                      declares nothing → I3 ✓
+  <body> … no raw hex, no var(--p-…) …                                               → I1 ✓
+```
+
+Declaring a token inside the mockup breaches I3; a raw hex breaches I1; any other external
+reference breaches I6. This one route passes all eight.
 
 ---
 
 ## 5. Design
 
-### 5.1 The canonical token map — the load-bearing deliverable
+### 5.1 The token map
 
-**The problem, measured.** `theme.css` @ `origin/main` declares **89 tokens over 38
-distinct literal values**. Collisions are not merely redundant, they are semantically
-wrong:
-
-```
-#F1F5F9   4 names   --bg-content · --color-surface-100 · --status-inactive-bg
-                    · --status-pending-bg
-#64748B   4 names   --color-surface-500 · --status-inactive-text
-                    · --status-pending-text · --text-muted
---accent-navy  5 aliases  --brand-primary · --chart-your-team
-                          · --color-header-financial · --color-input-focus
-                          · --color-primary
-```
-
-That last group is the dangerous one. "Your team on a chart", "a financial section
-header", and "an input focus ring" are three unrelated roles sharing one value. The first
-time one needs to change independently, whoever changes it silently breaks the other two.
-
-**The fix — two tiers.**
+**Measured basis:** 89 tokens over 38 distinct values. `--accent-navy` alone carries five
+unrelated roles — brand, chart-your-team, financial header, input focus, primary action.
 
 ```
-TIER 1  PRIMITIVES     named for what they ARE.       --navy-900: #0F1724
+TIER 1  PRIMITIVES   --p-<family>-<step>        e.g.  --p-navy-900: #0F1724
         The palette. May repeat values freely.
-        Components NEVER reference these.
+        NEVER referenced outside theme.css.
 
-TIER 2  SEMANTIC ROLES named for what they DO.        --surface-page: var(--slate-100)
-        Every role has exactly ONE definition.
-        Components reference ONLY these.
+TIER 2  SEMANTIC ROLES   --surface-page: var(--p-slate-100)
+        Exactly one definition each.
+        The only tier anything else may reference.
+        Resolves to a primitive in exactly ONE step.
 ```
 
-**Required roles.** The builder defines each as `var(--primitive)`. This list is the
-contract; adding a role requires a `CONTRACTS.md` entry, removing one requires this spec
-to change.
+**Required roles.** This list is the contract; adding one needs a `CONTRACTS.md` entry and
+a spec change.
 
 ```
-SURFACE     --surface-page · --surface-card · --surface-raised · --surface-sunken
-            --surface-sidebar · --surface-sidebar-active · --surface-topbar
-            --surface-table-header · --surface-table-stripe · --surface-row-highlight
+SURFACE   --surface-page · --surface-card · --surface-raised · --surface-sunken
+          --surface-sidebar · --surface-sidebar-active · --surface-topbar
+          --surface-table-header · --surface-table-stripe · --surface-row-highlight
+          --overlay-scrim                       ← NEW in v2 (wizard modal)
 
-TEXT        --text-primary · --text-secondary · --text-muted · --text-hint
-            --text-inverse · --text-link
-            --text-on-sidebar · --text-on-sidebar-muted · --text-on-sidebar-section
+TEXT      --text-primary · --text-secondary · --text-muted · --text-hint
+          --text-inverse · --text-link
+          --text-on-sidebar · --text-on-sidebar-muted · --text-on-sidebar-section
 
-BORDER      --border-default · --border-strong · --border-focus
+BORDER    --border-default · --border-strong · --border-focus
+          --border-annotation                   ← NEW in v2 (§5.5 casepack marking)
 
-STATUS      for each of: ok · warn · danger · info · neutral
-            --status-<name>-bg · --status-<name>-text · --status-<name>-marker
-            (marker = the dot / left border / icon tint)
+STATUS    for each of ok · warn · danger · info · neutral:
+          --status-<n>-bg · --status-<n>-text · --status-<n>-marker
 
-ACCENT      --accent-1 … --accent-7
-            Categorical only — for left-border cards and section headers.
-            MUST NOT be reused for status. Status has its own scale
+ACCENT    --accent-1 … --accent-7      categorical only. NOT status, NOT chart.
+CHART     --chart-1 … --chart-6 · --chart-highlight      series only.
 
-CHART       --chart-1 … --chart-6 · --chart-highlight
-            Series colours only. MUST NOT be reused for status or accent
+ACTION    --action-primary · --action-primary-hover · --action-primary-text
+          --action-secondary · --action-secondary-hover
+          --action-disabled · --action-disabled-text
 
-ACTION      --action-primary · --action-primary-hover · --action-primary-text
-            --action-secondary · --action-secondary-hover
-            --action-disabled · --action-disabled-text
+INPUT     --input-bg · --input-border · --input-border-focus · --input-text
+          --input-editable-bg · --input-disabled-bg
 
-INPUT       --input-bg · --input-border · --input-border-focus · --input-text
-            --input-editable-bg · --input-disabled-bg
-
-FONT        --font-body · --font-mono
-SPACE       --space-xs … --space-4xl   (existing scale, unchanged)
-RADIUS      --radius: 0    (BECSR is zero-radius; declared so 0.6 has a name to use)
+FONT      --font-body · --font-mono
+SPACE     --space-xs … --space-4xl
+RADIUS    --radius: 0
 ```
 
-**Deprecations.** Every token in the current file that is not a primitive or a role above
-is removed. The builder produces a table in `dod.md`:
+**`--action-primary-hover` must be a darker shade of `--action-primary`, same hue**
+(finding `0.2-002`).
 
-| Old token | Replaced by | Note |
-|---|---|---|
-| `--bg-content` | `--surface-page` | rename |
-| `--color-surface-100` | *(primitive)* `--slate-100` | tier demotion |
-| `--status-pending-bg` | `--status-neutral-bg` | merged |
-| … | … | … |
+**Deprecation table** in `dod.md` accounting for all 89 original tokens: old name →
+replacement, or → primitive, or → merged, or → removed with reason.
 
-**Invariant:** no semantic role may be defined as another semantic role. Roles resolve to
-primitives, one level. Checked by I2.
+### 5.2 Consumer updates — the part v1 omitted
 
-**Why not a flat rename.** Because the collisions carry information: four names on
-`#F1F5F9` means four roles genuinely exist and happen to share a value *today*. The two
-tiers preserve that — the roles stay distinct and separately changeable, and only the
-primitive is shared.
-
-### 5.2 `CONTRACTS.md` entry
-
-The builder adds, in the file's existing format:
+**`frontend/src/main.jsx` lines 17–27** reads 11 token names. Eight are deleted by §5.1.
+`getPropertyValue` returns `""` for a missing name, so antd falls back to its defaults
+**silently** — the application looks subtly wrong with no error anywhere. Remap:
 
 ```
-## Design tokens — two-tier
-
-Canonical: components reference SEMANTIC ROLES only (--surface-page, --text-muted,
---status-danger-bg). Never primitives (--slate-100, --navy-900), never raw values.
-
-Roles resolve to primitives in exactly one step. A role defined as another role is a
-defect — it reintroduces the aliasing this replaced.
-
-Producers: frontend/src/styles/theme.css — the only file that may declare either tier.
-Consumers: every component, every mockup.
-
-Adding a role: entry here + spec change. Adding a primitive: theme.css only.
+colorPrimary        --accent-navy          →  --action-primary
+colorPrimaryHover   --color-primary-hover  →  --action-primary-hover
+colorInfo           --accent-blue          →  --status-info-marker
+colorSuccess        --accent-green         →  --status-ok-marker
+colorWarning        --accent-amber         →  --status-warn-marker
+colorError          --accent-red           →  --status-danger-marker
+colorText           --text-primary         →  --text-primary       (unchanged)
+colorTextSecondary  --text-secondary       →  --text-secondary     (unchanged)
+colorBgLayout       --bg-content           →  --surface-page
+colorBgContainer    --bg-card              →  --surface-card
+fontFamily          --font-body            →  --font-body          (unchanged)
 ```
+
+**Add a guard:** `token()` must throw on an empty result rather than returning `""`.
+A silently-missing design token is precisely the failure this module exists to prevent,
+and it is what would have made this defect invisible in testing.
+
+**`frontend/src/pages/DevTokens.jsx`** enumerates all 89 names as literals. Rewrite it to
+enumerate the role list grouped by §5.1's categories, plus a separate primitives section,
+so both tiers are visible and the distinction is legible.
 
 ### 5.3 The three screens
 
-Content is settled from the design conversation; layout is the builder's craft within the
-design system.
+**A · Situation** — round, strategy, countdown · budget strip (capex remaining, opex
+run-rate, R1–R3 trend) · **Balanced Scorecard, four perspectives** · capability cards with
+realised value and the MOT decomposition naming the throttle · open signals with
+first-shown round and age · inbox count.
 
-**MOCKUP A — Situation.** The round-open briefing. Must show:
-- Round + strategy + countdown; persistent budget strip (capex remaining, opex run-rate,
-  run-rate trend across R1–R3)
-- Balanced Scorecard summary: Financial · Customer · Internal Process · Learning & Growth
-- Capability cards, each with realised value and the **three-factor decomposition**
-  naming the throttling factor
-- Open signals, each with the round it was first shown and how long it has been open
-- Inbox summary count
+**B · Platform** — Cloud and On-Premises panels · hybrid banner and split-rule selector ·
+unprovisioned services as an explicit absence · capacity as a **percentage** · integration
+count and its **per-round** cost.
 
-**MOCKUP B — Platform.** The shared foundation. Must show:
-- Two panels, **Cloud** and **On-Premises**, with services placed in each
-- The hybrid banner and the split-rule selector (§5.6 copy)
-- Unprovisioned services (`Identity & access`, `Data platform`) as an explicit absence,
-  not an omission
-- Capacity utilisation as a **percentage**, never cores or terabytes
-  (`GOVERNANCE.md §2.1`)
-- Boundary/integration count and its monthly cost
+**C · Applications** — value chain, support above and primary below, coverage per activity,
+strategy-weighted activities marked · one capability expanded showing five slots with one
+**empty** · owner and sponsor controls with one **unassigned** · purchase wizard step 3
+with three deployment modes and their warnings.
 
-**MOCKUP C — Applications.** Value chain and the purchase entry point. Must show:
-- Porter's value chain — support activities above, primary below — with each activity's
-  coverage and the strategy-weighted ones marked
-- One expanded capability showing its slots (Hardware / Software / Database / Network /
-  Integration) with one **empty** slot
-- Owner and sponsor assignment controls, one of them **unassigned**
-- The purchase wizard step 3 — the three deployment modes with their warnings
-
-### 5.4 Fixed sample data — use these exact figures
+### 5.4 Fixed data — use these exact figures, invent nothing
 
 ```
 Riverside Grocers · 8 stores · round 3 of 6 · Low-Cost Leadership (locked R2)
-Capex remaining $44,000 of $220,000 · Opex R1 $47,000 → R2 $53,000 → R3 $58,300
+Capex remaining $44,000 of $220,000
+Opex  R1 $47,000 → R2 $53,000 → R3 $58,300
+
+BALANCED SCORECARD (0–100)                    ← added v2, fixes defect 3
+  Financial 61 · Customer 48 · Internal Process 39 · Learning & Growth 27
 
 ORDER FULFILMENT   realised 25%   Tech 0.75 · Org 0.51 · Mgmt 0.65
                    coverage 4/5 · reliability 94.0% · 4 single points of failure
                    throttle: Organisation — 49 of 140 trained, process not redesigned
 CUSTOMER INSIGHT   not built · coverage 0/4 · strategy weight 0.10
-POINT OF SALE      stable · coverage 5/5 · reliability 97.2% · vendor support ends R4
+POINT OF SALE      stable · coverage 5/5 · reliability 97.2%
 
-SIGNALS   ORD-CAP-01  order app utilisation 111%   raised R2, open 2 rounds, critical
-          DATA-INT-02 product data inconsistent    raised R2, open 2 rounds, warn
-          EOL-POS-03  POS support ends R4          raised R3, open 1 round, warn
+SIGNALS   display name                          raised   age        severity
+  Order system near capacity                    R2       2 rounds   critical
+  Product data inconsistent                     R2       2 rounds   warning
+  Point-of-sale vendor support ending           R3       1 round    warning
 
-PLATFORM  cloud: end-user email
-          on-prem: compute 100% used · storage 70% · network (10 SPOFs) · backup (untested)
-          not provisioned: identity & access, data platform
-          7 integrations · $3,100/round
+PLATFORM  cloud:    end-user email
+          on-prem:  compute 100% · storage 70% · network · backup
+          not provisioned: central sign-on, data platform
+          10 single points of failure · 7 connections · $3,100 per round
+
+VALUE CHAIN coverage
+  Support   Firm infrastructure 3/4 · Human resources ok
+            Technology — · Procurement 0/3
+  Primary   Inbound logistics 1/4 · Operations 2/4 ▸ · Outbound logistics 4/5 ▸
+            Marketing & sales 5/5 · Service 0/4
+  ▸ = weighted by declared strategy
+
+STATE — Situation, round 1, before any results     ← added v2, fixes defect 4
+  Capex remaining $400,000 of $400,000 · Opex $47,000 · no trend line
+  Scorecard: all four perspectives show the empty-state copy
+  Capabilities: coverage shown, realised value absent
+  Signals: the three above, all raised R1, age "Open 0 rounds"
+
+STATE — Situation, round locked                    ← added v2
+  Identical figures to round 3 ready.
+  Locked banner per §5.6. All inputs visibly disabled.
+
+STATE — Applications, wizard step 3                ← added v2, fixes defect 4
+  Item: Centraline IM 7 · serves Inventory Management · affects 34 warehouse staff
+    On our on-premises platform   $86,000 + $1,900/round · available in 2 rounds
+    On our cloud subscription     $12,000 + $7,400/round · available now
+    Bought as a service           $0      + $9,100/round · available now
 ```
 
-### 5.5 Casepack-supplied labels must be visible as such
+### 5.5 Casepack-supplied labels are visibly marked
 
-Any string a casepack would supply — capability names, value chain activity names,
-persona names, company name — is marked in the mockup with a subtle annotation
-(a dotted underline plus a legend entry). A reviewer must be able to tell at a glance
-what is chrome and what is content. This directly serves the Phase 6 gate.
+Any string a casepack supplies — company name, capability names, value-chain activity
+names, persona names, signal display names — carries `data-casepack` and renders with
+`--border-annotation` as a dotted underline, plus a legend entry. A reviewer must be able
+to see at a glance what is chrome and what is content. This directly serves the Phase 6
+gate.
 
-### 5.6 Student-facing copy — verbatim
+### 5.6 Every visible string — complete
 
 ```
-Situation
-  page title            Situation
-  scorecard empty       "No results yet — your first round runs at the deadline."
-  signal age            "Open 2 rounds"
-  throttle line         "Held back by: Organisation"
-  decomposition label   "Technology × Organisation × Management"
-  budget trend label    "Run-rate — this rises every round it is not managed"
+CHROME
+  sidebar          Situation · Platform · Applications · Organisation · Governance
+                   · Challenges · Review & Lock · Debrief · People
+  badges           Complete · Partly done · Needs attention · Not started
+  legend           "Dotted underline = supplied by the case, not the platform"
+  state sections   "State: ready"
+                   "State: round 1, before any results"
+                   "State: round locked"
 
-Platform
-  page title            Platform
-  hybrid banner         "You are running a hybrid platform."
-  hybrid sub            "1 service in cloud · 4 on-premises"
-  split rule prompt     "What determines the split?"
-  split options         "Workload profile — steady on-premises, bursty in cloud"
-                        "Data sensitivity — regulated on-premises, rest in cloud"
-                        "Lifecycle — legacy stays, new builds go to cloud"
-                        "Cost profile — high-utilisation workloads on-premises"
-                        "No rule yet — case by case"
-  unprovisioned         "Not provisioned"
-  capacity warning      "No headroom. The next application will not fit."
-  integration line      "7 connections between systems · $3,100 per round"
+SITUATION
+  title            Situation
+  round            "Round 3 of 6"
+  strategy         "Low-Cost Leadership · locked in round 2"
+  budget capex     "Capital remaining"
+  budget opex      "Run-rate"
+  budget trend     "Run-rate rises every round it is not managed"
+  scorecard        Financial · Customer · Internal Process · Learning & Growth
+  scorecard empty  "No results yet — your first round runs at the deadline."
+  decomposition    "Technology × Organisation × Management"
+  throttle         "Held back by: Organisation"
+  signal age       "Open 2 rounds" · "Open 1 round" · "Open 0 rounds"
+  signal severity  "Critical" · "Warning"
+  inbox            "3 items waiting"
+  locked banner    "This round is locked. Decisions reopen when the round advances."
 
-Applications
-  page title            Applications
-  empty slot            "Nothing fills this yet"
-  unassigned owner      "No owner assigned"
-  unassigned sponsor    "No business sponsor"
-  strategy marker       "Weighted by your strategy"
-  wizard step 3 title   "How will this run?"
-  saas warning 1        "Inventory data would leave your systems"
-  saas warning 2        "A fourth separate login — you have no central sign-on"
-  onprem warning        "This uses all remaining platform capacity"
-  add button            "Add to plan"
+PLATFORM
+  title            Platform
+  panels           Cloud · On-Premises
+  hybrid banner    "You are running a hybrid platform."
+  hybrid sub       "1 service in cloud · 4 on-premises"
+  split prompt     "What determines the split?"
+  split options    "Workload profile — steady on-premises, bursty in cloud"
+                   "Data sensitivity — regulated on-premises, rest in cloud"
+                   "Lifecycle — legacy stays, new builds go to cloud"
+                   "Cost profile — high-utilisation workloads on-premises"
+                   "No rule yet — case by case"
+  unprovisioned    "Not provisioned"
+  capacity label   "Capacity used"
+  capacity warning "No headroom. The next application will not fit."
+  fragility        "10 single points of failure"
+  integrations     "7 connections between systems · $3,100 per round"
+
+APPLICATIONS
+  title            Applications
+  chain headings   Support activities · Primary activities
+  strategy marker  "Weighted by your strategy"
+  slots            Hardware · Software · Database · Network · Integration
+  empty slot       "Nothing fills this yet"
+  owner            "No owner assigned"
+  sponsor          "No business sponsor"
+  wizard title     "How will this run?"
+  wizard modes     "On our on-premises platform"
+                   "On our cloud subscription"
+                   "Bought as a service"
+  onprem warning   "This would use all remaining platform capacity."
+  saas warning 1   "Inventory data would leave your systems."
+  saas warning 2   "A fourth separate login — you have no central sign-on."
+  add button       "Add to plan"
 ```
 
-**Nothing else may appear as visible text** without being added here. Lorem ipsum is a
-finding.
+Any string not listed here must be added to `dod.md` with a justification (I5).
 
-### 5.7 States each mockup must show (per O2, stacked and labelled)
+### 5.7 States required *(stacked, labelled, one file per screen)*
 
-| Screen | Required states |
+| Screen | States |
 |---|---|
-| Situation | ready (full) · **round 1 empty** (no prior results) · locked (round submitted) |
-| Platform | ready · **hybrid banner active** · a service unprovisioned · capacity at 100% |
-| Applications | ready · capability with an empty slot · owner unassigned · **wizard step 3 open** |
-
-Loading states are out of scope for static mockups — note them as annotations instead.
+| Situation | ready · round-1-empty · locked |
+| Platform | ready · hybrid banner · unprovisioned · capacity 100% |
+| Applications | ready · empty slot · owner unassigned · wizard step 3 |
 
 ---
 
-## 6. Invariants and their falsification checks
+## 6. Invariants — executable, and jointly satisfiable via §4
 
 | # | Invariant | Check | Expected |
 |---|---|---|---|
-| I1 | Mockups reference no primitives and no raw values | `grep -nE "#[0-9a-fA-F]{3,8}\|var\(--(slate\|navy\|blue\|green\|amber\|red\|teal\|purple)" mockups/*.html` | zero hits |
-| I2 | No semantic role resolves to another semantic role | For each `--<role>: var(--x)` in `theme.css`, assert `--x` is declared in the primitives block | all resolve to primitives |
-| I3 | No engine vocabulary on any mockup | `grep -niE "capability_key\|instance_id\|articulation\|fit.multiplier\|casepack\|_id\b\|SPOF\b" mockups/*.html` | zero hits (`single point of failure` spelled out is fine) |
-| I4 | Riverside appears as content, never as structure | `grep -niE "riverside\|grocer" mockups/*.html \| grep -viE "data-casepack\|sample\|legend"` | only inside marked content regions |
-| I5 | No external requests | `grep -niE "https?://\|src=\|@import\|<link" mockups/*.html` | zero, except an inline data-URI font fallback |
-| I6 | Every visible string is in §5.6 | Manual diff of rendered text against §5.6 | no unlisted strings |
-| I7 | No token declared outside `theme.css` | `grep -rn -- "--[a-z-]*:" frontend/src mockups/ \| grep -v "styles/theme.css"` | zero hits |
+| I1 | Mockups use roles only | `grep -nE "var\(--p-" mockups/*.html` **and** `grep -nE ":[[:space:]]*#[0-9a-fA-F]{3,8}\|rgb\(\|hsl\(" mockups/*.html` | zero from both. *(Declaration context only — `href="#…"` no longer matches)* |
+| I2 | Roles resolve to primitives in one step | script: every `--<role>: var(--x)` must have `--x` matching `^--p-` | all pass |
+| I3 | No token declared outside `theme.css` | `grep -rn -- "^[[:space:]]*--[a-z-]*:" frontend/src mockups \| grep -v styles/theme.css` | zero |
+| I4 | No engine vocabulary visible | `grep -niE "capability_key\|instance_id\|articulation\|fit.multiplier\|SPOF\|RTO\|RPO\|EOL\b" mockups/*.html` | zero |
+| I5 | Every visible string is in §5.6, or justified in `dod.md` | extract text nodes, diff against §5.6; residue must appear in `dod.md` | zero unaccounted |
+| I6 | Exactly one external reference, and it is `theme.css` | `grep -nE "<link\|@import\|src=\|https?://" mockups/*.html` | one `<link>` per file, `href` ending `styles/theme.css` |
+| I7 | Riverside is marked content, not structure | `grep -niE "riverside\|grocer" mockups/*.html \| grep -v "data-casepack"` | zero |
+| I8 | antd reads only live role names | script cross-checking `main.jsx` token names against declared roles in `theme.css` | zero missing |
+
+I4 no longer greps `casepack` — v1's I3/I4 contradiction, since `data-casepack` is required
+by §5.5.
 
 ---
 
@@ -360,42 +381,32 @@ Loading states are out of scope for static mockups — note them as annotations 
 
 | # | Claim | Tag | Check | Expected |
 |---|---|---|---|---|
-| 1 | 0.2 is merged; `theme.css` on `main` | `[V]` | `git ls-tree --name-only origin/main -- frontend/src/styles/theme.css` | path returned |
-| 2 | `theme.css` declares 89 tokens over 38 distinct literal values | `[V]` | `git show origin/main:frontend/src/styles/theme.css \| grep -cE "^\s+--"` then the distinct-value count from §5.1 | 89 and 38 |
-| 3 | The 5-alias `--accent-navy` group exists as quoted | `[V]` | `git show origin/main:frontend/src/styles/theme.css \| grep -n "var(--accent-navy)"` | 5 occurrences |
-| 4 | `mockups/` exists and is empty | `[V]` | `ls -la mockups/` | present, no `.html` |
-| 5 | `CONTRACTS.md` has no design-token entry yet | `[V]` | `grep -n "token" CONTRACTS.md` | no design-token section |
-| 6 | Finding 0.2-003 is the one being resolved | `[V]` | `grep -n "0.2-003" findings/0.2-2026-07-26-author-review.md` | present |
-| 7 | A browser is available to render and screenshot | `[A]` | `which chromium \|\| ls /snap/bin/chromium \|\| npx playwright --version` | one succeeds |
+| 1 | `theme.css` on main: 89 tokens | `[V]` | `grep -cE "^\s+--" frontend/src/styles/theme.css` | 89 |
+| 2 | `main.jsx` consumes 11 token names | `[V]` | `grep -c 'token("--' frontend/src/main.jsx` | 11 |
+| 3 | **No other file under `frontend/src` reads tokens** | `[V]` | `grep -rn "getPropertyValue\|var(--" frontend/src --include=*.jsx --include=*.js \| grep -v "main.jsx\|DevTokens.jsx"` | zero — **this is the check whose absence made v1 unbuildable** |
+| 4 | `DevTokens.jsx` enumerates literals | `[V]` | `grep -c '"--' frontend/src/pages/DevTokens.jsx` | ≥ 80 |
+| 5 | `screenshots/0.4a/*.png` is committable | `[V]` | `git check-ignore -v screenshots/0.4a/x.png` | **no match** |
+| 6 | IBM Plex installed | `[A]` | `fc-match "IBM Plex Sans"` | an IBMPlex font. If Noto → `sudo apt install fonts-ibm-plex`, re-check, report |
+| 7 | `mockups/` has no HTML | `[V]` | `ls mockups/*.html 2>&1` | no such file |
+| 8 | `design/02` carries a BSC row | `[V]` | `grep -n "Balanced Scorecard" design/02-traceability-matrix.md` | present |
 
 ---
 
 ## 8. Build phases
 
-### Phase 1 — Token map *(must complete and be reviewed before Phase 2)*
-- Rewrite `theme.css` as primitives + roles per §5.1
-- Produce the deprecation table in `dod.md`
-- Add the `CONTRACTS.md` entry per §5.2
-- **Verify:** I2 and I7 pass; every role in §5.1's list is declared exactly once;
-  deprecation table accounts for all 89 original tokens
+**Phase 1 — token map + consumers.** *Rework of commit `76d5e3a`.* Rewrite `theme.css`;
+apply the §5.2 remap to `main.jsx` **and add the throw-on-empty guard**; rewrite
+`DevTokens.jsx`; produce the deprecation table; add the `CONTRACTS.md` entry.
+**Verify:** I2, I3, I8 · `npm run build` exits 0 · `/_dev/tokens` renders both tiers ·
+antd Button/Select/Table still themed, with a screenshot proving it.
+**>>> STOP AND REPORT. Do not start Phase 2. <<<**
 
-### Phase 2 — Mockup A · Situation
-- Build per §5.3, §5.4, §5.6, §5.7
-- **Verify:** renders from the filesystem; I1, I3, I5, I6 pass; screenshots at 1440 /
-  1280 / 1024
-
-### Phase 3 — Mockup B · Platform
-- Same. **Verify:** same, plus the hybrid banner and split-rule selector are present and
-  legible
-
-### Phase 4 — Mockup C · Applications
-- Same. **Verify:** same, plus wizard step 3 shows all three deployment modes with the
-  §5.6 warnings
-
-### Phase 5 — Consistency pass
-- All three read as one product: same header, same budget strip, same card grammar, same
-  type scale
-- **Verify:** the three 1440 screenshots side by side; I4 and the §10 checklist
+**Phase 2 — Situation.** **Verify:** I1, I4, I5, I6, I7 · all three states · shots at
+1440/1280/1024.
+**Phase 3 — Platform.** Same.
+**Phase 4 — Applications.** Same.
+**Phase 5 — consistency pass.** Three 1440 shots side by side: shared header, budget strip,
+card grammar, type scale.
 
 ---
 
@@ -403,33 +414,55 @@ Loading states are out of scope for static mockups — note them as annotations 
 
 | Item | Status | Evidence |
 |---|---|---|
-| Pre-flight rows 1–7 reported | | |
-| Phase 1 — token map + deprecation table + CONTRACTS entry | | |
-| Phase 2 — Situation | | |
-| Phase 3 — Platform | | |
-| Phase 4 — Applications | | |
-| Phase 5 — consistency pass | | |
-| I1 no primitives or raw values in mockups | | |
-| I2 roles resolve to primitives, one level | | |
-| I3 no engine vocabulary | | |
-| I4 Riverside is content, not structure | | |
-| I5 no external requests | | |
-| I6 every visible string is in §5.6 | | |
-| I7 no tokens declared outside `theme.css` | | |
-| O1 badge states — decision recorded | | |
-| O2 state presentation — decision recorded | | |
-| O3 percentage vs decimal — decision recorded | | |
-| Screenshots ×9 (3 screens × 3 viewports) in `screenshots/0.4a/` | | |
-| Every displayed metric traced to `design/02-traceability-matrix.md` | | |
-| No files touched outside `theme.css`, `mockups/`, `CONTRACTS.md`, `dod.md` | | |
-| Auth canary | | **N-A** — static HTML, no auth |
-| Instance-isolation canary | | **N-A** — no state |
-| Casepack validator | | **N-A** — no casepacks yet |
+| Pre-flight rows 1–8, especially row 3 | | |
+| Phase 1 — map, consumers, guard, deprecation table | | |
+| `npm run build` clean after the consumer rewrite | | |
+| antd still themed — screenshot | | |
+| Phases 2–5 | | |
+| I1–I8 | | |
+| Strings not in §5.6, listed and justified | | |
+| Screenshots ×9 in `screenshots/0.4a/` | | |
+| `docs/mockup-review.md`, including font install | | |
+| Files touched: only those named in §1 | | |
+| Auth / instance / casepack canaries | | **N-A** — static, no state, no auth |
 
 ---
 
 ## 10. Review checklist
 
-`playthrough.md` in this folder. **Adapted:** static mockups have no browser workflow, so
-the playthrough is a structured review. Fresh auditor mandatory
-(`GOVERNANCE.md §6.1` — this module has a visual surface).
+`playthrough.md`, with two v2 amendments: Part A gains a consumer check (does the app still
+build, and is antd still themed?), and the D-series references §5.4's now-complete data.
+
+---
+
+## 11. Doc deltas landed with this spec
+
+- `design/02-traceability-matrix.md` §E — Balanced Scorecard row **added**
+- `handoffs/README.md` — Phase 0 table corrected to match `design/06-plan-index.md`
+- `CONTRACTS.md` — design-token entry marked **PROSPECTIVE**, `Last updated` bumped
+- `.gitignore` — `!screenshots/0.4a/*.png` added
+- `SPEC_PROTOCOL.md` v1.2 — §4.1 named compliant route, §4.2 out-of-scope dependency check
+
+---
+
+## 12. v1 defect disposition
+
+| # | v1 defect | Fixed in v2 by |
+|---|---|---|
+| 1 | Token rewrite broke `main.jsx` / `DevTokens.jsx`, both out of scope | §1 scope · §5.2 remap + guard · pre-flight row 3 |
+| 2 | I1+I5+I7 jointly unsatisfiable | §4 named compliant route · I6 permits one `theme.css` link |
+| 3 | BSC required by §5.3 and forbidden by §2 | matrix row added · values in §5.4 |
+| 4 | Three required states had no numbers | §5.4 STATE blocks |
+| 5 | I6 unsatisfiable — ~30 strings listed, ~70 needed | §5.6 complete · I5 permits justified residue |
+| 6 | I3 vs I4 contradiction on `casepack` | I4 no longer greps it |
+| 7 | "No headroom" vs "uses all remaining capacity" | §5.6 wording aligned |
+| 8 | Screenshots gitignored | `.gitignore` fixed on main · pre-flight row 5 |
+| 9 | Badge vocabulary was engine language; "error" breached GOVERNANCE §4.9 | §5.6 student labels; "Needs attention" |
+| 10 | No overlay/annotation roles despite being required | added to §5.1 |
+| 11 | I1 grep false negative and false positive | `--p-` prefix mandated · declaration-context hex check |
+| 12 | "monthly cost" vs "$3,100 per round" | "per round" throughout |
+| 13 | I2/I6 shipped prose, not commands | all eight invariants executable |
+| 14 | README numbering conflicted with the spec | README corrected |
+| 15 | CONTRACTS entry lacked PROSPECTIVE and a date bump | both applied |
+| 16 | Signal codes mandated visible but unlisted; "EOL" was IT vocabulary | §5.4 display names · I4 greps EOL/RTO/RPO |
+| 17 | IBM Plex absent, would vanish silently | install documented · pre-flight row 6 · visible fallback |
