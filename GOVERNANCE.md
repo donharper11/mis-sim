@@ -231,6 +231,32 @@ AUDITOR   Independent pass with fresh context. Re-runs the Playthrough Script in
           browser. Files findings with stable IDs in findings/. Does not fix.
 ```
 
+### 6.1 When the auditor must be a fresh agent
+
+**Builder ≠ Auditor is absolute.** You verify what you intended to write, not what you
+wrote. No exceptions, ever.
+
+**Author ≠ Auditor scales with blast radius.** An author auditing their own spec shares
+its blind spots — they will check the build against a mental model that may itself be
+wrong. That matters enormously on some modules and barely at all on others:
+
+| Module class | Auditor |
+|---|---|
+| Engine, scoring, casepack schema (`E*`), student screens (`S*`) | **Fresh agent, mandatory.** Spec errors here are expensive and reach students |
+| Platform scaffolding, instructor console (`P*`, `I*`) | Fresh agent, strongly preferred |
+| Infrastructure with **no student surface and no scoring factor** | Author-audit permitted, with the caveat declared in the findings file |
+
+The author-audit exception requires **all** of: the module captures and displays no
+scoring factor; it ships no student-facing screen; the builder ran the Playthrough Script
+in a real browser and attached evidence; and the reviewer independently re-ran the
+invariant checks rather than accepting pasted output.
+
+**Applied once:** module 0.2 (scaffold), closed 2026-07-26 by user decision. See
+`findings/0.2-2026-07-26-author-review.md`.
+
+Fresh auditors are mandatory from **0.4a onward** — the first module with a visual
+surface.
+
 ---
 
 ## 7. Conflict rule
@@ -252,5 +278,9 @@ opened.
 
 ## Changelog
 
+- **1.1** (2026-07-26) — added §6.1: auditor independence scales with blast radius.
+  Builder≠Auditor absolute; Author≠Auditor mandatory for E*/S*, permitted-with-caveat for
+  infrastructure with no student surface and no scoring factor. User decision, applied to
+  module 0.2.
 - **1.0** (2026-07-26) — initial. Adapted from `worklab/GOVERNANCE.md` and
   `nexus/governance_md_camdani_nexus.md`.
