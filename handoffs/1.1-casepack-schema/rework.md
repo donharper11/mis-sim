@@ -3,9 +3,30 @@
 **Drafted by:** the AUDITOR of `findings/1.1-2026-07-27-audit.md` · **Date:** 2026-07-27
 **Branch:** `build/1.1-casepack` @ `a27e6cc` · **Verdict:** substance PASS · lineage FAIL
 
-> **Status: PROVISIONAL — one author decision blocks the single builder item.** The gate below
-> fails closed, so this is safe to hand over early: a builder receiving it before the decision
-> lands will stop and report rather than pick a number.
+> # ⛔ GATE LIFTED — 2026-07-27. NO BUILDER ACTION REQUIRED. THIS PACKET IS CLOSED.
+>
+> **The gate was over-calibrated and it is withdrawn.** A builder reached it, correctly
+> refused to choose a value, and reported — exactly as instructed. The instruction was the
+> problem, not the response.
+>
+> `1.1-002` is a **Data** finding, and the audit never rated it blocking. Gating a builder on
+> it treated a display fixture as though the engine read it as ground truth. It does not:
+> `seed.py` persists nothing, the 0.2 baseline migration is still `pass`, and neither the
+> scoring engine (1.4) nor the round runner (1.6) exists. Nothing consumes these figures, and
+> **1.3 rebuilds the pack from the mis_lite harvest**, at which point authored fixtures are
+> replaced wholesale. Blocking work now to correct $2,000 in a figure that is about to be
+> regenerated buys nothing.
+>
+> **Disposition:** carried to `handoffs/1.3-harvest/spec.md` §5.1a as **CG-6**, where §5.4a
+> already reads the pinned figures back against 0.4 §5.4 — the check that makes it matter.
+> Closing CG-6 also closes `0.4-002`.
+>
+> **1.1-001 (lineage) is unaffected and still open.** It is a separate finding, it is not a
+> builder task, and it is recorded below. Do not read this closure as covering it.
+>
+> Nothing below requires action. It is retained as the record of what was asked and why.
+
+---
 
 **Scale check.** The 1.1 audit produced three findings and **only one is builder work.** The
 other two are a decision about `main` and a withdrawal of the auditor's own error. Do not read
