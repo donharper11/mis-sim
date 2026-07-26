@@ -128,6 +128,35 @@ that chain was the reviewer.**
   *Example:* "no engine code branches on casepack identity" ships with
   `grep -rniE "riverside|grocer" engine/ → expect zero hits; paste output.`
 
+### 4.1 Name one compliant route
+
+Every invariant set ships with **one concrete implementation described as satisfying all
+of them simultaneously.** Write the sentence. If you cannot, the invariants contradict
+each other and the spec does not ship.
+
+Invariants are written one at a time, each reasonable in isolation. Nothing catches a
+contradiction between them except deliberately constructing a route through the whole set.
+
+**Proven, 2026-07-26, module 0.4a v1.** Three invariants: mockups must reference role
+tokens · must declare no tokens outside `theme.css` · must make no external reference. A
+relative `<link>` breached the third, an inline `<style>` block the second, a raw hex the
+first. There was no compliant route. The builder could not have completed the module
+without violating something.
+
+### 4.2 Out-of-scope claims are verified, not asserted
+
+A spec that declares a file or directory out of scope carries a **pre-flight row proving
+nothing in it depends on what is being changed.** Executable, not asserted.
+
+An out-of-scope list is a claim about the blast radius of a change. Written from intent
+rather than inspection, it is a guess — and the builder inherits it as a constraint.
+
+**Proven, same module.** v1 declared "nothing under `frontend/src/` except `theme.css`"
+while rewriting the token names that `main.jsx` reads at runtime to theme Ant Design.
+`getPropertyValue` returns `""` for a missing name, so the application would have
+degraded **silently**. One `grep -rn "getPropertyValue\|var(--" frontend/src` would have
+caught it; it is now pre-flight row 3 of that spec.
+
 - **Copy is spec'd.** Student-facing strings are written out, not described. Vocabulary
   drift starts in paraphrase.
 - **Visual-acceptance rule.** Any spec whose acceptance is how a screen reads MUST ship
@@ -222,6 +251,10 @@ Every spec in this project additionally states:
 
 ## Changelog
 
+- **1.2** (2026-07-26) — added §4.1 *Named compliant route* and §4.2 *Out-of-scope
+  dependency check*. Both prompted by 0.4a v1, which shipped three jointly unsatisfiable
+  invariants and declared files out of scope that consumed what it changed — 17 defects
+  found by audit before a builder was harmed.
 - **1.1** (2026-07-26) — added §2.1 *Findings carry their proof* and §2.2 *Reviewer
   self-check*. Extends evidence discipline from specs to findings: any claim about
   external state ships the command and its output, run before filing. Prompted by a

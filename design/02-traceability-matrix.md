@@ -97,6 +97,7 @@ All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-r
 | Causal trace ("throttled by …") | the three term decompositions | ✅ |
 | Signals you missed, with round first shown | `signal` ledger | ✅ |
 | Event resolution + blast radius | `arch_edge` traversal, `event.precondition` | ✅ |
+| **Balanced Scorecard — Financial · Customer · Internal Process · Learning & Growth** | roll-up of §A/B/C/D per `design/03`; computed in 1.4 §5.4 | ✅ |
 | Management question answerability | `entity_ownership`, `arch_edge`, level-of-detail | ❓ **see G3** |
 | Competitor moves | `competitor_action` | ⚠️ **see G4** |
 | Debrief written reflection | Debrief › reflection box | ⚠️ **see G5** |

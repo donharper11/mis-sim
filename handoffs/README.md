@@ -151,10 +151,15 @@ DO NOT FIX ANYTHING. You report. A builder fixes.
 Per `design/05-implementation-plan.md §5`. Nothing in Phase 1 starts until the Phase 0
 gate passes.
 
-| # | Module | Deliverable |
-|---|---|---|
-| 0.1 | Governance set | ✅ `GOVERNANCE.md` · `QUALITY_PROTOCOL.md` · `SPEC_PROTOCOL.md` · `CONTRACTS.md` |
-| 0.2 | Repo decision + scaffold | **OPEN — needs a call.** See `design/05-implementation-plan.md` |
-| 0.3 | S0 design-system library | Ported/adapted from `globalstrat/.../components/design-system/` |
-| 0.4 | Reference mockups ×10 | `mockups/` — static HTML, BECSR manner |
-| **Gate** | | Governance reviewed · mockups approved · library renders a sample page matching a mockup |
+| # | Module | Deliverable | Status |
+|---|---|---|---|
+| 0.1 | Governance set | `GOVERNANCE` · `QUALITY_PROTOCOL` · `SPEC_PROTOCOL` · `CONTRACTS` | ✅ merged |
+| 0.2 | Repo scaffold, FastAPI + React skeleton, design tokens | | ✅ merged `d638939` |
+| 0.4a | Canonical token map + mockup pilot ×3 | `theme.css` two-tier · `mockups/` | in flight |
+| 0.4b | Reference mockups ×7 | `mockups/` | blocked on 0.4a review |
+| 0.6 | Design-system component library | `frontend/src/components/design-system/` | blocked on 0.4b |
+
+> Phase 0 IDs are historical — `0.4a`/`0.4b`/`0.6` rather than `0.3`/`0.4`/`0.5`.
+> Not renamed because 0.4a is in flight. Phases 1–7 use clean sequential IDs.
+> Authoritative list: `design/06-plan-index.md`.
+
