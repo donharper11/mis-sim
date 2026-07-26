@@ -47,6 +47,24 @@ under `handoffs/` use the packet ID.
 
 **Gate:** governance reviewed · 10 mockups approved · library renders a mockup pixel-close
 
+### Carried findings — must be consumed by the packet named, not just read here
+
+Written in by the auditor of `0.4a`, per `GOVERNANCE.md §8` — a finding parked in
+`findings/` is a letter nobody opened. **Whoever authors the component-library spec must
+fold these into it and say so in that spec's Spec Basis.** Until then they are open.
+
+| Source | Item | Destination packet |
+|---|---|---|
+| `0.4a-011` | **`IBM Plex Mono` is declared and never delivered.** `frontend/index.html:7` requests `IBM+Plex+Sans` only; `frontend/src/styles/theme.css:32` declares `--p-font-mono: 'IBM Plex Mono', 'Courier New', monospace`. No `@font-face`, no font file tracked, no font package in `package.json` — all three verified 2026-07-26. Body text is correct in production; **every monospace surface renders Courier New** (Liberation Mono on Linux). Only `/_dev/tokens` consumes the mono role today, so nothing student-facing is affected yet. **The spec must settle font delivery:** extend the CDN request to both faces, or self-host both and drop the third-party call — which for a BNBU cohort also removes a Google Fonts request from every student's browser. Hard-stops at Phase 7 pilot readiness | **component library** *(`0.5` per the table above, `0.6` per the correction block — see below)* |
+| `0.4a-002`, `0.4a-009` | Both were value drift hidden under a deprecation note reading "rename". The 89-row table in `handoffs/0.4a-mockup-pilot/dod.md` is the **only** map from the old token names to the new ones, and this packet ports globalstrat components against it. Read the notes, not just the columns | **component library** |
+
+> **Numbering conflict, unresolved — flagged, not decided.** The correction block above states
+> Phase 0 keeps its historical IDs (`0.4a` · `0.4b` · `0.6`); the Phase 0 table immediately
+> below uses the clean scheme (`0.3` · `0.4` · `0.5`). `handoffs/README.md:159-162` and
+> `handoffs/0.4a-mockup-pilot/spec.md:5` both follow the *prose*. Under `GOVERNANCE.md §7`
+> the disagreement is itself the finding, so the auditor did not pick a side: the rows above
+> name the packet by function. Filed as `0.4a-012`.
+
 ---
 
 ## Phase 1 — Engine · 7 packets
