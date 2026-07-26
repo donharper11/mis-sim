@@ -119,7 +119,7 @@ alignment can be measured. Neither may be skippable.
 
 ```
 Phase 0  Foundation             4   CLOSED
-Phase 1  Engine                 7   1.1 built, audit BLOCKING (see §6)
+Phase 1  Engine                 7   1.1 built and audited; 1.2 ready
 Phase 2  Platform scaffolding   5   specced
 Phase 3  Student core loop      8   not specced
 Phase 4  Student + AI          11   not specced
@@ -139,17 +139,27 @@ input to Phase 3/4 rather than a packet.
 
 ---
 
-# 6. Open blockers — read before touching anything
+# 6. Open items — read before touching anything
 
-### 1.1-001 · BLOCKING · the module is on `main` inside the wrong commit
+### 1.1-001 · CLOSED 2026-07-27 by user decision · no action
 
-1.1's entire implementation reached `main` inside a commit titled *"Add 0.5 coverage-gaps
-spec"* — swept there by a `git add -A` on a shared working directory. **The code is sound;
-the route it took is not, and it has never passed an audit.** Resolve before building on it.
+1.1's implementation reached `main` inside a commit titled *"Add 0.5 coverage-gaps spec"* —
+swept there by a `git add -A` on a shared working directory. The audit's verdict was
+**substance PASS, lineage FAIL**: I1–I8 re-run independently, `CONTRACTS.md` checked field
+by field, the seeder executed.
+
+**Disposition:** `findings/1.1-2026-07-27-audit.md` stands as the record of audit for
+`621b8d2`'s engine content. No revert, no re-land. The provenance is documented rather than
+rewritten — history cannot be un-committed, and the code was verified on its merits.
+
+*Carried forward:* `1.1-002` (two authored homes for round-3 capital) became **CG-6** in
+1.3 — derive the roll-ups rather than authoring them twice. Closing CG-6 also closes
+`0.4-002`.
 
 ### Content gaps in the shipped pack — all owned by 1.3, which has not run
 
 ```
+CG-6  round-3 capital authored in two places → derive it   (from 1.1-002)
 CG-1  5 of 7 capabilities have no watch rule → they can never raise a signal,
       are invisible to responsiveness scoring, and can never arm an event
 CG-2  3 event cards for 6 rounds × 4 strategies → strategies that draw nothing

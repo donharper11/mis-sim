@@ -98,10 +98,10 @@ stakeholder layer adopted, market layer deferred.
 
 ## Open blockers
 
-See `BATTLECARD.md` §6. Briefly: **`1.1-001`** — module 1.1's implementation reached `main`
-inside a commit documenting other work and has never passed an audit. Five content gaps in
-the shipped pack (`findings/content-coverage-2026-07-27.md`) and six scoring factors with
-no capture point anywhere (`findings/field-coverage-2026-07-27.md`).
+See `BATTLECARD.md` §6. **No blocking findings open.** Carried work: six content gaps owned
+by 1.3 (`findings/content-coverage-2026-07-27.md`, plus CG-6 from the 1.1 audit) and six
+scoring factors with no UI capture point (`findings/field-coverage-2026-07-27.md`), which
+land in Phase 3/4.
 
 ---
 
@@ -109,7 +109,7 @@ no capture point anywhere (`findings/field-coverage-2026-07-27.md`).
 
 ```
 0  Foundation             4 packets    CLOSED
-1  Engine                 7 packets    ← current. 1.1 built, audit blocking
+1  Engine                 7 packets    ← current. 1.1 built and audited; 1.2 ready
    GATE: 6 rounds × 4 scripted teams, no dominant strategy
 2  Platform scaffolding   5 packets    specced
 3  Student core loop      8 packets    direction only
