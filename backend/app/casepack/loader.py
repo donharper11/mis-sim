@@ -15,6 +15,23 @@ class CasepackLoadError(ValueError):
     """Raised when a casepack file cannot be parsed or validated."""
 
 
+SECTION_FILES = {
+    "metadata": "pack.yaml",
+    "strategies": "strategies.yaml",
+    "capabilities": "capabilities.yaml",
+    "catalog": "catalog.yaml",
+    "platform": "platform.yaml",
+    "entities": "entities.yaml",
+    "watch_rules": "watch_rules.yaml",
+    "events": "events.yaml",
+    "stakeholders": "stakeholders.yaml",
+    "preferences": "preferences",
+    "policies": "policies.yaml",
+    "questions": "questions.yaml",
+    "labels": "labels.yaml",
+}
+
+
 def _read_yaml(path: Path) -> Any:
     try:
         with path.open("r", encoding="utf-8") as handle:
@@ -65,5 +82,8 @@ def load_casepack(pack_dir: str | Path) -> Casepack:
         return Casepack.model_validate(raw)
     except ValidationError as exc:
         first = exc.errors()[0]
-        field = ".".join(str(part) for part in first["loc"])
-        raise CasepackLoadError(f"{field}: {first['msg']}") from exc
+        loc = [str(part) for part in first["loc"]]
+        section = loc[0] if loc else "casepack"
+        file_name = SECTION_FILES.get(section, section)
+        field = ".".join(loc)
+        raise CasepackLoadError(f"{file_name}: {field}: {first['msg']}") from exc
