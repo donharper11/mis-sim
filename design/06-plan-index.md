@@ -47,14 +47,14 @@ fold these into it and say so in that spec's Spec Basis.** Until then they are o
 | Source | Item | Destination packet |
 |---|---|---|
 | `0.3-011` | **`IBM Plex Mono` is declared and never delivered.** `frontend/index.html:7` requests `IBM+Plex+Sans` only; `frontend/src/styles/theme.css:32` declares `--p-font-mono: 'IBM Plex Mono', 'Courier New', monospace`. No `@font-face`, no font file tracked, no font package in `package.json` — all three verified 2026-07-26. Body text is correct in production; **every monospace surface renders Courier New** (Liberation Mono on Linux). Only `/_dev/tokens` consumes the mono role today, so nothing student-facing is affected yet. **The spec must settle font delivery:** extend the CDN request to both faces, or self-host both and drop the third-party call — which for a BNBU cohort also removes a Google Fonts request from every student's browser. Hard-stops at Phase 7 pilot readiness | **component library** *(`0.5`)* |
-| `0.4a-002`, `0.4a-009` | Both were value drift hidden under a deprecation note reading "rename". The 89-row table in `handoffs/0.4a-mockup-pilot/dod.md` is the **only** map from the old token names to the new ones, and this packet ports globalstrat components against it. Read the notes, not just the columns | **component library** |
+| `0.3-002`, `0.3-009` | Both were value drift hidden under a deprecation note reading "rename". The 89-row table in `handoffs/0.3-mockup-pilot/dod.md` is the **only** map from the old token names to the new ones, and this packet ports globalstrat components against it. Read the notes, not just the columns | **component library** |
 
 > **Numbering conflict, unresolved — flagged, not decided.** The correction block above states
 > Phase 0 keeps its historical IDs (`0.3` · `0.4` · `0.5`); the Phase 0 table immediately
 > below uses the clean scheme (`0.3` · `0.4` · `0.5`). `handoffs/README.md:159-162` and
-> `handoffs/0.4a-mockup-pilot/spec.md:5` both follow the *prose*. Under `GOVERNANCE.md §7`
-> the disagreement is itself the finding, so the auditor did not pick a side: the rows above
-> name the packet by function. Filed as `0.3-012`.
+> **RESOLVED 2026-07-26.** The contradiction is gone: Phase 0 is now `0.1 · 0.2 · 0.3 ·
+> 0.4 · 0.5` everywhere — table, prose, README, spec, and folder name. Finding `0.3-012`
+> is closed.
 
 ---
 
