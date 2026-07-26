@@ -24,7 +24,7 @@ under `handoffs/` use the packet ID.
 
 ---
 
-## Phase 0 — Foundation · 6 packets
+## Phase 0 — Foundation · 4 packets · **CLOSED**
 
 *No product code. Establishes governance, the repo, and the visual grammar.*
 
@@ -34,10 +34,13 @@ under `handoffs/` use the packet ID.
 | 0.2 | Repo scaffold, FastAPI + React skeleton, design tokens | — | ✅ merged `d638939` |
 | 0.3 | Canonical token map + mockup pilot ×3 | — | ✅ merged `3395de8` |
 | 0.4 | Reference mockups ×7 | — | ✅ merged `172de97` |
-| 0.5 | **Coverage gaps** — Governance screen · information policy · TCO checklist · capital request | — | spec written, ready to dispatch |
-| 0.6 | Design-system component library | S0 lib | blocked on 0.5 |
 
-**Gate:** governance reviewed · 10 mockups approved · library renders a mockup pixel-close
+> **Closed 2026-07-27 at four packets.** Two items previously listed here were misfiled:
+> the coverage-gap screens and the component library. Both are Phase 3 work — building
+> them as mockups or as a library against unfinished layouts means building them twice.
+> Moved to Phase 3 inputs.
+
+**Gate:** ✅ met — governance in force, 19 mockups merged, visual grammar established
 
 ### Carried findings — must be consumed by the packet named, not just read here
 
@@ -95,33 +98,56 @@ auth canary
 
 ---
 
-## Phase 3 — Student core loop · 6 packets
+## Phase 3 — Student core loop · 8 packets
+
+The loop a student actually runs: see where you stand → decide → lock → read what happened.
 
 | ID | Packet | Label |
 |---|---|---|
-| 3.1 | Shell — sidebar, top bar, budget strip, round countdown | S0 |
-| 3.2 | Situation — scorecard, signals, capability cards | S1 |
-| 3.3 | Platform — hosting panels, shared services, split rule | S2 |
-| 3.4 | Applications — value chain, capability slots, purchase wizard | S3 |
-| 3.5 | Review & Lock — decision sheet, warnings mirror | S7 |
-| 3.6 | Debrief — causal trace, signals missed, TCO variance, scorecard | S8 |
+| 3.1 | **Design-system component library** *(was 0.6)* — built against real screens, not mockups. Implements the four `CONTRACTS.md` contracts; clears the four cosmetic findings parked from 0.3 | S0 lib |
+| 3.2 | Shell — sidebar, top bar, capital strip with *Request more*, round countdown | S0 |
+| 3.3 | Dashboard — Balanced Scorecard, unit-response chain, signals | S1 |
+| 3.4 | Platform — hosting panels, firm-wide services, split rule | S2 |
+| 3.5 | Components — the workbench table, detail tabs, six-step wizard | S3 |
+| 3.6 | Rollout — deployments table, per-deployment mix | S4 |
+| 3.7 | Review — decision sheet, warnings mirror, lock | S7 |
+| 3.8 | Debrief — the downloadable business status report | S8 |
 
-**Gate:** full-game playthrough completes 6 rounds through the UI
+Phase 4 carries the rest of the sidebar: Strategy · Security · Services · People ·
+Governance · Challenges, plus the AI layer.
+
+**Inputs carried in from Phase 0:**
+
+- `handoffs/0.5-coverage-gaps/spec.md` — **design input, not a mockup packet.** The
+  Governance screen, the six information-policy switches, the TCO checklist and the
+  capital request. Six scoring factors currently have no capture point anywhere
+  (`findings/field-coverage-2026-07-27.md`). Built once here, wired, rather than twice.
+  Governance itself lands in Phase 4; the policy switches, checklist and capital request
+  land in 3.2, 3.5 and 3.2 respectively
+- the four cosmetic findings parked from 0.3 — `.button`, `.close`, dead white in the
+  Cloud panel, split-rule prose. They become real components at **3.1**
+- the nineteen merged mockups as the visual reference
+
+**Gate:** the full-game playthrough completes six rounds through the UI, **and** a re-run
+of the field-coverage scan returns **zero** absences.
 
 ---
 
-## Phase 4 — Student remainder + AI layer · 8 packets
+## Phase 4 — Student remainder + AI layer · 11 packets
 
 | ID | Packet | Label |
 |---|---|---|
-| 4.1 | Organization — training, process, communication, IT staffing pool | S4 |
-| 4.2 | Governance — owners/sponsors, strategy declaration, portfolio, policy | S5 |
-| 4.3 | Challenges — inbox, event responses, rationale tags | S6 |
-| 4.4 | LLM ops — three-tier fallback, timeouts, cost logging | A4 |
-| 4.5 | Persona engine — state-grounded, numbers injected never recalled | A2 |
-| 4.6 | People — persona/stakeholder interviews (Tier-3 information) | S9 |
-| 4.7 | Coach + RAG — `mis_textbook`, chapter-filtered, explains never advises | A1 |
-| 4.8 | Debrief narrator — renders the computed trace as prose | A3 |
+| 4.1 | Strategy — declare, lock, what it measures you on | S5 |
+| 4.2 | Governance — capability ownership, in-flight portfolio *(carries FC-1, FC-2 from the coverage scan)* | S5 |
+| 4.3 | Security — components, gaps, and the six information-policy switches | — |
+| 4.4 | Services — support tiers, integration tiers, vendor support | — |
+| 4.5 | People — IT staffing capacity against operational load | S4 |
+| 4.6 | Challenges — inbox, event responses, rationale tags | S6 |
+| 4.7 | LLM ops — three-tier fallback, timeouts, cost logging | A4 |
+| 4.8 | Persona engine — state-grounded, numbers injected never recalled | A2 |
+| 4.9 | Stakeholder interviews — the Tier-3 information channel, not a decision | S9 |
+| 4.10 | Coach + RAG — `mis_textbook`, chapter-filtered, explains never advises | A1 |
+| 4.11 | Debrief narrator — renders the computed trace as prose | A3 |
 
 **Gates:** negligent-team playthrough produces a correct causal trace ·
 persona number-grounding audit, zero mismatches · adversarial coach probe,
@@ -171,16 +197,16 @@ finding returns to 1.1. This is the real test of the casepack schema.
 ## Totals
 
 ```
-Phase 0  Foundation             6   ████░░  4 merged
+Phase 0  Foundation             4   ████  CLOSED
 Phase 1  Engine                 7
 Phase 2  Platform scaffolding   5
-Phase 3  Student core loop      6
-Phase 4  Student + AI           8
+Phase 3  Student core loop      8
+Phase 4  Student + AI          11
 Phase 5  Instructor console     7
 Phase 6  Second casepack        2
 Phase 7  Pilot readiness        3
                                ──
-                               44   4 complete
+                               47   4 complete
 ```
 
 ## Parallel tracks
