@@ -41,29 +41,29 @@ separate build gate; the map and the mockups are reviewed together.)*
 
 ---
 
-## Part B — the naïve-reader path
+## Part B — the naive-reader path *(v3)*
 
-Read each screen as someone who has never seen this project. Do not consult the spec while
-doing this — answer from the screen alone, then check.
+Read each screen as someone who has never seen this project. Answer from the screen alone,
+without consulting the spec, then check. **These four questions are what v2 could not
+answer.**
 
 | # | Screen | Question answered from the screen alone | EXPECT |
 |---|---|---|---|
-| B1 | Situation | What kind of business is this, and how is it doing? | answerable in under 30 seconds |
-| B2 | Situation | Order Fulfilment is at 25%. **Why?** | "Organisation" is findable without hunting — the throttle is stated, not inferred |
-| B3 | Situation | What should I worry about first? | the critical signal is visually dominant over the two warnings |
-| B4 | Situation | Is the budget healthy? | run-rate trend readable as *rising*, not just three numbers |
-| B5 | Platform | Where does our stuff run? | the two-panel split is immediately legible |
-| B6 | Platform | What do we not have? | "Not provisioned" reads as an **absence**, not an omission or a blank |
-| B7 | Platform | Can we add another system? | "No headroom" is unmissable |
-| B8 | Applications | Which parts of the business are we good at? | value chain coverage scannable in one pass |
-| B9 | Applications | Where should I invest, given my strategy? | strategy-weighted activities visually distinct |
-| B10 | Applications | What is missing from Order Fulfilment? | the empty slot reads as empty, not as small |
-| B11 | Applications | What does the SaaS option really cost? | both warnings visible **before** "Add to plan" |
-| B12 | all three | Is this one product? | shared header, budget strip, card grammar, type scale |
+| B1 | Components | **What do we own?** | a table, answerable in under 10 seconds |
+| B2 | Components | **How would I add one?** | one obvious action, no hunting |
+| B3 | Components | **Where do I change a system's settings?** | clicking a row is discoverable |
+| B4 | Rollout | **Which units have actually adopted anything?** | the neglected row is visually obvious |
+| B5 | Platform | **What runs where?** | the two panels dominate |
+| B6 | Platform | **What are we missing?** | "Not provisioned" reads as an absence, not a blank |
+| B7 | Platform | **Can we add anything more?** | "No headroom" is unmissable |
+| B8 | Wizard | **What does each option really cost?** | all warnings visible before "Add to plan" |
+| B9 | Wizard | Could I skip saying what it's for, or who it's for? | **no — steps 3 and 4 are mandatory** |
+| B10 | Rollout | Could I train everyone at once? | **no — every control names one deployment** |
+| B11 | all three | Is this one product? | shared shell, strip, table grammar, type scale |
+| B12 | any | Is there a score anywhere on these pages? | **none — scores live on Dashboard and Debrief** |
 
-Any "no" is a **UX finding with a screenshot**, not a note.
-
----
+Any "no" on B1–B8 or B11, or any "yes" on B9, B10, B12, is a **UX finding with a
+screenshot**, not a note.
 
 ## Part C — language
 
