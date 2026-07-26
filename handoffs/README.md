@@ -155,11 +155,11 @@ gate passes.
 |---|---|---|---|
 | 0.1 | Governance set | `GOVERNANCE` · `QUALITY_PROTOCOL` · `SPEC_PROTOCOL` · `CONTRACTS` | ✅ merged |
 | 0.2 | Repo scaffold, FastAPI + React skeleton, design tokens | | ✅ merged `d638939` |
-| 0.4a | Canonical token map + mockup pilot ×3 | `theme.css` two-tier · `mockups/` | in flight |
-| 0.4b | Reference mockups ×7 | `mockups/` | blocked on 0.4a review |
-| 0.6 | Design-system component library | `frontend/src/components/design-system/` | blocked on 0.4b |
+| 0.3 | Canonical token map + mockup pilot ×3 | `theme.css` two-tier · `mockups/` | in flight |
+| 0.4 | Reference mockups ×7 | `mockups/` | blocked on 0.3 review |
+| 0.6 | Design-system component library | `frontend/src/components/design-system/` | blocked on 0.4 |
 
-> Phase 0 IDs are historical — `0.4a`/`0.4b`/`0.6` rather than `0.3`/`0.4`/`0.5`.
-> Not renamed because 0.4a is in flight. Phases 1–7 use clean sequential IDs.
+> Phase 0 IDs are historical — `0.3`/`0.4`/`0.5` rather than `0.3`/`0.4`/`0.5`.
+> Not renamed because 0.3 is in flight. Phases 1–7 use clean sequential IDs.
 > Authoritative list: `design/06-plan-index.md`.
 

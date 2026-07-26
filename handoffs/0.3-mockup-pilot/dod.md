@@ -1,4 +1,4 @@
-# 0.4a — Definition of Done
+# 0.3 — Definition of Done
 
 > Filled by the BUILDER. This table IS the session report.
 
@@ -21,7 +21,7 @@
 | O1 badge states — decision recorded | | |
 | O2 state presentation — decision recorded | | |
 | O3 percentage vs decimal — decision recorded | | |
-| Screenshots ×9 (3 screens × 3 viewports) in `screenshots/0.4a/` | | |
+| Screenshots ×9 (3 screens × 3 viewports) in `screenshots/0.3/` | | |
 | Every displayed metric traced to `design/02-traceability-matrix.md` | | |
 | No files touched outside `theme.css`, `mockups/`, `CONTRACTS.md`, `dod.md` | | |
 | Auth canary | | **N-A** — static HTML, no auth |

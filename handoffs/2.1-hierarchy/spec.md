@@ -158,7 +158,7 @@ silently.
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **Models + migration.** *Verify:* I1, I2, I4, I5.
 2. **Services with narrow cascades.** *Verify:* I3; deleting a course with an active
@@ -175,7 +175,7 @@ silently.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–5, esp. row 4 resolved | | |
-| Phases 1–4 verified | | |
+| Steps 1–4 verified | | |
 | I1–I6 | | |
 | Two-section two-casepack fixture exists | | |
 | Migration up/down/up clean | | |

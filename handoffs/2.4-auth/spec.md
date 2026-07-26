@@ -169,7 +169,7 @@ leak.
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **`User` model** (extend or create per row 5) + migration. *Verify:* migration
    up/down/up.
@@ -190,7 +190,7 @@ leak.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–7, esp. rows 5 and 6 | | |
-| Phases 1–6 verified | | |
+| Steps 1–6 verified | | |
 | I1–I7 | | |
 | All eight §5.4 null/negative rows | | |
 | **Auth canary** | | **PASS required — this packet is where it becomes real** |

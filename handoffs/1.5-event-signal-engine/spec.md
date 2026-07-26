@@ -160,13 +160,13 @@ access request, employee snooping) exactly as capacity signals arm outages.
 |---|---|---|---|---|
 | 1 | 1.4 merged; graph analysis available | `[V]` | `grep -n "def serving_path\|def articulation" backend/app/engine/graph.py` | both present |
 | 2 | Riverside pack has watch rules and events | `[V]` | `grep -c "^- key:" packs/riverside_grocery/{watch_rules,events}.yaml` | ≥1 and ≥20 |
-| 3 | `ORD-CAP-01` exists with the 0.4a semantics | `[V]` | `grep -A4 "ORD-CAP-01" packs/riverside_grocery/watch_rules.yaml` | warn 0.80, critical 0.95 |
+| 3 | `ORD-CAP-01` exists with the 0.3 semantics | `[V]` | `grep -A4 "ORD-CAP-01" packs/riverside_grocery/watch_rules.yaml` | warn 0.80, critical 0.95 |
 | 4 | The action-type enum from 1.2 E05 exists | `[V]` | `grep -rn "class ActionType\|ACTION_TYPES" backend/app/` | present |
 | 5 | 1.2 check E20 passes on Riverside | `[A]` | `validate_casepack packs/riverside_grocery \| grep E20` | no E20 error |
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **Watch-rule evaluation + ledger.** *Verify:* Riverside R2 raises `ORD-CAP-01` at
    utilisation 0.83 with `first_shown_round = 2`.
@@ -187,7 +187,7 @@ access request, employee snooping) exactly as capacity signals arm outages.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–5 | | |
-| Phases 1–5 verified | | |
+| Steps 1–5 verified | | |
 | I1–I7 | | |
 | O1, O2, O3 recorded | | |
 | Ledger carries both timestamps 1.4 needs | | |

@@ -304,27 +304,27 @@ events:
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
-**Phase 1 — Schema document.** Write `docs/casepack-schema.md`: every section, every
+**Step 1 — Schema document.** Write `docs/casepack-schema.md`: every section, every
 field, type, required/optional, and one worked example per section. **This is the artefact
 an instructor authors from.** *Verify:* every section in §5 documented; a reader can
 author a section without reading Python.
 
-**Phase 2 — Pydantic models.** `backend/app/casepack/models.py`. Types, enums, constraints.
+**Step 2 — Pydantic models.** `backend/app/casepack/models.py`. Types, enums, constraints.
 No I/O. *Verify:* `python -c "from app.casepack.models import Casepack"` succeeds;
 mypy/pyright clean.
 
-**Phase 3 — Loader.** `backend/app/casepack/loader.py` — directory → typed `Casepack`.
+**Step 3 — Loader.** `backend/app/casepack/loader.py` — directory → typed `Casepack`.
 Clear errors naming file and line. *Verify:* loads the skeleton pack; a deliberately
 malformed file produces an error naming the file and field.
 
-**Phase 4 — Skeleton pack.** `backend/packs/riverside_grocery/` — every file present,
+**Step 4 — Skeleton pack.** `backend/packs/riverside_grocery/` — every file present,
 structure complete, content **stubbed with `TODO` markers** where 1.3 will harvest.
-Real content only for the fixed figures in `handoffs/0.4a-mockup-pilot/spec.md §5.4`, so
+Real content only for the fixed figures in `handoffs/0.3-mockup-pilot/spec.md §5.4`, so
 the mockups and the engine agree. *Verify:* loader parses it; I3–I8 pass.
 
-**Phase 5 — Invariant checks as a script.** `backend/app/casepack/checks.py` — the
+**Step 5 — Invariant checks as a script.** `backend/app/casepack/checks.py` — the
 functions 1.2 will wrap in a CLI. *Verify:* all eight run against the skeleton.
 
 ---
@@ -334,11 +334,11 @@ functions 1.2 will wrap in a CLI. *Verify:* all eight run against the skeleton.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–6 reported | | |
-| Phase 1 — schema document | | |
-| Phase 2 — Pydantic models | | |
-| Phase 3 — loader with named errors | | |
-| Phase 4 — skeleton pack loads | | |
-| Phase 5 — checks script | | |
+| Step 1 — schema document | | |
+| Step 2 — Pydantic models | | |
+| Step 3 — loader with named errors | | |
+| Step 4 — skeleton pack loads | | |
+| Step 5 — checks script | | |
 | I1 no pack-identity branching | | |
 | I2 no displayed English in code | | |
 | I3 keys snake_case | | |

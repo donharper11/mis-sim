@@ -55,7 +55,7 @@ invariant I3 greps the result.
 5. **The 14 stakeholders become archetypes**; Riverside persona instances are **authored
    new** — mis_lite has roles, not people.
 6. **Riverside's fixed figures are authoritative.** Where harvested content conflicts with
-   `handoffs/0.4a-mockup-pilot/spec.md §5.4`, §5.4 wins — the mockups and the engine must
+   `handoffs/0.3-mockup-pilot/spec.md §5.4`, §5.4 wins — the mockups and the engine must
    agree.
 
 ---
@@ -105,7 +105,7 @@ entity ownership, integration requirements, training tiers) **does not exist and
 authored.**
 
 The builder does **not** invent these freely. Author them against:
-- the fixed figures in `0.4a/spec.md §5.4` where they overlap
+- the fixed figures in `0.3/spec.md §5.4` where they overlap
 - a stated rationale per item, recorded in provenance
 - archetype defaults for anything not case-specific
 
@@ -142,7 +142,7 @@ fit multipliers before normalisation.
 | I4 | Weights normalised, not copied | every strategy's `capability_weights` sums to 1.0 ±0.001 | 4/4 |
 | I5 | Every discarded table appears in PROVENANCE | cross-check §5.1 discards vs the file | all present |
 | I6 | Pack passes 1.2 with zero ERRORs | `validate_casepack packs/riverside_grocery` | exit 0 |
-| I7 | §5.4 figures match the pack | script comparing the 0.4a fixed data to loaded pack values | exact |
+| I7 | §5.4 figures match the pack | script comparing the 0.3 fixed data to loaded pack values | exact |
 
 ---
 
@@ -162,7 +162,7 @@ looks for it in all nine.
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **Read-only extraction script** → intermediate JSON, one file per source table.
    *Verify:* I1; row counts match pre-flight.
@@ -182,14 +182,14 @@ looks for it in all nine.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–6, esp. row 5 per table | | |
-| Phases 1–6 verified | | |
+| Steps 1–6 verified | | |
 | I1 read-only | | |
 | I2 no `trialNNN` | | |
 | I3 no textbook prose in labels | | |
 | I4 weights normalised | | |
 | I5 discards documented | | |
 | I6 validator exit 0 | | |
-| I7 0.4a figures match | | |
+| I7 0.3 figures match | | |
 | O1, O2, O3 recorded | | |
 | `PROVENANCE.md` complete | | |
 | `docs/curriculum-coverage.md` — the 26 concepts | | |

@@ -173,7 +173,7 @@ Row 7 matters: a registry tested with one pack is not tested.
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **Migration + model.** *Verify:* I3, I4, I5, I8.
 2. **`register_casepack`** invoking 1.2. *Verify:* I2, I6; §5.3 rows 1–4.
@@ -193,7 +193,7 @@ Row 7 matters: a registry tested with one pack is not tested.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–7, esp. row 7 | | |
-| Phases 1–6 verified | | |
+| Steps 1–6 verified | | |
 | I1–I8 | | |
 | All nine §5.3 null/negative rows | | |
 | Two packs registered and bound to two sections | | |

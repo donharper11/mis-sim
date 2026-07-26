@@ -171,7 +171,7 @@ confident nonsense.
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **Archetype loader** — YAML decision sheets per round (O1). *Verify:* `balanced` loads
    and produces six valid sheets.
@@ -183,7 +183,7 @@ confident nonsense.
 5. **Sensitivity sweep** (O2). *Verify:* every sub-factor reported with its swing.
 6. **Run it for real.** *Verify:* the actual gate result, whatever it is, in `dod.md`.
 
-Phase 6 is not "make it pass." It is "run it and report the truth." A failing gate here is
+Step 6 is not "make it pass." It is "run it and report the truth." A failing gate here is
 the harness doing its job.
 
 ---
@@ -193,7 +193,7 @@ the harness doing its job.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–6, esp. row 6 | | |
-| Phases 1–6 verified | | |
+| Steps 1–6 verified | | |
 | I1–I6 | | |
 | O1, O2, O3 recorded | | |
 | Four mandatory archetypes implemented | | |

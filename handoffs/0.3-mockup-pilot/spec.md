@@ -1,8 +1,8 @@
-# 0.4a — Canonical Token Map + Mockup Pilot (3 screens) · Build Spec
+# 0.3 — Canonical Token Map + Mockup Pilot (3 screens) · Build Spec
 
 **Version 2** · **Authored under** `SPEC_PROTOCOL.md` v1.2
 **Author:** Claude (design session) · **Date:** 2026-07-26
-**Phase:** 0 · **Depends on:** 0.2 (merged) · **Blocks:** 0.4b, 0.6
+**Phase:** 0 · **Depends on:** 0.2 (merged) · **Blocks:** 0.4, 0.6
 
 > **v2 supersedes v1 entirely.** v1 was unbuildable: it forbade touching files that consume
 > the tokens it rewrote, shipped three jointly unsatisfiable invariants, required a metric
@@ -30,7 +30,7 @@
 **Verified commands, this session:**
 ```
 fc-match "IBM Plex Sans"                    → NotoSans-Regular.ttf  (not installed)
-git check-ignore -v screenshots/0.4a/x.png  → .gitignore:16         (was blocked)
+git check-ignore -v screenshots/0.3/x.png  → .gitignore:16         (was blocked)
 echo '<a href="#add-to-plan">' | grep -cE "#[0-9a-fA-F]{3,8}"  → 1  (v1 I1 false positive)
 ```
 
@@ -56,7 +56,7 @@ v1 omitted**.
 - `docs/mockup-review.md` — how to view them, including the font install
 
 **Out of scope:**
-- Mockups 4–10 — that is 0.4b, after the review gate
+- Mockups 4–10 — that is 0.4, after the review gate
 - Any React component — that is 0.6
 - Any backend, route, or data fetch
 - Any file under `frontend/src/` **other than the three named above**
@@ -385,27 +385,27 @@ by §5.5.
 | 2 | `main.jsx` consumes 11 token names | `[V]` | `grep -c 'token("--' frontend/src/main.jsx` | 11 |
 | 3 | **No other file under `frontend/src` reads tokens** | `[V]` | `grep -rn "getPropertyValue\|var(--" frontend/src --include=*.jsx --include=*.js \| grep -v "main.jsx\|DevTokens.jsx"` | zero — **this is the check whose absence made v1 unbuildable** |
 | 4 | `DevTokens.jsx` enumerates literals | `[V]` | `grep -c '"--' frontend/src/pages/DevTokens.jsx` | ≥ 80 |
-| 5 | `screenshots/0.4a/*.png` is committable | `[V]` | `git check-ignore -v screenshots/0.4a/x.png` | **no match** |
+| 5 | `screenshots/0.3/*.png` is committable | `[V]` | `git check-ignore -v screenshots/0.3/x.png` | **no match** |
 | 6 | IBM Plex installed | `[A]` | `fc-match "IBM Plex Sans"` | an IBMPlex font. If Noto → `sudo apt install fonts-ibm-plex`, re-check, report |
 | 7 | `mockups/` has no HTML | `[V]` | `ls mockups/*.html 2>&1` | no such file |
 | 8 | `design/02` carries a BSC row | `[V]` | `grep -n "Balanced Scorecard" design/02-traceability-matrix.md` | present |
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
-**Phase 1 — token map + consumers.** *Rework of commit `76d5e3a`.* Rewrite `theme.css`;
+**Step 1 — token map + consumers.** *Rework of commit `76d5e3a`.* Rewrite `theme.css`;
 apply the §5.2 remap to `main.jsx` **and add the throw-on-empty guard**; rewrite
 `DevTokens.jsx`; produce the deprecation table; add the `CONTRACTS.md` entry.
 **Verify:** I2, I3, I8 · `npm run build` exits 0 · `/_dev/tokens` renders both tiers ·
 antd Button/Select/Table still themed, with a screenshot proving it.
 **>>> STOP AND REPORT. Do not start Phase 2. <<<**
 
-**Phase 2 — Situation.** **Verify:** I1, I4, I5, I6, I7 · all three states · shots at
+**Step 2 — Situation.** **Verify:** I1, I4, I5, I6, I7 · all three states · shots at
 1440/1280/1024.
-**Phase 3 — Platform.** Same.
-**Phase 4 — Applications.** Same.
-**Phase 5 — consistency pass.** Three 1440 shots side by side: shared header, budget strip,
+**Step 3 — Platform.** Same.
+**Step 4 — Applications.** Same.
+**Step 5 — consistency pass.** Three 1440 shots side by side: shared header, budget strip,
 card grammar, type scale.
 
 ---
@@ -415,13 +415,13 @@ card grammar, type scale.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–8, especially row 3 | | |
-| Phase 1 — map, consumers, guard, deprecation table | | |
+| Step 1 — map, consumers, guard, deprecation table | | |
 | `npm run build` clean after the consumer rewrite | | |
 | antd still themed — screenshot | | |
-| Phases 2–5 | | |
+| Steps 2–5 | | |
 | I1–I8 | | |
 | Strings not in §5.6, listed and justified | | |
-| Screenshots ×9 in `screenshots/0.4a/` | | |
+| Screenshots ×9 in `screenshots/0.3/` | | |
 | `docs/mockup-review.md`, including font install | | |
 | Files touched: only those named in §1 | | |
 | Auth / instance / casepack canaries | | **N-A** — static, no state, no auth |
@@ -440,7 +440,7 @@ build, and is antd still themed?), and the D-series references §5.4's now-compl
 - `design/02-traceability-matrix.md` §E — Balanced Scorecard row **added**
 - `handoffs/README.md` — Phase 0 table corrected to match `design/06-plan-index.md`
 - `CONTRACTS.md` — design-token entry marked **PROSPECTIVE**, `Last updated` bumped
-- `.gitignore` — `!screenshots/0.4a/*.png` added
+- `.gitignore` — `!screenshots/0.3/*.png` added
 - `SPEC_PROTOCOL.md` v1.2 — §4.1 named compliant route, §4.2 out-of-scope dependency check
 
 ---

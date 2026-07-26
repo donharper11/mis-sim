@@ -137,7 +137,7 @@ each other and the spec does not ship.
 Invariants are written one at a time, each reasonable in isolation. Nothing catches a
 contradiction between them except deliberately constructing a route through the whole set.
 
-**Proven, 2026-07-26, module 0.4a v1.** Three invariants: mockups must reference role
+**Proven, 2026-07-26, module 0.3 v1.** Three invariants: mockups must reference role
 tokens · must declare no tokens outside `theme.css` · must make no external reference. A
 relative `<link>` breached the third, an inline `<style>` block the second, a raw hex the
 first. There was no compliant route. The builder could not have completed the module
@@ -252,7 +252,7 @@ Every spec in this project additionally states:
 ## Changelog
 
 - **1.2** (2026-07-26) — added §4.1 *Named compliant route* and §4.2 *Out-of-scope
-  dependency check*. Both prompted by 0.4a v1, which shipped three jointly unsatisfiable
+  dependency check*. Both prompted by 0.3 v1, which shipped three jointly unsatisfiable
   invariants and declared files out of scope that consumed what it changed — 17 defects
   found by audit before a builder was harmed.
 - **1.1** (2026-07-26) — added §2.1 *Findings carry their proof* and §2.2 *Reviewer

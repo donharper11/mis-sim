@@ -1,4 +1,4 @@
-# 0.4a — Review Checklist
+# 0.3 — Review Checklist
 
 **Authored by:** Claude (design session) · **Date:** 2026-07-26 · **Before any code:** yes
 **Spec:** `spec.md` in this folder
@@ -98,7 +98,7 @@ Any "no" is a **UX finding with a screenshot**, not a note.
 | E5 | 1280 | same |
 | E6 | 1024 | same |
 | E7 | Zero-radius throughout | BECSR is flat. A rounded corner is a finding |
-| E8 | 9 screenshots in `screenshots/0.4a/` | 3 screens × 3 viewports |
+| E8 | 9 screenshots in `screenshots/0.3/` | 3 screens × 3 viewports |
 
 ---
 
@@ -106,7 +106,7 @@ Any "no" is a **UX finding with a screenshot**, not a note.
 
 | # | Check | EXPECT |
 |---|---|---|
-| F1 | `git diff --name-only main..<branch>` | only `theme.css`, `mockups/*`, `CONTRACTS.md`, `handoffs/0.4a-mockup-pilot/dod.md`, `screenshots/0.4a/*` |
+| F1 | `git diff --name-only main..<branch>` | only `theme.css`, `mockups/*`, `CONTRACTS.md`, `handoffs/0.3-mockup-pilot/dod.md`, `screenshots/0.3/*` |
 | F2 | Mockups 4–10 | **not built.** Building ahead is a finding — the review gate exists for a reason |
 | F3 | React components | none |
 | F4 | `dod.md` | every row filled; each `N-A` carries a reason |
@@ -120,7 +120,7 @@ Any "no" is a **UX finding with a screenshot**, not a note.
 Run date:            Auditor:
 Part A:  PASS / FAIL      (if FAIL, stop — do not review screens)
 Parts B–F passed:    /
-Findings filed:  findings/0.4a-<YYYY-MM-DD>-audit.md
+Findings filed:  findings/0.3-<YYYY-MM-DD>-audit.md
 Verdict:  PASS / FAIL
 ```
 
@@ -128,5 +128,5 @@ Findings carry their proof per `SPEC_PROTOCOL.md §2.1` — a grep with output, 
 screenshot, or a `file:line`. A single blocking finding = FAIL.
 
 **Then the human review gate.** Even on PASS, these three screens go to the user before
-0.4b begins. They set the grammar the other seven copy, and that judgement is not the
+0.4 begins. They set the grammar the other seven copy, and that judgement is not the
 auditor's to make.

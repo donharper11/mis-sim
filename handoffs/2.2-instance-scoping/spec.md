@@ -145,7 +145,7 @@ Lives at `backend/tests/test_instance_isolation.py` and is referenced by
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **FK migration.** *Verify:* I1, I4, I5, I6.
 2. **`ScopedRepo` + refactor every runtime read through it.** *Verify:* I2; the existing
@@ -161,7 +161,7 @@ Lives at `backend/tests/test_instance_isolation.py` and is referenced by
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–6, esp. row 3 | | |
-| Phases 1–4 verified | | |
+| Steps 1–4 verified | | |
 | I1–I6 | | |
 | 1.6's six-round run still passes after the refactor | | |
 | Canary path referenced in `QUALITY_PROTOCOL.md §5` | | |

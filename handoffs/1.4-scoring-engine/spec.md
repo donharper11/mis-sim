@@ -205,18 +205,18 @@ decomposition is not a deliverable.
 | 1 | 1.1 and 1.3 merged; Riverside pack loads | `[V]` | `python -m app.casepack.loader packs/riverside_grocery` | no exception |
 | 2 | Pack validates clean | `[V]` | `validate_casepack packs/riverside_grocery` | exit 0 |
 | 3 | `design/02` lists the factors implemented here | `[V]` | `grep -c "^|" design/02-traceability-matrix.md` | matrix present |
-| 4 | 0.4a fixed figures for the arithmetic target | `[V]` | `grep -n "0.75 · Org 0.51 · Mgmt 0.65" handoffs/0.4a-mockup-pilot/spec.md` | present |
+| 4 | 0.3 fixed figures for the arithmetic target | `[V]` | `grep -n "0.75 · Org 0.51 · Mgmt 0.65" handoffs/0.3-mockup-pilot/spec.md` | present |
 | 5 | A graph library is available or needed | `[A]` | `grep -n "networkx" backend/requirements.txt` | absent → **NEW, add it**, or implement articulation points directly (~30 lines) |
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **Graph model + analysis** — serving path, coverage, min-capacity, path availability,
    articulation points, blast radius. *Verify:* I8; a hand-built 7-node fixture reproduces
    the `design/02` worked example.
 2. **Technology term.** *Verify:* Riverside round 3 order fulfilment → `tech ≈ 0.75`
-   (0.4a §5.4). A deviation >0.01 is a **STOP and report** — either the engine or the
+   (0.3 §5.4). A deviation >0.01 is a **STOP and report** — either the engine or the
    mockup figures are wrong, and that must be resolved, not absorbed.
 3. **Organisation term** incl. the IT staffing pool. *Verify:* `org ≈ 0.51`.
 4. **Management term** incl. stakeholder alignment. *Verify:* `mgmt ≈ 0.65`; I4.
@@ -224,7 +224,7 @@ decomposition is not a deliverable.
    `org` as throttle.
 6. **Property tests.** *Verify:* I5, I6, I7, I8.
 
-Phase 2's verify step is the most important in this packet: it is where the engine and the
+Step 2's verify step is the most important in this packet: it is where the engine and the
 already-approved mockups either agree or expose a contradiction.
 
 ---
@@ -234,7 +234,7 @@ already-approved mockups either agree or expose a contradiction.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–5 | | |
-| Phases 1–6 verified | | |
+| Steps 1–6 verified | | |
 | Riverside R3 reproduces 0.75 / 0.51 / 0.65 / 0.249 | | |
 | I1–I8 | | |
 | O1, O2, O3 recorded | | |

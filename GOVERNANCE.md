@@ -254,7 +254,7 @@ invariant checks rather than accepting pasted output.
 **Applied once:** module 0.2 (scaffold), closed 2026-07-26 by user decision. See
 `findings/0.2-2026-07-26-author-review.md`.
 
-Fresh auditors are mandatory from **0.4a onward** — the first module with a visual
+Fresh auditors are mandatory from **0.3 onward** — the first module with a visual
 surface.
 
 ---

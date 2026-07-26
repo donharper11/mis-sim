@@ -158,7 +158,7 @@ locked banner. This packet exposes them; it renders nothing.
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **Model + migration.** *Verify:* I1, I7.
 2. **`tick(now)` with lock and advance paths.** *Verify:* I2, I3, I4, I5.
@@ -173,7 +173,7 @@ locked banner. This packet exposes them; it renders nothing.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–6, esp. row 6 resolved | | |
-| Phases 1–4 verified | | |
+| Steps 1–4 verified | | |
 | I1–I7 | | |
 | All seven §5.4 null/negative cases | | |
 | Instance-isolation canary still passes | | |
