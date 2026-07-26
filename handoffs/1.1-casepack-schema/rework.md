@@ -21,8 +21,9 @@
 > already reads the pinned figures back against 0.4 §5.4 — the check that makes it matter.
 > Closing CG-6 also closes `0.4-002`.
 >
-> **1.1-001 (lineage) is unaffected and still open.** It is a separate finding, it is not a
-> builder task, and it is recorded below. Do not read this closure as covering it.
+> **1.1-001 (lineage) is also closed** — 2026-07-27, by user decision: the audit stands as the
+> record for `621b8d2`'s engine content, with no revert and no re-land. Not a builder task
+> either. See `findings/1.1-2026-07-27-audit.md`.
 >
 > Nothing below requires action. It is retained as the record of what was asked and why.
 
