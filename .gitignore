@@ -16,3 +16,4 @@ coverage/
 screenshots/**/*.png
 !screenshots/0.2/*.png
 !screenshots/0.3/*.png
+!screenshots/0.4/*.png

@@ -222,3 +222,35 @@ real components there rather than mockup CSS.
 That row teaches complementary assets with no theory attached. It is the clearest evidence
 so far that the Rollout table is the right structure, and it is worth protecting when 0.4
 and 0.5 restyle it.
+
+
+---
+
+# Correction — 2026-07-27
+
+**`0.3-021` was not fixed. It was mis-dispositioned.**
+
+The v3.2 change marked §5.4 STRUCTURAL, added `level of detail` to I4, and stated
+**"no rebuild required."** That was wrong on the last point. `0.3-021` was a defect in the
+*built file*, not only in the spec. The spec amendment prevents recurrence; it does not
+repair `mockups/components-detail.html`, which merged to `main` still carrying it.
+
+Net effect: an invariant was added in the same change that shipped a codebase failing it.
+The 0.4 builder hit it on pre-flight, correctly refused to resolve a spec/code conflict on
+its own authority (`GOVERNANCE.md §7`), and stopped.
+
+**A second gap underneath.** 0.3's §5.7 had no copy for the detail tabs at all — only
+§5.4's structural description. So the defect was not repairable without new copy, which is
+why it survived a PASS verdict. That copy is now written, as **0.4 §5.5a**.
+
+**Disposition:** repaired under 0.4 as a scoped exception. One file, one change, nothing
+else in it touched.
+
+## Standing rule R5
+
+**A finding against a built artifact is not closed by amending the spec.**
+
+Spec amendments prevent recurrence. Artifacts need repair. When dispositioning a finding,
+state which of the two it is — and if it is both, say so and schedule the repair. "No
+rebuild required" is a claim about an artifact and needs the same evidence as any other
+claim about state (`QUALITY_PROTOCOL.md §1`).

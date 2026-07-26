@@ -54,6 +54,12 @@ Dispatched with the playthrough's Part B table and the mockups, nothing else. An
 who has read the copy list is disqualified and says so rather than running it anyway.
 *(0.3: the auditor correctly refused, having read §5.6 four times.)*
 
+**R5 — A finding against a built artifact is not closed by amending the spec.**
+Spec amendments prevent recurrence; artifacts need repair. State which one a disposition
+is, and if both, schedule the repair. *(0.3-021 was marked spec-fixed with "no rebuild
+required" and the defect merged to `main`, where it failed an invariant added in the same
+change.)*
+
 **R4 — Repo-wide greps run over tracked files.**
 `git ls-files | xargs grep …`, never `grep -r` over a tree containing `node_modules`.
 *(0.3: `gstatic` false-matched `existingStaticNonFields` in `@babel/helpers`.)*

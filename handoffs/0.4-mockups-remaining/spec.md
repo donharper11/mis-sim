@@ -53,6 +53,24 @@ Review       the decision sheet, the warnings mirror, the lock
 - The six 0.3 mockups — do not restyle them. The four cosmetic findings carried from 0.3
   belong to **0.5**, where those become real components
 
+**One exception, added 2026-07-27 — `mockups/components-detail.html` IS in scope,
+for one repair only.**
+
+Finding `0.3-021` was a defect in the built file. It was dispositioned as spec-fixed with
+"no rebuild required", which was wrong — the spec amendment prevents recurrence but the
+artifact merged to `main` carrying the defect. `main` therefore fails this packet's **I4**
+before a line is written:
+
+```
+mockups/components-detail.html:13   "entities it owns · level of detail · who else needs them"
+```
+
+`level of detail` is barred from student screens by `CONTRACTS.md`. Three and a half of the
+five tab panels render their own field list as visible text.
+
+**Repair it with the copy in §5.5a. Change nothing else in that file** — not the CSS, not
+the tab list, not the close control. Those remain 0.5's.
+
 ---
 
 ## 2. Project-specific statements
@@ -382,6 +400,36 @@ REVIEW
 
 Anything not listed goes in `dod.md` with a justification.
 
+### 5.5a Component detail tabs — the copy 0.3 never had *(repair of `0.3-021`)*
+
+0.3 §5.4 described what each tab *contains*; no copy block ever gave what it *says*. This
+is that copy, for `Order Mgmt v4.2`. Only `Deployment` is currently correct — it is
+included so the pattern is unambiguous.
+
+```
+Overview      "Order management for the eight stores. Serves outbound logistics.
+               Used by 140 people in store operations."
+
+Deployment    "Runs on-premises · standard configuration · uses 35% of platform capacity"
+              (already correct — do not change)
+
+Data          "Holds every order, line by line. You can see what each customer
+               ordered — not what they browsed.
+               Inventory counts live here too, and the warehouse system needs them."
+
+Connections   "Fed by the point-of-sale system — product records.
+               Feeds financial reporting and the warehouse.
+               3 connections · $900 per round"
+
+Lifecycle     "Installed round 2 · expected to last 6 rounds.
+               Vendor support current, no end date announced."
+              buttons: "Upgrade"  ·  "Retire"
+```
+
+**Note the register on Data.** `CONTRACTS.md` bars `level of detail` and `grain` from
+student screens and requires the business form instead — *"you can see what each customer
+ordered, not what they browsed"* rather than *"ORDER at order_line grain."*
+
 ### 5.6 Files to produce
 
 ```
@@ -396,6 +444,8 @@ mockups/challenges.html             inbox list
 mockups/challenges-item.html        one item opened, response options
 mockups/review.html
 mockups/review-locked.html
+
+mockups/components-detail.html   REPAIRED, not rebuilt — §5.5a only
 ```
 
 Eleven files, one state each.
@@ -438,6 +488,7 @@ control and passed while the requirement failed — see `alignment.md` addendum.
 | 4 | Three contracts exist | `[V]` | `grep -c "Status badge scale\|Selected state\|Row opens detail" CONTRACTS.md` | 3 |
 | 5 | **Nothing outside `mockups/` and `docs/` is touched** *(§4.2)* | `[V]` | after building: `git diff --name-only main..HEAD` | only `mockups/*`, `docs/*`, `handoffs/0.4-mockups-remaining/dod.md`, `screenshots/0.4/*` |
 | 6 | `screenshots/0.4/` is committable | `[A]` | `git check-ignore -v screenshots/0.4/x.png` | **`.gitignore` negates `0.2` and `0.3` only — add `!screenshots/0.4/*.png` before shooting, and report it** |
+| 6b | **`main` currently FAILS I4** — this is known and is repaired by §5.5a, not a reason to stop | `[V]` | `git ls-files "mockups/*.html" \| xargs grep -c "level of detail"` | one hit, in `components-detail.html`. **After the §5.5a repair: zero** |
 | 7 | 0.3's grammar readable | `[V]` | `ls mockups/*.html` | 8 files. **Open `components.html` and `components-detail.html` before building — they are the pattern** |
 
 ---
@@ -471,6 +522,8 @@ I15 on the tiers, I16 and I19 on Security.
 | Steps 1–6 verified | | |
 | I1, I3–I9, I12–I19 | | |
 | Eleven files, one state each | | |
+| `components-detail.html` repaired per §5.5a; nothing else in it changed | | |
+| I4 passes across **all** tracked mockups after the repair | | |
 | Strings not in §5.5 / 0.3 §5.7, justified | | |
 | Screenshots ×33 (11 files × 3 viewports) in `screenshots/0.4/` | | |
 | `.gitignore` negation added for `screenshots/0.4` | | |
