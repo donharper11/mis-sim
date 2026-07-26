@@ -1,6 +1,6 @@
 # <MODULE-ID> — <Module Name> · Build Spec
 
-**Authored under** `SPEC_PROTOCOL.md` v1.0
+**Authored under** `SPEC_PROTOCOL.md` v1.1
 **Author:** <agent/human id> · **Date:** YYYY-MM-DD
 **Phase:** <n> · **Depends on:** <module ids, or "none">
 **Reference mockup:** `mockups/<file>.html` *(required if acceptance is visual)*
