@@ -170,3 +170,55 @@ AUDIT B   a fresh agent, given ONLY the playthrough's Part B table and the
 ```
 
 `0.3` is not done until both return.
+
+---
+
+# Addendum — 2026-07-27, after audit `038f54e`
+
+**Verdict: PASS, 0 blocking.** Part B ran blind on six respec'd screens, and that window is
+now permanently shut — nobody who has read v3.1 can run it again.
+
+## Carried into v3.2 because they propagate to the next seven screens
+
+| Finding | Why it could not wait | Fixed by |
+|---|---|---|
+| **B9** — wizard showed steps 1–4 at once, live commit, no selected state; a component could be added with no purpose and no unit | **No selected state exists anywhere in the design.** Seven more screens and a component library would have copied the absence | `CONTRACTS.md` *Selected state* · **I15** · **I11 rewritten** |
+| **B3** — nothing signalled a Components row opens anything | Same — every future table inherits it | `CONTRACTS.md` *Row opens detail* · **I16** |
+| **0.3-021** — §5.4's structural description rendered as tab content | §5.4 is written the same way for every future detail screen | §5.4 marked **STRUCTURAL, NOT COPY** · I4 now greps `level of detail` |
+
+**I11 is the instructive one.** It read *"no skip/later affordance"* and passed, while the
+requirement it existed to protect failed completely — the wizard never asked at all. An
+invariant phrased as *the absence of a control* is satisfiable by a design that has no
+controls. Rewritten as a positive requirement.
+
+## Mine, fixed in v3.2
+
+- **`0.3-018`** — the label was wrong, not the numbers. `$220,000` and `$400,000` are
+  rounds 3 and 1 of the budget curve, but *"Capital remaining $X of $Y"* with Y changing
+  each round reads as two programme totals for one company. Now **"Capital this round —
+  $44,000 remaining of $220,000."**
+- **`platform-empty`** showed *"Round 1 of 6"* beside *"locked in round 2."* Round 1 now
+  reads **"Strategy not yet declared."**
+
+## Recorded, not fixed — carried to 0.4 / 0.5
+
+Single-screen and cosmetic; they do not shape what comes next.
+
+```
+.button lacks display:inline-flex; width:fit-content   → [upgrade][retire] as one slab
+.close stretches to full flex height                   → reads as a broken box
+~440px dead white in the Cloud panel
+split-rule options run together as prose
+```
+
+The first two belong to **0.5** — they are `Button` and a dismiss control, which become
+real components there rather than mockup CSS.
+
+## What B4 confirmed
+
+> Store spreadsheets · 140 people · — trained · process unchanged · no communication ·
+> 48% adoption
+
+That row teaches complementary assets with no theory attached. It is the clearest evidence
+so far that the Rollout table is the right structure, and it is worth protecting when 0.4
+and 0.5 restyle it.

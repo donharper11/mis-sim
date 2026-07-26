@@ -155,6 +155,34 @@ defect — inconsistent application is how `0.3-013` hid.
 
 ---
 
+## Selected state — PROSPECTIVE
+
+**Canonical:** anywhere a choice is offered, the chosen option is **visibly selected** and
+unchosen options are visibly not. Roles: `--border-focus` for the selected outline,
+`--surface-row-highlight` for its fill, `--input-editable-bg` for a live editable field.
+
+**Rule:** a control that accepts a choice but shows no selection is a defect. Found as
+`0.3` finding **B9** — the Components wizard rendered steps 1-4 simultaneously with no
+selected state and a live *Add to plan*, so a student could add a component without ever
+saying what it was for or who it was for.
+
+**Consequence for wizards:** one step visible at a time, the current step's choice
+selected, and the commit action **disabled until every required step has a selection**.
+Disabled uses `--action-disabled` / `--action-disabled-text`, and states its reason.
+
+---
+
+## Row opens detail — PROSPECTIVE
+
+**Canonical:** in any table whose rows open a detail view, the row carries a visible
+affordance — a trailing chevron plus `--text-link` on the first cell, and a hover state
+using `--surface-row-highlight`.
+
+**Rule:** a clickable row that looks unclickable is a defect. Found as `0.3` finding
+**B3** — nothing on the Components table signalled that a row opened anything.
+
+---
+
 ## Harvested mis_lite content — NOTE, not a contract
 
 - Every mis_lite table carries a `trialNNN char(1)` column, uniformly `'T'`. It is a
