@@ -70,7 +70,7 @@
   --color-neutral: var(--text-muted);
 
   --color-primary: var(--accent-navy);
-  --color-primary-hover: var(--color-surface-800);
+  --color-primary-hover: #1E3A8A;
   --color-primary-light: var(--bg-highlight-row);
   --color-input-bg: var(--bg-card);
   --color-input-border: var(--color-surface-300);
@@ -224,4 +224,3 @@ select {
     grid-template-columns: 1fr;
   }
 }
-

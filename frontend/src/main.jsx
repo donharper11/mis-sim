@@ -15,6 +15,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       theme={{
         token: {
           colorPrimary: token("--accent-navy"),
+          colorPrimaryHover: token("--color-primary-hover"),
           colorInfo: token("--accent-blue"),
           colorSuccess: token("--accent-green"),
           colorWarning: token("--accent-amber"),
@@ -44,4 +45,3 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </ConfigProvider>
   </React.StrictMode>
 );
-
