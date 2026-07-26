@@ -32,7 +32,7 @@ under `handoffs/` use the packet ID.
 |---|---|---|---|
 | 0.1 | Governance set — GOVERNANCE, QUALITY_PROTOCOL, SPEC_PROTOCOL, CONTRACTS | — | ✅ merged |
 | 0.2 | Repo scaffold, FastAPI + React skeleton, design tokens | — | ✅ merged `d638939` |
-| 0.3 | Canonical token map + mockup pilot ×3 | — | spec written |
+| 0.3 | Canonical token map + mockup pilot ×3 | — | in flight — Step 1 done, Steps 1b–5 one pass |
 | 0.4 | Reference mockups ×7 | — | blocked on 0.3 review |
 | 0.5 | Design-system component library | S0 lib | blocked on 0.4 |
 

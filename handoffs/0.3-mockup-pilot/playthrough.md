@@ -22,7 +22,7 @@ Disconnect the network before opening. Anything that fails to render is a findin
 
 ---
 
-## Part A — the token map (Phase 1 gate; check before looking at any screen)
+## Part A — the token map (check first; it underpins every screen)
 
 | # | Check | EXPECT |
 |---|---|---|
@@ -35,7 +35,9 @@ Disconnect the network before opening. Anything that fails to render is a findin
 | A7 | `CONTRACTS.md` entry | present, in the file's existing format, states the one-step rule |
 | A8 | `grep -rn -- "--[a-z-]*:" frontend/src mockups/ \| grep -v theme.css` | zero hits (I7) |
 
-**If Part A fails, stop.** The mockups are built on it; reviewing them first wastes the pass.
+**If Part A fails, keep going but flag it loudly.** The mockups are built on the map, so a
+broken map shows up as broken screens — record both. *(v2.2: this is no longer a
+separate build gate; the map and the mockups are reviewed together.)*
 
 ---
 
@@ -118,7 +120,7 @@ Any "no" is a **UX finding with a screenshot**, not a note.
 
 ```
 Run date:            Auditor:
-Part A:  PASS / FAIL      (if FAIL, stop — do not review screens)
+Part A:  PASS / FAIL      (record; no longer blocks reviewing the screens)
 Parts B–F passed:    /
 Findings filed:  findings/0.3-<YYYY-MM-DD>-audit.md
 Verdict:  PASS / FAIL
