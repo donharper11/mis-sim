@@ -106,6 +106,12 @@ The calibration harness proves the maths. These prove a student can reach it.
 
 ## 4. Findings format
 
+> **Before filing, read `SPEC_PROTOCOL.md §2.1–2.2.` Every finding carries its proof —
+> `file:line`, a grep with output, or a command with output. Any claim about external
+> state (registries, advisories, upstream versions, live services) is **queried during
+> the session**, never recalled. A finding is an instruction in practice, and a builder
+> following it has no standing to push back.**
+
 Adopted from `aide-platform/TEST_ISSUES_LOG.md`, which worked.
 
 Stable IDs, grouped by area, one line each, root cause where known:
@@ -173,4 +179,6 @@ conflict, or mark something done that was not verified in a browser.
 
 ## Changelog
 
+- **1.1** (2026-07-26) — §4 now requires findings to carry their proof; cross-references
+  `SPEC_PROTOCOL.md` §2.1–2.2.
 - **1.0** (2026-07-26) — initial. Adapted from `worklab/docs/QUALITY_PROTOCOL.md`.
