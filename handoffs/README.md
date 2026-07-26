@@ -38,12 +38,30 @@ context.
 
 ---
 
+## Branch discipline
+
+```
+main                      protected by the audit gate — design docs and merged work only
+build/<MODULE-ID>         the builder works and commits here
+```
+
+The builder **never pushes to `main`.** It pushes its branch and reports. The auditor
+reviews that branch. Merge happens only after the audit verdict is PASS.
+
+If the audit is FAIL, a **fresh** builder takes the findings file and the same branch.
+The failing builder's context is not reused.
+
+---
+
 ## Opening instruction for a BUILDER agent
 
 Paste this. Do not paraphrase it.
 
 ```
 You are the BUILDER for module <MODULE-ID> of the MIS Simulation.
+
+REPO: /home/ubuntu/projects/mis-sim   (origin: github.com/donharper11/mis-sim)
+Work on branch build/<MODULE-ID>. Never push to main.
 
 READ FIRST, IN FULL, BEFORE ANY OTHER ACTION:
   1. ~/projects/mis-sim/GOVERNANCE.md
