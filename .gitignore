@@ -15,4 +15,4 @@ coverage/
 .DS_Store
 screenshots/**/*.png
 !screenshots/0.2/*.png
-!screenshots/0.4a/*.png
+!screenshots/0.3/*.png

@@ -1,20 +1,20 @@
-# 0.4a — Definition of Done
+# 0.3 — Definition of Done
 
 > Filled by the BUILDER. This table IS the session report.
 
 
 | Item | Status | Evidence |
 |---|---|---|
-| Pre-flight rows 1–8, especially row 3 | PASS | v2 gate passed before edits: `HEAD c3a2709`; `handoffs/0.4a-mockup-pilot/spec.md` line 3 reads `**Version 2**`. Row 3 condition rechecked by consumer scan: only `frontend/src/main.jsx`, `frontend/src/pages/DevTokens.jsx`, and `frontend/src/styles/theme.css` reference token names. |
-| Phase 1 — map, consumers, guard, deprecation table | PASS | `theme.css` rewritten as 38 `--p-` primitives + 77 v2 roles; `main.jsx` remapped to 11 live semantic roles and throws on empty token; `DevTokens.jsx` lists roles by category and primitives separately; 89-row deprecation table below has no missing, extra, or duplicate old tokens. |
+| Pre-flight rows 1–8, especially row 3 | PASS | v2 gate passed before edits: `HEAD c3a2709`; `handoffs/0.3-mockup-pilot/spec.md` line 3 reads `**Version 2**`. Row 3 condition rechecked by consumer scan: only `frontend/src/main.jsx`, `frontend/src/pages/DevTokens.jsx`, and `frontend/src/styles/theme.css` reference token names. |
+| Step 1 — map, consumers, guard, deprecation table | PASS | `theme.css` rewritten as 38 `--p-` primitives + 77 v2 roles; `main.jsx` remapped to 11 live semantic roles and throws on empty token; `DevTokens.jsx` lists roles by category and primitives separately; 89-row deprecation table below has no missing, extra, or duplicate old tokens. |
 | `npm run build` clean after the consumer rewrite | PASS | `vite build` completed; output assets `index-Gy2TMCAE.css` and `index-DzAF3_YJ.js`; only the existing chunk-size warning appeared. |
-| antd still themed — screenshot | PASS | Browser at `http://127.0.0.1:5200/_dev/tokens`, viewport 1280: Button background `rgb(30, 64, 175)`, Select border `rgb(217, 217, 217)`, Table header bg `rgb(250, 250, 250)`, header text `rgb(15, 23, 42)`, zero console errors, zero failed requests. Screenshot: `screenshots/0.4a/devtokens-rework-1280.png`. |
+| antd still themed — screenshot | PASS | Browser at `http://127.0.0.1:5200/_dev/tokens`, viewport 1280: Button background `rgb(30, 64, 175)`, Select border `rgb(217, 217, 217)`, Table header bg `rgb(250, 250, 250)`, header text `rgb(15, 23, 42)`, zero console errors, zero failed requests. Screenshot: `screenshots/0.3/devtokens-rework-1280.png`. |
 | Phases 2–5 | N-A | Hard stop after Phase 1 per v2 §8; mockups not started. |
 | I1–I8 | PASS | I2: `declared tokens: 115`, `required roles: 77`, `I2 one-hop role resolution: PASS`. I3: `grep -rn -- "^[[:space:]]*--[a-z-]*:" frontend/src mockups \| grep -v styles/theme.css` produced no output. I8: `main.jsx token refs: 11`, `missing roles: 0`, `primitive refs: 0`, `PASS`. I1/I4/I5/I6/I7 are not exercisable until mockups exist. |
 | Strings not in §5.6, listed and justified | N-A | No mockups built in Phase 1. |
-| Screenshots ×9 in `screenshots/0.4a/` | N-A | No mockups built in Phase 1; one dev-token proof screenshot produced for the Phase 1 consumer check. |
-| `docs/mockup-review.md`, including font install | N-A | Phase 1 rework only; no mockups or review doc started. |
-| Files touched: only those named in §1 | PASS | Source/doc changes limited to `frontend/src/styles/theme.css`, `frontend/src/main.jsx`, `frontend/src/pages/DevTokens.jsx`, `CONTRACTS.md`, and this DoD; one verification screenshot added under `screenshots/0.4a/`. |
+| Screenshots ×9 in `screenshots/0.3/` | N-A | No mockups built in Phase 1; one dev-token proof screenshot produced for the Phase 1 consumer check. |
+| `docs/mockup-review.md`, including font install | N-A | Step 1 rework only; no mockups or review doc started. |
+| Files touched: only those named in §1 | PASS | Source/doc changes limited to `frontend/src/styles/theme.css`, `frontend/src/main.jsx`, `frontend/src/pages/DevTokens.jsx`, `CONTRACTS.md`, and this DoD; one verification screenshot added under `screenshots/0.3/`. |
 | Auth / instance / casepack canaries | N-A | Static, no state, no auth. |
 
 ---
@@ -23,9 +23,9 @@
 
 | Finding / check | Result | Evidence |
 |---|---|---|
-| `0.4a-001` token consumers | PASS | `main.jsx` uses the exact v2 §5.2 remap and throws `Missing design token: <name>` on empty. Browser verified Button, Select, and Table remain themed on `/_dev/tokens`. |
-| `0.4a-002` neutral marker | PASS | Chose value preservation: `--status-neutral-marker: var(--p-slate-500)`, preserving old `--color-neutral` resolved value `#64748B`. |
-| `0.4a-005` contract format | PASS | `CONTRACTS.md` header updated and design-token heading marked `PROSPECTIVE`; primitive examples use the v2 `--p-` prefix. |
+| `0.3-001` token consumers | PASS | `main.jsx` uses the exact v2 §5.2 remap and throws `Missing design token: <name>` on empty. Browser verified Button, Select, and Table remain themed on `/_dev/tokens`. |
+| `0.3-002` neutral marker | PASS | Chose value preservation: `--status-neutral-marker: var(--p-slate-500)`, preserving old `--color-neutral` resolved value `#64748B`. |
+| `0.3-005` contract format | PASS | `CONTRACTS.md` header updated and design-token heading marked `PROSPECTIVE`; primitive examples use the v2 `--p-` prefix. |
 | Frontend token references | PASS | `frontend token references: 115`; `missing declarations: 0`. |
 | Deprecation accounting | PASS | `origin/main tokens: 89`; `deprecation rows: 89`; `missing: 0`; `extra: 0`; `duplicates: 0`. |
 | Browser swatches | PASS | `swatchCount: 115`; `blankSwatches: []`; sections include semantic role groups and primitive groups. |

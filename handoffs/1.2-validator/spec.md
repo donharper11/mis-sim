@@ -165,7 +165,7 @@ $ validate_casepack packs/riverside_grocery
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **Structural checks** E01–E11 wrapping 1.1's `checks.py`. *Verify:* each fires against a
    purpose-broken fixture; paste output.

@@ -168,7 +168,7 @@ Row 4 matters: this packet must not wait for 2.1, but it must not omit the colum
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
 1. **State model + migrations.** *Verify:* I4 on every table; `alembic upgrade head` then
    `downgrade` then `upgrade` cleanly.
@@ -189,7 +189,7 @@ Row 4 matters: this packet must not wait for 2.1, but it must not omit the colum
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–5 | | |
-| Phases 1–7 verified | | |
+| Steps 1–7 verified | | |
 | I1–I8 | | |
 | O1, O2, O3 recorded | | |
 | Resolution order matches §5.2 exactly | | |

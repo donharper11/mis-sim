@@ -13,23 +13,14 @@ The old module codes (`E4`, `S3`, `I1`, `A2`) survive only as **labels** so the
 implementation plan's §1 inventory stays readable. They are not identifiers. Folder names
 under `handoffs/` use the packet ID.
 
-> **Correction, 2026-07-26.** Earlier drafts used `0.4a`, `0.4b`, `0.6` — an artefact of
-> reordering the mockups ahead of the component library without renumbering.
+> **Numbering corrected, 2026-07-26.** Phase 0 previously used `0.4a`, `0.4b`, `0.6` —
+> an artefact of reordering the mockups ahead of the component library. Now sequential:
+> `0.3` = token map + mockup pilot (formerly `0.4a`), `0.4` = mockups ×7, `0.5` =
+> component library. Folder `handoffs/0.3-mockup-pilot/` renamed accordingly.
 >
-> **Not renamed retroactively.** `0.1` and `0.2` are merged; `0.4a` is in flight with a
-> builder working in `handoffs/0.4a-mockup-pilot/`. Renaming a folder mid-build breaks
-> the builder's paths for no benefit. The clean scheme therefore applies from **Phase 1
-> onward**, and Phase 0 keeps its historical IDs:
->
-> ```
->   0.1   governance            ✅ merged
->   0.2   scaffold + tokens     ✅ merged
->   0.4a  token map + pilot ×3  ← in flight   (would have been 0.3)
->   0.4b  mockups ×7                          (would have been 0.4)
->   0.6   component library                   (would have been 0.5)
-> ```
->
-> Ugly but stable. Phases 1–7 below use clean sequential IDs.
+> **"Phase" now means one thing.** Build steps inside a spec are **Steps**, not Phases —
+> `0.3` Step 1 is the token map; project Phase 1 is the engine (`1.1`–`1.7`). The two
+> were colliding.
 
 ---
 
@@ -41,9 +32,9 @@ under `handoffs/` use the packet ID.
 |---|---|---|---|
 | 0.1 | Governance set — GOVERNANCE, QUALITY_PROTOCOL, SPEC_PROTOCOL, CONTRACTS | — | ✅ merged |
 | 0.2 | Repo scaffold, FastAPI + React skeleton, design tokens | — | ✅ merged `d638939` |
-| 0.3 | Canonical token map + mockup pilot ×3 *(was 0.4a)* | — | spec written |
-| 0.4 | Reference mockups ×7 *(was 0.4b)* | — | blocked on 0.3 review |
-| 0.5 | Design-system component library *(was 0.6)* | S0 lib | blocked on 0.4 |
+| 0.3 | Canonical token map + mockup pilot ×3 | — | spec written |
+| 0.4 | Reference mockups ×7 | — | blocked on 0.3 review |
+| 0.5 | Design-system component library | S0 lib | blocked on 0.4 |
 
 **Gate:** governance reviewed · 10 mockups approved · library renders a mockup pixel-close
 

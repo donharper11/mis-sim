@@ -2,7 +2,7 @@
 
 **Authored under** `SPEC_PROTOCOL.md` v1.1
 **Author:** Claude (design session) · **Date:** 2026-07-26
-**Phase:** 0 · **Depends on:** none · **Blocks:** 0.4a mockups, 0.6 component library
+**Phase:** 0 · **Depends on:** none · **Blocks:** 0.3 mockups, 0.6 component library
 **Reference mockup:** none — no product screens in this module. See §4 O1.
 
 ---
@@ -54,7 +54,7 @@ page that proves the tokens render.
 **Out of scope — do not build these, even if it seems helpful:**
 - Any domain model (capability, catalog, casepack, round, decision, signal)
 - Any product screen from `design/05-implementation-plan.md §1.3`
-- The design-system component library — that is module 0.6
+- The design-system component library — that is module 0.5
 - Porting mis-tutor's AI services — that is A1/A2/A4 in Phase 4
 - Auth beyond a stub route that returns 501
 - Any casepack loading or validation
@@ -271,9 +271,9 @@ None. This module ships no student-facing strings. The sample page uses develope
 
 ---
 
-## 8. Build phases
+## 8. Build steps
 
-### Phase 1 — Backend skeleton
+### Step 1 — Backend skeleton
 - `backend/` per §5.1; requirements per §5.2; config, database, models/base
 - `main.py` with app factory, lifespan, health, `IntegrityError` handler (§5.3)
 - `auth.py` stub returning 501
@@ -281,23 +281,23 @@ None. This module ships no student-facing strings. The sample page uses develope
 - **Verify:** `docker compose up -d` → `curl -s localhost:8000/api/health` returns
   `{"status":"ok"}`; `alembic upgrade head` exits 0; `alembic current` shows the baseline
 
-### Phase 2 — Design tokens
+### Step 2 — Design tokens
 - `frontend/src/styles/theme.css` per §5.4 and O1
 - Ant Design `ConfigProvider` mapped to the tokens
 - **Verify:** invariant I1 check returns zero hits
 
-### Phase 3 — Frontend skeleton
+### Step 3 — Frontend skeleton
 - Vite + React 18 + antd ^5.23 + react-router-dom + axios + react-i18next (en only)
 - `api/client.js` with baseURL `/api`; Vite dev proxy to the backend
 - Router with `/_dev/tokens` and a 404 view
 - **Verify:** `npm run build` exits 0; `npm run dev` serves; browser loads
   `/_dev/tokens` with zero console errors
 
-### Phase 4 — Null paths
+### Step 4 — Null paths
 - Implement every row of §5.7
 - **Verify:** each row's verify step, individually, output pasted
 
-### Phase 5 — Invariants
+### Step 5 — Invariants
 - **Verify:** run all six checks in §6, paste output
 
 ---
@@ -307,10 +307,10 @@ None. This module ships no student-facing strings. The sample page uses develope
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–10 reported | | |
-| Phase 1 verify — health + alembic | | |
-| Phase 2 verify — I1 zero hits | | |
-| Phase 3 verify — build + browser | | |
-| Phase 4 verify — all 5 null-path rows | | |
+| Step 1 verify — health + alembic | | |
+| Step 2 verify — I1 zero hits | | |
+| Step 3 verify — build + browser | | |
+| Step 4 verify — all 5 null-path rows | | |
 | I1 no hardcoded colours/fonts | | |
 | I2 no `create_all` | | |
 | I3 no casepack identity | | |
