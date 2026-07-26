@@ -173,18 +173,43 @@ defect — inconsistent application is how `0.3-013` hid.
 
 ## Selected state — PROSPECTIVE
 
-**Canonical:** anywhere a choice is offered, the chosen option is **visibly selected** and
-unchosen options are visibly not. Roles: `--border-focus` for the selected outline,
-`--surface-row-highlight` for its fill, `--input-editable-bg` for a live editable field.
+**Two named patterns. No third.** The earlier version of this entry named tokens without
+naming a grammar, and three files each invented one — finding `0.4-001`. A contract that
+specifies a palette is not a contract.
 
-**Rule:** a control that accepts a choice but shows no selection is a defect. Found as
-`0.3` finding **B9** — the Components wizard rendered steps 1-4 simultaneously with no
-selected state and a live *Add to plan*, so a student could add a component without ever
-saying what it was for or who it was for.
+**Which pattern applies is determined by the option's shape, not by the author's taste.**
 
-**Consequence for wizards:** one step visible at a time, the current step's choice
-selected, and the commit action **disabled until every required step has a selection**.
-Disabled uses `--action-disabled` / `--action-disabled-text`, and states its reason.
+### Pattern A — option row
+*A list of mutually exclusive choices, each a single line of text.*
+
+```
+selected     ● label · detail          --text-primary · marker --action-primary
+unselected   ○ label · detail          --text-secondary · marker --border-default
+disabled     ○ label · reason          --action-disabled-text, reason stated
+```
+
+Filled and hollow circle glyphs, `●` / `○`. Applies to: Services tiers, Rollout mix
+(training · process · communication), Challenges rationale tags, any radio-shaped choice.
+
+### Pattern B — option card
+*Choices carrying more than one line — a price, a lead time, a warning.*
+
+```
+selected     2px --border-focus outline · --surface-row-highlight fill · check mark
+unselected   1px --border-default · --surface-card
+disabled     --action-disabled bg · --action-disabled-text · reason stated on the card
+```
+
+Applies to: Strategy options, the wizard's deployment modes, Fund/Defer/Reject.
+
+### Rules
+
+1. **One line of text → Pattern A. Multiple lines → Pattern B.** No judgement call.
+2. **A choice with no visible selection is a defect** — findings `B9`, `0.3-025`.
+3. **A commit action stays disabled until every required choice has a selection**, and
+   states why. `--action-disabled` / `--action-disabled-text`.
+4. **Where the mockups and this entry disagree, this entry wins.** The 0.3 and 0.4 mockups
+   predate it; module 0.5 implements the contract, not the files.
 
 ---
 

@@ -312,9 +312,13 @@ REVIEW
   Services      1 change      $30,000
   People        0 changes     $0
   Governance    2 assignments $0
-  Challenges    2 responses   $12,000
+  Challenges    2 responses   $14,000
   ───────────────────────────────────────────────────────
-  Capital       $174,000 of $220,000        Remaining $46,000
+  Capital       $176,000 of $220,000        Remaining $44,000
+                (v0.4-002 fix: was $174,000/$46,000, which contradicted the
+                 strip's $44,000 on the same screen. The line items were
+                 internally correct; they simply did not reconcile with the
+                 state every other mockup shows. Challenges 12,000 → 14,000.)
   Run-rate      $62,200 per round           was $58,300
   Warnings      You added capacity to Order Fulfilment and funded no training.
                 Two open signals received no action this round.
@@ -475,6 +479,8 @@ control and passed while the requirement failed — see `alignment.md` addendum.
 | I17 | **The Review mirror is present and non-blocking** | all three §5.4 warnings render; `[ Lock round ]` is enabled beside them | confirmed |
 | I18 | **The unit chain is ordered worst first** | read `dashboard.html`: Warehouse before Store operations before Finance | confirmed |
 | I19 | **Gaps carry the same visual weight as entries** on Security | "Not started" rows are full rows, not greyed footnotes | confirmed |
+| I20 | **Review reconciles with the strip** *(finding `0.4-002`)* | strip remaining == `220,000 − capital committed`; line items sum to the committed total | both hold |
+| I21 | **One selection grammar per option shape** *(`CONTRACTS.md`; finding `0.4-001`)* | `git ls-files "mockups/*.html" \| xargs grep -c "●\|○"` — Pattern A files only; Pattern B files show outline + fill + check | no file mixes the two; no third pattern anywhere |
 
 ---
 
@@ -520,7 +526,7 @@ I15 on the tiers, I16 and I19 on Security.
 |---|---|---|
 | Pre-flight rows 1–7, esp. 5 and 6 | | |
 | Steps 1–6 verified | | |
-| I1, I3–I9, I12–I19 | | |
+| I1, I3–I9, I12–I21 | | |
 | Eleven files, one state each | | |
 | `components-detail.html` repaired per §5.5a; nothing else in it changed | | |
 | I4 passes across **all** tracked mockups after the repair | | |
