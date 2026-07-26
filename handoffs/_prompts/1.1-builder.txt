@@ -1,0 +1,81 @@
+You are the BUILDER for module 1.1 of the MIS Simulation.
+
+REPO: /home/ubuntu/projects/mis-sim   (origin: github.com/donharper11/mis-sim)
+Work on branch build/1.1-casepack, cut from main (fc8c08c or later).
+Never push to main.
+
+READ FIRST, IN FULL, BEFORE ANY OTHER ACTION:
+  1. ~/projects/mis-sim/GOVERNANCE.md         - note 4.9 Seed data, never stubs
+  2. ~/projects/mis-sim/QUALITY_PROTOCOL.md
+  3. ~/projects/mis-sim/CONTRACTS.md          - nine entries this schema must honour
+  4. ~/projects/mis-sim/handoffs/1.1-casepack-schema/spec.md
+  5. ~/projects/mis-sim/design/01-mis_lite-harvest.md   - what content exists, and
+     section 3 on why only ~19 of 45 component rows are buildable catalog items
+
+THEN, BEFORE WRITING ANY CODE:
+  Run all 6 rows of the Pre-Flight Verification Register (section 7).
+  Report each: PASS / FAIL / DEVIATION, with command output.
+  Row 5 needs PyYAML added to requirements.txt - do it and report that you did.
+  A FAIL on any other row means STOP and report. Do not adapt to the surprise.
+
+BUILD, in order:
+
+  Step 1  docs/casepack-schema.md
+          The artefact an instructor authors from. Every section, every field,
+          type, required/optional, one worked example each. A reader must be
+          able to author a section without reading Python.
+
+  Step 2  backend/app/casepack/models.py - Pydantic, types and constraints, no I/O
+
+  Step 3  backend/app/casepack/loader.py - directory of YAML to typed Casepack.
+          Errors name the file and the field.
+
+  Step 4  backend/packs/riverside_grocery/ - REAL CONTENT, per section 5.9.
+          NOT a skeleton of TODO markers. That was the earlier wording and it
+          is reversed: a pack of TODOs cannot demonstrate that the loader
+          works, and 1.2 would validate nothing.
+
+          Source every value in this order of preference:
+            HARVESTED  from mis_lite per design/01 section 2 - strategies,
+                       objectives, stakeholders, fit multipliers (NORMALISED,
+                       not copied), platform add-ons, support and integration tiers
+            PINNED     the ~20 Riverside round-3 figures in
+                       handoffs/0.4-mockups-remaining/spec.md section 5.4
+            AUTHORED   with a stated rationale, where mis_lite has nothing
+                       (capacity, availability, service life, staff load)
+
+          Anything you cannot justify: mark TODO: calibrate AND list it in
+          your report. Silent TODOs are a defect under GOVERNANCE 4.9.
+
+  Step 5  backend/app/casepack/checks.py - the eight invariant functions
+          1.2 will wrap in a CLI
+
+SEED - this is now a gate, not a nicety:
+  Command:     python -m app.casepack.seed riverside_grocery
+  Demonstrate: the loader parses it and prints
+                 7 capabilities, N catalog items, 4 strategies
+                 every strategy's weights summing to 1.000
+                 the ~20 pinned figures READ BACK FROM THE PACK
+  Paste that output. It is the evidence that this module works, not that
+  files exist.
+
+BINDING CONSTRAINTS:
+  - No engine code branches on pack identity (I1)
+  - No displayed English in engine code (I2) - every student-facing string
+    comes from the pack, never from Python
+  - Machine keys snake_case, never displayed (I3)
+  - Drop mis_lite's trialNNN columns entirely (CONTRACTS.md)
+  - Fit multipliers are CONVERTED to weights summing to 1.0, never copied raw
+    (CONTRACTS.md) - keep the raw values in provenance
+
+WHEN STUCK:
+  Anything the spec did not settle: STOP and report. "Obvious" is not a category.
+  Spec/code conflict: STOP and report with evidence. Do not reconcile.
+
+BEFORE CLAIMING DONE:
+  - Run I1 through I8 yourself using: git ls-files | xargs grep    (never grep -r)
+  - Run the seed command from a clean state and paste its output
+  - Fill handoffs/1.1-casepack-schema/dod.md - every row, with evidence
+  - Verify your push landed: compare  git ls-remote origin build/1.1-casepack
+    to your local HEAD. An exit code of 0 is not proof (QUALITY_PROTOCOL 1)
+  - Push the branch and report. Do not merge.
