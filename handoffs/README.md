@@ -48,8 +48,19 @@ build/<MODULE-ID>         the builder works and commits here
 The builder **never pushes to `main`.** It pushes its branch and reports. The auditor
 reviews that branch. Merge happens only after the audit verdict is PASS.
 
-If the audit is FAIL, a **fresh** builder takes the findings file and the same branch.
-The failing builder's context is not reused.
+### Who fixes findings
+
+The fresh-builder rule is a remedy for a **compromised mental model**, not a penalty.
+Apply it by cause, not by severity:
+
+| Situation | Who fixes |
+|---|---|
+| Audit verdict **FAIL** — spec misread, wrong architecture, out-of-scope work, dishonest or hollow DoD | **Fresh builder.** The context that produced the miss will reproduce it |
+| Verdict **PASS with findings** — mechanical corrections, or a gap the spec itself left | **Same builder.** Its context is an asset; discarding it costs and buys nothing |
+| Finding belongs to a **later module** | Nobody yet. Carry it into that module's spec |
+
+Either way the **builder ↔ auditor** separation holds: a corrected branch goes back
+through audit before merge, and never to the agent that produced the fix.
 
 ---
 
