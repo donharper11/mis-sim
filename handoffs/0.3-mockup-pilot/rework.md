@@ -169,7 +169,7 @@ appended not overwritten, push verified by ref *and* tree.
 
 **One addition:** the 15-check harness the auditor derived from spec v2 exists and passes 13
 of 15, the two failures being `-008` and `-009`. Ask for it rather than rebuilding it — and
-if the author wants it in-repo as `tools/check-tokens.mjs`, 0.4b and 0.6 inherit the checks
+if the author wants it in-repo as `tools/check-tokens.mjs`, 0.4 and 0.5 inherit the checks
 instead of re-deriving them.
 
 ---
