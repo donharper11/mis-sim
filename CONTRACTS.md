@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-07-26 (0.3 design-token contract added).
+**Last updated:** 2026-07-27 (design-token two-tier contract; status badge scale added — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -143,6 +143,31 @@ Producers: `frontend/src/styles/theme.css` — the only file that may declare ei
 Consumers: every component, every mockup.
 
 Adding a role: entry here + spec change. Adding a primitive: `theme.css` only.
+
+---
+
+## Status badge scale — PROSPECTIVE
+
+**Canonical: four values, four DISTINCT role tokens.** Used by every screen, and the
+acceptance contract for module 0.5's `StatusBadge`.
+
+```
+Complete          --status-ok-bg / -text / -marker        green    done, nothing needed
+Partly done       --status-info-bg / -text / -marker      blue     underway, on track
+Needs attention   --status-warn-bg / -text / -marker      amber    action needed this round
+Not started       --status-neutral-bg / -text / -marker   grey     nothing here yet
+```
+
+**NOT** `Partly done` sharing `--status-ok-*` with `Complete`. That was finding `0.3-013`:
+a capability at 25% realised and explicitly throttled carried the same green as one at
+5/5, so colour-scanning could not distinguish them.
+
+**Signal severity is a SEPARATE scale** and must not be conflated:
+`Critical → --status-danger-*` · `Warning → --status-warn-*`. An item's *status* and a
+signal's *severity* answer different questions.
+
+**Rule:** every status-bearing item shows a badge. An item with a status and no badge is a
+defect — inconsistent application is how `0.3-013` hid.
 
 ---
 
