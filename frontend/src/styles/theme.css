@@ -1,0 +1,227 @@
+:root {
+  --bg-sidebar: #0F1724;
+  --bg-sidebar-active: #1E293B;
+  --bg-content: #F1F5F9;
+  --bg-card: #FFFFFF;
+  --bg-table-header: #F8FAFC;
+  --bg-table-alt: #FAFAFA;
+  --bg-topbar: #FFFFFF;
+  --bg-highlight-row: #EFF6FF;
+
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-hint: #94A3B8;
+  --text-sidebar: #E2E8F0;
+  --text-sidebar-muted: #94A3B8;
+  --text-sidebar-section: #475569;
+  --text-link: #1E40AF;
+
+  --accent-green: #22C55E;
+  --accent-blue: #3B82F6;
+  --accent-purple: #8B5CF6;
+  --accent-amber: #F59E0B;
+  --accent-red: #EF4444;
+  --accent-teal: #06B6D4;
+  --accent-navy: #1E40AF;
+
+  --status-compliant-bg: #DCFCE7;
+  --status-compliant-text: #166534;
+  --status-risk-bg: #FEF3C7;
+  --status-risk-text: #92400E;
+  --status-danger-bg: #FEF2F2;
+  --status-danger-text: #991B1B;
+  --status-pending-bg: #F1F5F9;
+  --status-pending-text: #64748B;
+  --status-active-bg: #DCFCE7;
+  --status-active-text: #166534;
+  --status-inactive-bg: #F1F5F9;
+  --status-inactive-text: #64748B;
+
+  --color-surface-50: #F8FAFC;
+  --color-surface-100: #F1F5F9;
+  --color-surface-200: #E2E8F0;
+  --color-surface-300: #CBD5E1;
+  --color-surface-400: #94A3B8;
+  --color-surface-500: #64748B;
+  --color-surface-600: #475569;
+  --color-surface-700: #334155;
+  --color-surface-800: #1E293B;
+  --color-surface-900: #0F1724;
+
+  --topbar-bg: var(--bg-topbar);
+  --topbar-text: var(--text-primary);
+  --topbar-text-secondary: var(--text-muted);
+  --topbar-border: var(--color-surface-200);
+
+  --brand-primary: var(--accent-navy);
+
+  --color-header-financial: var(--accent-navy);
+  --color-header-strategic: var(--accent-green);
+  --color-header-market: var(--accent-amber);
+  --color-header-decision: var(--accent-purple);
+  --color-header-results: var(--accent-teal);
+  --color-header-neutral: var(--text-muted);
+
+  --color-positive: var(--accent-green);
+  --color-negative: var(--accent-red);
+  --color-warning: var(--accent-amber);
+  --color-info: var(--accent-blue);
+  --color-neutral: var(--text-muted);
+
+  --color-primary: var(--accent-navy);
+  --color-primary-hover: var(--color-surface-800);
+  --color-primary-light: var(--bg-highlight-row);
+  --color-input-bg: var(--bg-card);
+  --color-input-border: var(--color-surface-300);
+  --color-input-focus: var(--accent-navy);
+  --color-input-editable: var(--status-compliant-bg);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-muted);
+  --color-text-inverse: var(--text-sidebar);
+  --color-text-link: var(--text-link);
+
+  --chart-1: var(--accent-blue);
+  --chart-2: var(--accent-red);
+  --chart-3: var(--accent-green);
+  --chart-4: var(--accent-amber);
+  --chart-5: var(--accent-purple);
+  --chart-6: var(--accent-teal);
+  --chart-your-team: var(--accent-navy);
+
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Source Code Pro', monospace;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-content);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: var(--space-3xl);
+  background: var(--bg-content);
+}
+
+.page-header {
+  margin-bottom: var(--space-2xl);
+}
+
+.page-header h1,
+.plain-state h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.plain-state p {
+  color: var(--text-secondary);
+}
+
+.control-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.control-strip .ant-select {
+  min-width: 180px;
+}
+
+.component-table {
+  margin-bottom: var(--space-2xl);
+}
+
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-md);
+}
+
+.swatch-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  min-height: 72px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-surface-200);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.swatch-sample {
+  border-right: 1px solid var(--color-surface-200);
+}
+
+.swatch-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.swatch-copy strong,
+.swatch-copy span {
+  overflow-wrap: anywhere;
+}
+
+.swatch-copy strong {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.swatch-copy span {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.ant-btn,
+.ant-select-selector,
+.ant-table,
+.ant-table-container,
+.ant-table-cell,
+.ant-pagination-item {
+  border-radius: 0 !important;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: var(--space-lg);
+  }
+
+  .swatch-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
