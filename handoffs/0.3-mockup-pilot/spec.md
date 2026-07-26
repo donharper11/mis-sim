@@ -1,6 +1,6 @@
 # 0.3 — Canonical Token Map + Mockup Pilot (3 screens) · Build Spec
 
-**Version 2** · **Authored under** `SPEC_PROTOCOL.md` v1.2
+**Version 2.1** · **Authored under** `SPEC_PROTOCOL.md` v1.2
 **Author:** Claude (design session) · **Date:** 2026-07-26
 **Phase:** 0 · **Depends on:** 0.2 (merged) · **Blocks:** 0.4, 0.6
 
@@ -53,7 +53,9 @@ v1 omitted**.
 - **`frontend/src/pages/DevTokens.jsx`** — enumeration updated
 - `mockups/` — three HTML files
 - `CONTRACTS.md` — the two-tier entry
-- `docs/mockup-review.md` — how to view them, including the font install
+- `docs/mockup-review.md` — how to view them
+- **`frontend/index.html`** — remove the Google Fonts CDN call *(v2.1)*
+- **`frontend/src/styles/fonts/`** — vendored WOFF2 + OFL licence *(v2.1)*
 
 **Out of scope:**
 - Mockups 4–10 — that is 0.4, after the review gate
@@ -95,9 +97,10 @@ v1 omitted**.
 2. **Mockups link `theme.css` with one relative `<link>`.** This is the named compliant
    route (§4). v1 forbade it, making its invariant set unsatisfiable.
 3. **Static HTML, opened with `file://`.** No server, no bundler, no framework.
-4. **IBM Plex is installed, not embedded.** `sudo apt install fonts-ibm-plex`, documented
-   in `docs/mockup-review.md`. The font stack declares a visible fallback so absence
-   degrades noticeably rather than silently.
+4. **IBM Plex is self-hosted. The CDN call is removed.** *(v2.1 — supersedes v2's
+   "install the system package". Closes finding `0.3-011`.)* Both faces ship in-repo; see
+   §5.8. No third-party font request reaches a student's browser, and the mockups render
+   correctly from `file://` with no network.
 5. **One shared data state:** Riverside Grocers, round 3 of 6, Low-Cost Leadership.
    All figures fixed in §5.4 — including the three states v1 left numberless.
 6. **Ant Design is not used in the mockups.** Mockups define the target; 0.6 makes antd
@@ -276,6 +279,46 @@ STATE — Applications, wizard step 3                ← added v2, fixes defect 
     Bought as a service           $0      + $9,100/round · available now
 ```
 
+### 5.8 Font delivery — self-hosted, no CDN *(v2.1)*
+
+`frontend/index.html:6-8` makes three requests to Google Fonts and asks for **IBM Plex
+Sans only**, while `theme.css:32` declares `--p-font-mono: 'IBM Plex Mono'`. Mono is
+declared and never delivered — every monospace surface silently renders Courier New.
+That is finding `0.3-011`.
+
+**Source.** `@ibm/plex@6.4.1` on npm carries the official WOFF2 web fonts. Extract the
+files; **do not add a runtime dependency** — vendor them.
+
+**Location — `frontend/src/styles/fonts/`.** Not `public/`. `theme.css` references them
+relative to itself (`url('./fonts/…')`), which resolves for **both** the Vite build and a
+mockup opened over `file://`. An absolute `/fonts/…` would work in the app and break the
+mockups — and mockups rendering in the house font with no toolchain is the point of this
+module.
+
+**Faces — five files, WOFF2 only.** Every target browser supports WOFF2; shipping WOFF or
+TTF alongside doubles the payload for nothing.
+
+```
+IBMPlexSans-Regular.woff2      400
+IBMPlexSans-Medium.woff2       500
+IBMPlexSans-SemiBold.woff2     600
+IBMPlexSans-Bold.woff2         700
+IBMPlexMono-Regular.woff2      400
+```
+
+**`@font-face` blocks** go in `theme.css` above the token declarations, each with
+`font-display: swap` to preserve the CDN's current behaviour.
+
+**Remove** `frontend/index.html` lines 6–8 — both `preconnect` hints and the stylesheet
+link. Nothing replaces them; `theme.css` is already imported by the app.
+
+**Licence.** IBM Plex is OFL 1.1. Self-hosting obliges us to ship it as
+`frontend/src/styles/fonts/LICENSE.txt`, copied from the package. Not optional.
+
+**Fallback stacks stay.** `--p-font-sans` and `--p-font-mono` keep their fallbacks so a
+missing file degrades noticeably rather than silently — silent degradation is how
+`0.3-011` hid in the first place.
+
 ### 5.5 Casepack-supplied labels are visibly marked
 
 Any string a casepack supplies — company name, capability names, value-chain activity
@@ -370,6 +413,8 @@ Any string not listed here must be added to `dod.md` with a justification (I5).
 | I5 | Every visible string is in §5.6, or justified in `dod.md` | extract text nodes, diff against §5.6; residue must appear in `dod.md` | zero unaccounted |
 | I6 | Exactly one external reference, and it is `theme.css` | `grep -nE "<link\|@import\|src=\|https?://" mockups/*.html` | one `<link>` per file, `href` ending `styles/theme.css` |
 | I7 | Riverside is marked content, not structure | `grep -niE "riverside\|grocer" mockups/*.html \| grep -v "data-casepack"` | zero |
+| I9 | No third-party font request anywhere | `grep -rniE "googleapis\|gstatic\|fonts\.google" frontend/ mockups/` | zero |
+| I10 | Both faces delivered, licence shipped | `git ls-files "frontend/src/styles/fonts/*"` | 5 `.woff2` + `LICENSE.txt` |
 | I8 | antd reads only live role names | script cross-checking `main.jsx` token names against declared roles in `theme.css` | zero missing |
 
 I4 no longer greps `casepack` — v1's I3/I4 contradiction, since `data-casepack` is required
@@ -386,7 +431,10 @@ by §5.5.
 | 3 | **No other file under `frontend/src` reads tokens** | `[V]` | `grep -rn "getPropertyValue\|var(--" frontend/src --include=*.jsx --include=*.js \| grep -v "main.jsx\|DevTokens.jsx"` | zero — **this is the check whose absence made v1 unbuildable** |
 | 4 | `DevTokens.jsx` enumerates literals | `[V]` | `grep -c '"--' frontend/src/pages/DevTokens.jsx` | ≥ 80 |
 | 5 | `screenshots/0.3/*.png` is committable | `[V]` | `git check-ignore -v screenshots/0.3/x.png` | **no match** |
-| 6 | IBM Plex installed | `[A]` | `fc-match "IBM Plex Sans"` | an IBMPlex font. If Noto → `sudo apt install fonts-ibm-plex`, re-check, report |
+| 6 | `@ibm/plex@6.4.1` reachable, carries WOFF2 | `[V]` | `npm view @ibm/plex version` | `6.4.1` *(verified 2026-07-26)* |
+| 6b | CDN call present to remove | `[V]` | `grep -n "fonts.googleapis\|gstatic" frontend/index.html` | lines 6, 7, 8 |
+| 6c | No font files tracked yet | `[V]` | `git ls-files "*.woff2"` | zero |
+| 6d | `.gitignore` does not block `woff2` | `[V]` | `git check-ignore -v frontend/src/styles/fonts/x.woff2` | no match |
 | 7 | `mockups/` has no HTML | `[V]` | `ls mockups/*.html 2>&1` | no such file |
 | 8 | `design/02` carries a BSC row | `[V]` | `grep -n "Balanced Scorecard" design/02-traceability-matrix.md` | present |
 
@@ -394,11 +442,15 @@ by §5.5.
 
 ## 8. Build steps
 
-**Step 1 — token map + consumers.** *Rework of commit `76d5e3a`.* Rewrite `theme.css`;
+**Step 1 — token map + consumers + fonts.** *Rework of commit `76d5e3a`.* Also vendor the
+five WOFF2 files and the OFL licence per §5.8, add the `@font-face` blocks, and delete
+`frontend/index.html` lines 6–8. Rewrite `theme.css`;
 apply the §5.2 remap to `main.jsx` **and add the throw-on-empty guard**; rewrite
 `DevTokens.jsx`; produce the deprecation table; add the `CONTRACTS.md` entry.
 **Verify:** I2, I3, I8 · `npm run build` exits 0 · `/_dev/tokens` renders both tiers ·
-antd Button/Select/Table still themed, with a screenshot proving it.
+antd Button/Select/Table still themed, with a screenshot proving it ·
+**I9, I10** · `/_dev/tokens` renders Plex Sans **and** Plex Mono **with the network
+disconnected**.
 **>>> STOP AND REPORT. Do not start Phase 2. <<<**
 
 **Step 2 — Situation.** **Verify:** I1, I4, I5, I6, I7 · all three states · shots at
