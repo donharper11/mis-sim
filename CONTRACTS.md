@@ -130,6 +130,21 @@ by the falsification check in `SPEC_PROTOCOL.md §4`.
 
 ---
 
+## Design tokens — two-tier
+
+Canonical: components reference SEMANTIC ROLES only (`--surface-page`, `--text-muted`,
+`--status-danger-bg`). Never primitives (`--slate-100`, `--navy-900`), never raw values.
+
+Roles resolve to primitives in exactly one step. A role defined as another role is a
+defect — it reintroduces the aliasing this replaced.
+
+Producers: `frontend/src/styles/theme.css` — the only file that may declare either tier.
+Consumers: every component, every mockup.
+
+Adding a role: entry here + spec change. Adding a primitive: `theme.css` only.
+
+---
+
 ## Harvested mis_lite content — NOTE, not a contract
 
 - Every mis_lite table carries a `trialNNN char(1)` column, uniformly `'T'`. It is a
