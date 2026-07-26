@@ -1,0 +1,42 @@
+- key: inventory_audit_question
+  preconditions:
+    - {type: signal_open, signal: wh_rollout_01, severity: critical}
+  strategy_affinity: [cost_leadership, customer_supplier_intimacy]
+  from_persona: tom_beckett
+  body_key: event_inventory_numbers
+  outcomes:
+    revenue_loss: 0
+    scorecard: {internal_process: -4}
+  options:
+    - {key: fund, tags: [capacity_risk, compliance], cost: 6000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance: {source: PINNED, note: "0.4 challenges inbox item"}
+- key: warehouse_rollout_gap
+  preconditions:
+    - {type: signal_open, signal: wh_rollout_01, severity: critical}
+  strategy_affinity: [cost_leadership]
+  from_persona: dana_ruiz
+  body_key: event_tablets_arrived
+  outcomes:
+    revenue_loss: 12000
+    scorecard: {learning_growth: -6, internal_process: -5}
+  options:
+    - {key: fund, tags: [strategic_priority], cost: 6000}
+    - {key: defer, tags: [insufficient_information], cost: 0}
+    - {key: reject, tags: [cost_containment], cost: 0}
+  provenance: {source: PINNED, note: "0.4 challenges opened item"}
+- key: pos_support_ending
+  preconditions:
+    - {type: signal_open, signal: ord_cap_01, severity: warning}
+  strategy_affinity: [cost_leadership, differentiation, customer_supplier_intimacy, focus_strategy]
+  from_persona: centraline_vendor
+  body_key: event_pos_support_ending
+  outcomes:
+    revenue_loss: 0
+    scorecard: {financial: -3}
+  options:
+    - {key: fund, tags: [capacity_risk], cost: 6000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance: {source: PINNED, note: "0.4 services and challenges support end"}

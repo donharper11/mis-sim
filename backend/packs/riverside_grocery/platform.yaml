@@ -1,0 +1,46 @@
+services:
+  - key: client_network
+    roles_filled: [client_access, network_path]
+    placement_options:
+      on_prem: {capex: 30000, opex: 2000, lead_time_rounds: 1}
+      cloud: {capex: 10000, opex: 4500, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 6500, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 65
+    staff_load: 0.6
+    provenance: {source: AUTHORED, note: "platform pool required by capability roles"}
+  - key: backup_recovery
+    roles_filled: [backup_recovery]
+    placement_options:
+      on_prem: {capex: 5000, opex: 2000, lead_time_rounds: 0}
+      cloud: {capex: 2000, opex: 5000, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 7000, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 40
+    staff_load: 0.4
+    provenance: {source: HARVESTED, note: "mis_lite Continuous Backups and Disaster Recovery Plan"}
+  - key: central_sign_on
+    roles_filled: [identity_access]
+    placement_options:
+      on_prem: {capex: 25000, opex: 1500, lead_time_rounds: 1}
+      cloud: {capex: 5000, opex: 5500, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 7500, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 0
+    staff_load: 0.3
+    provenance: {source: HARVESTED, note: "mis_lite Identity and Access Management"}
+  - key: intrusion_detection
+    roles_filled: [security_monitoring]
+    placement_options:
+      on_prem: {capex: 4000, opex: 1200, lead_time_rounds: 0}
+      cloud: {capex: 2000, opex: 4000, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 5600, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 0
+    staff_load: 0.2
+    provenance: {source: HARVESTED, note: "mis_lite Intrusion Detection System"}
+support_tiers:
+  - {key: basic, cost: 20000, fte_equivalent: 0.6, provenance: {source: HARVESTED, note: "mis_lite Basic Support"}}
+  - {key: standard, cost: 50000, fte_equivalent: 1.4, provenance: {source: HARVESTED, note: "mis_lite Standard Support"}}
+  - {key: premium, cost: 100000, fte_equivalent: 2.4, provenance: {source: HARVESTED, note: "mis_lite Premium Support"}}
+integration_tiers:
+  - {key: basic, cost: 50000, provenance: {source: HARVESTED, note: "mis_lite Basic Integration"}}
+  - {key: advanced, cost: 120000, provenance: {source: HARVESTED, note: "mis_lite Advanced Integration"}}
+  - {key: vendor_managed, cost: 200000, provenance: {source: HARVESTED, note: "mis_lite Vendor-Managed Integration"}}
+starting_staff_fte: 2.0

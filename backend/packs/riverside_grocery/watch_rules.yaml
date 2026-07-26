@@ -1,0 +1,21 @@
+- key: ord_cap_01
+  capability: order_fulfilment
+  metric: capacity_utilisation
+  warn_above: 0.80
+  critical_above: 0.95
+  cleared_by: [scale_node, add_node, move_to_cloud]
+  provenance: {source: PINNED, note: "0.4 dashboard order system near capacity"}
+- key: wh_rollout_01
+  capability: order_fulfilment
+  metric: adoption
+  warn_above: null
+  critical_above: null
+  cleared_by: [add_training, redesign_process, fund_response]
+  provenance: {source: PINNED, note: "0.4 warehouse implementation gap"}
+- key: sec_identity_01
+  capability: firm_infrastructure
+  metric: missing_identity_access
+  warn_above: null
+  critical_above: null
+  cleared_by: [add_node, add_policy]
+  provenance: {source: PINNED, note: "0.4 security exposure list"}

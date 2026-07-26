@@ -1,0 +1,32 @@
+- key: order
+  levels_of_detail: [daily_store_total, order_header, order_line]
+  sensitivity: medium
+  provenance: {source: PINNED, note: "0.4 component detail data copy"}
+- key: inventory
+  levels_of_detail: [store_total, sku, sku_location]
+  sensitivity: medium
+  provenance: {source: PINNED, note: "0.4 challenge from auditors about inventory numbers"}
+- key: product
+  levels_of_detail: [category, sku]
+  sensitivity: low
+  provenance: {source: PINNED, note: "0.4 component connection copy"}
+- key: sale
+  levels_of_detail: [daily_store_total, transaction_summary, individual_transaction]
+  sensitivity: medium
+  provenance: {source: AUTHORED, note: "needed for store operations and financial reporting"}
+- key: customer
+  levels_of_detail: [segment, household, individual_profile]
+  sensitivity: high
+  provenance: {source: AUTHORED, note: "needed for customer insight and policy contradiction checks"}
+- key: ledger
+  levels_of_detail: [period_total, account_period, journal_line]
+  sensitivity: high
+  provenance: {source: AUTHORED, note: "needed for finance reporting capability"}
+- key: user_account
+  levels_of_detail: [role_group, named_user]
+  sensitivity: high
+  provenance: {source: HARVESTED, note: "mis_lite Identity and Access Management"}
+- key: service_ticket
+  levels_of_detail: [ticket_count, ticket]
+  sensitivity: medium
+  provenance: {source: AUTHORED, note: "needed for service capability"}

@@ -1,0 +1,62 @@
+- key: order_fulfilment
+  chain_position: primary/outbound_logistics
+  required_roles: [transaction_store, order_app, client_access, network_path, wms_integration]
+  required_entities:
+    - {entity: order, min_level_of_detail: order_line}
+    - {entity: inventory, min_level_of_detail: sku_location}
+  demand_curve: [6000, 6600, 12000, 15000, 18000, 22000]
+  demand_unit: orders
+  provenance: {source: PINNED, note: "0.4 unit chain and order-system capacity signal"}
+- key: store_operations
+  chain_position: primary/operations
+  required_roles: [pos_app, transaction_store, client_access, network_path]
+  required_entities:
+    - {entity: sale, min_level_of_detail: individual_transaction}
+    - {entity: product, min_level_of_detail: sku}
+  demand_curve: [4200, 4700, 5200, 5800, 6400, 7000]
+  demand_unit: store_day
+  provenance: {source: PINNED, note: "0.4 unit chain for 140 store operations staff"}
+- key: financial_reporting
+  chain_position: support/firm_infrastructure
+  required_roles: [accounting_app, transaction_export, client_access]
+  required_entities:
+    - {entity: ledger, min_level_of_detail: account_period}
+    - {entity: sale, min_level_of_detail: daily_store_total}
+  demand_curve: [80, 84, 88, 92, 96, 100]
+  demand_unit: reports
+  provenance: {source: PINNED, note: "0.4 unit chain for finance and accounting package"}
+- key: customer_insight
+  chain_position: primary/marketing_sales
+  required_roles: [crm_app, customer_data_store, analytics]
+  required_entities:
+    - {entity: customer, min_level_of_detail: household}
+    - {entity: sale, min_level_of_detail: individual_transaction}
+  demand_curve: [1000, 1250, 1500, 1800, 2200, 2600]
+  demand_unit: customer_records
+  provenance: {source: PINNED, note: "0.4 review warning carries 0.10 strategy weight and no spend"}
+- key: marketing_sales
+  chain_position: primary/marketing_sales
+  required_roles: [ecommerce_app, content_management, customer_data_store]
+  required_entities:
+    - {entity: product, min_level_of_detail: sku}
+    - {entity: customer, min_level_of_detail: household}
+  demand_curve: [900, 1100, 1300, 1600, 1900, 2300]
+  demand_unit: campaigns
+  provenance: {source: AUTHORED, note: "supports the pinned value-chain coverage and strategy weights"}
+- key: service
+  chain_position: primary/service
+  required_roles: [service_desk_app, customer_history, client_access]
+  required_entities:
+    - {entity: customer, min_level_of_detail: household}
+    - {entity: service_ticket, min_level_of_detail: ticket}
+  demand_curve: [300, 360, 430, 520, 620, 740]
+  demand_unit: tickets
+  provenance: {source: AUTHORED, note: "represents the 0.4 service coverage gap"}
+- key: firm_infrastructure
+  chain_position: support/firm_infrastructure
+  required_roles: [identity_access, backup_recovery, network_path, security_monitoring]
+  required_entities:
+    - {entity: user_account, min_level_of_detail: named_user}
+  demand_curve: [8, 8, 8, 8, 8, 8]
+  demand_unit: sites
+  provenance: {source: PINNED, note: "0.4 security screen and scorecard rollup"}

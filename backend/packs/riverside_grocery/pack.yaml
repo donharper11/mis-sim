@@ -1,0 +1,93 @@
+pack_key: riverside_grocery
+pack_version: 0.1.0
+schema_version: 1
+display_name: Riverside Grocers
+vertical: grocery_retail
+rounds: 6
+company:
+  employees: 620
+  sites: 8
+  revenue_musd: 140
+  founded: 1987
+  narrative: Riverside Grocers operates eight regional stores and a central warehouse while modernising order handling, inventory visibility, and reporting.
+budget:
+  capex_per_round: [400000, 260000, 220000, 220000, 200000, 200000]
+  opening_opex: 47000
+initial_state:
+  round: 3
+  declared_strategy: cost_leadership
+  declared_strategy_round: 2
+  budget:
+    round: 3
+    capital_remaining: 44000
+    capital_available: 220000
+    run_rate: 58300
+  scorecard:
+    financial: 61
+    customer: 48
+    internal_process: 39
+    learning_growth: 27
+  needs_attention:
+    - order system near capacity
+    - warehouse system deployed with no implementation support
+  unit_responses:
+    - unit: warehouse
+      people: 34
+      running: [centraline_im7]
+      implemented: [no_training, process_unchanged, no_communication]
+      responding: [adoption_22, picking_20_minutes_slower]
+      contributing: outbound_logistics
+      contribution_pct: 25
+    - unit: store_operations
+      people: 140
+      running: [order_mgmt_v42, pos_system_2011, store_spreadsheets]
+      implemented: [partial_training, picking_process_partly_redesigned]
+      responding: [adoption_61, spreadsheets_still_daily]
+      contributing: operations
+      contribution_pct: 44
+    - unit: finance
+      people: 8
+      running: [accounting_package]
+      implemented: [fully_trained, process_redesigned, communicated]
+      responding: [adoption_94]
+      contributing: firm_infrastructure
+      contribution_pct: 81
+  value_chain_coverage:
+    inbound_logistics: 1/4
+    operations: 2/4
+    outbound_logistics: 4/5
+    marketing_sales: 5/5
+    service: 0/4
+    firm_infrastructure: 3/4
+    human_resources: ok
+    technology: none
+    procurement: 0/3
+  open_signals: 3
+  inbox_waiting: 3
+  people:
+    staff_fte: 2.0
+    load_fte: 3.4
+    overcommitted_pct: 170
+    platform_load: 1.9
+    application_load: 1.5
+  review:
+    lines:
+      - {area: platform, changes: 1 change, capital: 0, run_rate_effect: 0}
+      - {area: components, changes: 2 changes, capital: 98000, run_rate_effect: 3900}
+      - {area: rollout, changes: 1 change, capital: 34000, run_rate_effect: 0}
+      - {area: services, changes: 1 change, capital: 30000, run_rate_effect: 0}
+      - {area: people, changes: 0 changes, capital: 0, run_rate_effect: 0}
+      - {area: governance, changes: 2 assignments, capital: 0, run_rate_effect: 0}
+      - {area: challenges, changes: 2 responses, capital: 12000, run_rate_effect: 0}
+    capital_committed: 174000
+    capital_available: 220000
+    capital_remaining: 46000
+    run_rate_after: 62200
+    run_rate_before: 58300
+    warnings:
+      - capacity added to order fulfilment with no training
+      - two open signals received no action
+      - customer insight carries strategy weight with no spend
+  provenance:
+    source: PINNED
+    note: handoffs/0.4-mockups-remaining/spec.md section 5.4

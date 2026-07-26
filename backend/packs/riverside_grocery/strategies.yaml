@@ -1,0 +1,60 @@
+- key: cost_leadership
+  headline_metric: cost_per_transaction
+  capability_weights:
+    order_fulfilment: 0.35
+    store_operations: 0.30
+    financial_reporting: 0.15
+    customer_insight: 0.10
+    marketing_sales: 0.10
+  expected_concentration: 0.28
+  target_rgt_mix: {run: 0.45, grow: 0.40, transform: 0.15}
+  maintenance_floor_pct: 0.15
+  punishes: overprovisioning
+  reopen_cost: 80000
+  harvested_raw_fit: {cost_leadership: 1.0}
+  provenance: {source: HARVESTED, note: "mis_lite strategy row 1; weights normalised from pinned 0.4 strategy display"}
+- key: differentiation
+  headline_metric: unique_customer_experience
+  capability_weights:
+    customer_insight: 0.30
+    marketing_sales: 0.25
+    service: 0.20
+    order_fulfilment: 0.15
+    store_operations: 0.10
+  expected_concentration: 0.24
+  target_rgt_mix: {run: 0.25, grow: 0.45, transform: 0.30}
+  maintenance_floor_pct: 0.12
+  punishes: underinvestment_in_customer_data
+  reopen_cost: 80000
+  harvested_raw_fit: {differentiation: 1.0}
+  provenance: {source: HARVESTED, note: "mis_lite strategy row 2; weights authored to fit the harvested strategy description"}
+- key: customer_supplier_intimacy
+  headline_metric: partner_response_time
+  capability_weights:
+    customer_insight: 0.25
+    order_fulfilment: 0.25
+    store_operations: 0.20
+    service: 0.20
+    financial_reporting: 0.10
+  expected_concentration: 0.22
+  target_rgt_mix: {run: 0.30, grow: 0.45, transform: 0.25}
+  maintenance_floor_pct: 0.14
+  punishes: disconnected_supplier_and_customer_records
+  reopen_cost: 80000
+  harvested_raw_fit: {customer_supplier_intimacy: 1.0}
+  provenance: {source: HARVESTED, note: "mis_lite strategy row 3; weights authored to fit the harvested strategy description"}
+- key: focus_strategy
+  headline_metric: segment_service_margin
+  capability_weights:
+    service: 0.30
+    customer_insight: 0.25
+    marketing_sales: 0.20
+    order_fulfilment: 0.15
+    financial_reporting: 0.10
+  expected_concentration: 0.30
+  target_rgt_mix: {run: 0.25, grow: 0.35, transform: 0.40}
+  maintenance_floor_pct: 0.12
+  punishes: broad_spend_without_segment_fit
+  reopen_cost: 80000
+  harvested_raw_fit: {focus_strategy: 1.0}
+  provenance: {source: HARVESTED, note: "mis_lite strategy row 4; weights authored to fit the harvested strategy description"}

@@ -1,0 +1,83 @@
+capabilities:
+  order_fulfilment: Order Fulfilment
+  store_operations: Store Operations
+  financial_reporting: Financial Reporting
+  customer_insight: Customer Insight
+  marketing_sales: Marketing and Sales
+  service: Service
+  firm_infrastructure: Firm Infrastructure
+roles:
+  transaction_store: Transaction store
+  order_app: Order application
+  client_access: Store access
+  network_path: Network path
+  wms_integration: Warehouse system connection
+  pos_app: Point-of-sale application
+  spreadsheet_workaround: Store spreadsheets
+  accounting_app: Accounting package
+  transaction_export: Transaction export
+  crm_app: Customer records
+  customer_data_store: Customer data store
+  analytics: Analytics workspace
+  ecommerce_app: E-commerce site
+  content_management: Content management
+  service_desk_app: Service desk
+  customer_history: Customer history
+  identity_access: Central sign-on
+  backup_recovery: Backup and recovery
+  security_monitoring: Security monitoring
+sidebar:
+  dashboard: Dashboard
+  strategy: Strategy
+  platform: Platform
+  components: Components
+  rollout: Rollout
+  security: Security
+  services: Services
+  people: People
+  challenges: Challenges
+  review: Review
+  debrief: Debrief
+strategies:
+  cost_leadership: Cost Leadership
+  differentiation: Differentiation
+  customer_supplier_intimacy: Customer and Supplier Intimacy
+  focus_strategy: Focus Strategy
+stakeholders:
+  stakeholder_senior_management: Senior Management/C-Suite
+  stakeholder_finance: Finance
+  stakeholder_employees: Employees
+  stakeholder_operations: Operations
+  stakeholder_it_department: IT Department
+  stakeholder_hr: HR
+  stakeholder_marketing: Marketing
+  stakeholder_investor: Investor
+  stakeholder_customer: Customer
+  stakeholder_vendor: Vendor
+  stakeholder_security_auditor: Security Auditor
+  stakeholder_regulator: Regulator
+  stakeholder_general_public: General Public
+  stakeholder_media: Media
+events:
+  event_inventory_numbers: The auditors asked how we know our inventory numbers are right. I did not have an answer.
+  event_tablets_arrived: My crew found out about the new system when the tablets arrived.
+  event_pos_support_ending: Support for your point-of-sale version ends in one round.
+policies:
+  encrypt_customer_data: Encrypt customer data
+  compliance_audit: Compliance audit
+  access_review: Access review
+misc:
+  role_executive_leadership: Executive Leadership
+  role_finance_department: Finance Department
+  role_general_workforce: General Workforce
+  role_operations_department: Operations Department
+  role_information_technology_team: Information Technology Team
+  role_human_resources_department: Human Resources Department
+  role_marketing_sales_department: Marketing and Sales Department
+  role_shareholder: Shareholder
+  role_external_stakeholder: External Stakeholder
+  role_supply_chain_partner: Supply Chain Partner
+  role_external_auditor: External Auditor
+  role_legal_compliance_authority: Legal Compliance Authority
+  role_public_consumer_advocacy: Public/Consumer Advocacy
+  role_news_public_relations: News/Public Relations

@@ -1,0 +1,15 @@
+- key: encrypt_customer_data
+  category: data_governance
+  cost: 1500
+  effects: {privacy_risk: -0.2, staff_load: 0.05}
+  provenance: {source: HARVESTED, note: "mis_lite Data Encryption Policy"}
+- key: compliance_audit
+  category: data_governance
+  cost: 20000
+  effects: {compliance_risk: -0.3, run_rate: 0}
+  provenance: {source: HARVESTED, note: "mis_lite Compliance Auditing Tool"}
+- key: access_review
+  category: identity
+  cost: 9000
+  effects: {privacy_risk: -0.1, recovery_confidence: 0.1}
+  provenance: {source: AUTHORED, note: "supports 0.4 security exposure around customer-data access"}

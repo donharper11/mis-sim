@@ -24,7 +24,7 @@ under `handoffs/` use the packet ID.
 
 ---
 
-## Phase 0 — Foundation · 5 packets
+## Phase 0 — Foundation · 6 packets
 
 *No product code. Establishes governance, the repo, and the visual grammar.*
 
@@ -33,8 +33,9 @@ under `handoffs/` use the packet ID.
 | 0.1 | Governance set — GOVERNANCE, QUALITY_PROTOCOL, SPEC_PROTOCOL, CONTRACTS | — | ✅ merged |
 | 0.2 | Repo scaffold, FastAPI + React skeleton, design tokens | — | ✅ merged `d638939` |
 | 0.3 | Canonical token map + mockup pilot ×3 | — | ✅ merged `3395de8` |
-| 0.4 | Reference mockups ×7 | — | spec written, ready to dispatch |
-| 0.5 | Design-system component library | S0 lib | blocked on 0.4 |
+| 0.4 | Reference mockups ×7 | — | ✅ merged `172de97` |
+| 0.5 | **Coverage gaps** — Governance screen · information policy · TCO checklist · capital request | — | spec written, ready to dispatch |
+| 0.6 | Design-system component library | S0 lib | blocked on 0.5 |
 
 **Gate:** governance reviewed · 10 mockups approved · library renders a mockup pixel-close
 
@@ -170,7 +171,7 @@ finding returns to 1.1. This is the real test of the casepack schema.
 ## Totals
 
 ```
-Phase 0  Foundation             5   ██░░░  2 merged
+Phase 0  Foundation             6   ████░░  4 merged
 Phase 1  Engine                 7
 Phase 2  Platform scaffolding   5
 Phase 3  Student core loop      6
@@ -179,7 +180,7 @@ Phase 5  Instructor console     7
 Phase 6  Second casepack        2
 Phase 7  Pilot readiness        3
                                ──
-                               43   2 complete
+                               44   4 complete
 ```
 
 ## Parallel tracks

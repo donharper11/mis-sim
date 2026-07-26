@@ -1,0 +1,10 @@
+defaults_by_archetype:
+  c_suite: {ideal_placement: cloud, weight: 0.6}
+  finance: {ideal_placement: on_prem, weight: 0.6}
+  operations: {ideal_availability: high, weight: 0.8}
+  it: {ideal_staff_load: low, weight: 0.8}
+  security_auditor: {ideal_identity_access: high, weight: 0.9}
+  regulator: {ideal_recovery: high, weight: 0.8}
+overrides:
+  - {item: backup_recovery, archetype: security_auditor, ideal_value: 95, weight: 1.0}
+provenance: {source: HARVESTED, note: "mis_lite infrastructure preference and add-on rows reworked"}
