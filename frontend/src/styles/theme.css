@@ -28,8 +28,8 @@
   --p-red-800: #991B1B;
   --p-purple-500: #8B5CF6;
   --p-teal-500: #06B6D4;
-  --p-font-body: 'IBM Plex Sans', 'Arial', system-ui, -apple-system, sans-serif;
-  --p-font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --p-font-body: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --p-font-mono: 'IBM Plex Mono', 'Source Code Pro', monospace;
   --p-size-4: 4px;
   --p-size-8: 8px;
   --p-size-12: 12px;

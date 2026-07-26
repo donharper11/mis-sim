@@ -5,7 +5,7 @@
 
 | Item | Status | Evidence |
 |---|---|---|
-| Pre-flight rows 1–8, especially row 3 | PASS | v2 gate passed before edits: `HEAD c3a2709`; `handoffs/0.3-mockup-pilot/spec.md` line 3 reads `**Version 2**`. Row 3 condition rechecked by consumer scan: only `frontend/src/main.jsx`, `frontend/src/pages/DevTokens.jsx`, and `frontend/src/styles/theme.css` reference token names. |
+| Pre-flight rows 1–8, especially row 3 | PASS | Rework 2 restates all eight rows below. Row 6 now passes after `sudo apt-get install -y fonts-ibm-plex`: `fc-match "IBM Plex Sans"` returns `IBMPlexSans-Regular.ttf: "IBM Plex Sans" "Regular"`. |
 | Step 1 — map, consumers, guard, deprecation table | PASS | `theme.css` rewritten as 38 `--p-` primitives + 77 v2 roles; `main.jsx` remapped to 11 live semantic roles and throws on empty token; `DevTokens.jsx` lists roles by category and primitives separately; 89-row deprecation table below has no missing, extra, or duplicate old tokens. |
 | `npm run build` clean after the consumer rewrite | PASS | `vite build` completed; output assets `index-Gy2TMCAE.css` and `index-DzAF3_YJ.js`; only the existing chunk-size warning appeared. |
 | antd still themed — screenshot | PASS | Browser at `http://127.0.0.1:5200/_dev/tokens`, viewport 1280: Button background `rgb(30, 64, 175)`, Select border `rgb(217, 217, 217)`, Table header bg `rgb(250, 250, 250)`, header text `rgb(15, 23, 42)`, zero console errors, zero failed requests. Screenshot: `screenshots/0.3/devtokens-rework-1280.png`. |
@@ -115,8 +115,8 @@
 | `--chart-5` | `--chart-5` | role retained |
 | `--chart-6` | `--chart-6` | role retained |
 | `--chart-your-team` | `--chart-highlight` | rename |
-| `--font-body` | `--font-body` | role retained |
-| `--font-mono` | `--font-mono` | role retained |
+| `--font-body` | `--font-body` | role retained; Rework 2 reverted stack to 0.2 form after installing `fonts-ibm-plex` |
+| `--font-mono` | `--font-mono` | role retained; Rework 2 reverted stack to 0.2 form after installing `fonts-ibm-plex` |
 | `--space-xs` | `--space-xs` | role retained |
 | `--space-sm` | `--space-sm` | role retained |
 | `--space-md` | `--space-md` | role retained |
@@ -125,3 +125,16 @@
 | `--space-2xl` | `--space-2xl` | role retained |
 | `--space-3xl` | `--space-3xl` | role retained |
 | `--space-4xl` | `--space-4xl` | role retained |
+
+---
+
+## Rework 2 — 0.3-008, 0.3-009, 0.3-010
+
+| Finding / check | Result | Evidence |
+|---|---|---|
+| `0.3-008` pre-flight row 6 | PASS | Installed `fonts-ibm-plex` with `sudo apt-get install -y fonts-ibm-plex`; `fc-match "IBM Plex Sans"` now returns `IBMPlexSans-Regular.ttf: "IBM Plex Sans" "Regular"`. |
+| Pre-flight rows 1-8 restated | PASS | Row 1 baseline: `origin/main` token count `89`; current reworked token count `115` by v2 design. Row 2 `main.jsx` token refs `11`. Row 3 no token readers outside `main.jsx` / `DevTokens.jsx` / `theme.css`. Row 4 `DevTokens.jsx` token literals `98`. Row 5 `git check-ignore -v screenshots/0.3/x.png` reports `.gitignore:18:!screenshots/0.3/*.png`. Row 6 IBM Plex Sans installed. Row 7 `ls mockups/*.html` reports no such file. Row 8 Balanced Scorecard present at `design/02-traceability-matrix.md:100`. |
+| `0.3-009` font deprecation notes | PASS | `--font-body` and `--font-mono` rows now state Rework 2 reverted the stacks to the 0.2 forms after installing `fonts-ibm-plex`; no row claims an unqualified value-preserving rename. |
+| `0.3-010` fallback decision | PASS | Chose path (ii): the apt install from `0.3-008` is the safeguard. `Arial` still resolves to `LiberationSans-Regular.ttf`, so the font stack was reverted to the 0.2 form instead of adding a fallback that does not provide the intended visual signal. |
+| Browser verification | PASS | `/_dev/tokens` at 1280: Button `rgb(30, 64, 175)`, table header `rgb(250, 250, 250)`, header text `rgb(15, 23, 42)`, `swatchCount: 115`, `blankSwatches: []`, zero console errors, zero failed requests. Screenshot: `screenshots/0.3/devtokens-rework2-1280.png`. |
+| Rendered font proof | PASS | Chrome platform-font inspection on the visible `h1` text `Design tokens`: `familyName: IBM Plex Sans`, `postScriptName: IBMPlexSans-Regular`, `glyphCount: 13`. |
