@@ -38,6 +38,28 @@ context.
 
 ---
 
+## Standing rules from the 0.3 alignment (2026-07-27)
+
+**R1 — A spec change during an open build cycle is announced on the branch.**
+Merging to `main` does not reach a builder; it reads its spec from its branch. The change
+lands on the branch with a one-line note in `dod.md` naming which steps it invalidates.
+*(0.3: v3 was merged to main mid-audit and silently respecced half the build.)*
+
+**R2 — Renumbering an invariant requires checking what the old number guarded.**
+State in the changelog which guards moved where, or that none did.
+*(0.3: v3 reused I9/I10 and silently dropped the font and licence guards.)*
+
+**R3 — Part B is run by an agent that has not read the spec.**
+Dispatched with the playthrough's Part B table and the mockups, nothing else. An auditor
+who has read the copy list is disqualified and says so rather than running it anyway.
+*(0.3: the auditor correctly refused, having read §5.6 four times.)*
+
+**R4 — Repo-wide greps run over tracked files.**
+`git ls-files | xargs grep …`, never `grep -r` over a tree containing `node_modules`.
+*(0.3: `gstatic` false-matched `existingStaticNonFields` in `@babel/helpers`.)*
+
+---
+
 ## Branch discipline
 
 ```

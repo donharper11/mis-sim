@@ -1,9 +1,12 @@
 # 0.3 — Token Map + Mockup Pilot · Build Spec
 
-**Version 3** · **Authored under** `SPEC_PROTOCOL.md` v1.2
+**Version 3.1** · **Authored under** `SPEC_PROTOCOL.md` v1.2
 **Author:** Claude (design session) · **Date:** 2026-07-27
 **Phase:** 0 · **Depends on:** 0.2 (merged) · **Blocks:** 0.4, 0.5
 
+> **v3.1 folds in the 0.3 audit.** Read `alignment.md` in this folder first — it states
+> what survives, what is discarded, and what each finding became.
+>
 > **v3 replaces Steps 2–5. Steps 1 and 1b stand — do not redo them.**
 >
 > The token map (`--p-` primitives + 115 roles) and the self-hosted fonts are built,
@@ -274,7 +277,8 @@ Centraline IM 7 → Warehouse · 34 people
 
 ```
 Riverside Grocers · 8 stores · round 3 of 6 · Low-Cost Leadership (locked R2)
-Capital remaining $44,000 of $220,000
+Capital remaining $44,000 of $220,000        ← round 3
+  (round-1 empty state: $400,000 of $400,000 — budget curve [400000, 260000, 220000, …])
 Run-rate  R1 $47,000 → R2 $53,000 → R3 $58,300
 
 PLATFORM — firm-wide
@@ -319,7 +323,10 @@ SHELL
   sidebar     Riverside Grocers · Dashboard · DECISIONS · Strategy · Platform ·
               Components · Rollout · Security · Services · People ·
               Challenges · Review · Debrief
-  round       "Round 3 of 6"
+  round       "Round 3 of 6"   ·   empty-state files: "Round 1 of 6"
+              EVERY file states its round (v3.1). $400,000 and $220,000 are both
+              correct — rounds 1 and 3 of the budget curve — and read as a
+              contradiction only when the round is unstated
   strategy    "Low-Cost Leadership · locked in round 2"
   strip       "Capital remaining" · "Run-rate"
   trend       "Run-rate rises every round it is not managed"
@@ -369,6 +376,13 @@ WIZARD
   5  "How is it configured?"
   6  "What will it cost?"          "What else do you expect to pay?"
      button  "Add to plan"
+  deployment-mode copy — ALL THREE, one set each (v3.1; the third had none in v2
+  and the gap got filled rather than reported)
+     on-premises  "This would use all remaining platform capacity."
+     cloud        (no warning — this option is unconstrained here. Stated so a
+                   builder does not invent one)
+     as a service "Inventory data would leave your systems."
+                  "A fourth separate login — you have no central sign-on"
   back "Back"   cancel "Cancel"
 
 ROLLOUT
@@ -410,7 +424,7 @@ Eight files, one state each. **No file contains more than one state.**
 | I1 | Roles only, no primitives, no raw colour | `grep -nE "var\(--p-" mockups/*.html` and `grep -nE ":[[:space:]]*#[0-9a-fA-F]{3,8}\|rgb\(\|hsl\(" mockups/*.html` | zero both |
 | I2 | Roles resolve to primitives in one step | script over `theme.css` | all pass |
 | I3 | No token declared outside `theme.css` | `grep -rn -- "^[[:space:]]*--[a-z-]*:" mockups/` | zero |
-| I4 | No engine vocabulary visible | `grep -niE "capability_key\|instance_id\|articulation\|SPOF\|RTO\|RPO\|EOL\b\|MOT\|realised" mockups/*.html` | zero |
+| I4 | No engine vocabulary visible | `git ls-files "mockups/*.html" \| xargs grep -niE "capability_key\|instance_id\|articulation\|SPOF\|RTO\|RPO\|EOL\b\|MOT\|realised"` | zero |
 | I5 | Every string in §5.7 or justified in `dod.md` | text-node diff | zero unaccounted |
 | I6 | One external reference per file, `theme.css` | `grep -nE "<link\|@import\|src=\|https?://" mockups/*.html` | one `<link>` each |
 | I7 | Riverside marked as content | `grep -niE "riverside\|grocer" mockups/*.html \| grep -v data-casepack` | zero |
@@ -418,6 +432,9 @@ Eight files, one state each. **No file contains more than one state.**
 | I9 | **No scores on decision pages** | `grep -nE "[0-9]{1,3}%[^ ]*realis\|Tech [0-9]\|Org [0-9]\|Mgmt [0-9]\|Held back by" mockups/*.html` | zero |
 | I10 | **No bulk control on Rollout** | manual: every control in `rollout-detail.html` names one deployment | confirmed |
 | I11 | Wizard steps 3 and 4 not skippable | manual: no skip/later affordance | confirmed |
+| I12 | **No third-party font request** *(restored — was v2.1 I9, dropped by the v3 renumber; finding `0.3-020`)* | `git ls-files \| grep -E "frontend/\|mockups/" \| xargs grep -niE "googleapis\|gstatic\|fonts\.google"` | zero |
+| I13 | **Both faces and the licence still shipped** *(restored — was v2.1 I10)* | `git ls-files "frontend/src/styles/fonts/*"` | 5 `.woff2` + `LICENSE.txt`. **OFL 1.1 requires the licence to accompany the fonts** |
+| I14 | **Badge scale conforms to `CONTRACTS.md`** *(finding `0.3-013`)* | `grep -oE "status-(ok\|info\|warn\|neutral\|danger)" mockups/*.html \| sort -u` then read each badge's label | `Complete→ok` `Partly done→info` `Needs attention→warn` `Not started→neutral`. **`Partly done` sharing `ok` with `Complete` is a FAIL.** Every status-bearing item carries a badge |
 
 I8, I9, I10, I11 are new in v3 and are the ones that encode what v2 got wrong.
 
@@ -467,7 +484,11 @@ in §5.8.
 | Step 3 Components incl. wizard | | |
 | Step 4 Rollout | | |
 | Step 5 consistency; v2 files deleted | | |
-| I1–I11 | | |
+| I1–I14 | | |
+| `situation.html` and `applications.html` deleted | | |
+| Badge scale matches `CONTRACTS.md` — `0.3-013` | | |
+| Font guards restored and passing — `0.3-020` | | |
+| `alignment.md` read before starting | | |
 | Eight files, one state each | | |
 | Strings not in §5.7, justified | | |
 | Screenshots ×9 in `screenshots/0.3/` | | |

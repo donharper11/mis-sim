@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-07-26 (seeded at Phase 0, before implementation).
+**Last updated:** 2026-07-27 (status badge scale added — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -127,6 +127,31 @@ converted on ingest, not stored raw.
 
 **Rule:** engine code **never** branches on `pack_key`. Enforced by the Phase 6 gate and
 by the falsification check in `SPEC_PROTOCOL.md §4`.
+
+---
+
+## Status badge scale — PROSPECTIVE
+
+**Canonical: four values, four DISTINCT role tokens.** Used by every screen, and the
+acceptance contract for module 0.5's `StatusBadge`.
+
+```
+Complete          --status-ok-bg / -text / -marker        green    done, nothing needed
+Partly done       --status-info-bg / -text / -marker      blue     underway, on track
+Needs attention   --status-warn-bg / -text / -marker      amber    action needed this round
+Not started       --status-neutral-bg / -text / -marker   grey     nothing here yet
+```
+
+**NOT** `Partly done` sharing `--status-ok-*` with `Complete`. That was finding `0.3-013`:
+a capability at 25% realised and explicitly throttled carried the same green as one at
+5/5, so colour-scanning could not distinguish them.
+
+**Signal severity is a SEPARATE scale** and must not be conflated:
+`Critical → --status-danger-*` · `Warning → --status-warn-*`. An item's *status* and a
+signal's *severity* answer different questions.
+
+**Rule:** every status-bearing item shows a badge. An item with a status and no badge is a
+defect — inconsistent application is how `0.3-013` hid.
 
 ---
 
