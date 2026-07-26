@@ -19,6 +19,10 @@ Buy the ideal system, train nobody, realise almost nothing.
 
 ---
 
+> **New to this project? Read [`BATTLECARD.md`](BATTLECARD.md) first.** Objective, the
+> engine, the decision hierarchy, current state, open blockers, and the plan end to end —
+> enough to pick up any packet and start.
+
 ## Read these first
 
 | Document | What it governs |
