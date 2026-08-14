@@ -1,0 +1,183 @@
+# Every string the casepack validator prints.
+#
+# It lives outside validate.py on purpose. 1.1 invariant I2 requires that no displayed
+# English appears in backend/app/casepack/*.py, and GOVERNANCE 2.1 requires this output to
+# read as business language for an instructor rather than as engine vocabulary. Keeping the
+# wording here satisfies both, and lets a non-engineer review what the validator says.
+#
+# The file name deliberately matches the glob backend/app/casepack/validate* used by
+# spec 1.2 invariants I1 and I4.
+#
+# Contract for this file, enforced by 1.2 invariant I1, which counts occurrences of the
+# four-character fix prefix and compares them to the number of ERROR-severity codes:
+#   - every ERROR code's `fix` opens with that prefix, on exactly one line
+#   - nothing else in this file, comments included, may repeat it
+#   - WARN codes carry a `fix` too, because Finding refuses to be constructed without one,
+#     but their wording is a suggestion, opens with no prefix, and shows only under --json
+
+render:
+  usage: "usage: validate_casepack [--json] <pack_dir>"
+  header: "{pack_key} {pack_version} (schema {schema_version}) — {vertical}, {rounds} rounds"
+  ok_roles: "{count} capabilities · all required roles resolve"
+  ok_weights: "{count} strategies · weights sum to 1.000"
+  ok_events: "{count} events · all preconditions resolve"
+  ok_demand: "demand curves cover rounds 1–{rounds}"
+  summary: "{errors} · {warnings} · exit {exit_code}"
+  one_error: "1 error"
+  many_errors: "{count} errors"
+  one_warning: "1 warning"
+  many_warnings: "{count} warnings"
+  no_errors: "0 errors"
+  no_warnings: "0 warnings"
+  detail_missing: "{file} is not in the pack directory"
+  detail_unparseable: "{file} is not readable as YAML"
+
+# Nouns used inside messages, so the .py file names no concept in English.
+subjects:
+  capabilities: "capability"
+  roles: "role"
+  strategies: "strategy"
+  stakeholders: "persona"
+  events: "event body"
+  policies: "policy"
+  misc: "authored label"
+
+# Reasons an event can never fire, used by E21.
+reasons:
+  severity_unreachable: "it waits for '{signal}' to reach {severity}, and that watch rule sets no {threshold_field} threshold, so the signal can never get there"
+  severity_conflict: "it waits for '{signal}' to be at {first} and at {second} in the same round"
+
+codes:
+
+  # ---- structural (spec 5.1) -------------------------------------------------------
+
+  E00:
+    severity: ERROR
+    message: "this pack could not be read: {detail}"
+    fix: "Fix: restore or repair {file} in the pack directory, then run the validator again."
+
+  E01:
+    severity: ERROR
+    message: "capability '{capability}' needs {role}, and nothing in the catalog or the shared platform provides it."
+    fix: "Fix: add '{role_key}' to roles_filled on an item in catalog.yaml or a service in platform.yaml, or drop it from required_roles in capabilities.yaml."
+
+  E02:
+    severity: ERROR
+    message: "capability '{capability}' needs {entity} information at '{level}' detail, and no catalog item can hold it."
+    fix: "Fix: add a catalog item whose owns_entities holds {entity} at '{level}' or finer, or lower min_level_of_detail in capabilities.yaml."
+
+  E03:
+    severity: ERROR
+    message: "strategy '{strategy}' spreads {total} of its emphasis across capabilities; it has to spread exactly 1.000."
+    fix: "Fix: adjust capability_weights in strategies.yaml until the values add up to 1.000."
+
+  E04:
+    severity: ERROR
+    message: "capability '{capability}' forecasts demand for {given} rounds, but this company plays {rounds}."
+    fix: "Fix: give demand_curve exactly {rounds} values in capabilities.yaml."
+
+  E05:
+    severity: ERROR
+    message: "watch rule '{rule}' says it is cleared by '{action}', which is not something a team can actually do."
+    fix: "Fix: put one of these in cleared_by in watch_rules.yaml, or remove '{action}': {known}."
+
+  E06:
+    severity: ERROR
+    message: "event '{event}' waits on '{reference}', which this company does not have."
+    fix: "Fix: point the precondition in events.yaml at a watch rule that exists in watch_rules.yaml or a capability that exists in capabilities.yaml, or remove the precondition."
+
+  E07:
+    severity: ERROR
+    message: "the {subject} '{key}' has no wording anyone can read, so a screen would show the raw key instead."
+    fix: "Fix: add '{key}' under {section} in labels.yaml."
+
+  E08:
+    severity: ERROR
+    message: "persona '{stakeholder}' is cast as '{archetype}', which is not one of the {count} roles this platform knows how to play."
+    fix: "Fix: in stakeholders.yaml, cast the persona as one of: {known}."
+
+  E09:
+    severity: ERROR
+    message: "catalog item '{item}' declares that information flows to or from '{capability}', which this company does not have."
+    fix: "Fix: name a capability that exists in capabilities.yaml, or remove the flow from catalog.yaml."
+
+  E10:
+    severity: ERROR
+    message: "'{key}' is declared {count} times, so only the last one would ever be used."
+    fix: "Fix: give every entry in {file} its own key, or delete the repeat."
+
+  E11:
+    severity: ERROR
+    message: "this pack is written against schema version {given}; this validator only understands up to {supported}."
+    fix: "Fix: upgrade the validator to a build that knows schema {given}, or re-author the pack against schema {supported}."
+
+  # ---- coherence (spec 5.2) --------------------------------------------------------
+
+  E20:
+    severity: ERROR
+    message: "nothing watches capability '{capability}', so it can never raise a signal, nobody is ever told when it is in trouble, and a team gets no credit for looking after it."
+    fix: "Fix: add a watch rule for '{capability}' in watch_rules.yaml with a threshold and the actions that clear it."
+
+  E21:
+    severity: ERROR
+    message: "event '{event}' can never happen: {reason}."
+    fix: "Fix: change what the event waits for in events.yaml, or set the matching threshold in watch_rules.yaml."
+
+  E22:
+    severity: ERROR
+    message: "strategy '{strategy}' leans hardest on capability '{capability}', and a team declaring it could never cover that capability with what this company can buy."
+    fix: "Fix: add catalog items in catalog.yaml that fill every role and hold every entity '{capability}' needs, or move the emphasis in strategies.yaml."
+
+  E23:
+    severity: ERROR
+    message: "management question '{question}' needs {entity} information at '{level}' detail, and nothing this company can buy produces it."
+    fix: "Fix: add a catalog item owning {entity} at '{level}' or finer, or lower the requirement in questions.yaml."
+
+  # ---- inherited invariants from 1.1 section 6 (spec 5.1 preamble) -----------------
+
+  I3:
+    severity: ERROR
+    message: "'{key}' is a machine key, so it has to be lower case words joined by underscores."
+    fix: "Fix: rename '{key}' to lower snake case everywhere it appears in the pack."
+
+  I8:
+    severity: ERROR
+    message: "this pack does not survive being loaded and reloaded unchanged, so some authored value is being silently dropped."
+    fix: "Fix: this is a schema defect rather than a content one; report it to the owner of models.py before loading this pack anywhere."
+
+  # ---- seed-quality heuristics (spec 5.3) -----------------------------------------
+
+  W01:
+    severity: WARN
+    message: "{count} preference rows carry the same ideal value {ideal_value} and the same weight {weight}, which looks like placeholder seeding rather than authored judgement."
+    fix: "vary ideal_value and weight per stakeholder in {file}, or state in provenance that the uniformity is deliberate."
+
+  W02:
+    severity: WARN
+    message: "no strategy weights capability '{capability}' above {threshold}, so no team has a reason to invest in it."
+    fix: "raise the weight in strategies.yaml for at least one strategy, or retire the capability."
+
+  W03:
+    severity: WARN
+    message: "event '{event}' targets no strategy, so it will land on every team whatever they declared."
+    fix: "add strategy_affinity in events.yaml naming the strategies this event is meant to test."
+
+  W04:
+    severity: WARN
+    message: "catalog item '{item}' fills no role any capability asks for, so buying it can never help anyone."
+    fix: "add its roles to a capability's required_roles in capabilities.yaml, or remove the item from catalog.yaml."
+
+  W05:
+    severity: WARN
+    message: "the deck holds {count} events for {rounds} rounds, so at least one round has no card left to deal."
+    fix: "author at least one event per round in events.yaml, spread across the declared strategies."
+
+  W06:
+    severity: WARN
+    message: "every training option for '{item}' reaches everybody, so choosing between them is not a decision."
+    fix: "give the cheaper training options a lower coverage in catalog.yaml so the choice has a consequence."
+
+  W07:
+    severity: WARN
+    message: "catalog item '{item}' has no costs a team could wrongly leave out, so its cost forecast is trivially winnable."
+    fix: "add decoy_cost_categories in catalog.yaml, or move a genuinely optional cost out of true_cost_categories."

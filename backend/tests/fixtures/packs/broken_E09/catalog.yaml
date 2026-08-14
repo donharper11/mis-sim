@@ -1,0 +1,57 @@
+- key: booking_suite
+  roles_filled: [booking_app]
+  serves: [appointment_booking]
+  deployment_modes:
+    on_prem: {capex: 56000, opex: 1400, lead_time_rounds: 1}
+    cloud: {capex: 9000, opex: 4300, lead_time_rounds: 0}
+    saas: {capex: 0, opex: 5800, lead_time_rounds: 0, bypasses_platform: true}
+  sizing: {driver: appointments, base: {compute: 1, storage_gb: 200}, per_unit: {compute: 0.2, storage_gb: 40, per: 5000}}
+  availability: 0.98
+  service_life_rounds: 5
+  staff_load: 0.3
+  owns_entities:
+    - {entity: appointment, level_of_detail: slot}
+    - {entity: client, level_of_detail: household}
+  must_be_fed_by: []
+  must_feed: [{entity: client, to_capability: clinical_records}]
+  people_affected: {org_unit: front_desk, count: 22}
+  training_options:
+    none: {cost: 0, coverage: 0.0}
+    basic: {cost: 6000, coverage: 0.6}
+    full: {cost: 15000, coverage: 1.0}
+  process_option: {cost: 12000, label_key: redesign_front_desk}
+  rgt_tag: grow
+  true_cost_categories: [training, integration]
+  decoy_cost_categories: [data_migration]
+  config_tiers:
+    core: {capex_multiplier: 1.0, compute_multiplier: 1.0}
+    reminders: {capex_multiplier: 1.3, compute_multiplier: 1.2}
+  provenance: {source: AUTHORED, note: "the booking system the practice already runs; on-prem capex matches the round-2 review line"}
+- key: records_system
+  roles_filled: [records_app, record_store]
+  serves: [clinical_records]
+  deployment_modes:
+    on_prem: {capex: 64000, opex: 1900, lead_time_rounds: 2}
+    cloud: {capex: 11000, opex: 5200, lead_time_rounds: 0}
+    saas: {capex: 0, opex: 6900, lead_time_rounds: 0, bypasses_platform: true}
+  sizing: {driver: consultations, base: {compute: 1, storage_gb: 300}, per_unit: {compute: 0.3, storage_gb: 60, per: 5000}}
+  availability: 0.97
+  service_life_rounds: 5
+  staff_load: 0.4
+  owns_entities:
+    - {entity: visit, level_of_detail: visit_line}
+  must_be_fed_by: [{entity: client, from_capability: reception_desk}]
+  must_feed: []
+  people_affected: {org_unit: clinical_team, count: 31}
+  training_options:
+    none: {cost: 0, coverage: 0.0}
+    basic: {cost: 8000, coverage: 0.5}
+    full: {cost: 19000, coverage: 1.0}
+  process_option: {cost: 14000, label_key: redesign_consult_notes}
+  rgt_tag: transform
+  true_cost_categories: [training, data_migration, process_redesign]
+  decoy_cost_categories: [backup, capacity]
+  config_tiers:
+    core: {capex_multiplier: 1.0, compute_multiplier: 1.0}
+    imaging: {capex_multiplier: 1.45, compute_multiplier: 1.6}
+  provenance: {source: AUTHORED, note: "the clinical system whose notes are still finished on paper; transform because it changes how a consultation is run"}

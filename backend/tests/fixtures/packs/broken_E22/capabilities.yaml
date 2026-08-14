@@ -1,0 +1,18 @@
+- key: appointment_booking
+  chain_position: primary/operations
+  required_roles: [booking_app, client_access, network_path]
+  required_entities:
+    - {entity: appointment, min_level_of_detail: slot}
+    - {entity: client, min_level_of_detail: household}
+  demand_curve: [9000, 10200, 11600, 13000]
+  demand_unit: appointments
+  provenance: {source: AUTHORED, note: "four practices booking roughly 45 appointments a day, growing with the out-of-hours clinic"}
+- key: clinical_records
+  chain_position: primary/service
+  required_roles: [records_app, record_store, client_access, imaging_link]
+  required_entities:
+    - {entity: visit, min_level_of_detail: visit_line}
+    - {entity: client, min_level_of_detail: household}
+  demand_curve: [7400, 8100, 8900, 9800]
+  demand_unit: consultations
+  provenance: {source: AUTHORED, note: "consultations trail bookings because not every booking is kept"}

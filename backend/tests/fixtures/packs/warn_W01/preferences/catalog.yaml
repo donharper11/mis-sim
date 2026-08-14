@@ -1,0 +1,16 @@
+defaults_by_archetype:
+  c_suite: {ideal_cost_posture: low, ideal_reliability: 0.98, weight: 0.8}
+  finance: {ideal_cost_posture: low, weight: 0.9}
+  operations: {ideal_reliability: 0.99, ideal_training_coverage: high, weight: 0.85}
+  customer: {ideal_availability: high, weight: 0.7}
+# Reproduces design/01-mis_lite-harvest.md section 4: `business_process_mapping` rows
+# 71-76 carried an identical ideal_value of 85.00 and identical weights across all six
+# stakeholders for one process. That is the shape W01 exists to catch.
+overrides:
+  - {item: booking_suite, archetype: c_suite, ideal_value: 85.00, weight: 0.80}
+  - {item: booking_suite, archetype: finance, ideal_value: 85.00, weight: 0.80}
+  - {item: booking_suite, archetype: operations, ideal_value: 85.00, weight: 0.80}
+  - {item: booking_suite, archetype: employees, ideal_value: 85.00, weight: 0.80}
+  - {item: booking_suite, archetype: it, ideal_value: 85.00, weight: 0.80}
+  - {item: booking_suite, archetype: customer, ideal_value: 85.00, weight: 0.80}
+provenance: {source: HARVESTED, note: "uniform seeding carried straight over from mis_lite business_process_mapping"}
