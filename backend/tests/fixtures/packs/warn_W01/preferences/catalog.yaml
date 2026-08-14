@@ -5,7 +5,8 @@ defaults_by_archetype:
   customer: {ideal_availability: high, weight: 0.7}
 # Reproduces design/01-mis_lite-harvest.md section 4: `business_process_mapping` rows
 # 71-76 carried an identical ideal_value of 85.00 and identical weights across all six
-# stakeholders for one process. That is the shape W01 exists to catch.
+# stakeholders for one process. That is the shape W01 exists to catch, and six is the
+# smallest group that fires -- spec v1.2 section 5.3 binds N to 6.
 overrides:
   - {item: booking_suite, archetype: c_suite, ideal_value: 85.00, weight: 0.80}
   - {item: booking_suite, archetype: finance, ideal_value: 85.00, weight: 0.80}

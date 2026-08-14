@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -26,29 +26,8 @@ ERROR = "ERROR"
 WARN = "WARN"
 INFO = "INFO"
 
-#: The 14 platform stakeholder archetypes.
-#: Source: design/05-implementation-plan.md section 1.4.1 (the platform layer) and
-#: design/01-mis_lite-harvest.md section 2 (`stakeholders`, 14 rows, 7 internal +
-#: 7 external). Unlike ACTION_TYPES this set had no existing home in checks.py; see
-#: handoffs/1.2-validator/dod.md for the note recording that it was introduced here.
-ARCHETYPES = frozenset(
-    {
-        "c_suite",
-        "finance",
-        "employees",
-        "operations",
-        "it",
-        "hr",
-        "marketing",
-        "investor",
-        "customer",
-        "vendor",
-        "security_auditor",
-        "regulator",
-        "general_public",
-        "media",
-    }
-)
+#: ARCHETYPES and REVIEW_AREAS now live in checks.py beside ACTION_TYPES -- spec v1.2
+#: section 3 decision 9. They are schema vocabulary, and 1.4/1.5 will want them.
 
 #: W01 threshold. design/01 section 4 records `business_process_mapping` rows 71-76 --
 #: six stakeholders sharing one ideal_value and one weight -- as the shape W01 exists to
@@ -135,11 +114,13 @@ class Finding:
 
     code: str
     severity: str
+    subject: str
     file: str
     field: str
     message: str
     fix: str
     line: int | None = None
+    pack: str | None = None
 
     def __post_init__(self) -> None:
         # spec 3.1: I1 holds because a fix-less ERROR is unconstructible, not discouraged
@@ -149,11 +130,18 @@ class Finding:
             raise ValueError(f"{self.code}: file is empty")
         if not self.field.strip():
             raise ValueError(f"{self.code}: field is empty")
+        if not self.subject.strip():
+            raise ValueError(f"{self.code}: subject is empty")
+
+    def with_pack(self, pack: str) -> Finding:
+        return replace(self, pack=pack)
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "code": self.code,
             "severity": self.severity,
+            "pack": self.pack,
+            "subject": self.subject,
             "file": self.file,
             "line": self.line,
             "field": self.field,
@@ -167,12 +155,14 @@ def make_finding(
     relative: str,
     field: str,
     line: int | None = None,
+    variant: str | None = None,
     **params: Any,
 ) -> Finding:
-    entry = catalogue()["codes"][code]
+    entry = catalogue()["variants"][variant] if variant else catalogue()["codes"][code]
     return Finding(
         code=code,
-        severity=entry["severity"],
+        severity=catalogue()["codes"][code]["severity"],
+        subject=str(entry["subject"]).format(**params),
         file=relative,
         field=field,
         message=str(entry["message"]).format(**params),
@@ -418,6 +408,25 @@ class Lens:
         }
         self.watched = {rule.capability for rule in pack.watch_rules}
         self.rules = {rule.key: rule for rule in pack.watch_rules}
+        # spec v1.2 section 3 decision 7: a rule carrying neither threshold can never fire,
+        # so it does not count as watching anything. E20's predicate turns on this set.
+        self.thresholdless = [
+            rule
+            for rule in pack.watch_rules
+            if rule.warn_above is None and rule.critical_above is None
+        ]
+        self.watched_with_threshold = {
+            rule.capability
+            for rule in pack.watch_rules
+            if rule.warn_above is not None or rule.critical_above is not None
+        }
+        self.catalog_keys = {item.key for item in pack.catalog}
+        self.strategy_keys = {strategy.key for strategy in pack.strategies}
+        # A capability IS a value chain activity (1.1 O1); `chain_position` is authored as
+        # "primary/operations", so the activity vocabulary is the segment after the slash.
+        self.chain_positions = {
+            capability.chain_position.split("/")[-1] for capability in pack.capabilities
+        }
         self.filled_roles = {role for item in pack.catalog for role in item.roles_filled}
         self.filled_roles |= {
             role for service in pack.platform.services for role in service.roles_filled
@@ -619,7 +628,7 @@ def check_archetypes(lens: Lens) -> list[Finding]:
     """E08 -- a persona cast as an archetype the platform does not have."""
     findings: list[Finding] = []
     for person in lens.pack.stakeholders:
-        if person.archetype not in ARCHETYPES:
+        if person.archetype not in base_checks.ARCHETYPES:
             findings.append(
                 make_finding(
                     "E08",
@@ -628,8 +637,8 @@ def check_archetypes(lens: Lens) -> list[Finding]:
                     line=lens.source.key_line("stakeholders.yaml", person.key),
                     stakeholder=lens.label("stakeholders", person.display_name_key),
                     archetype=person.archetype,
-                    count=len(ARCHETYPES),
-                    known=", ".join(sorted(ARCHETYPES)),
+                    count=len(base_checks.ARCHETYPES),
+                    known=", ".join(sorted(base_checks.ARCHETYPES)),
                 )
             )
     return findings
@@ -663,21 +672,56 @@ def check_data_flows(lens: Lens) -> list[Finding]:
 
 
 def check_unwatched_capabilities(lens: Lens) -> list[Finding]:
-    """E20 -- a capability nothing watches can never raise a signal."""
+    """E20 -- a capability with no watch rule carrying at least one threshold.
+
+    Widened in v1.2 (finding 1.2-001). The old predicate was "appears in no watch rule",
+    which is a different test from the rationale E20 has always carried -- "it can never
+    raise a signal". A capability watched only by a thresholdless rule is exactly as mute
+    as one watched by nothing, and the narrow predicate let CG-1's closure condition be
+    satisfied by authoring more rules that cannot fire.
+    """
     findings: list[Finding] = []
     for capability in lens.pack.capabilities:
-        if capability.key in lens.watched:
+        if capability.key in lens.watched_with_threshold:
             continue
+        mute_rules = sorted(
+            rule.key for rule in lens.thresholdless if rule.capability == capability.key
+        )
+        if mute_rules:
+            reason = _reason("only_thresholdless", rules=", ".join(mute_rules))
+        else:
+            reason = _reason("no_watch_rule")
         findings.append(
             make_finding(
                 "E20",
                 "watch_rules.yaml",
                 f"capability.{capability.key}",
-                line=None,
+                line=lens.source.token_line("watch_rules.yaml", mute_rules[0]) if mute_rules else None,
                 capability=lens.label("capabilities", capability.key),
+                reason=reason,
             )
         )
     return findings
+
+
+def check_thresholdless_rules(lens: Lens) -> list[Finding]:
+    """E12 -- a watch rule carrying neither warn_above nor critical_above.
+
+    Spec v1.2 section 3 decision 7, ruled by the user 2026-08-14. Such a rule can never
+    fire, so it is not a watch rule -- it is the appearance of one, which is worse than its
+    absence because it satisfies a coverage count while watching nothing.
+    """
+    return [
+        make_finding(
+            "E12",
+            "watch_rules.yaml",
+            rule.key,
+            line=lens.source.key_line("watch_rules.yaml", rule.key),
+            rule=rule.key,
+            capability=lens.label("capabilities", rule.capability),
+        )
+        for rule in lens.thresholdless
+    ]
 
 
 def _raisable(lens: Lens, signal: str) -> set[str]:
@@ -793,6 +837,148 @@ def check_questions(lens: Lens) -> list[Finding]:
 
 
 # --------------------------------------------------------------------------------------
+# typed stage -- initial_state (E13, E14)
+#
+# Added v1.2 for finding 1.2-014: initial_state is fourteen fields deep and, before this,
+# not one check read any of it. A pack naming a strategy that does not exist and holding
+# more capital than it has validated clean.
+#
+# `initial_state` is optional. A pack without one is a pack a section has not started, so
+# absence is not a defect and neither code fires -- rework.md section 1, ruling 3.
+# --------------------------------------------------------------------------------------
+
+
+def _initial_state(lens: Lens) -> Any:
+    return getattr(lens.pack.metadata, "initial_state", None)
+
+
+def check_initial_state_references(lens: Lens) -> list[Finding]:
+    """E13 -- a key inside initial_state that names a pack object the pack does not define.
+
+    Scope per rework.md section 1, ruling 2, MINUS `value_chain_coverage`'s keys and
+    `needs_attention`, both of which are declared in dod.md as a partial decline with
+    evidence: the first is keyed by Porter value-chain activity rather than by capability,
+    and the second holds authored prose. See dod.md section 10.
+    """
+    state = _initial_state(lens)
+    if state is None:
+        return []
+    findings: list[Finding] = []
+
+    def report(kind: str, key: str, field: str, line: int | None) -> None:
+        findings.append(
+            make_finding(
+                "E13",
+                "pack.yaml",
+                f"initial_state.{field}",
+                line=line,
+                kind=_subject(kind),
+                key=key,
+                section=kind,
+            )
+        )
+
+    strategy_line = lens.source.find("pack.yaml", r"^\s*declared_strategy\s*:")
+    if state.declared_strategy not in lens.strategy_keys:
+        report("strategies", state.declared_strategy, "declared_strategy", strategy_line)
+
+    for unit in state.unit_responses:
+        for item in unit.running:
+            if item not in lens.catalog_keys:
+                report("catalog", item, f"unit_responses.{unit.unit}.running", lens.source.token_line("pack.yaml", item))
+        # `contributing` names a value chain activity; a capability IS one (1.1 O1), so
+        # either vocabulary resolves it.
+        if unit.contributing not in lens.chain_positions | lens.capability_keys:
+            report(
+                "capabilities",
+                unit.contributing,
+                f"unit_responses.{unit.unit}.contributing",
+                lens.source.token_line("pack.yaml", unit.contributing),
+            )
+
+    for index, row in enumerate(state.review.lines):
+        if row.area not in base_checks.REVIEW_AREAS:
+            report("review_areas", row.area, f"review.lines.{index}.area", lens.source.token_line("pack.yaml", row.area))
+
+    return findings
+
+
+def _derivations(state: Any, metadata: Any) -> list[tuple[str, str, int, int]]:
+    """(field, derivation key, authored value, derived value) for every checkable figure.
+
+    Tolerance is ZERO -- rework.md section 1, ruling 1. These are authored integers; a
+    derived figure and an authored one either match or they do not.
+    """
+    review = state.review
+    budget = state.budget
+    line_capital = sum(row.capital for row in review.lines)
+    line_run_rate = sum(row.run_rate_effect for row in review.lines)
+    rows: list[tuple[str, str, int, int]] = [
+        ("review.capital_committed", "review_lines_capital", review.capital_committed, line_capital),
+        (
+            "review.capital_remaining",
+            "review_remaining",
+            review.capital_remaining,
+            review.capital_available - review.capital_committed,
+        ),
+        (
+            "review.run_rate_after",
+            "review_run_rate",
+            review.run_rate_after,
+            review.run_rate_before + line_run_rate,
+        ),
+        (
+            "budget.capital_remaining",
+            "budget_remaining",
+            budget.capital_remaining,
+            review.capital_available - review.capital_committed,
+        ),
+        (
+            "budget.capital_available",
+            "budget_available",
+            budget.capital_available,
+            review.capital_available,
+        ),
+        ("budget.run_rate", "budget_run_rate", budget.run_rate, review.run_rate_before),
+    ]
+    capex = metadata.budget.capex_per_round
+    if 0 < budget.round <= len(capex):
+        rows.append(
+            ("budget.capital_available", "capex_for_round", budget.capital_available, capex[budget.round - 1])
+        )
+    return rows
+
+
+def check_initial_state_figures(lens: Lens) -> list[Finding]:
+    """E14 -- an authored initial_state figure contradicting one derived from the pack."""
+    state = _initial_state(lens)
+    if state is None:
+        return []
+    findings: list[Finding] = []
+    seen: set[tuple[str, int, int]] = set()
+    for field, derivation, authored, derived in _derivations(state, lens.pack.metadata):
+        if authored == derived:
+            continue
+        signature = (field, authored, derived)
+        if signature in seen:
+            continue
+        seen.add(signature)
+        findings.append(
+            make_finding(
+                "E14",
+                "pack.yaml",
+                f"initial_state.{field}",
+                line=lens.source.find("pack.yaml", rf"^\s*{re.escape(field.split('.')[-1])}\s*:"),
+                field_name=field,
+                authored=authored,
+                derived=derived,
+                derivation=_reason(derivation),
+            )
+        )
+    return findings
+
+
+# --------------------------------------------------------------------------------------
 # typed stage -- seed-quality heuristics (W01..W07)
 # --------------------------------------------------------------------------------------
 
@@ -829,6 +1015,7 @@ def check_placeholder_preferences(lens: Lens, raw: dict[str, Any]) -> list[Findi
                     "overrides.ideal_value",
                     line=lens.source.find(relative, r"^overrides\s*:"),
                     count=count,
+                    domain=domain.replace("_", " ").title(),
                     ideal_value=ideal_value,
                     weight=weight,
                     file=relative,
@@ -956,6 +1143,9 @@ def validate(pack: Casepack, source: PackSource, raw: dict[str, Any]) -> list[Fi
     findings += check_labels(lens)
     findings += check_archetypes(lens)
     findings += check_data_flows(lens)
+    findings += check_thresholdless_rules(lens)
+    findings += check_initial_state_references(lens)
+    findings += check_initial_state_figures(lens)
     findings += check_unwatched_capabilities(lens)
     findings += check_impossible_events(lens)
     findings += check_strategy_reachability(lens)
@@ -968,6 +1158,16 @@ def validate(pack: Casepack, source: PackSource, raw: dict[str, Any]) -> list[Fi
     findings += check_training_choice(lens)
     findings += check_cost_decoys(lens)
     return findings
+
+
+def exit_code_for(findings: list[Finding]) -> int:
+    """Spec 3.1's one expression, in one place.
+
+    The v1.1 build carried a second copy inside directory mode, which the audit flagged
+    against SPEC_PROTOCOL section 3 ("one source of truth per fact"). Both callers now
+    share this.
+    """
+    return 1 if any(item.severity == ERROR for item in findings) else 0
 
 
 @dataclass
@@ -986,7 +1186,39 @@ class Report:
 
     @property
     def exit_code(self) -> int:
-        return 1 if self.errors else 0
+        return exit_code_for(self.findings)
+
+
+@dataclass
+class Run:
+    """One invocation: one pack, or a directory of them. The single producer both
+    renderers consume, so they cannot drift -- spec 3.1, invariant I5 as widened in v1.2.
+    """
+
+    packs: list[tuple[Path, Report]]
+    shared: list[Finding]
+    directory: bool
+
+    @property
+    def findings(self) -> list[Finding]:
+        """Every finding, pack-attributed, in the one canonical order."""
+        ordered: list[Finding] = []
+        for path, report in self.packs:
+            ordered.extend(item.with_pack(str(path)) for item in report.findings)
+        ordered.extend(self.shared)
+        return ordered
+
+    @property
+    def errors(self) -> list[Finding]:
+        return [item for item in self.findings if item.severity == ERROR]
+
+    @property
+    def warnings(self) -> list[Finding]:
+        return [item for item in self.findings if item.severity == WARN]
+
+    @property
+    def exit_code(self) -> int:
+        return exit_code_for(self.findings)
 
 
 def validate_pack_dir(pack_dir: str | Path) -> Report:
@@ -1052,7 +1284,44 @@ def _clean_lines(report: Report) -> list[str]:
     return lines
 
 
-def render_text(report: Report) -> str:
+#: Column width for the business name on a locator line. Wider subjects push the locator
+#: right; the parity check in check_fixture_matrix.py splits on two-or-more spaces.
+_SUBJECT_WIDTH = 30
+
+
+def _finding_block(finding: Finding) -> list[str]:
+    """One finding, in the v1.2 section 5.4 shape.
+
+    Business name leads, code is shown, `Fix:` prints at EVERY severity (section 3
+    decision 3), and the schema field path moves below the fix -- kept, not deleted.
+
+    The v1.2 sample omits the `Field:` line on two of its four blocks. The prose above it
+    is explicit that the path "is kept -- moved, not deleted", so it prints on all of them.
+    Where the sample and the written decision disagree, the decision governs: that is the
+    lesson of findings 1.2-009 and 1.2-010, where the v1.1 build followed the picture.
+    """
+    where = finding.file if finding.line is None else f"{finding.file}:{finding.line}"
+    # Two spaces minimum before the locator, even when the subject overruns its column, so
+    # the separator stays unambiguous for I5's text-vs-JSON parity check.
+    return [
+        f"  {finding.severity:<6} {finding.code:<4} {finding.subject:<{_SUBJECT_WIDTH}}  {where}",
+        f"         {finding.message}",
+        f"         {finding.fix}",
+        f"         {_render('field_prefix')} {finding.field}",
+        "",
+    ]
+
+
+def _summary_line(errors: int, warnings: int, exit_code: int) -> str:
+    return "  " + _render(
+        "summary",
+        errors=_count_phrase(errors, "one_error", "many_errors", "no_errors"),
+        warnings=_count_phrase(warnings, "one_warning", "many_warnings", "no_warnings"),
+        exit_code=exit_code,
+    )
+
+
+def _report_block(report: Report) -> list[str]:
     out: list[str] = [""]
     pack = report.pack
     if pack is not None:
@@ -1074,35 +1343,36 @@ def render_text(report: Report) -> str:
         out.append(f"  ✓  {line}")
     if clean:
         out.append("")
-
     for finding in report.findings:
-        where = finding.file if finding.line is None else f"{finding.file}:{finding.line}"
-        out.append(f"  {finding.severity:<6} {where}  {finding.field}")
-        out.append(f"         {finding.message}")
-        if finding.severity == ERROR:
-            out.append(f"         {finding.fix}")
-        out.append("")
+        out.extend(_finding_block(finding))
+    return out
 
-    out.append(
-        "  "
-        + _render(
-            "summary",
-            errors=_count_phrase(len(report.errors), "one_error", "many_errors", "no_errors"),
-            warnings=_count_phrase(len(report.warnings), "one_warning", "many_warnings", "no_warnings"),
-            exit_code=report.exit_code,
-        )
-    )
-    out.append("")
+
+def render_text(run: Run) -> str:
+    out: list[str] = []
+    for path, report in run.packs:
+        if run.directory:
+            out.append("")
+            out.append(f"  {path}")
+        out.extend(_report_block(report))
+        if not run.directory:
+            out.append(_summary_line(len(report.errors), len(report.warnings), report.exit_code))
+            out.append("")
+    if run.directory:
+        for finding in run.shared:
+            out.extend(_finding_block(finding))
+        out.append(_summary_line(len(run.errors), len(run.warnings), run.exit_code))
+        out.append("")
     return "\n".join(out)
 
 
 # --------------------------------------------------------------------------------------
-# renderer two -- json (spec 3.1: the same list)
+# renderer two -- json (spec 3.1: the same list, in the same order, in every mode)
 # --------------------------------------------------------------------------------------
 
 
-def render_json(report: Report) -> str:
-    return json.dumps([finding.as_dict() for finding in report.findings], indent=2)
+def render_json(run: Run) -> str:
+    return json.dumps([finding.as_dict() for finding in run.findings], indent=2)
 
 
 # --------------------------------------------------------------------------------------
@@ -1119,16 +1389,29 @@ def _pack_dirs(root: Path) -> list[Path]:
 
 
 def check_pack_key_uniqueness(reports: list[tuple[Path, Report]]) -> list[Finding]:
-    """O2 default -- pack_key must be unique across a directory of packs."""
-    counts: dict[str, int] = {}
-    for _, report in reports:
+    """O2 default -- pack_key must be unique across a directory of packs.
+
+    Still code E10 (the spec's code list is E00-E14, so a new code would break I1's set
+    equality), but its own message and fix. Finding 1.2-006: reusing E10's wording told the
+    reader to "give every entry in pack.yaml its own key", which is not an action that
+    exists when the condition is N separate pack.yaml files in N separate directories.
+    """
+    homes: dict[str, list[str]] = {}
+    for path, report in reports:
         if report.pack is not None:
-            key = report.pack.metadata.pack_key
-            counts[key] = counts.get(key, 0) + 1
+            homes.setdefault(report.pack.metadata.pack_key, []).append(str(path))
     return [
-        make_finding("E10", "pack.yaml", f"pack_key.{key}", key=key, count=count, file="pack.yaml")
-        for key, count in sorted(counts.items())
-        if count > 1
+        make_finding(
+            "E10",
+            "pack.yaml",
+            f"pack_key.{key}",
+            variant="E10_pack_key",
+            key=key,
+            count=len(paths),
+            paths=", ".join(sorted(paths)),
+        )
+        for key, paths in sorted(homes.items())
+        if len(paths) > 1
     ]
 
 
@@ -1152,31 +1435,21 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if _is_pack(root):
-            report = validate_pack_dir(root)
-            print(render_json(report) if as_json else render_text(report))
-            return report.exit_code
-
-        # O2 -- given a directory of packs, validate each and check pack_key uniqueness
-        children = _pack_dirs(root)
-        if not children:
-            print(_render("usage"), file=sys.stderr)
-            return 2
-        reports = [(child, validate_pack_dir(child)) for child in children]
-        shared = check_pack_key_uniqueness(reports)
-        collected: list[Finding] = list(shared)
-        for _, report in reports:
-            collected.extend(report.findings)
-        if as_json:
-            print(json.dumps([finding.as_dict() for finding in collected], indent=2))
+            run = Run(packs=[(root, validate_pack_dir(root))], shared=[], directory=False)
         else:
-            for child, report in reports:
-                print(f"  {child}")
-                print(render_text(report))
-            for finding in shared:
-                print(f"  {finding.severity:<6} {finding.file}  {finding.field}")
-                print(f"         {finding.message}")
-                print(f"         {finding.fix}")
-        return 1 if any(item.severity == ERROR for item in collected) else 0
+            # O2 -- a directory of packs: validate each, then check pack_key uniqueness
+            children = _pack_dirs(root)
+            if not children:
+                print(_render("usage"), file=sys.stderr)
+                return 2
+            reports = [(child, validate_pack_dir(child)) for child in children]
+            run = Run(
+                packs=reports,
+                shared=[item.with_pack(str(root)) for item in check_pack_key_uniqueness(reports)],
+                directory=True,
+            )
+        print(render_json(run) if as_json else render_text(run))
+        return run.exit_code
     except Exception as exc:  # the validator itself failed -- spec 3 decision 2
         print(f"{type(exc).__name__}: {exc}", file=sys.stderr)
         return 2

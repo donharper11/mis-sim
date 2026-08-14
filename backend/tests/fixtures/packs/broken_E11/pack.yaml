@@ -52,10 +52,16 @@ initial_state:
       responding: [adoption_29, notes_finished_on_paper]
       contributing: service
       contribution_pct: 24
+  # Keyed by value chain activity, matching each capability's chain_position. This pack
+  # declares primary/operations and primary/service and nothing else, so every other
+  # activity is honestly reported as uncovered rather than named as though it were.
   value_chain_coverage:
     operations: 3/3
     service: 3/3
-    firm_infrastructure: ok
+    inbound_logistics: none
+    outbound_logistics: none
+    marketing_sales: none
+    firm_infrastructure: none
   open_signals: 2
   inbox_waiting: 1
   people:

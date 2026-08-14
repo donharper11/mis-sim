@@ -22,6 +22,43 @@ ACTION_TYPES = {
     "add_policy",
 }
 
+#: The 14 platform stakeholder archetypes. Schema vocabulary, not validator-local state --
+#: 1.4 and 1.5 will want it, which is why it lives here beside ACTION_TYPES rather than in
+#: validate.py (1.2 spec v1.2 section 3 decision 9).
+#: Source: design/05-implementation-plan.md section 1.4.1, which names the platform layer in
+#: full, cross-checked against design/01-mis_lite-harvest.md section 2 (`stakeholders`,
+#: 14 rows, 7 internal + 7 external). Sourcing verified by the 1.2 audit, finding 1.2-016.
+ARCHETYPES = {
+    "c_suite",
+    "finance",
+    "employees",
+    "operations",
+    "it",
+    "hr",
+    "marketing",
+    "investor",
+    "customer",
+    "vendor",
+    "security_auditor",
+    "regulator",
+    "general_public",
+    "media",
+}
+
+#: The seven areas a round's review is broken down by, as `review.lines[].area`.
+#: Source: mockups/review.html -- the 0.4 reference mockup's review table declares exactly
+#: Platform, Components, Rollout, Services, People, Governance, Challenges. Taken from the
+#: mockup rather than from any pack, so no engine constant is derived from pack content.
+REVIEW_AREAS = {
+    "platform",
+    "components",
+    "rollout",
+    "services",
+    "people",
+    "governance",
+    "challenges",
+}
+
 
 def _walk_keys(value: object) -> Iterable[str]:
     if isinstance(value, dict):

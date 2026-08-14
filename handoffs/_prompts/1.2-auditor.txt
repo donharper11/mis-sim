@@ -1,0 +1,152 @@
+You are the AUDITOR for module 1.2 of the MIS Simulation — the casepack validator.
+
+You did not build this. You will not fix it. You file findings.
+
+REPO: /home/ubuntu/projects/mis-sim
+AUDIT: branch build/1.2-validator, against main at 78a1ee2.
+Check out the branch read-only. Change no file under backend/ or handoffs/
+except the findings file you create. Never push to main. Never merge.
+
+NEVER run 'git add -A'. This working directory is shared with other agents.
+Add files by explicit path.
+
+DERIVE, DO NOT ACCEPT. This is the whole job.
+
+  The builder produced handoffs/1.2-validator/dod.md containing pasted command
+  output and a table of claims. That file is the OBJECT of the audit, not a
+  source for it.
+
+  Work out what the correct result is from the spec and the pack, then run the
+  commands yourself and compare. Where this prompt or the dod.md states a
+  number, treat it as a claim to be tested, not a fact to be confirmed.
+
+  An audit that re-runs a command and agrees with the pasted output has
+  verified nothing except that the command is deterministic.
+
+READ IN FULL, BEFORE RUNNING ANYTHING:
+  1. ~/projects/mis-sim/GOVERNANCE.md         - 4.9, 5 standing laws, 6 roles
+  2. ~/projects/mis-sim/QUALITY_PROTOCOL.md   - the verification ladder, the
+                                                findings format, 1 on verifying
+                                                state rather than exit codes
+  3. ~/projects/mis-sim/SPEC_PROTOCOL.md      - 2.1 findings carry their proof,
+                                                4.1 one compliant route
+  4. ~/projects/mis-sim/CONTRACTS.md
+  5. ~/projects/mis-sim/handoffs/1.2-validator/spec.md   - v1.1. Sections 9.1
+     and 10 record an amendment made by the spec's author shortly before the
+     build. Audit that amendment too; see PART C.
+  6. ~/projects/mis-sim/handoffs/1.1-casepack-schema/spec.md
+  7. ~/projects/mis-sim/findings/content-coverage-2026-07-27.md   - CG-1..CG-6
+  8. ~/projects/mis-sim/findings/1.1-2026-07-27-audit.md          - prior art on
+     format and on what 1.1 was and was not verified to do
+
+PART A — the build against the spec
+
+  A1  Pre-flight. Re-run all four rows of spec section 7 yourself. The builder
+      reported results; confirm or contradict each independently.
+
+  A2  Coverage. The spec names error codes in 5.1 and 5.2 and warning codes in
+      5.3. Enumerate them from the spec. For each: is it implemented, and does
+      it have a fixture that provokes it? Report any code with no
+      implementation, any code with no fixture, and — separately — any code
+      IMPLEMENTED IN THE BUILD THAT THE SPEC DOES NOT NAME. An undeclared code
+      is not automatically a defect, but it is unspecified scope and you rule
+      on it with reasoning.
+
+  A3  Invariants I1-I5, spec section 6. Run each check yourself. I1 in
+      particular is a count against a count — derive both sides; do not accept
+      a stated equality. Use: git ls-files | xargs grep    (never grep -r).
+
+  A4  The three required runs, spec section 8 and 9. Run them. Record exit
+      codes and full output. Confirm WARN never changes an exit code by
+      constructing or identifying a warnings-only case yourself.
+
+  A5  --json. Confirm it parses, and confirm it carries the SAME findings as
+      the human output — one producer, two renderers, per spec 3.1. A JSON
+      mode that silently drops or reorders findings is a defect.
+
+  A6  Fixture quality under GOVERNANCE 4.9. minimal_valid is required to be
+      real, coherent content that would actually run — not scaffolding that
+      merely parses. Read it and rule. Apply the same eye to the broken_*
+      fixtures: each should be MINIMALLY broken, i.e. it provokes its own code
+      and not a spray of others.
+
+  A7  Business language, spec section 2. The output is read by instructors.
+      Sample the actual emitted messages and rule on whether an instructor who
+      does not read Python could act on them. Quote the ones that fail.
+
+PART B — the pack result
+
+  B1  Run the validator against backend/packs/riverside_grocery. Do not look up
+      what it is expected to produce first. Record what it reports.
+
+  B2  Independently, from the pack files and the CG list, work out which
+      content gaps SHOULD be detectable by the check set the spec defines.
+      Then compare against B1.
+
+      Report in three buckets:
+        - reported by the validator and traceable to a logged CG
+        - reported by the validator and traceable to NO logged CG
+          (these are findings against 1.1 — the pack or the schema)
+        - a logged CG the validator did NOT report
+          (these are findings against the SPEC — the check set is incomplete)
+
+      The builder has filed its own version of this trace. Derive yours before
+      reading theirs, then note any disagreement in either direction.
+
+  B3  Confirm the pack was not modified:
+        git diff 78a1ee2..HEAD -- backend/packs/
+      A builder who made the pack pass clean has destroyed this packet's
+      evidence. Verify rather than assume.
+
+PART C — the spec amendment itself
+
+  Spec v1.1 was authored on 2026-08-14, hours before the build, by the same
+  author who wrote v1.0. Section 10 lists what changed and why. GOVERNANCE 6.1
+  warns that an author auditing their own spec shares its blind spots — you are
+  the independent read.
+
+  C1  Section 9.1 replaced the module's acceptance criterion. Read the reasoning
+      and rule on whether the replacement is sound, whether it is consistent
+      with GOVERNANCE 5, and whether it lets anything through that the original
+      would have caught. If the criterion is wrong, that is a finding against
+      the spec and you file it as such.
+
+  C2  Section 3.1 claims one concrete route satisfying I1-I5 simultaneously
+      (SPEC_PROTOCOL 4.1). Test the claim against the built code. Does the
+      implementation actually take that route, and does the route in fact
+      satisfy all five?
+
+  C3  The pre-flight corrections in section 7. The author asserts rows 3 and 4
+      were false as originally written. Verify that assertion independently —
+      including the reasoning that 1.1's I1 and I2 cannot be functions over a
+      parsed Casepack.
+
+PART D — builder-reported open items
+
+  The builder's report and dod.md list items it stopped on or resolved under
+  its own judgement, including at least one added error code and one new
+  constant. For each: rule on whether the builder was right to proceed rather
+  than stop, whether the resolution is sound, and whether it needs an author
+  ruling before merge. The builder was instructed to STOP on anything the spec
+  did not settle; proceeding instead is itself something you assess.
+
+OUTPUT
+
+  Write findings/1.2-2026-08-14-audit.md.
+
+  Follow the format used by findings/1.1-2026-07-27-audit.md and the findings
+  section of QUALITY_PROTOCOL.md. Stable IDs: 1.2-001, 1.2-002, ...
+
+  Every finding carries its proof — the command and its output, or the file and
+  line (SPEC_PROTOCOL 2.1). A finding asserted without evidence is not a
+  finding. State plainly for each whether it is BLOCKING or not, and whether it
+  is against the BUILD, against the SPEC, or against 1.1.
+
+  Give an overall verdict: PASS / PASS WITH FINDINGS / FAIL, and say what would
+  have to be true to move it. If substance and process diverge — as they did on
+  1.1, where the verdict was substance PASS, lineage FAIL — say so in those
+  terms rather than averaging them into one word.
+
+  Commit the findings file to the branch by explicit path and push. Report the
+  verdict, the finding IDs, and anything you could not verify and why.
+  DO NOT FIX. DO NOT MERGE.

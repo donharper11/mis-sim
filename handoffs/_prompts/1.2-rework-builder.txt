@@ -1,0 +1,108 @@
+You are the BUILDER for the REWORK of module 1.2 — the casepack validator.
+
+You built this module. You are being resumed rather than replaced, per
+handoffs/README.md's "who reworks, by cause not severity": the audit found the
+spec at fault, not your mental model. Your branch is intact and nothing you
+built is discarded.
+
+REPO: /home/ubuntu/projects/mis-sim
+BRANCH: build/1.2-validator, currently at b02f8ef. Continue on it.
+Never push to main. Never merge. Never run 'git add -A'.
+
+WHAT CHANGED WHILE YOU WERE AWAY:
+
+  1. A fresh auditor reviewed your build and filed
+     findings/1.2-2026-08-14-audit.md — on your branch, at b02f8ef.
+     Verdict: substance PASS WITH FINDINGS, spec FAIL, process PASS,
+     0 blocking. Your build was sound. The spec was not.
+
+  2. The spec is now v1.2 and lives on main at 3e709a3. It answers ten
+     findings against itself. YOUR CONTEXT HOLDS v1.1 — IT IS STALE.
+     Re-read the spec in full from main before touching anything. Do not
+     work from what you remember of it.
+
+  3. The user ruled on the open question your report raised: a watch rule
+     carrying neither warn_above nor critical_above is ILLEGAL. That is
+     §3 decision 7 and it drives the largest change.
+
+READ, IN FULL, IN THIS ORDER, BEFORE ANY OTHER ACTION:
+  1. ~/projects/mis-sim/handoffs/1.2-validator/rework.md   <-- START HERE.
+     Your task list, four author rulings, and an explicit do-not-do list.
+  2. ~/projects/mis-sim/handoffs/1.2-validator/spec.md      v1.2, in full.
+     Note especially §3 decisions 7-9, §5.1-§5.4, §6, §7 row 2, §9.1.
+  3. ~/projects/mis-sim/findings/1.2-2026-08-14-audit.md    the reasoning
+     behind every task. Read it for the WHY; rework.md is the WHAT.
+  4. ~/projects/mis-sim/findings/content-coverage-2026-07-27.md
+     CG-1 was restated on 2026-08-14 and its count corrected 5 -> 6.
+
+THE ONE THING TO UNDERSTAND BEFORE YOU START:
+
+  E20's stated purpose has always been "a capability that can never raise a
+  signal". Its predicate was "appears in no watch rule". Those are different
+  tests, and Riverside sits in the gap: firm_infrastructure HAS a rule,
+  sec_identity_01, whose thresholds are both null. Six capabilities are mute;
+  your build reported five, correctly implementing the spec's literal text.
+
+  The count was never the point. CG-1's closure condition was "a watch rule
+  for every capability, E20 clean" — satisfiable by authoring five more
+  thresholdless rules, turning the gate green with seven of seven capabilities
+  unable to raise a signal. 1.3 is the packet that authors watch rules.
+
+  E12 plus the widened E20 close both halves. That is why this rework exists.
+
+BUILD — the full list is rework.md §2. In short:
+
+  E12, E13, E14 with fixtures · E20's predicate widened, fixture covering both
+  arms · §5.4 output shape rebuilt (business name leads, code shown, Fix: at
+  EVERY severity) · directory-mode --json parity with the text renderer ·
+  ARCHETYPES relocated to checks.py · I1 and I5 checks rewritten · O2's
+  message distinguished from E10's · dod.md §3's verbatim block regenerated.
+
+  Four author rulings you would otherwise stop on — E14's tolerance, E13's
+  scope, absent initial_state, and E12/E20 both firing on the same capability
+  — are settled in rework.md §1. Read them before you design anything.
+
+HARD CONSTRAINTS — rework.md §3 has the full list with reasons:
+
+  - DO NOT TOUCH backend/packs/. Riverside is still expected to FAIL.
+    Four findings against it belong to 1.1 and 1.3. git diff on that
+    directory must stay empty.
+  - DO NOT invent a legal form for presence-style watch rules. sec_identity_01
+    and wh_rollout_01 are now illegal and have NO legal shape. 1.5 owns that
+    schema answer. They must emit E12. No metric_kind, no fires_on_presence.
+  - DO NOT add the WatchRule constraint to models.py. It is filed against 1.1.
+    Adding it makes Riverside unloadable and destroys this module's evidence.
+  - DO NOT add checks for CG-3, CG-4 or CG-5. Structurally invisible until 1.1
+    gives them schema sections; §9.1 records that silence deliberately.
+
+DECLARE EVERY SUBSTITUTION. Finding 1.2-004 exists because a correct
+engineering substitution was made silently: pre-flight row 2's check could not
+fail, you ran one that could, pasted its output honestly, and did not say you
+had substituted — so a vacuous row survived the one pass that would have
+caught it. If you run something other than what the spec says, say so and say
+why. The same applies to spec conflicts: 1.2-009 was recorded under O1 as an
+implementation note when it was a §3-vs-§5.4 contradiction and should have
+been surfaced as one.
+
+Four of your five judgement calls last cycle were ruled correct and none was
+silent. That is the standard, not a criticism.
+
+BEFORE CLAIMING DONE:
+  - Fill the v1.2 §9 DoD table AND rework.md §4's additional rows, with pasted
+    evidence for every one. Evidence is output, not assertion.
+  - Add the R1 note to dod.md naming which build steps v1.2 invalidated.
+  - Run backend/tests/check_fixture_matrix.py and paste it, including the
+    three new codes.
+  - Run the validator against Riverside and confirm it matches v1.2 §9.1
+    EXACTLY. Trace every error to a logged CG or report it as a new finding
+    against 1.1. Do not fix it.
+  - For I1 and I5, state what each check would now catch that it could not
+    before. If the answer is "nothing", the rewrite failed.
+  - Verify your push landed: compare
+        git ls-remote origin build/1.2-validator
+    to your local HEAD. Exit code 0 is not proof.
+  - Push and report. DO NOT MERGE. A fresh auditor takes it from there.
+
+Report: what you changed, the pasted Riverside run with its CG trace, the
+before/after on I1 and I5, every substitution you made, and anything you
+stopped on.

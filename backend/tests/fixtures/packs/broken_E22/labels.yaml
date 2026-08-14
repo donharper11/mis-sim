@@ -7,6 +7,7 @@ roles:
   record_store: Clinical record store
   client_access: Practice access
   network_path: Network path
+  imaging_link: X-ray system link
 sidebar:
   dashboard: Dashboard
   strategy: Strategy

@@ -1,0 +1,94 @@
+# Harbour Veterinary Group -- the smallest company that would actually run.
+# Deliberately a different vertical from riverside_grocery, so that a pack passing this
+# validator with zero engine changes is evidence for GOVERNANCE 4.6.
+pack_key: harbour_vet_group
+pack_version: 1.0.0
+schema_version: 1
+display_name: Harbour Veterinary Group
+vertical: veterinary_care
+rounds: 4
+company:
+  employees: 96
+  sites: 4
+  revenue_musd: 18.5
+  founded: 2004
+  narrative: |
+    Harbour Veterinary Group runs four neighbourhood practices and one out-of-hours
+    clinic. Bookings are taken on a system bought when there were two sites, and clinical
+    notes are still finished on paper at the end of a busy day, so the practice that sees
+    an animal is often the only practice that knows what was done.
+budget:
+  capex_per_round: [180000, 150000, 130000, 120000]
+  opening_opex: 19800
+initial_state:
+  round: 2
+  declared_strategy: premium_care
+  declared_strategy_round: 1
+  budget:
+    round: 2
+    capital_remaining: 52000
+    capital_available: 150000
+    run_rate: 21400
+  scorecard:
+    financial: 58
+    customer: 51
+    internal_process: 42
+    learning_growth: 35
+  needs_attention:
+    - booking system near capacity on Saturdays
+    - clinical records still finished on paper at two sites
+  unit_responses:
+    - unit: front_desk
+      people: 22
+      running: [booking_suite]
+      implemented: [partial_training, process_unchanged]
+      responding: [adoption_58, saturday_queue_at_reception]
+      contributing: operations
+      contribution_pct: 47
+    - unit: clinical_team
+      people: 31
+      running: [records_system]
+      implemented: [no_training, no_communication]
+      responding: [adoption_29, notes_finished_on_paper]
+      contributing: service
+      contribution_pct: 24
+  # Keyed by value chain activity, matching each capability's chain_position. This pack
+  # declares primary/operations and primary/service and nothing else, so every other
+  # activity is honestly reported as uncovered rather than named as though it were.
+  value_chain_coverage:
+    operations: 3/3
+    service: 3/3
+    inbound_logistics: none
+    outbound_logistics: none
+    marketing_sales: none
+    firm_infrastructure: none
+  open_signals: 2
+  inbox_waiting: 1
+  people:
+    staff_fte: 1.0
+    load_fte: 1.3
+    overcommitted_pct: 130
+    platform_load: 0.7
+    application_load: 0.6
+  review:
+    lines:
+      - {area: platform, changes: 1 change, capital: 30000, run_rate_effect: 900}
+      - {area: components, changes: 1 change, capital: 56000, run_rate_effect: 1600}
+      - {area: rollout, changes: 1 change, capital: 12000, run_rate_effect: 0}
+      - {area: challenges, changes: 1 response, capital: 0, run_rate_effect: 0}
+    capital_committed: 98000
+    capital_available: 150000
+    capital_remaining: 52000
+    run_rate_after: 23900
+    run_rate_before: 21400
+    warnings:
+      - clinical records carries the larger strategy weight under continuity of care
+  provenance:
+    source: AUTHORED
+    note: >-
+      Authored for module 1.2 as a coherent minimum pack. Capital figures are internally
+      derived rather than authored twice: review line capital sums to capital_committed
+      (30000 + 56000 + 12000 = 98000), capital_available - capital_committed equals both
+      review.capital_remaining and budget.capital_remaining (150000 - 98000 = 52000), and
+      run_rate_before plus the run_rate_effect column equals run_rate_after
+      (21400 + 2500 = 23900).
