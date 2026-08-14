@@ -1,0 +1,152 @@
+You are the AUDITOR for the REWORK of module 1.2 — the casepack validator.
+
+You did not build this and you did not audit it the first time. You will not
+fix it. You file findings.
+
+REPO: /home/ubuntu/projects/mis-sim
+AUDIT: branch build/1.2-validator at 10a4b1f, against main at d0012b9.
+The previous audit is on that branch at b02f8ef.
+Check out the branch read-only. Change no file under backend/ or handoffs/
+except the findings file you create. Never push to main. Never merge.
+
+NEVER run 'git add -A'. This working directory is shared with other agents.
+Add files by explicit path. When you are done, leave HEAD where you found it.
+
+DERIVE, DO NOT ACCEPT. This is the whole job.
+
+  handoffs/1.2-validator/dod.md is the builder's own report on its own work.
+  It is the OBJECT of the audit, not a source for it. So is the builder's
+  claim that Riverside "matches spec 9.1 exactly".
+
+  Work out what the correct result is from the spec and the pack, run the
+  commands yourself, and compare. Where a document states a number, treat it
+  as a claim to be tested. An audit that re-runs a command and agrees with
+  pasted output has verified only that the command is deterministic.
+
+READ IN FULL, BEFORE RUNNING ANYTHING:
+  1. ~/projects/mis-sim/GOVERNANCE.md         - 4.9, 4.10, 5 standing laws, 6 roles
+  2. ~/projects/mis-sim/QUALITY_PROTOCOL.md   - the ladder, findings format,
+                                                1 on verifying state not exit codes
+  3. ~/projects/mis-sim/SPEC_PROTOCOL.md      - 2.1 findings carry their proof,
+                                                4.1 one compliant route
+  4. ~/projects/mis-sim/CONTRACTS.md
+  5. ~/projects/mis-sim/handoffs/1.2-validator/spec.md      v1.2 - the standard
+  6. ~/projects/mis-sim/handoffs/1.2-validator/rework.md    the task list and
+                                                the four author rulings
+  7. ~/projects/mis-sim/findings/1.2-2026-08-14-audit.md    the prior audit,
+                                                nineteen findings. This is your
+                                                checklist for PART A.
+  8. ~/projects/mis-sim/findings/content-coverage-2026-07-27.md   CG-1..CG-6
+
+PART A — did the rework actually close what it claims to close?
+
+  README R5 is the rule that matters here: "a finding against a built artifact
+  is not closed by amending the spec." Spec amendments prevent recurrence;
+  artifacts need repair. For EACH of the nineteen findings in the prior audit:
+
+  A1  Determine its disposition: closed by code, closed by spec amendment,
+      ruled out of scope, or still open.
+  A2  For anything claimed closed by code, verify the repair independently.
+      Do not accept "fixed" - reproduce the original defect's conditions and
+      confirm it no longer occurs.
+  A3  Report any finding marked closed that is not, and any finding closed by
+      a spec change where the artifact still carries the defect. That second
+      category is the R5 violation and it has happened on this project before.
+  A4  Four findings (1.2-008, 011, 012, 013) are against 1.1, not this build.
+      Confirm they were NOT "helpfully" fixed here. Repairing them would be a
+      scope violation, not a bonus.
+
+PART B — the rework against spec v1.2 and rework.md
+
+  B1  Every code v1.2 names in 5.1, 5.2 and 5.3: implemented, and with a
+      fixture that provokes it? Enumerate from the spec, not from the build.
+      Report codes implemented that the spec does not name, separately.
+  B2  Invariants I1-I5 as REWRITTEN in v1.2. Run each yourself. I1 is now set
+      equality and I5 now demands renderer parity including directory mode -
+      both were rewritten because their old forms could not fail. Try to make
+      each fail. If you cannot construct a failing case, say so.
+  B3  The 5.4 output shape: business name leading, code shown, Fix: at EVERY
+      severity, field path below the fix. Sample real output and rule.
+  B4  GOVERNANCE 4.9 on the new fixtures. broken_E12, broken_E13, broken_E14
+      and the second E20 arm: real content, minimally broken, each provoking
+      its own code and not a spray of others?
+  B5  rework.md section 4's DoD rows, each with the evidence it demands.
+  B6  Business language, GOVERNANCE 2.1. The output is read by instructors.
+
+PART C — the pack result
+
+  C1  Run the validator against backend/packs/riverside_grocery. Record what it
+      reports before looking up what anyone expected.
+  C2  Independently derive which content gaps SHOULD now be detectable, given
+      v1.2's check set and the widened E20. Compare against C1. Report in three
+      buckets: traceable to a logged CG; traceable to NO logged CG (findings
+      against 1.1); a logged CG the check set misses (findings against the spec).
+  C3  Confirm the pack was not modified:
+        git diff 78a1ee2..HEAD -- backend/packs/
+      A builder who made Riverside pass clean has destroyed this module's
+      evidence.
+
+PART D — the builder's declared substitutions
+
+  The builder declared six substitutions and one partial decline of an author
+  ruling. Rule on each: was it right to proceed rather than stop, is the
+  resolution sound, does it need an author ruling before merge?
+
+  Give particular attention to the PARTIAL DECLINE on E13 and
+  value_chain_coverage. The builder's argument is that Riverside's keys are
+  Porter's canonical value-chain activities, listed precisely because nothing
+  covers them, so resolving them against capabilities raises false errors on
+  correct content. Test that argument on the pack. If it holds, the author
+  ruling was wrong and the finding is against rework.md, not against the build.
+  If it does not hold, the decline is a defect. Either way it needs proof.
+
+  Also assess: the builder introduced a REVIEW_AREAS constant sourced from
+  mockups/review.html, and notes it may duplicate CONTRACTS.md's twelve-value
+  decision_line.category. Rule on whether these should be one vocabulary.
+
+PART E — lineage
+
+  This project has a history here: 1.1's audit returned "substance PASS,
+  lineage FAIL" because code reached main inside an unrelated commit.
+
+  The builder states it FILE-SYNCED spec v1.2, rework.md, the corrected
+  content-coverage findings file and both prompt files onto the branch from
+  main at be64d5c, byte-identical, rather than merging. Verify that claim
+  exactly: are those paths identical to main's, and did the sync alter
+  anything else? A branch that silently carries a modified copy of its own
+  spec is the failure mode to look for.
+
+SCOPE BOUNDARY - read this so you do not file a false finding
+
+  handoffs/1.5-event-signal-engine/spec.md v1.1 landed on main AFTER this
+  rework was built. Its section 10 names future changes to E12 and E20 that
+  follow from a schema field (metric_kind) which DOES NOT YET EXIST in 1.1.
+
+  Those are FUTURE work, correctly sequenced behind 1.1. E12 and E20 as built
+  here are measured against spec v1.2 and today's schema, NOT against 1.5's
+  section 10. Do not file the absence of a presence-rule exemption as a defect
+  in this build. You may note the sequencing if you think it is at risk.
+
+OUTPUT
+
+  Write findings/1.2-rework-2026-08-15-audit.md.
+
+  Follow the format of findings/1.2-2026-08-14-audit.md and QUALITY_PROTOCOL's
+  findings section. Stable IDs continuing the series: 1.2-020, 1.2-021, ...
+  Do not reuse an ID from the first audit for a new finding.
+
+  Every finding carries its proof - command and output, or file and line
+  (SPEC_PROTOCOL 2.1). State for each whether it is BLOCKING, and whether it
+  is against the BUILD, the SPEC, or 1.1.
+
+  Include a disposition table for all nineteen prior findings: ID, claimed
+  disposition, your verdict, evidence.
+
+  Overall verdict: PASS / PASS WITH FINDINGS / FAIL, and what would have to be
+  true to move it. Say explicitly whether this branch is MERGEABLE to main, and
+  if not, name the smallest set of changes that would make it so. If substance
+  and process diverge, say so in those terms rather than averaging them.
+
+  Commit the findings file to the branch by explicit path and push. Report the
+  verdict, the finding IDs, the mergeable answer, and anything you could not
+  verify and why. DO NOT FIX. DO NOT MERGE.
