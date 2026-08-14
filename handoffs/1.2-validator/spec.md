@@ -1,6 +1,7 @@
 # 1.2 — Casepack Validator · Build Spec
 
 **Authored under** `SPEC_PROTOCOL.md` v1.1 · **Author:** Claude · **Date:** 2026-07-26
+**Spec version:** v1.1 · **Amended:** 2026-08-14, pre-dispatch, against merged 1.1
 **Phase:** 1 · **Depends on:** **1.1 as approved** · **Blocks:** 1.3, 6.1
 
 > An unvalidated pack does not fail loudly — it runs and scores wrongly, and you find out
@@ -52,6 +53,25 @@ data at individual level, but no catalog item can hold it"*, not
 3. **Every check names its fix.** A message that states a problem without a next action
    is incomplete.
 4. **Wraps 1.1's `checks.py`** rather than reimplementing it.
+5. **`E20` stays an ERROR, and Riverside is therefore expected to fail this build.**
+   Settled 2026-08-14. A capability with no watch rule can never raise a signal, so it is
+   invisible to responsiveness scoring — that is error-grade, and the check most likely to
+   catch a real authoring mistake does not get weakened to fit today's content. See §9.1.
+6. **The action-type vocabulary already exists.** `checks.py:12` defines `ACTION_TYPES`,
+   ten values. `E05` validates against that set; it is not re-declared here. Extending the
+   set is a 1.4/1.5 decision, not this packet's.
+
+### 3.1 One compliant route *(`SPEC_PROTOCOL.md §4.1`)*
+
+Stated concretely, satisfying I1–I5 simultaneously: a single `validate.py` module exposes
+`validate(casepack) -> list[Finding]`, where `Finding` carries `code`, `severity`, `file`,
+`field`, `message` and `fix` — `fix` non-empty is enforced at construction, which satisfies
+**I1** by making a fix-less ERROR unconstructible rather than merely discouraged. The CLI
+renders that list to text (§5.4) or, under `--json`, `json.dumps` of the same list —
+one producer, two renderers, so **I5** cannot drift from the human output. Exit code is
+`1 if any(f.severity == ERROR) else 0`, giving **I2** and **I3** from one expression.
+All messages come from the pack's `labels.yaml` or from the code/field identifiers
+themselves, never from a hardcoded case name, satisfying **I4**.
 
 ---
 
@@ -176,8 +196,21 @@ would actually run.
 |---|---|---|---|---|
 | 1 | 1.1 merged; `casepack/models.py` and `checks.py` exist | `[V]` | `ls backend/app/casepack/` | both present |
 | 2 | Skeleton pack loads clean under 1.1 | `[V]` | `python -m app.casepack.loader packs/riverside_grocery` | no exception |
-| 3 | 1.1's `checks.py` exposes the eight invariant functions | `[A]` | `grep -n "^def " backend/app/casepack/checks.py` | ≥ 8 |
-| 4 | Action-type enum exists for E05 | `[A]` | `grep -rn "action_type\|ActionType" backend/app/` | found, or **NEW — declare it here** |
+| 3 | 1.1's `checks.py` exposes **six** check functions, covering I3–I8 | `[V]` | `grep -c "^def check_" backend/app/casepack/checks.py` | exactly `6` |
+| 4 | The action-type set for E05 exists as `ACTION_TYPES` | `[V]` | `grep -n "^ACTION_TYPES" backend/app/casepack/checks.py` | found at line 12, 10 values |
+
+> **Rows 3 and 4 were corrected 2026-08-14.** As authored they were both wrong against
+> merged 1.1, and each would have stopped the builder on a false FAIL.
+>
+> **Row 3** expected eight functions; there are six. 1.1's I1 (no pack-identity branching)
+> and I2 (no displayed English in engine code) are **static grep invariants over the source
+> tree**, not predicates over a parsed `Casepack` — they cannot be functions here, which is
+> why the count is six and not eight. Nothing is missing. E01–E11 is a superset of the six
+> regardless, so this packet implements the remainder itself; six is the expected number,
+> not a shortfall.
+>
+> **Row 4** grepped for `action_type|ActionType` and found nothing, because the set is
+> named `ACTION_TYPES`. It exists. Do **not** declare a new one.
 
 ---
 
@@ -207,7 +240,60 @@ would actually run.
 | `--json` mode | | |
 | I1–I5 | | |
 | O1, O2 recorded | | |
-| Riverside skeleton validates (errors only where 1.3 will fill stubs) | | |
 | **Seed** — fixture packs, one per error code, all exercised | | |
-| Real Riverside pack validates clean | | |
+| **Riverside fails with exactly the known content gaps, and no others** — see §9.1 | | |
 | Browser / auth / instance canaries | | **N-A** — headless CLI |
+
+### 9.1 What "done" means against the real Riverside pack
+
+**Amended 2026-08-14.** The original DoD carried two rows — *"Riverside skeleton validates
+(errors only where 1.3 will fill stubs)"* and *"Real Riverside pack validates clean"*.
+Both were stale, and together they were unsatisfiable:
+
+- The **skeleton** row predates 1.1. 1.1 shipped **real content** under `GOVERNANCE §4.9`,
+  not a skeleton of stubs. There is no skeleton to validate.
+- The **clean** row contradicts `E20`. Riverside declares **7 capabilities** and
+  **3 watch rules covering 2 of them** — `order_fulfilment` and `firm_infrastructure`.
+  The other five raise `E20` by construction. This is `CG-1`, logged in
+  `findings/content-coverage-2026-07-27.md` and owned by **1.3, which has not run.**
+  No build of 1.2 could satisfy both rows.
+
+**The replacement gate.** A validator that reports the defects we already know are there is
+a validator that works. The build is done when:
+
+```
+validate_casepack backend/packs/riverside_grocery   →   exit 1
+
+  and every error it reports is traceable to a logged content gap:
+
+  5 × E20   financial_reporting · customer_insight · marketing_sales ·
+            service · store_operations  have no watch rule            → CG-1
+  n × …     thin event deck, 3 cards across 6 rounds × 4 strategies   → CG-2
+  n × …     no obligation_rules.yaml, ethics layer inert              → CG-5
+  n × …     round-3 capital authored in two places                    → CG-6
+```
+
+**Any error not traceable to a logged CG is a finding against 1.1**, and is reported rather
+than fixed — 1.2 does not repair packs (§1, out of scope). Likewise, a CG that the
+validator **fails to catch** is a finding against this spec: the check set is incomplete.
+
+**Clean-Riverside moves to 1.3's exit gate**, where the content gaps are actually closed.
+This is consistent with `GOVERNANCE §5`: *"No casepack reaches a section until
+`validate_casepack` passes clean"* — no section exists yet, and none can until Phase 2.
+
+---
+
+## 10. Changelog
+
+**v1.1 — 2026-08-14, pre-dispatch.** Amended by the author against merged 1.1 before any
+builder was dispatched; no build cycle was open, so `handoffs/README.md` **R1** does not
+apply. No invariant was renumbered — **R2** requires the statement, so: I1–I5 keep their
+numbers and their guards, and no guard moved.
+
+| Change | Why |
+|---|---|
+| §3 decision 5 — E20 stays ERROR | Settled by the user 2026-08-14 against the alternative of downgrading it to WARN |
+| §3 decision 6 — `ACTION_TYPES` already exists | Prevents the builder declaring a second, competing vocabulary |
+| §3.1 — one compliant route added | `SPEC_PROTOCOL §4.1` requires it and v1.0 shipped without it |
+| §7 rows 3, 4 corrected | Both were false against merged 1.1; each would have stopped the builder on a spurious pre-flight FAIL |
+| §9 two rows replaced by one, plus §9.1 | The pair was jointly unsatisfiable — the exact failure `SPEC_PROTOCOL §4.1` exists to prevent |
