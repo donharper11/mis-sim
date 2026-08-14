@@ -1,0 +1,9 @@
+- key: appointment_utilisation
+  requires_entities:
+    - {entity: appointment, min_level_of_detail: slot}
+  provenance: {source: AUTHORED, note: "how full is the diary, and at which practice"}
+- key: client_visit_history
+  requires_entities:
+    - {entity: client, min_level_of_detail: household}
+    - {entity: visit, min_level_of_detail: procedure_step}
+  provenance: {source: AUTHORED, note: "the question a vet asks in the consulting room about an animal they have not seen before"}

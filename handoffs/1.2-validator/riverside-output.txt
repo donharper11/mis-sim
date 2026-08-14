@@ -1,0 +1,130 @@
+Full validator output against the real Riverside pack, module 1.2 spec v1.2 section 9.1.
+Written by redirecting the command's stdout. Unedited.
+Generated 2026-08-14 against branch build/1.2-validator. The pack was not modified.
+
+$ ./backend/bin/validate_casepack backend/packs/riverside_grocery
+
+  riverside_grocery 0.1.0 (schema 1) — grocery_retail, 6 rounds
+
+  ✓  7 capabilities · all required roles resolve
+  ✓  4 strategies · weights sum to 1.000
+  ✓  demand curves cover rounds 1–6
+
+  ERROR  E02  Firm Infrastructure             capabilities.yaml:58
+         Needs user_account information at 'named_user' detail, and no catalog item can hold it.
+         Fix: add a catalog item whose owns_entities holds user_account at 'named_user' or finer, or lower min_level_of_detail in capabilities.yaml.
+         Field: firm_infrastructure.required_entities.user_account
+
+  ERROR  E07  redesign_close                  catalog.yaml:83
+         This authored label has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'redesign_close' under misc in labels.yaml.
+         Field: accounting_package.process_option.label_key
+
+  ERROR  E07  redesign_reporting              catalog.yaml:171
+         This authored label has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'redesign_reporting' under misc in labels.yaml.
+         Field: analytics_workspace.process_option.label_key
+
+  ERROR  E07  redesign_customer_followup      catalog.yaml:149
+         This authored label has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'redesign_customer_followup' under misc in labels.yaml.
+         Field: customer_database.process_option.label_key
+
+  ERROR  E07  redesign_online_fulfilment      catalog.yaml:193
+         This authored label has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'redesign_online_fulfilment' under misc in labels.yaml.
+         Field: ecommerce_site.process_option.label_key
+
+  ERROR  E07  redesign_picking                catalog.yaml:39
+         This authored label has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'redesign_picking' under misc in labels.yaml.
+         Field: order_mgmt_v42.process_option.label_key
+
+  ERROR  E07  redesign_checkout               catalog.yaml:17
+         This authored label has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'redesign_checkout' under misc in labels.yaml.
+         Field: pos_system_2011.process_option.label_key
+
+  ERROR  E07  redesign_service_queue          catalog.yaml:215
+         This authored label has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'redesign_service_queue' under misc in labels.yaml.
+         Field: service_desk.process_option.label_key
+
+  ERROR  E07  inventory_app                   labels.yaml
+         This role has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'inventory_app' under roles in labels.yaml.
+         Field: roles.inventory_app
+
+  ERROR  E12  Watch rule sec_identity_01      watch_rules.yaml:15
+         Watches 'Firm Infrastructure' but sets neither a warning nor a critical threshold, so it can never fire. It counts towards coverage while watching nothing.
+         Fix: set warn_above or critical_above on 'sec_identity_01' in watch_rules.yaml, or remove the rule.
+         Field: sec_identity_01
+
+  ERROR  E12  Watch rule wh_rollout_01        watch_rules.yaml:8
+         Watches 'Order Fulfilment' but sets neither a warning nor a critical threshold, so it can never fire. It counts towards coverage while watching nothing.
+         Fix: set warn_above or critical_above on 'wh_rollout_01' in watch_rules.yaml, or remove the rule.
+         Field: wh_rollout_01
+
+  ERROR  E14  Opening position                pack.yaml:22
+         The opening position states budget.capital_remaining as 44000, but capital available minus capital committed leaves 46000. The same number is authored in two places and they disagree.
+         Fix: in pack.yaml, correct budget.capital_remaining to 46000, or correct the figures it is derived from. Better, derive it rather than authoring it twice.
+         Field: initial_state.budget.capital_remaining
+
+  ERROR  E20  Customer Insight                watch_rules.yaml
+         Can never raise a signal — no watch rule names it at all. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Customer Insight', with warn_above or critical_above set, and the actions that clear it.
+         Field: capability.customer_insight
+
+  ERROR  E20  Financial Reporting             watch_rules.yaml
+         Can never raise a signal — no watch rule names it at all. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Financial Reporting', with warn_above or critical_above set, and the actions that clear it.
+         Field: capability.financial_reporting
+
+  ERROR  E20  Firm Infrastructure             watch_rules.yaml:15
+         Can never raise a signal — the only rule that names it (sec_identity_01) sets neither a warning nor a critical threshold, so it can never fire. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Firm Infrastructure', with warn_above or critical_above set, and the actions that clear it.
+         Field: capability.firm_infrastructure
+
+  ERROR  E20  Marketing and Sales             watch_rules.yaml
+         Can never raise a signal — no watch rule names it at all. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Marketing and Sales', with warn_above or critical_above set, and the actions that clear it.
+         Field: capability.marketing_sales
+
+  ERROR  E20  Service                         watch_rules.yaml
+         Can never raise a signal — no watch rule names it at all. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Service', with warn_above or critical_above set, and the actions that clear it.
+         Field: capability.service
+
+  ERROR  E20  Store Operations                watch_rules.yaml
+         Can never raise a signal — no watch rule names it at all. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Store Operations', with warn_above or critical_above set, and the actions that clear it.
+         Field: capability.store_operations
+
+  ERROR  E21  Event inventory_audit_question  events.yaml:2
+         Can never happen: it waits for 'wh_rollout_01' to reach critical, and that watch rule sets no critical_above threshold, so the signal can never get there.
+         Fix: change what the event waits for in events.yaml, or set the matching threshold in watch_rules.yaml.
+         Field: inventory_audit_question.preconditions
+
+  ERROR  E21  Event warehouse_rollout_gap     events.yaml:16
+         Can never happen: it waits for 'wh_rollout_01' to reach critical, and that watch rule sets no critical_above threshold, so the signal can never get there.
+         Fix: change what the event waits for in events.yaml, or set the matching threshold in watch_rules.yaml.
+         Field: warehouse_rollout_gap.preconditions
+
+  WARN   W02  Firm Infrastructure             strategies.yaml
+         Is weighted above 0.05 by no strategy, so no team has a reason to invest in it.
+         Fix: raise its weight in strategies.yaml for at least one strategy, or retire the capability.
+         Field: capability_weights.firm_infrastructure
+
+  WARN   W04  Catalog item store_spreadsheets  catalog.yaml:89
+         Fills no role any capability asks for, so buying it can never help anyone.
+         Fix: add its roles to a capability's required_roles in capabilities.yaml, or remove the item from catalog.yaml.
+         Field: store_spreadsheets.roles_filled
+
+  WARN   W05  Event deck                      events.yaml
+         Holds 3 events for 6 rounds, so at least one round has no card left to deal.
+         Fix: author at least one event per round in events.yaml, spread across the declared strategies.
+         Field: events
+
+  20 errors · 3 warnings · exit 1
+
+EXIT=1

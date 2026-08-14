@@ -1,0 +1,9 @@
+defaults_by_archetype:
+  c_suite: {ideal_cost_posture: low, ideal_reliability: 0.98, weight: 0.8}
+  finance: {ideal_cost_posture: low, weight: 0.9}
+  operations: {ideal_reliability: 0.99, ideal_training_coverage: high, weight: 0.85}
+  customer: {ideal_availability: high, weight: 0.7}
+overrides:
+  - {item: records_system, archetype: operations, ideal_value: 92, weight: 1.0}
+  - {item: booking_suite, archetype: customer, ideal_value: 78, weight: 0.75}
+provenance: {source: AUTHORED, note: "the clinical team cares more about the records system than about the diary, and the pet owner the other way round; distinct values because they are distinct judgements"}

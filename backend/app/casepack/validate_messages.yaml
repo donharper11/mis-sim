@@ -1,0 +1,262 @@
+# Every string the casepack validator prints.
+#
+# It lives outside validate.py on purpose. 1.1 invariant I2 requires that no displayed
+# English appears in backend/app/casepack/*.py, and GOVERNANCE 2.1 requires this output to
+# read as business language for an instructor rather than as engine vocabulary. Keeping the
+# wording here satisfies both, and lets a non-engineer review what the validator says.
+#
+# The file name deliberately matches the glob backend/app/casepack/validate* used by
+# spec 1.2 invariant I4.
+#
+# Contract for this file, per spec v1.2:
+#   - `codes` is the implemented code set. Invariant I1 compares it, as SET EQUALITY,
+#     against the codes spec.md sections 5.1-5.3 name. Adding a code here without adding it
+#     to the spec fails I1, and so does the reverse. (Before v1.2, I1 counted fix prefixes
+#     in this file against the ERROR-code count read from this same file, so it could never
+#     fail on that dimension -- finding 1.2-017.)
+#   - EVERY code carries a `fix`, at every severity, and every fix opens with the same
+#     four-character prefix. Section 3 decision 3 binds WARN and INFO as well as ERROR;
+#     v1.1 printed the fix for ERROR only, so every warning reached the instructor as a
+#     problem with no next action -- finding 1.2-009.
+#   - EVERY code carries a `subject`: the business name that leads its locator line
+#     (section 5.4 as rewritten) -- finding 1.2-007.
+#   - `variants` holds alternate wordings for a code whose condition has two distinct
+#     shapes. The code is unchanged; only the copy differs. It is kept out of `codes` so it
+#     does not disturb I1's set.
+
+render:
+  usage: "usage: validate_casepack [--json] <pack_dir>"
+  header: "{pack_key} {pack_version} (schema {schema_version}) — {vertical}, {rounds} rounds"
+  ok_roles: "{count} capabilities · all required roles resolve"
+  ok_weights: "{count} strategies · weights sum to 1.000"
+  ok_events: "{count} events · all preconditions resolve"
+  ok_demand: "demand curves cover rounds 1–{rounds}"
+  summary: "{errors} · {warnings} · exit {exit_code}"
+  one_error: "1 error"
+  many_errors: "{count} errors"
+  one_warning: "1 warning"
+  many_warnings: "{count} warnings"
+  no_errors: "0 errors"
+  no_warnings: "0 warnings"
+  detail_missing: "{file} is not in the pack directory"
+  detail_unparseable: "{file} is not readable as YAML"
+  field_prefix: "Field:"
+
+# Nouns used inside messages, so the .py file names no concept in English.
+subjects:
+  capabilities: "capability"
+  roles: "role"
+  strategies: "strategy"
+  stakeholders: "persona"
+  events: "event body"
+  policies: "policy"
+  misc: "authored label"
+  catalog: "catalog item"
+  review_areas: "review area"
+
+reasons:
+  # why an event can never fire -- E21
+  severity_unreachable: "it waits for '{signal}' to reach {severity}, and that watch rule sets no {threshold_field} threshold, so the signal can never get there"
+  severity_conflict: "it waits for '{signal}' to be at {first} and at {second} in the same round"
+  # why a capability is signal-mute -- E20, widened in v1.2
+  no_watch_rule: "no watch rule names it at all"
+  only_thresholdless: "the only rule that names it ({rules}) sets neither a warning nor a critical threshold, so it can never fire"
+  # where a derived figure comes from -- E14
+  review_lines_capital: "the capital column of the review lines adds up to"
+  review_remaining: "capital available minus capital committed leaves"
+  review_run_rate: "the run-rate before this round plus the review lines' run-rate effects comes to"
+  budget_remaining: "capital available minus capital committed leaves"
+  budget_available: "the review states capital available as"
+  budget_run_rate: "the review states the run-rate before this round as"
+  capex_for_round: "this round's entry in capex_per_round is"
+
+codes:
+
+  # ---- structural (spec 5.1) -------------------------------------------------------
+
+  E00:
+    severity: ERROR
+    subject: "Unreadable pack"
+    message: "This pack could not be read: {detail}"
+    fix: "Fix: restore or repair {file} in the pack directory, then run the validator again."
+
+  E01:
+    severity: ERROR
+    subject: "{capability}"
+    message: "Needs {role}, and nothing in the catalog or the shared platform provides it."
+    fix: "Fix: add '{role_key}' to roles_filled on an item in catalog.yaml or a service in platform.yaml, or drop it from required_roles in capabilities.yaml."
+
+  E02:
+    severity: ERROR
+    subject: "{capability}"
+    message: "Needs {entity} information at '{level}' detail, and no catalog item can hold it."
+    fix: "Fix: add a catalog item whose owns_entities holds {entity} at '{level}' or finer, or lower min_level_of_detail in capabilities.yaml."
+
+  E03:
+    severity: ERROR
+    subject: "{strategy}"
+    message: "Spreads {total} of its emphasis across capabilities; it has to spread exactly 1.000."
+    fix: "Fix: adjust capability_weights in strategies.yaml until the values add up to 1.000."
+
+  E04:
+    severity: ERROR
+    subject: "{capability}"
+    message: "Forecasts demand for {given} rounds, but this company plays {rounds}."
+    fix: "Fix: give demand_curve exactly {rounds} values in capabilities.yaml."
+
+  E05:
+    severity: ERROR
+    subject: "Watch rule {rule}"
+    message: "Says it is cleared by '{action}', which is not something a team can actually do."
+    fix: "Fix: put one of these in cleared_by in watch_rules.yaml, or remove '{action}': {known}."
+
+  E06:
+    severity: ERROR
+    subject: "Event {event}"
+    message: "Waits on '{reference}', which this company does not have."
+    fix: "Fix: point the precondition in events.yaml at a watch rule that exists in watch_rules.yaml or a capability that exists in capabilities.yaml, or remove the precondition."
+
+  E07:
+    severity: ERROR
+    # The subject IS the raw key here, and honestly so: E07 fires precisely because this
+    # thing has no business name to lead the line with.
+    subject: "{key}"
+    message: "This {subject} has no wording anyone can read, so a screen would show the raw key instead."
+    fix: "Fix: add '{key}' under {section} in labels.yaml."
+
+  E08:
+    severity: ERROR
+    subject: "{stakeholder}"
+    message: "Is cast as '{archetype}', which is not one of the {count} roles this platform knows how to play."
+    fix: "Fix: in stakeholders.yaml, cast the persona as one of: {known}."
+
+  E09:
+    severity: ERROR
+    subject: "Catalog item {item}"
+    message: "Declares that information flows to or from '{capability}', which this company does not have."
+    fix: "Fix: name a capability that exists in capabilities.yaml, or remove the flow from catalog.yaml."
+
+  E10:
+    severity: ERROR
+    subject: "Repeated key {key}"
+    message: "'{key}' is declared {count} times, so only the last one would ever be used."
+    fix: "Fix: give every entry in {file} its own key, or delete the repeat."
+
+  E11:
+    severity: ERROR
+    subject: "Pack schema version"
+    message: "This pack is written against schema version {given}; this validator only understands up to {supported}."
+    fix: "Fix: upgrade the validator to a build that knows schema {given}, or re-author the pack against schema {supported}."
+
+  E12:
+    severity: ERROR
+    subject: "Watch rule {rule}"
+    message: "Watches '{capability}' but sets neither a warning nor a critical threshold, so it can never fire. It counts towards coverage while watching nothing."
+    fix: "Fix: set warn_above or critical_above on '{rule}' in watch_rules.yaml, or remove the rule."
+
+  E13:
+    severity: ERROR
+    subject: "Opening position"
+    message: "The opening position names the {kind} '{key}', which this company does not have."
+    fix: "Fix: in pack.yaml, name a {kind} the pack declares, or remove the reference from initial_state."
+
+  E14:
+    severity: ERROR
+    subject: "Opening position"
+    message: "The opening position states {field_name} as {authored}, but {derivation} {derived}. The same number is authored in two places and they disagree."
+    fix: "Fix: in pack.yaml, correct {field_name} to {derived}, or correct the figures it is derived from. Better, derive it rather than authoring it twice."
+
+  # ---- coherence (spec 5.2) --------------------------------------------------------
+
+  E20:
+    severity: ERROR
+    subject: "{capability}"
+    message: "Can never raise a signal — {reason}. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it."
+    fix: "Fix: add a watch rule in watch_rules.yaml naming '{capability}', with warn_above or critical_above set, and the actions that clear it."
+
+  E21:
+    severity: ERROR
+    subject: "Event {event}"
+    message: "Can never happen: {reason}."
+    fix: "Fix: change what the event waits for in events.yaml, or set the matching threshold in watch_rules.yaml."
+
+  E22:
+    severity: ERROR
+    subject: "{strategy}"
+    message: "Leans hardest on capability '{capability}', and a team declaring it could never cover that capability with what this company can buy."
+    fix: "Fix: add catalog items in catalog.yaml that fill every role and hold every entity '{capability}' needs, or move the emphasis in strategies.yaml."
+
+  E23:
+    severity: ERROR
+    subject: "Question {question}"
+    message: "Needs {entity} information at '{level}' detail, and nothing this company can buy produces it."
+    fix: "Fix: add a catalog item owning {entity} at '{level}' or finer, or lower the requirement in questions.yaml."
+
+  # ---- inherited invariants from 1.1 section 6, named as codes by spec v1.2 section 5.1
+
+  I3:
+    severity: ERROR
+    subject: "Machine key {key}"
+    message: "'{key}' is a machine key, so it has to be lower case words joined by underscores."
+    fix: "Fix: rename '{key}' to lower snake case everywhere it appears in the pack."
+
+  I8:
+    severity: ERROR
+    subject: "Pack round-trip"
+    message: "This pack does not survive being loaded and reloaded unchanged, so some authored value is being silently dropped."
+    fix: "Fix: this is a schema defect rather than a content one; report it to the owner of models.py before loading this pack anywhere."
+
+  # ---- seed-quality heuristics (spec 5.3) -----------------------------------------
+
+  W01:
+    severity: WARN
+    subject: "{domain} preferences"
+    message: "{count} rows carry the same ideal value {ideal_value} and the same weight {weight}, which looks like placeholder seeding rather than authored judgement."
+    fix: "Fix: vary ideal_value and weight per stakeholder in {file}, or state in provenance that the uniformity is deliberate."
+
+  W02:
+    severity: WARN
+    subject: "{capability}"
+    message: "Is weighted above {threshold} by no strategy, so no team has a reason to invest in it."
+    fix: "Fix: raise its weight in strategies.yaml for at least one strategy, or retire the capability."
+
+  W03:
+    severity: WARN
+    subject: "Event {event}"
+    message: "Targets no strategy, so it will land on every team whatever they declared."
+    fix: "Fix: add strategy_affinity in events.yaml naming the strategies this event is meant to test."
+
+  W04:
+    severity: WARN
+    subject: "Catalog item {item}"
+    message: "Fills no role any capability asks for, so buying it can never help anyone."
+    fix: "Fix: add its roles to a capability's required_roles in capabilities.yaml, or remove the item from catalog.yaml."
+
+  W05:
+    severity: WARN
+    subject: "Event deck"
+    message: "Holds {count} events for {rounds} rounds, so at least one round has no card left to deal."
+    fix: "Fix: author at least one event per round in events.yaml, spread across the declared strategies."
+
+  W06:
+    severity: WARN
+    subject: "Catalog item {item}"
+    message: "Reaches everybody with every training option, so choosing between them is not a decision."
+    fix: "Fix: give the cheaper training options a lower coverage in catalog.yaml so the choice has a consequence."
+
+  W07:
+    severity: WARN
+    subject: "Catalog item {item}"
+    message: "Has no costs a team could wrongly leave out, so its cost forecast is trivially winnable."
+    fix: "Fix: add decoy_cost_categories in catalog.yaml, or move a genuinely optional cost out of true_cost_categories."
+
+# Alternate wordings. Same code, different condition shape -- see the header note.
+variants:
+
+  # O2: the same pack_key claimed by two packs in one directory. Finding 1.2-006 -- E10's
+  # own wording tells the reader to de-duplicate entries inside one file, which is not an
+  # action that exists here.
+  E10_pack_key:
+    subject: "Pack identity {key}"
+    message: "{count} packs in this directory all call themselves '{key}': {paths}. A section asking for '{key}' could be given any of them."
+    fix: "Fix: give each pack its own pack_key in its pack.yaml — the key is the pack's permanent identity, so change the newer one, never the one already loaded anywhere."

@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""Entry point for `validate_casepack <pack_dir>`.
+
+Puts backend/ on sys.path so the command runs from any working directory, then hands off
+to app.casepack.validate. `python -m app.casepack.validate` from backend/ is equivalent.
+"""
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from app.casepack.validate import main  # noqa: E402
+
+if __name__ == "__main__":
+    raise SystemExit(main())

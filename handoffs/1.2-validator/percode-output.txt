@@ -1,0 +1,460 @@
+Per-code validator output for module 1.2, spec v1.2 section 8 steps 1-3.
+Written by redirecting the command's stdout. Unedited -- see finding 1.2-015.
+Generated 2026-08-14 against branch build/1.2-validator.
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E00
+
+  ERROR  E00  Unreadable pack                 capabilities.yaml
+         This pack could not be read: capabilities.yaml is not in the pack directory
+         Fix: restore or repair capabilities.yaml in the pack directory, then run the validator again.
+         Field: capabilities
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E01
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E01  Appointment Booking             capabilities.yaml:3
+         Needs Text message reminders, and nothing in the catalog or the shared platform provides it.
+         Fix: add 'sms_gateway' to roles_filled on an item in catalog.yaml or a service in platform.yaml, or drop it from required_roles in capabilities.yaml.
+         Field: appointment_booking.required_roles.sms_gateway
+
+  ERROR  E22  Low-Cost Care                   strategies.yaml:3
+         Leans hardest on capability 'Appointment Booking', and a team declaring it could never cover that capability with what this company can buy.
+         Fix: add catalog items in catalog.yaml that fill every role and hold every entity 'Appointment Booking' needs, or move the emphasis in strategies.yaml.
+         Field: low_cost_care.capability_weights.appointment_booking
+
+  2 errors · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E02
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E02  Appointment Booking             capabilities.yaml:4
+         Needs client information at 'individual_person' detail, and no catalog item can hold it.
+         Fix: add a catalog item whose owns_entities holds client at 'individual_person' or finer, or lower min_level_of_detail in capabilities.yaml.
+         Field: appointment_booking.required_entities.client
+
+  ERROR  E22  Low-Cost Care                   strategies.yaml:3
+         Leans hardest on capability 'Appointment Booking', and a team declaring it could never cover that capability with what this company can buy.
+         Fix: add catalog items in catalog.yaml that fill every role and hold every entity 'Appointment Booking' needs, or move the emphasis in strategies.yaml.
+         Field: low_cost_care.capability_weights.appointment_booking
+
+  2 errors · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E03
+
+  ERROR  E03  low_cost_care                   strategies.yaml:3
+         Spreads 0.900 of its emphasis across capabilities; it has to spread exactly 1.000.
+         Fix: adjust capability_weights in strategies.yaml until the values add up to 1.000.
+         Field: low_cost_care.capability_weights
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E04
+
+  ERROR  E04  appointment_booking             capabilities.yaml:7
+         Forecasts demand for 3 rounds, but this company plays 4.
+         Fix: give demand_curve exactly 4 values in capabilities.yaml.
+         Field: appointment_booking.demand_curve
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E05
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E05  Watch rule book_cap_01          watch_rules.yaml:6
+         Says it is cleared by 'open_on_sunday', which is not something a team can actually do.
+         Fix: put one of these in cleared_by in watch_rules.yaml, or remove 'open_on_sunday': add_node, add_policy, add_service_tier, add_training, fund_response, move_to_cloud, redesign_process, retire_component, scale_node, upgrade_component.
+         Field: book_cap_01.cleared_by.open_on_sunday
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E06
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E06  Event saturday_overflow         events.yaml:2
+         Waits on 'book_cap_99', which this company does not have.
+         Fix: point the precondition in events.yaml at a watch rule that exists in watch_rules.yaml or a capability that exists in capabilities.yaml, or remove the precondition.
+         Field: saturday_overflow.preconditions.book_cap_99
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E07
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E07  clinical_records                capabilities.yaml:10
+         This capability has no wording anyone can read, so a screen would show the raw key instead.
+         Fix: add 'clinical_records' under capabilities in labels.yaml.
+         Field: clinical_records
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E08
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E08  Clinical Team                   stakeholders.yaml:13
+         Is cast as 'veterinary_nurse', which is not one of the 14 roles this platform knows how to play.
+         Fix: in stakeholders.yaml, cast the persona as one of: c_suite, customer, employees, finance, general_public, hr, investor, it, marketing, media, operations, regulator, security_auditor, vendor.
+         Field: clinical_team.archetype
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E09
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E09  Catalog item records_system     catalog.yaml:43
+         Declares that information flows to or from 'reception_desk', which this company does not have.
+         Fix: name a capability that exists in capabilities.yaml, or remove the flow from catalog.yaml.
+         Field: records_system.must_be_fed_by.reception_desk
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E10
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E10  Repeated key book_cap_01        watch_rules.yaml:1
+         'book_cap_01' is declared 2 times, so only the last one would ever be used.
+         Fix: give every entry in watch_rules.yaml its own key, or delete the repeat.
+         Field: watch_rules.book_cap_01
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E11
+
+  harbour_vet_group 1.0.0 (schema 2) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E11  Pack schema version             pack.yaml:6
+         This pack is written against schema version 2; this validator only understands up to 1.
+         Fix: upgrade the validator to a build that knows schema 2, or re-author the pack against schema 1.
+         Field: schema_version
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E12
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E12  Watch rule book_noshow_01       watch_rules.yaml:15
+         Watches 'Appointment Booking' but sets neither a warning nor a critical threshold, so it can never fire. It counts towards coverage while watching nothing.
+         Fix: set warn_above or critical_above on 'book_noshow_01' in watch_rules.yaml, or remove the rule.
+         Field: book_noshow_01
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E13
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E13  Opening position                pack.yaml:25
+         The opening position names the strategy 'premium_care', which this company does not have.
+         Fix: in pack.yaml, name a strategy the pack declares, or remove the reference from initial_state.
+         Field: initial_state.declared_strategy
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E14
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E14  Opening position                pack.yaml:29
+         The opening position states budget.capital_remaining as 40000, but capital available minus capital committed leaves 52000. The same number is authored in two places and they disagree.
+         Fix: in pack.yaml, correct budget.capital_remaining to 52000, or correct the figures it is derived from. Better, derive it rather than authoring it twice.
+         Field: initial_state.budget.capital_remaining
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E20
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E20  Clinical Records                watch_rules.yaml
+         Can never raise a signal — no watch rule names it at all. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Clinical Records', with warn_above or critical_above set, and the actions that clear it.
+         Field: capability.clinical_records
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E20_mute
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E12  Watch rule rec_adopt_01         watch_rules.yaml:8
+         Watches 'Clinical Records' but sets neither a warning nor a critical threshold, so it can never fire. It counts towards coverage while watching nothing.
+         Fix: set warn_above or critical_above on 'rec_adopt_01' in watch_rules.yaml, or remove the rule.
+         Field: rec_adopt_01
+
+  ERROR  E20  Clinical Records                watch_rules.yaml:8
+         Can never raise a signal — the only rule that names it (rec_adopt_01) sets neither a warning nor a critical threshold, so it can never fire. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Clinical Records', with warn_above or critical_above set, and the actions that clear it.
+         Field: capability.clinical_records
+
+  ERROR  E21  Event records_left_on_paper     events.yaml:30
+         Can never happen: it waits for 'rec_adopt_01' to reach warning, and that watch rule sets no warn_above threshold, so the signal can never get there.
+         Fix: change what the event waits for in events.yaml, or set the matching threshold in watch_rules.yaml.
+         Field: records_left_on_paper.preconditions
+
+  ERROR  E21  Event vaccination_recall_missed  events.yaml:44
+         Can never happen: it waits for 'rec_adopt_01' to reach critical, and that watch rule sets no critical_above threshold, so the signal can never get there.
+         Fix: change what the event waits for in events.yaml, or set the matching threshold in watch_rules.yaml.
+         Field: vaccination_recall_missed.preconditions
+
+  4 errors · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E21
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E21  Event vaccination_recall_missed  events.yaml:44
+         Can never happen: it waits for 'rec_adopt_01' to reach critical, and that watch rule sets no critical_above threshold, so the signal can never get there.
+         Fix: change what the event waits for in events.yaml, or set the matching threshold in watch_rules.yaml.
+         Field: vaccination_recall_missed.preconditions
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E22
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E01  Clinical Records                capabilities.yaml:12
+         Needs X-ray system link, and nothing in the catalog or the shared platform provides it.
+         Fix: add 'imaging_link' to roles_filled on an item in catalog.yaml or a service in platform.yaml, or drop it from required_roles in capabilities.yaml.
+         Field: clinical_records.required_roles.imaging_link
+
+  ERROR  E22  Continuity of Care              strategies.yaml:14
+         Leans hardest on capability 'Clinical Records', and a team declaring it could never cover that capability with what this company can buy.
+         Fix: add catalog items in catalog.yaml that fill every role and hold every entity 'Clinical Records' needs, or move the emphasis in strategies.yaml.
+         Field: continuity_of_care.capability_weights.clinical_records
+
+  2 errors · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_E23
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  E23  Question client_visit_history   questions.yaml:5
+         Needs visit information at 'procedure_step' detail, and nothing this company can buy produces it.
+         Fix: add a catalog item owning visit at 'procedure_step' or finer, or lower the requirement in questions.yaml.
+         Field: client_visit_history.requires_entities.visit
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/broken_I3
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  ERROR  I3   Machine key FundNow             labels.yaml
+         'FundNow' is a machine key, so it has to be lower case words joined by underscores.
+         Fix: rename 'FundNow' to lower snake case everywhere it appears in the pack.
+         Field: key.FundNow
+
+  1 error · 0 warnings · exit 1
+
+EXIT=1
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/warn_W01
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  WARN   W01  Catalog preferences             preferences/catalog.yaml:10
+         6 rows carry the same ideal value 85.0 and the same weight 0.8, which looks like placeholder seeding rather than authored judgement.
+         Fix: vary ideal_value and weight per stakeholder in preferences/catalog.yaml, or state in provenance that the uniformity is deliberate.
+         Field: overrides.ideal_value
+
+  0 errors · 1 warning · exit 0
+
+EXIT=0
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/warn_heuristics
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  3 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  WARN   W02  Clinical Records                strategies.yaml
+         Is weighted above 0.05 by no strategy, so no team has a reason to invest in it.
+         Fix: raise its weight in strategies.yaml for at least one strategy, or retire the capability.
+         Field: capability_weights.clinical_records
+
+  WARN   W03  Event saturday_overflow         events.yaml:4
+         Targets no strategy, so it will land on every team whatever they declared.
+         Fix: add strategy_affinity in events.yaml naming the strategies this event is meant to test.
+         Field: saturday_overflow.strategy_affinity
+
+  WARN   W04  Catalog item paper_day_book     catalog.yaml:58
+         Fills no role any capability asks for, so buying it can never help anyone.
+         Fix: add its roles to a capability's required_roles in capabilities.yaml, or remove the item from catalog.yaml.
+         Field: paper_day_book.roles_filled
+
+  WARN   W05  Event deck                      events.yaml
+         Holds 3 events for 4 rounds, so at least one round has no card left to deal.
+         Fix: author at least one event per round in events.yaml, spread across the declared strategies.
+         Field: events
+
+  WARN   W06  Catalog item booking_suite      catalog.yaml:18
+         Reaches everybody with every training option, so choosing between them is not a decision.
+         Fix: give the cheaper training options a lower coverage in catalog.yaml so the choice has a consequence.
+         Field: booking_suite.training_options
+
+  WARN   W07  Catalog item booking_suite      catalog.yaml:25
+         Has no costs a team could wrongly leave out, so its cost forecast is trivially winnable.
+         Fix: add decoy_cost_categories in catalog.yaml, or move a genuinely optional cost out of true_cost_categories.
+         Field: booking_suite.decoy_cost_categories
+
+  0 errors · 6 warnings · exit 0
+
+EXIT=0
+
+$ ./backend/bin/validate_casepack backend/tests/fixtures/packs/minimal_valid
+
+  harbour_vet_group 1.0.0 (schema 1) — veterinary_care, 4 rounds
+
+  ✓  2 capabilities · all required roles resolve
+  ✓  2 strategies · weights sum to 1.000
+  ✓  4 events · all preconditions resolve
+  ✓  demand curves cover rounds 1–4
+
+  0 errors · 0 warnings · exit 0
+
+EXIT=0
+
