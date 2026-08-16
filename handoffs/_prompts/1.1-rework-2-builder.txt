@@ -1,0 +1,115 @@
+You are the BUILDER for the SECOND REWORK of module 1.1 — the casepack schema.
+
+This is a schema-only packet. Six changes, all specified, none requiring
+design. Small packet, large blast radius.
+
+REPO: /home/ubuntu/projects/mis-sim
+BRANCH: cut build/1.1-rework-2 from main at 6b4578b.
+Never push to main. Never merge. Never run 'git add -A'.
+This working directory is shared with other agents. Add files by explicit
+path. Leave HEAD where you found it when you finish.
+
+READ, IN FULL, IN THIS ORDER, BEFORE ANY OTHER ACTION:
+  1. ~/projects/mis-sim/handoffs/1.1-casepack-schema/rework-2.md  <-- START HERE.
+     Your six changes, the compatibility rule that governs all of them, and an
+     explicit do-not-do list.
+  2. ~/projects/mis-sim/GOVERNANCE.md          - 4.9, 4.10, 5, 6
+  3. ~/projects/mis-sim/QUALITY_PROTOCOL.md    - 1, verify state not exit codes
+  4. ~/projects/mis-sim/CONTRACTS.md
+  5. ~/projects/mis-sim/handoffs/1.1-casepack-schema/spec.md   the original spec
+  6. ~/projects/mis-sim/handoffs/1.5-event-signal-engine/spec.md
+     Section 5.4 specifies obligation_rules — you IMPLEMENT that shape, you do
+     not design one. Section 5.2 has the precondition-field table.
+  7. ~/projects/mis-sim/handoffs/1.3-harvest/spec.md  section 3a — what is
+     gated on you, and why eleven of twenty errors cannot clear without it.
+
+NOTE: handoffs/1.1-casepack-schema/rework.md is a DIFFERENT, CLOSED rework
+from July. It is the record of a gate that was lifted. Do not edit it and do
+not confuse it with rework-2.md, which is yours.
+
+THE RULE THAT GOVERNS EVERY CHANGE:
+
+  Nothing you do may break the loading of an existing pack.
+
+  There are 24 fixture packs under backend/tests/fixtures/packs/ plus
+  backend/packs/riverside_grocery, and every one of them carries watch rules.
+  They are 1.2's evidence and 1.3's starting point.
+
+  If a new field is required, all 25 packs fail to load, validate_casepack
+  reports E00 instead of the twenty errors it should, and
+  check_fixture_matrix.py goes red. A schema change that silently destroys the
+  validator's test suite is worse than the gaps it closes.
+
+  Every field you add is OPTIONAL or carries a DEFAULT. No exceptions.
+
+THE LOAD-BEARING CHECK — run it BEFORE you change anything, and again after:
+
+  ./backend/bin/validate_casepack --json backend/packs/riverside_grocery \
+    | python3 -c "import json,sys,collections; print(collections.Counter(f['code'] for f in json.load(sys.stdin)))"
+
+  Expected IDENTICAL before and after:
+    E07 x8 · E20 x6 · E12 x2 · E21 x2 · E02 x1 · E14 x1 · W02 · W04 · W05
+
+  Paste both runs. If the profile changes you have either broken loading or
+  accidentally fixed content, and both are defects in this packet. A schema
+  addition that changes what the validator says about unchanged content has
+  changed the meaning of the content.
+
+BUILD — rework-2.md section 3 has all six with their reasoning:
+
+  3.1  WatchRule.metric_kind: Literal["threshold","presence"] = "threshold"
+       OPTIONAL WITH A DEFAULT, not required — the ruling and its reasoning
+       are in rework-2.md. Enforce the PRESENCE half of the constraint at the
+       model (a presence rule carrying a threshold is incoherent); leave the
+       THRESHOLD half to the validator's E12. Making the model reject a
+       thresholdless threshold-rule turns Riverside unloadable and destroys
+       1.2's evidence. Say in your report that you split it this way and why.
+  3.2  obligation_rules as an optional schema section, in 1.5 section 5.4's
+       shape. Implement that shape. Do not design one.
+  3.3  Labels sections for entities, catalog, watch_rules, questions.
+       ALSO REPORT, DO NOT FIX: labels.events maps to a persona quote rather
+       than a name. That is a content-shape question for 1.3.
+  3.4  PlatformService.owns_entities, same shape CatalogItem uses.
+  3.5  EventPrecondition gains node, entity, policy, round, count — all
+       optional. round is an int, never ratio. THIS ITEM GATES 1.5, NOT 1.3:
+       if you run short, deliver 3.1-3.4 and report 3.5 undone.
+  3.6  WatchRule.key from str to SnakeKey. Verified 2026-08-17 that all six
+       distinct rule keys across all 25 packs are already snake_case —
+       RE-VERIFY before changing, and if any key fails, STOP and report
+       rather than renaming pack content.
+
+HARD CONSTRAINTS:
+  - DO NOT touch backend/packs/ or backend/tests/fixtures/. Content is 1.3's,
+    fixtures are 1.2's. Both git diffs must be empty when you finish.
+  - DO NOT make any new field required.
+  - DO NOT update the validator. E12's presence exemption, E20's widened
+    predicate and the new W08 are 1.2's next rework, sequenced AFTER this one.
+    Touching validate.py couples two packets and makes both harder to audit.
+  - DO NOT design obligation_rules. 1.5 section 5.4 specified it.
+  - DO NOT rename or re-key anything in any pack, including under 3.6.
+
+  Expect E02 x1 to STILL FIRE when you finish. Adding owns_entities does not
+  clear it — Riverside must then declare the ownership, which is 1.3's work.
+  A builder who clears E02 has edited the pack.
+
+DECLARE EVERY SUBSTITUTION. If you run something other than what this document
+says, say so and say why. On this project an undeclared substitution let a
+vacuous pre-flight row survive all the way to audit (finding 1.2-004).
+
+BEFORE CLAIMING DONE:
+  - Fill handoffs/1.1-casepack-schema/dod-rework-2.md — a NEW file. Do not
+    overwrite the original dod.md.
+  - Update docs/casepack-schema.md for all six changes. An instructor authors
+    packs from that document; a schema change absent from it is invisible.
+  - Paste check_fixture_matrix.py, exit 0, all 24 fixtures.
+  - Paste the load-bearing check, before and after.
+  - Paste the two empty diffs for backend/packs/ and backend/tests/fixtures/.
+  - Re-run 1.1's own I1-I8 and paste them.
+  - Verify your push landed: compare git ls-remote origin build/1.1-rework-2
+    against your local HEAD. Exit code 0 is not proof — 'git push' exits 0
+    when nothing moved.
+  - Push and report. DO NOT MERGE. A fresh auditor takes it from there.
+
+Report: each of the six with a model excerpt, both load-bearing runs, the
+three empty diffs, the labels.events problem in your own words, every
+substitution, and anything you stopped on.
