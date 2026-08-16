@@ -266,6 +266,10 @@ class PlatformService(StrictModel):
     placement_options: dict[Placement, DeploymentMode]
     capacity_pct: int = Field(ge=0, le=100)
     staff_load: float = Field(ge=0)
+    #: Entities this shared service is the system of record for, at a stated level
+    #: of detail. Same shape `CatalogItem.owns_entities` uses: a platform service
+    #: can fill a role *and* own the entity that role's capability requires.
+    owns_entities: list[EntityDetail] = Field(default_factory=list)
     provenance: Provenance
 
 
@@ -297,21 +301,65 @@ class Entity(StrictModel):
 
 
 class WatchRule(StrictModel):
-    key: str
+    """A rule that raises a signal.
+
+    `metric_kind` declares how the rule is evaluated (1.5 spec section 5.1a):
+
+    * `threshold` -- the metric is a float, compared against `warn_above` /
+      `critical_above`.
+    * `presence` -- the metric is a boolean; it raises at `critical` and carries
+      no thresholds at all (1.5 decision 10).
+
+    The default of `threshold` is a **migration affordance, not the end state**.
+    Every rule authored before this field existed is threshold-shaped, so
+    `threshold` is the honest default rather than a convenience -- but 1.3 must
+    declare the kind explicitly on every rule (its I8), and a later change may
+    tighten this to required once no pack relies on the default. Do not read the
+    default as permission to leave it unauthored.
+
+    Only the *presence* half of the constraint is enforced here. A `threshold`
+    rule carrying no threshold is illegal, but it is 1.2's `E12` that says so:
+    rejecting it at load time would make packs that exist today unloadable and
+    would replace twenty specific validator findings with one load failure.
+    """
+
+    key: SnakeKey
     capability: SnakeKey
     metric: SnakeKey
+    metric_kind: Literal["threshold", "presence"] = "threshold"
     warn_above: float | None = None
     critical_above: float | None = None
     cleared_by: list[SnakeKey]
     provenance: Provenance
 
+    @model_validator(mode="after")
+    def presence_rules_carry_no_thresholds(self) -> WatchRule:
+        if self.metric_kind == "presence" and (
+            self.warn_above is not None or self.critical_above is not None
+        ):
+            raise ValueError("metric_kind 'presence' must not carry warn_above or critical_above")
+        return self
+
 
 class EventPrecondition(StrictModel):
+    """One clause of an event's firing condition.
+
+    The field set is the union of what the eleven precondition types of 1.5 spec
+    section 5.2 need. Every field is optional because each type reads only its
+    own; which fields a given `type` requires is a validator question, not a
+    schema one.
+    """
+
     type: SnakeKey
     signal: str | None = None
     severity: Literal["warning", "critical"] | None = None
     capability: SnakeKey | None = None
     ratio: float | None = None
+    node: SnakeKey | None = None
+    entity: SnakeKey | None = None
+    policy: SnakeKey | None = None
+    round: int | None = Field(default=None, gt=0)
+    count: int | None = Field(default=None, ge=0)
 
 
 class EventOutcome(StrictModel):
@@ -333,6 +381,34 @@ class Event(StrictModel):
     body_key: SnakeKey
     outcomes: EventOutcome
     options: list[EventOption]
+    provenance: Provenance
+
+
+class ObligationRule(StrictModel):
+    """A privacy obligation, in the shape 1.5 spec section 5.4 specifies.
+
+    Obligations reuse the signal machinery entirely (1.5 decision 7): a sensitive
+    entity held under a permissive policy raises on the *presence* path, is
+    cleared by an action in `cleared_by`, and while ignored arms the events named
+    in `arms`. There is no parallel system and no second scoring path.
+    """
+
+    key: SnakeKey
+    #: An entity the pack defines.
+    entity: SnakeKey
+    #: The condition vocabulary is open -- 1.5 section 5.4 names `policy_permits`
+    #: and does not close the set, so no enum is invented here.
+    condition: SnakeKey
+    #: The policy switch the condition reads, and the value of it that is permissive.
+    policy: SnakeKey
+    permissive_value: str
+    #: Obligations are presence-shaped by construction, and a presence condition
+    #: raises at `critical`, never at `warning` (1.5 decision 10). There is no
+    #: magnitude to be mildly concerned about, so the vocabulary is one value.
+    severity: Literal["critical"] = "critical"
+    cleared_by: list[SnakeKey]
+    #: Event keys this obligation can arm while it stays open.
+    arms: list[SnakeKey] = Field(default_factory=list)
     provenance: Provenance
 
 
@@ -366,6 +442,14 @@ class Question(StrictModel):
 
 
 class Labels(StrictModel):
+    """Every displayed string, keyed by the machine key it stands in for.
+
+    A section exists for each family of key that reaches a screen or a validator
+    message. Without one, the message leads with the machine key -- findings
+    `1.2-008` and `1.2-024`, where eight codes printed `wh_rollout_01` at an
+    instructor.
+    """
+
     capabilities: dict[SnakeKey, str] = Field(default_factory=dict)
     roles: dict[SnakeKey, str] = Field(default_factory=dict)
     sidebar: dict[SnakeKey, str] = Field(default_factory=dict)
@@ -373,6 +457,10 @@ class Labels(StrictModel):
     stakeholders: dict[SnakeKey, str] = Field(default_factory=dict)
     events: dict[SnakeKey, str] = Field(default_factory=dict)
     policies: dict[SnakeKey, str] = Field(default_factory=dict)
+    entities: dict[SnakeKey, str] = Field(default_factory=dict)
+    catalog: dict[SnakeKey, str] = Field(default_factory=dict)
+    watch_rules: dict[SnakeKey, str] = Field(default_factory=dict)
+    questions: dict[SnakeKey, str] = Field(default_factory=dict)
     misc: dict[SnakeKey, str] = Field(default_factory=dict)
 
 
@@ -385,6 +473,9 @@ class Casepack(StrictModel):
     entities: list[Entity]
     watch_rules: list[WatchRule]
     events: list[Event]
+    #: Optional section. A pack without `obligation_rules.yaml` loads clean; its
+    #: absence is `CG-5` and stays 1.3's to close.
+    obligation_rules: list[ObligationRule] = Field(default_factory=list)
     stakeholders: list[Stakeholder]
     preferences: dict[SnakeKey, PreferenceDefaults]
     policies: list[PolicyOption]
