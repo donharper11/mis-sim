@@ -99,6 +99,21 @@ to build** — §1 puts schema changes out of scope and says *stop and report*.
 | 2 | `obligation_rules` as a schema section | close **CG-5** at all. There is nowhere to author the file, which is why 1.2 cannot even report its absence | 1.5 §10 · `CG-5` |
 | 3 | `Labels` sections for `entities`, `catalog`, `watch_rules`, `questions` | give eight validator codes a business name to lead with — they currently print machine keys at instructors | `1.2-008` · `1.2-024` |
 | 4 | `PlatformService.owns_entities` | satisfy `firm_infrastructure`'s `user_account` requirement. `central_sign_on` fills the *role* but no platform service can own an *entity* | `1.2-011` |
+| 4b | **`Lens.owned` must union `pack.platform.services`** — a **1.2** change, not 1.1 | clear `E02` *at all*. See the box below | `1.1 rework-2` `R2` |
+
+> **`E02` cannot be cleared by this packet, and that is new information.** *(added
+> 2026-08-17)* Addition 4 lands the field, but `validate.py:437-443` builds `Lens.owned`
+> from `pack.catalog` **only** — and `Lens.owned` is what `E02` and `E23` consult. The
+> asymmetry is visible in adjacent lines: `filled_roles` unions `pack.platform.services`,
+> `owned` does not.
+>
+> So after 1.3 declares `central_sign_on.owns_entities`, **`E02` still fires.** Verified
+> 2026-08-17. Without the validator change, 1.3 authors correct content and gets blamed for
+> a validator gap.
+>
+> **Consequence for this spec's `I6` (validator exit 0):** it is unreachable until 1.2's
+> next rework lands, *regardless* of the 1.1 gate. Either sequence 1.2's rework before 1.3,
+> or defer `I6` per §3a and accept `E02 ×1` as a known-outstanding error in `dod.md`.
 
 **Current state, run 2026-08-16 against merged `main`:**
 
@@ -357,7 +372,18 @@ demonstrate provenance table: rows in, rows out, mode, per source table
 | # | Claim | Tag | Check | Expected |
 |---|---|---|---|---|
 | 1 | 1.1 and 1.2 merged | `[V]` | `ls backend/app/casepack/{models,loader,checks,validate}.py backend/bin/validate_casepack` | all present — 1.2 merged at `d5647d8` |
-| 1a | **The 1.1 gate is lifted** (§3a additions 1–4) | `[V]` | `grep -n "metric_kind\|obligation_rules\|owns_entities" backend/app/casepack/models.py` and `grep -nE "^  (entities\|catalog\|watch_rules\|questions):" backend/app/casepack/models.py` | all four present. **Any absent → STOP and report which**, unless the dispatch explicitly deferred `I6` per §3a |
+| 1a | **The 1.1 gate is lifted** (§3a additions 1–4) | `[V]` | from `backend/`: `python3 -c "from app.casepack.models import Labels, WatchRule, PlatformService, Casepack as C; print('metric_kind' in WatchRule.model_fields, 'owns_entities' in PlatformService.model_fields, 'obligation_rules' in C.model_fields, sorted({'entities','catalog','watch_rules','questions'} & set(Labels.model_fields)))"` | `True True True ['catalog', 'entities', 'questions', 'watch_rules']`. **Any False or missing → STOP and report which**, unless the dispatch explicitly deferred `I6` per §3a |
+
+> **Row 1a was corrected 2026-08-17, before any builder saw it.** As first written it grepped
+> `^  (entities|catalog|…)` — **two** spaces, against a four-space Python class body. It
+> matched nothing, and the row's instruction is *"any absent → STOP"*, so **1.3's builder
+> would have stopped on a gate that was in fact lifted.** Found by the 1.1 rework builder
+> (`R5`) and verified here.
+>
+> This is the fourth pre-flight row on this project whose check could not return the right
+> answer — 1.2's rows 3 and 4, 1.5's row 5, now this one — and all four were *greps whose
+> pattern did not match the artifact*. The replacement introspects the model instead: it
+> cannot silently no-match, and every element of the expected output is named.
 | 1b | **The `1.2-020` ruling has been made** | `[A]` | read §5.1b's ruling box; confirm the dispatch names a decision | a decision exists. **Absent → STOP.** 1.3 regenerates `initial_state`, and authoring into an undecided vocabulary is how the hole reopens |
 | 2 | mis_lite reachable read-only | `[V]` | `PGPASSWORD=… psql -h 192.168.50.38 -U donwh -d mis_lite -c "select 1"` | 1 |
 | 3 | Row counts match `design/01` §2 | `[V]` | count each table in §5.1 | match, or report drift |

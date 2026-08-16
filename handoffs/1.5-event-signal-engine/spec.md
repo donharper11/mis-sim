@@ -413,7 +413,8 @@ knows. *(`SPEC_PROTOCOL §4.2` — a claim about blast radius is verified, not a
 | 1 | **`E12` must exempt `metric_kind: presence`** | A presence rule legitimately carries no thresholds. As built, `E12` fires on exactly the rules decision 8 makes legal |
 | 2 | **`E20`'s predicate becomes** *"no watch rule that can raise a signal"* — a `threshold` rule with a threshold, **or** any `presence` rule | Otherwise a correctly-authored presence rule still reads as mute |
 | 3 | **`W08` — the per-strategy draw check** of §5.2a, at `N = 6` (O4) | `CG-2` is invisible to `W05`'s deck-depth proxy |
-| 4 | A `presence` rule carrying a threshold, or a `threshold` rule carrying none, is an ERROR — the schema constraint of item 1 above, mirrored in the validator | Defence in depth; the model rejects it, the validator explains it |
+| 4 | A `presence` rule carrying a threshold, or a `threshold` rule carrying none, is an ERROR — the schema constraint of item 1 above, mirrored in the validator | Defence in depth. **Note the split made in 1.1's rework-2:** the model rejects only the presence-plus-threshold shape, because rejecting a thresholdless threshold-rule at load makes Riverside unloadable and collapses twenty findings into one `E00`. The other half stays `E12`'s |
+| 5 | **`Lens.owned` must union `pack.platform.services`**, as `filled_roles` already does | *(added 2026-08-17, from 1.1 rework-2 `R2`)* `validate.py:437-443` builds `owned` from `pack.catalog` alone, so `PlatformService.owns_entities` is **inert** — `E02` and `E23` cannot see it. Until this lands, no pack can satisfy an entity requirement through a platform service, and `E02 ×1` on Riverside is uncloseable by authoring. This blocks 1.3's `I6` |
 
 > **Consequence for Riverside, stated so it is not a surprise.** Once 1.1 ships
 > `metric_kind` and 1.3 declares `sec_identity_01` and `wh_rollout_01` as `presence`, both
