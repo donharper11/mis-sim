@@ -404,6 +404,7 @@ knows. *(`SPEC_PROTOCOL §4.2` — a claim about blast radius is verified, not a
 | 1 | **`WatchRule.metric_kind`**: `Literal["threshold","presence"]`, required. Plus the constraint decision 7 asked for: a `threshold` rule must carry at least one of `warn_above` / `critical_above`; a `presence` rule must carry **neither** | §3 decision 8 |
 | 2 | **`obligation_rules`** as a schema section, in the §5.4 shape | §3 decision 7, `CG-5` |
 | 3 | **`EventPrecondition` gains `node`, `entity`, `policy`, `round`** (and an integer count for `placement_count`), so the six unexpressible precondition types of §5.2 become real | §5.2 |
+| 3a | **Still outstanding after 1.1 rework-2** *(added 2026-08-17)*: `placement_count` needs a **`placement` key as well as `count`** — only `count` was added, and `extra="forbid"` rejects the other half, so the type remains unexpressible (`1.1-r2-002`). `policy_contradiction` needs a **second policy key** — §5.2 says two, §10 item 3 specified one, one was added (`1.1 rework-2 R3`). **Three of six types are still not expressible**, so §8 build step 3 would hit a wall | `1.1-r2-002` |
 | 4 | `WatchRule.key` is `str`, not `SnakeKey`, where every sibling key is constrained. Cosmetic, but it is the one key in the schema that could be authored in any case | observed 2026-08-15 |
 
 ### To 1.2 — the validator, after 1.1 lands
@@ -416,13 +417,26 @@ knows. *(`SPEC_PROTOCOL §4.2` — a claim about blast radius is verified, not a
 | 4 | A `presence` rule carrying a threshold, or a `threshold` rule carrying none, is an ERROR — the schema constraint of item 1 above, mirrored in the validator | Defence in depth. **Note the split made in 1.1's rework-2:** the model rejects only the presence-plus-threshold shape, because rejecting a thresholdless threshold-rule at load makes Riverside unloadable and collapses twenty findings into one `E00`. The other half stays `E12`'s |
 | 5 | **`Lens.owned` must union `pack.platform.services`**, as `filled_roles` already does | *(added 2026-08-17, from 1.1 rework-2 `R2`)* `validate.py:437-443` builds `owned` from `pack.catalog` alone, so `PlatformService.owns_entities` is **inert** — `E02` and `E23` cannot see it. Until this lands, no pack can satisfy an entity requirement through a platform service, and `E02 ×1` on Riverside is uncloseable by authoring. This blocks 1.3's `I6` |
 
-> **Consequence for Riverside, stated so it is not a surprise.** Once 1.1 ships
-> `metric_kind` and 1.3 declares `sec_identity_01` and `wh_rollout_01` as `presence`, both
-> become legal: `E12 ×2` disappears and `E20` returns from six to five. **`E21 ×2` also
-> resolves** — the two dead cards require `wh_rollout_01` at `critical`, and a presence rule
-> raises at `critical` (decision 10), so the severity becomes reachable and the deck goes
-> from an effective one card to three. Three of the 1.2 audit's findings close on this one
-> ruling, and none of them close before 1.1 runs.
+| 6 | **`_raisable` (`validate.py:727-736`) must consult `metric_kind`** | *(added 2026-08-17, from `1.1-r2-006`)* It decides whether a severity is reachable purely from thresholds, so it is the third place that must learn about presence rules — and it was missing from this list, which made the note below false as originally written |
+
+> **Consequence for Riverside — corrected 2026-08-17.** The original note here said `E12 ×2`,
+> `E20 6→5` and `E21 ×2` resolve *"once 1.1 ships `metric_kind` and 1.3 declares the kind"*,
+> and named 1.1 as the only gate. **That was wrong, and the rework audit proved it by
+> experiment:** a scratch Riverside with `presence` declared on both rules validates
+> **byte-identically** to the untouched pack. Verified independently — `validate.py` **never
+> reads `metric_kind`**; `E12`, `E20` and `_raisable` all decide from thresholds alone.
+>
+> The correct sequence is **three packets, not two**:
+>
+> ```
+> 1.1 rework-2   the field exists                 ✅ built
+> 1.2 rework     E12 exempts · E20 widens · _raisable consults it   ← REQUIRED, not built
+> 1.3            declares the kind on every rule
+> ```
+>
+> Until the middle step lands, declaring `presence` is **inert** — it changes no validator
+> output at all. Three of the 1.2 audit's findings still close on this ruling, but they close
+> at **1.2's rework**, not at 1.1's.
 
 ### To 1.3 — the harvest
 

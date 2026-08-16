@@ -131,6 +131,36 @@ W02 W04 W05                              → CG-2, buildable today
 
 **Eleven of the twenty errors need additions 1 and 4 before any authoring can clear them.**
 
+> ### The 1.1 gate is lifted. It was not enough. *(added 2026-08-17)*
+>
+> `build/1.1-rework-2` delivered all four additions, and pre-flight row 1a now returns its
+> exact expected output. **The eleven errors did not move.**
+>
+> The rework auditor built a scratch Riverside with `metric_kind: presence` declared on both
+> rules — the exact move that closes CG-1 — and the validator output was **byte-identical to
+> the untouched pack**. Verified independently: `validate.py` **never reads `metric_kind`**.
+> `E12`, `E20` and `_raisable` all decide from thresholds alone.
+>
+> **Additions 1 and 4 are both validator-gated, not only addition 4.** The real sequence is:
+>
+> ```
+> 1.1 rework-2   ✅ the fields exist
+> 1.2 rework     ← REQUIRED AND NOT BUILT
+>                  E12 exempts presence · E20 widens · _raisable consults kind ·
+>                  Lens.owned unions platform services · W08
+> 1.3            declares kinds, authors ownership, closes CG-1..CG-6
+> ```
+>
+> **`I6`, `I8` and `I11` are unreachable until 1.2's rework lands.** Two further findings
+> sharpen this: `1.2-024` is *not* closed by authoring the new `Labels` sections, because no
+> validator message consults them yet (`1.1-r2-003`); and `I11` has no executable check at
+> all — a fully orphaned `obligation_rules.yaml` validates identically to a correct one
+> (`1.1-r2-005`).
+>
+> **Recommendation: sequence 1.2's rework before dispatching 1.3.** Running 1.3 first means
+> authoring correct content against a validator that cannot confirm it, and deferring three
+> invariants — which is how a gap becomes invisible.
+
 ### What 1.3 *can* do today, if the gate is not lifted first
 
 `E07 ×8` (the eight missing label keys), `E14 ×1` (CG-6), `CG-2`, `CG-3`, `CG-4` and the
