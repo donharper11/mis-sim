@@ -367,3 +367,139 @@ grow: one changed line.
 - `CG-2` — visible as `W08 ×4`. 1.3's to close.
 - 1.5 §10's to-1.2 item 4's first clause is dead code by construction (`1.1-r2-007`); it is
   not among the six and was not built.
+
+---
+
+## 11. Follow-up: `1.2-030` and `1.2-031` — message copy
+
+**Date:** 2026-08-18 · **Scope:** `backend/app/casepack/validate_messages.yaml` only.
+Appended after the rework audit (`findings/1.2-rework-2-2026-08-18-audit.md`, PASS WITH
+FINDINGS, 0 blocking). Items 3.1–3.6 above are unchanged and are not restated.
+
+Items 3.1, 3.2, 3.3 and 3.4 each made something legal that had not been legal before. Five
+strings still described the world before them. All five are read by pack authors, and 1.3's
+builder is the next person to read them.
+
+### 11.1 What changed — five strings, rendered from a real run
+
+**`E21.fix` — `1.2-030`.** Item 3.3 forked the *reason* and left the *fix* shared, so the
+reason said *there is no threshold here* and the next line said *set the threshold* — an
+edit `models.py` rejects with a pack-wide `E00`. One fix, true of both arms, naming the
+goal rather than one arm's remedy:
+
+```
+  ERROR  E21  Event records_left_on_paper     events.yaml:30
+         Can never happen: it waits for 'rec_adopt_01' to reach warning, and that rule
+         watches for a condition simply being present, which is always raised as critical
+         and never as a warning.
+         Fix: change the severity this event waits for in events.yaml, or make the rule in
+              watch_rules.yaml one that can reach it — a rule with metric_kind: threshold
+              needs the matching threshold set, and a rule with metric_kind: presence only
+              ever raises at critical.
+```
+
+The threshold arm reads correctly from the same string (`broken_E21`): *"…sets no
+critical_above threshold…"* followed by the same fix, which names that remedy first.
+
+**`E02.message` and `E02.fix` — `1.2-031`.** Phrased to match `E01`, which has carried the
+two-place wording for roles all along:
+
+```
+  ERROR  E02  Appointment Booking             capabilities.yaml:4
+         Needs client information at 'individual_person' detail, and nothing in the catalog
+         or the shared platform can hold it.
+         Fix: add client at 'individual_person' or finer to owns_entities on an item in
+              catalog.yaml or a service in platform.yaml, or lower min_level_of_detail in
+              capabilities.yaml.
+```
+
+**`E23.fix` — `1.2-031`.**
+
+```
+  ERROR  E23  Question client_visit_history   questions.yaml:5
+         Needs visit information at 'procedure_step' detail, and nothing this company can
+         buy produces it.
+         Fix: add visit at 'procedure_step' or finer to owns_entities on an item in
+              catalog.yaml or a service in platform.yaml, or lower the requirement in
+              questions.yaml.
+```
+
+**`E12.fix` and `E20.fix` — found here, not in the findings file.** See §11.3.
+
+```
+  ERROR  E12  Watch rule rec_adopt_01         watch_rules.yaml:8
+         Watches 'Clinical Records' but sets neither a warning nor a critical threshold, so
+         it can never fire. It counts towards coverage while watching nothing.
+         Fix: in watch_rules.yaml, set warn_above or critical_above on 'rec_adopt_01' — or,
+              if this rule watches for a condition that is simply present or absent rather
+              than a level being crossed, declare metric_kind: presence on it, which
+              carries no threshold at all. Otherwise remove the rule.
+
+  ERROR  E20  Clinical Records                watch_rules.yaml:8
+         Can never raise a signal — the only rule that names it (rec_adopt_01) sets neither
+         a warning nor a critical threshold, so it can never fire. Nobody is ever told when
+         it is in trouble, and a team gets no credit for looking after it.
+         Fix: add a watch rule in watch_rules.yaml naming 'Clinical Records' and the actions
+              that clear it — either metric_kind: threshold with warn_above or
+              critical_above set, or metric_kind: presence for a condition that is simply
+              true or false.
+```
+
+### 11.2 Every remedy the new copy names is one that works
+
+Copy that names a remedy is a claim, and the claim is checked against a fixture rather than
+asserted. Each `Fix:` above is the edit that turns the firing fixture into the silent one:
+
+| The fix says | The edit | Result |
+|---|---|---|
+| `E12` / `E20`: declare `metric_kind: presence` | `broken_E20_mute` → `ok_presence_rule`, which is that line plus a metric renamed to the condition it names | `0 errors · 0 warnings · exit 0` |
+| `E02` / `E23`: `owns_entities` on a service in `platform.yaml` | `minimal_valid` → `ok_service_owns_entity`, which moves `client` off the catalog item and onto the shared service | `0 errors · 0 warnings · exit 0` |
+| `E21` presence arm: change the severity the event waits for | `broken_E21_presence_warning` → `ok_presence_rule`, `severity: warning` → `critical` | `E21` silent |
+
+The remedy the old `E21` fix named — adding a threshold to a presence rule — is the one
+edit with no fixture, because `models.py` refuses to load the result.
+
+### 11.3 The fifth and sixth strings, and one deliberate non-change
+
+**Found beyond the findings file: `E12.fix` and `E20.fix`.** `1.2-030` and `1.2-031` are
+filed against items 3.3 and 3.4. Items **3.1 and 3.2** have the identical defect and no
+finding: they made a presence rule a legal shape and legal coverage, and both fixes still
+named thresholds as the only remedy.
+
+These two matter more than the four that were filed. `E12 ×2` and `E20 ×6` are eight of
+Riverside's twenty errors and the whole of `CG-1`, and 1.5 §10 tells 1.3 to close them by
+**declaring `metric_kind`** — which is precisely the remedy neither fix mentioned. A 1.3
+author following `E20`'s old fix would author six more threshold rules, and `E12`'s old fix
+offered *"or remove the rule"* for two rules that should exist and now have a legal form.
+Both fixes now name both kinds, and neither instructs blindly: each is conditioned on the
+metric actually being a condition rather than a level.
+
+**Deliberately NOT changed: `E23.message`** — *"…and nothing this company can buy produces
+it."* `1.2-031`'s closing condition says *"both codes' `message` and `fix`"*, so this is a
+recorded dissent, not an oversight.
+
+`E02`'s message was falsified by item 3.4 because it named catalog items specifically and
+offered that as the reason the requirement is unsatisfiable. `E23`'s does not: it speaks of
+everything the company can buy, and after 3.4 a shared platform service is something the
+company buys, so the sentence is exactly as true as it was and is true for the right reason.
+`E23` fires only when neither the catalog nor the platform can produce the entity, which is
+what the sentence says. Changing it would be churn on correct copy, and it is already the
+better business language of the two.
+
+### 11.4 Scope and invariants
+
+| Claim | Evidence |
+|---|---|
+| One file changed | `git status` → `M backend/app/casepack/validate_messages.yaml`, nothing else |
+| `validate.py`, `models.py`, `loader.py`, `backend/packs/`, `spec.md`, `backend/tests/` untouched | `git diff 880ca6b -- <each>` → **0 lines** each |
+| No new code, no code removed | `I1` set-equal at **29 = 29** |
+| Riverside unchanged | `E07 ×8 · E20 ×6 · E12 ×2 · E21 ×2 · E02 ×1 · E14 ×1 · W02 · W04 · W05 · W08 ×4` — **20 errors · 7 warnings · exit 1** |
+| Fixture matrix green | 29 fixtures, `I1` PASS, `I5` identical in both modes, **exit 0** |
+
+`I5` is the invariant most exposed by a copy change — the text renderer and the JSON
+renderer must stay in step. It holds at 0 / 8 / 27 / 77 findings across single-pack and
+directory mode, with every directory record attributed.
+
+**No fixture needed adding or amending.** Every changed string already had a pack that
+renders it and a paired pack that proves the remedy, from the packet above. That is the
+paired-fixture design paying for itself on the first change made after it.
