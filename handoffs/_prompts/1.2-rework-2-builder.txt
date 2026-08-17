@@ -1,0 +1,137 @@
+You are the BUILDER for the SECOND REWORK of module 1.2 — the casepack validator.
+
+Six items, all specified, none requiring design. This packet is the critical
+path: nothing downstream moves until it lands.
+
+REPO: /home/ubuntu/projects/mis-sim
+BRANCH: cut build/1.2-rework-2 from main at f5125f4.
+Never push to main. Never merge. Never run 'git add -A'.
+This working directory is shared with other agents. Add files by explicit
+path. Leave HEAD where you found it when you finish.
+
+READ, IN FULL, IN THIS ORDER, BEFORE ANY OTHER ACTION:
+  1. ~/projects/mis-sim/handoffs/1.2-validator/rework-2.md   <-- START HERE.
+     Your six items, the rule that governs them, the paired-fixture
+     requirement, and the do-not-do list.
+     NOTE: rework.md is the FIRST rework — completed, audited, merged. Do not
+     edit it and do not work from it.
+  2. ~/projects/mis-sim/GOVERNANCE.md            4.9, 4.10, 5, 6
+  3. ~/projects/mis-sim/QUALITY_PROTOCOL.md      1, verify state not exit codes
+  4. ~/projects/mis-sim/handoffs/1.2-validator/spec.md   v1.2 — the standard
+  5. ~/projects/mis-sim/handoffs/1.5-event-signal-engine/spec.md
+     Section 3 decision 10 (presence raises at critical, never warning),
+     section 5.1a (the two evaluation paths), section 5.2a (W08), section 10.
+  6. ~/projects/mis-sim/findings/1.1-rework-2-2026-08-17-audit.md
+     1.1-r2-001 and 1.1-r2-006 are yours. Read why they were found by
+     experiment rather than by reading code.
+  7. ~/projects/mis-sim/handoffs/1.3-harvest/spec.md  section 3a — what is
+     gated on you.
+
+WHY THIS PACKET EXISTS — understand this before you write anything:
+
+  1.1's rework landed six schema fields on 2026-08-17. The gate it was meant
+  to lift DID NOT LIFT, because the validator does not know the fields exist.
+
+  Proved by experiment: a scratch Riverside with metric_kind: presence
+  declared on both thresholdless rules validates BYTE-IDENTICALLY to the
+  untouched pack. validate.py never reads metric_kind. E12, E20 and _raisable
+  all decide from thresholds alone. E02 is the same story — Lens.owned is
+  built from pack.catalog only, while filled_roles two lines above it unions
+  pack.platform.services.
+
+  Eleven of Riverside's twenty errors, and 1.3's I6, I8 and I11, are
+  unreachable until you land this.
+
+THE RULE:
+
+  Every change must move the Riverside error profile in a way you predicted
+  BEFORE you made it.
+
+  Today, on merged main:
+    E07 x8 · E20 x6 · E12 x2 · E21 x2 · E02 x1 · E14 x1 · W02 · W04 · W05
+
+  The ERROR profile must NOT change. backend/packs/ is not yours, Riverside
+  declares no metric_kind and no ownership, and under the default (threshold)
+  both its rules stay illegal — so E12 x2 and E20 x6 are still correct
+  answers.
+
+  What must change is what the validator says about a pack that DOES declare
+  them. That is what the paired fixtures prove, and it is the whole packet.
+
+BUILD — rework-2.md section 3 has all six with reasoning:
+
+  3.1  E12 exempts metric_kind == "presence"
+  3.2  E20 widens: a rule "can raise a signal" if it is presence, OR
+       threshold with at least one threshold set
+  3.3  _raisable consults metric_kind. Per 1.5 decision 10, a presence rule
+       reaches "critical" and NEVER "warning". This is what resolves E21 x2
+       once 1.3 declares the kinds.
+  3.4  Lens.owned unions pack.platform.services, as filled_roles already does
+       for roles. E02 x1 will STILL FIRE when you finish — 1.3 must declare
+       central_sign_on.owns_entities. You make clearing it possible, you do
+       not clear it.
+  3.5  W08 — per-strategy draw check at N=6, a WARN not an ERROR. Riverside
+       raises it four times. That changes the WARNING count, not the error
+       count; state the new total.
+  3.6  1.1-r2-001 — ONE LINE in loader.py. An empty or comment-only
+       obligation_rules.yaml currently makes the whole pack E00. This is 1.1's
+       file and it is scoped to you deliberately: one line, fully specified,
+       and it will bite 1.3 the moment it creates the file before filling it.
+       TOUCH NOTHING ELSE IN loader.py. If the fix is more than a line, STOP
+       and report rather than growing the scope.
+
+PAIRED FIXTURES — this is how the packet is proved:
+
+  Every item changes behaviour on packs that do not exist yet. A fixture suite
+  covering only today's content proves nothing about the change.
+
+  For 3.1, 3.2, 3.3 and 3.4 add a PAIR:
+      the illegal / uncovered / unreachable shape  -> the code STILL fires
+      the newly legal shape                        -> the code is now SILENT
+
+  rework-2.md section 4 lists the minimum nine. GOVERNANCE 4.9 applies: real
+  coherent packs, minimally different, derived from minimal_valid. And
+  check_fixture_matrix.py must assert BOTH HALVES of every pair. A suite that
+  only proves errors still fire has not tested this packet at all.
+
+HARD CONSTRAINTS:
+  - DO NOT touch backend/packs/. Content is 1.3's. git diff must be empty.
+  - DO NOT fix Riverside's content to make anything pass.
+  - DO NOT touch models.py.
+  - DO NOT touch loader.py beyond item 3.6's single line.
+
+W08 AND THE SPEC: I1 is set equality between implemented codes and codes the
+spec NAMES. Adding W08 to the build without adding it to spec.md section 5.3
+BREAKS I1. You are authorised to add exactly that one line to section 5.3 and
+nothing else in the spec. Note the edit in your report.
+
+THE PROOF THIS PACKET EXISTS FOR — run it and paste it:
+
+  Build a scratch Riverside OUTSIDE backend/packs/ with metric_kind: presence
+  on wh_rollout_01 and sec_identity_01, then validate it.
+
+    E12 x2  must VANISH
+    E21 x2  must VANISH
+    E20     must fall from 6 to 5
+
+  This is the experiment that failed after 1.1's rework. Passing it is what
+  lifts 1.3's gate, and it is the single most important line in your report.
+
+BEFORE CLAIMING DONE:
+  - Fill handoffs/1.2-validator/dod-rework-2.md — a NEW file. Do not
+    overwrite dod.md.
+  - Paste Riverside before/after: errors unchanged, warnings with W08 x4 and
+    the four counts named.
+  - Paste check_fixture_matrix.py, exit 0, asserting both halves of each pair.
+  - Paste the scratch-Riverside proof above.
+  - Paste empty diffs for backend/packs/ and models.py.
+  - Re-run I1-I5 and paste them.
+  - Verify your push landed: compare git ls-remote origin build/1.2-rework-2
+    against your local HEAD. Exit 0 is not proof.
+  - Push and report. DO NOT MERGE. A fresh auditor takes it from there.
+
+DECLARE EVERY SUBSTITUTION. Finding 1.2-004 exists on this project because a
+correct substitution was made silently and a vacuous check survived to audit.
+
+Report: each of the six, the paired-fixture results, the scratch-Riverside
+proof, the new warning total, every substitution, and anything you stopped on.
