@@ -283,6 +283,39 @@ An obligation is **presence-shaped by construction** — the condition holds or 
 so it uses the presence path of §5.1a with no further machinery. That is decision 7 paying
 for itself: the ethics layer costs one schema section and zero new engine paths.
 
+> ### ⛔ `permissive_value` has no referent. This shape does not work yet. *(added 2026-08-18, `1.3-012`)*
+>
+> The shape above reads `policy` + `permissive_value`. **`PolicyOption` has no value field
+> at all** — verified: `key · category · cost · effects · provenance`, and nothing else. A
+> policy switch has no notion of the states it can be in, so `permissive_value: indefinite`
+> is a string pointing at nothing.
+>
+> **This is a defect in this spec, not in 1.3's authoring.** 1.3 authored exactly the shape
+> §5.4 specified, its hand-check found the problem, and the audit confirmed it is worse than
+> reported: **no keying of policies fixes it**, because the missing thing is the vocabulary
+> itself. Same class as §5.2's six unexpressible precondition types — a shape specified
+> against a schema that cannot hold it.
+>
+> **What the ethics layer actually needs**, stated so 1.1 can build it and 1.5 can consume it:
+>
+> ```
+> a policy must declare the STATES it can be in        options: [minimal, standard, indefinite]
+> a policy must declare which state is the DEFAULT     default: indefinite
+>   — the position a team holds by not deciding, which is what makes ignoring the
+>     ethics layer cost something rather than being an opt-in
+> an obligation then names the state that OBLIGES      permissive_value: indefinite
+>   — and it now resolves, because the policy enumerates it
+> ```
+>
+> Without `options`, three things are impossible: the validator cannot check that
+> `permissive_value` names a real state (`1.2-037`'s sibling), the Security screen (4.3)
+> cannot render the switch's positions, and **the engine cannot tell whether a team has
+> moved off the permissive default** — which is the entire mechanism by which an ignored
+> obligation arms an event.
+>
+> **Filed to 1.1 as §10 item 5.** Until it lands, `obligation_rules.yaml` is authored
+> correctly and inert — the same status `CG-5` had before, one layer further in.
+
 ---
 
 ## 5.5 Seed — a signal ledger with history *(GOVERNANCE §4.9)*
@@ -406,6 +439,7 @@ knows. *(`SPEC_PROTOCOL §4.2` — a claim about blast radius is verified, not a
 | 3 | **`EventPrecondition` gains `node`, `entity`, `policy`, `round`** (and an integer count for `placement_count`), so the six unexpressible precondition types of §5.2 become real | §5.2 |
 | 3a | **Still outstanding after 1.1 rework-2** *(added 2026-08-17)*: `placement_count` needs a **`placement` key as well as `count`** — only `count` was added, and `extra="forbid"` rejects the other half, so the type remains unexpressible (`1.1-r2-002`). `policy_contradiction` needs a **second policy key** — §5.2 says two, §10 item 3 specified one, one was added (`1.1 rework-2 R3`). **Three of six types are still not expressible**, so §8 build step 3 would hit a wall | `1.1-r2-002` |
 | 4 | `WatchRule.key` is `str`, not `SnakeKey`, where every sibling key is constrained. Cosmetic, but it is the one key in the schema that could be authored in any case | observed 2026-08-15 |
+| 5 | **`PolicyOption` gains `options: list[SnakeKey]` and `default: SnakeKey`** — the states a switch can be in, and the one a team holds by not deciding. **Highest priority of the five.** Without it `permissive_value` has no referent, the validator cannot check it, 4.3 cannot render the switch, and the engine cannot tell whether a team has moved off the permissive default — which is the whole mechanism of the ethics layer. See the box in §5.4 | `1.3-012` |
 
 ### To 1.2 — the validator, after 1.1 lands
 

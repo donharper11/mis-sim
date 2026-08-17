@@ -64,6 +64,34 @@ invariant I3 greps the result.
 4. **Fit multipliers are converted, not copied.** mis_lite uses un-normalised multipliers
    around 1.0; the schema requires weights summing to 1.0 (`CONTRACTS.md`). Conversion is
    normalisation per strategy, and the raw values are retained in the provenance file.
+
+   > **RATIFIED 2026-08-18 — the conversion runs; its output does NOT become
+   > `capability_weights`.** *(`1.3-002`, author ruling)*
+   >
+   > This decision and §3 decision 6 conflicted, and the builder resolved it on its own
+   > authority — which `GOVERNANCE §7` reserves to the author. **It resolved it correctly**,
+   > and the ruling is recorded here rather than left as a builder's judgement:
+   >
+   > | | mean pairwise L1 distance between the four strategies |
+   > |---|---|
+   > | harvested, normalised | **0.042** — every weight in `[0.1323, 0.1520]` |
+   > | authored | **0.700** — 16× more differentiated |
+   >
+   > The audit recomputed the conversion from all 168 raw cells and confirmed the range
+   > exactly. Normalised weights make the four strategies **numerically indistinguishable**,
+   > and `cost_leadership` comes out highest for all seven capabilities — a scale artefact of
+   > an un-normalised source, not a signal.
+   >
+   > **Decision 6 wins**: `cost_leadership`'s weights are pinned by `mockups/strategy.html`,
+   > and a pack whose strategies cannot be told apart fails 1.7's *no dominant strategy* gate
+   > by being uniformly flat. The conversion still runs and its table still ships in
+   > `PROVENANCE.md §4` — it is evidence about the source, not an input to the pack.
+   >
+   > **One risk this creates, and it is real:** `harvested_raw_fit` now ships *inside*
+   > `strategies.yaml`, one field away from the weights it must never become, with no check
+   > behind `CONTRACTS.md`'s "do not mix the two". **A validator check that
+   > `capability_weights` never equals a normalisation of `harvested_raw_fit` belongs on
+   > 1.2's list.**
 5. **The 14 stakeholders become archetypes**; Riverside persona instances are **authored
    new** — mis_lite has roles, not people.
 6. **Riverside's fixed figures are authoritative.** Where harvested content conflicts with
