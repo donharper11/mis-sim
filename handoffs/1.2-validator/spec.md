@@ -2,7 +2,7 @@
 
 **Authored under** `SPEC_PROTOCOL.md` v1.1 · **Author:** Claude · **Date:** 2026-07-26
 **Spec version:** v1.2 · **Amended:** 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
-**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E14` · `E20`–`E23` · `W01`–`W07` · `I3` · `I8`
+**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E14` · `E20`–`E23` · `W01`–`W08` · `I3` · `I8`
 **Phase:** 1 · **Depends on:** **1.1 as approved** · **Blocks:** 1.3, 6.1
 
 > An unvalidated pack does not fail loudly — it runs and scores wrongly, and you find out
@@ -242,6 +242,8 @@ W04  a catalog item reachable from no capability — dead content
 W05  the deck holds fewer event cards than the pack has rounds     REWRITTEN v1.2
 W06  every training option has coverage 1.0 — the tier choice is not a choice
 W07  no accepted-risk / no decoy in true_cost_categories — TCO forecast is trivially winnable
+W08  a strategy fewer than 6 event cards can be dealt to — the per-strategy draw check
+     of 1.5 §5.2a at its O4 default of N = 6                              NEW rework-2
 ```
 
 > **`W05` rewritten to what the schema can express** (`1.2-016` item 3). v1.1 wrote *"the

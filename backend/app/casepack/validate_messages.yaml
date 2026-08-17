@@ -57,6 +57,10 @@ subjects:
 reasons:
   # why an event can never fire -- E21
   severity_unreachable: "it waits for '{signal}' to reach {severity}, and that watch rule sets no {threshold_field} threshold, so the signal can never get there"
+  # A presence rule is unreachable for a different reason, and needs a different next
+  # action: it watches for something being the case rather than a level being crossed, so
+  # it always raises at critical and there is no threshold to add. Rework-2 item 3.3.
+  severity_unreachable_presence: "it waits for '{signal}' to reach {severity}, and that rule watches for a condition simply being present, which is always raised as critical and never as a warning"
   severity_conflict: "it waits for '{signal}' to be at {first} and at {second} in the same round"
   # why a capability is signal-mute -- E20, widened in v1.2
   no_watch_rule: "no watch rule names it at all"
@@ -249,6 +253,14 @@ codes:
     subject: "Catalog item {item}"
     message: "Has no costs a team could wrongly leave out, so its cost forecast is trivially winnable."
     fix: "Fix: add decoy_cost_categories in catalog.yaml, or move a genuinely optional cost out of true_cost_categories."
+
+  # Per-strategy deck coverage. Specified by 1.5 section 5.2a and handed to 1.2 as item 3 of
+  # its section 10; W05's deck-depth proxy cannot see it.
+  W08:
+    severity: WARN
+    subject: "{strategy}"
+    message: "Only {count} of the event cards can ever be dealt to a team that declared it, and a deck needs at least {minimum} for a strategy to be worth declaring."
+    fix: "Fix: in events.yaml, name '{strategy_key}' in the strategy_affinity of more events, or author new ones aimed at it. An event with no strategy_affinity at all is dealt to everybody."
 
 # Alternate wordings. Same code, different condition shape -- see the header note.
 variants:

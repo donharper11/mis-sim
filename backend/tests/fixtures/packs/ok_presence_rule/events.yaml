@@ -28,7 +28,7 @@
   provenance: {source: AUTHORED, note: "the same signal one step earlier, so a team that acts on the warning avoids the overflow"}
 - key: records_left_on_paper
   preconditions:
-    - {type: signal_open, signal: rec_adopt_01, severity: warning}
+    - {type: signal_open, signal: rec_adopt_01, severity: critical}
   strategy_affinity: [continuity_of_care]
   from_persona: lead_vet
   body_key: event_records_on_paper

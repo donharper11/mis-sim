@@ -1,3 +1,7 @@
+# Every card in this deck is affine to low_cost_care, so a team declaring
+# continuity_of_care never draws anything. The deck is SEVEN cards deep for four
+# rounds, so W05 is silent -- which is precisely the CG-2 shape 1.5 section 5.2a says
+# deck depth cannot see, and the reason W08 exists.
 - key: saturday_overflow
   preconditions:
     - {type: signal_open, signal: book_cap_01, severity: critical}
@@ -15,7 +19,7 @@
 - key: reminder_backlog
   preconditions:
     - {type: signal_open, signal: book_cap_01, severity: warning}
-  strategy_affinity: [low_cost_care, continuity_of_care]
+  strategy_affinity: [low_cost_care]
   from_persona: practice_manager
   body_key: event_reminder_backlog
   outcomes:
@@ -25,11 +29,11 @@
     - {key: fund, tags: [capacity_risk, strategic_priority], cost: 5000}
     - {key: defer, tags: [insufficient_information], cost: 0}
     - {key: reject, tags: [cost_containment], cost: 0}
-  provenance: {source: AUTHORED, note: "the same signal one step earlier, so a team that acts on the warning avoids the overflow"}
+  provenance: {source: AUTHORED, note: "the same signal one step earlier, so a team that acts on the warning avoids the overflow; scored as a cost question"}
 - key: records_left_on_paper
   preconditions:
     - {type: signal_open, signal: rec_adopt_01, severity: warning}
-  strategy_affinity: [continuity_of_care]
+  strategy_affinity: [low_cost_care]
   from_persona: lead_vet
   body_key: event_records_on_paper
   outcomes:
@@ -39,11 +43,11 @@
     - {key: fund, tags: [strategic_priority], cost: 8000}
     - {key: defer, tags: [cost_containment], cost: 0}
     - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
-  provenance: {source: AUTHORED, note: "the rollout gap stated by the people it lands on, not by a metric"}
+  provenance: {source: AUTHORED, note: "the rollout gap stated by the people it lands on, not by a metric; scored as a cost question"}
 - key: vaccination_recall_missed
   preconditions:
     - {type: signal_open, signal: rec_adopt_01, severity: critical}
-  strategy_affinity: [continuity_of_care, low_cost_care]
+  strategy_affinity: [low_cost_care]
   from_persona: lead_vet
   body_key: event_vaccination_recall
   outcomes:
@@ -53,11 +57,11 @@
     - {key: fund, tags: [compliance, strategic_priority], cost: 11000}
     - {key: defer, tags: [insufficient_information], cost: 0}
     - {key: reject, tags: [cost_containment], cost: 0}
-  provenance: {source: AUTHORED, note: "what unwritten notes actually cost: the recall list is wrong and animals miss a booster"}
+  provenance: {source: AUTHORED, note: "what unwritten notes actually cost: the recall list is wrong and animals miss a booster, charged against cost per appointment"}
 - key: out_of_hours_overflow
   preconditions:
     - {type: demand_exceeds_capacity, capability: appointment_booking, ratio: 1.05}
-  strategy_affinity: [low_cost_care, continuity_of_care]
+  strategy_affinity: [low_cost_care]
   from_persona: practice_manager
   body_key: event_out_of_hours_overflow
   outcomes:
@@ -71,7 +75,7 @@
 - key: duplicate_client_records
   preconditions:
     - {type: adoption_below, capability: clinical_records, ratio: 0.60}
-  strategy_affinity: [low_cost_care, continuity_of_care]
+  strategy_affinity: [low_cost_care]
   from_persona: lead_vet
   body_key: event_duplicate_client_records
   outcomes:
@@ -81,11 +85,11 @@
     - {key: fund, tags: [strategic_priority], cost: 6000}
     - {key: defer, tags: [insufficient_information], cost: 0}
     - {key: reject, tags: [cost_containment], cost: 0}
-  provenance: {source: AUTHORED, note: "when notes are not entered, the same household is created again at the next practice; both strategies pay for it, one in cost and one in continuity"}
+  provenance: {source: AUTHORED, note: "when notes are not entered, the same household is created again at the next practice, and the wasted consult time is what the deck tests"}
 - key: weekend_phone_bookings
   preconditions:
     - {type: signal_open, signal: book_cap_01, severity: warning}
-  strategy_affinity: [low_cost_care, continuity_of_care]
+  strategy_affinity: [low_cost_care]
   from_persona: practice_manager
   body_key: event_weekend_phone_bookings
   outcomes:

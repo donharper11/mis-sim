@@ -1,0 +1,5 @@
+# Privacy obligations for Harbour Veterinary Group.
+#
+# Created before it is authored, which is step one of closing CG-5 and exactly the shape
+# finding 1.1-r2-001 reported: an empty or comment-only optional section must read as "no
+# obligations authored yet", not destroy the pack.
