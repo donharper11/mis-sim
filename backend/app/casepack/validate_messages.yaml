@@ -57,6 +57,10 @@ subjects:
 reasons:
   # why an event can never fire -- E21
   severity_unreachable: "it waits for '{signal}' to reach {severity}, and that watch rule sets no {threshold_field} threshold, so the signal can never get there"
+  # A presence rule is unreachable for a different reason, and needs a different next
+  # action: it watches for something being the case rather than a level being crossed, so
+  # it always raises at critical and there is no threshold to add. Rework-2 item 3.3.
+  severity_unreachable_presence: "it waits for '{signal}' to reach {severity}, and that rule watches for a condition simply being present, which is always raised as critical and never as a warning"
   severity_conflict: "it waits for '{signal}' to be at {first} and at {second} in the same round"
   # why a capability is signal-mute -- E20, widened in v1.2
   no_watch_rule: "no watch rule names it at all"
@@ -89,8 +93,12 @@ codes:
   E02:
     severity: ERROR
     subject: "{capability}"
-    message: "Needs {entity} information at '{level}' detail, and no catalog item can hold it."
-    fix: "Fix: add a catalog item whose owns_entities holds {entity} at '{level}' or finer, or lower min_level_of_detail in capabilities.yaml."
+    # Finding 1.2-031. Both strings predate rework-2 item 3.4, which made a shared platform
+    # service a legal holder of an entity. The message was a statement of fact that stopped
+    # being true, and the fix pointed away from the file the remedy often lives in. Phrased
+    # to match E01 above, which has carried the two-place wording for roles all along.
+    message: "Needs {entity} information at '{level}' detail, and nothing in the catalog or the shared platform can hold it."
+    fix: "Fix: add {entity} at '{level}' or finer to owns_entities on an item in catalog.yaml or a service in platform.yaml, or lower min_level_of_detail in capabilities.yaml."
 
   E03:
     severity: ERROR
@@ -151,8 +159,13 @@ codes:
   E12:
     severity: ERROR
     subject: "Watch rule {rule}"
+    # Rework-2 item 3.1 gave this shape a second legal remedy and the fix did not say so.
+    # E12 now fires only on `threshold` rules, and for a metric that is a condition rather
+    # than a level -- which is both of the rules CG-1 turns on -- declaring the kind is the
+    # INTENDED remedy, not removing the rule. Found while closing 1.2-030/031; see
+    # dod-rework-2.md section 11.
     message: "Watches '{capability}' but sets neither a warning nor a critical threshold, so it can never fire. It counts towards coverage while watching nothing."
-    fix: "Fix: set warn_above or critical_above on '{rule}' in watch_rules.yaml, or remove the rule."
+    fix: "Fix: in watch_rules.yaml, set warn_above or critical_above on '{rule}' — or, if this rule watches for a condition that is simply present or absent rather than a level being crossed, declare metric_kind: presence on it, which carries no threshold at all. Otherwise remove the rule."
 
   E13:
     severity: ERROR
@@ -172,13 +185,21 @@ codes:
     severity: ERROR
     subject: "{capability}"
     message: "Can never raise a signal — {reason}. Nobody is ever told when it is in trouble, and a team gets no credit for looking after it."
-    fix: "Fix: add a watch rule in watch_rules.yaml naming '{capability}', with warn_above or critical_above set, and the actions that clear it."
+    # Same class as E12 above, and this is the one 1.3 reads six times. After item 3.2 a
+    # presence rule IS coverage, so a fix naming only thresholds points 1.3 away from the
+    # move 1.5 section 10 tells it to make. Found while closing 1.2-030/031.
+    fix: "Fix: add a watch rule in watch_rules.yaml naming '{capability}' and the actions that clear it — either metric_kind: threshold with warn_above or critical_above set, or metric_kind: presence for a condition that is simply true or false."
 
   E21:
     severity: ERROR
     subject: "Event {event}"
+    # Finding 1.2-030. Item 3.3 forked the REASON for a presence rule and left the fix
+    # shared, so the reason said "there is no threshold here" and the next line said "set
+    # the threshold" -- an instruction that costs the author the whole pack, because
+    # models.py refuses to load a presence rule carrying one. One fix, true of both arms:
+    # it names the goal (a rule that can reach the severity) instead of one arm's remedy.
     message: "Can never happen: {reason}."
-    fix: "Fix: change what the event waits for in events.yaml, or set the matching threshold in watch_rules.yaml."
+    fix: "Fix: change the severity this event waits for in events.yaml, or make the rule in watch_rules.yaml one that can reach it — a rule with metric_kind: threshold needs the matching threshold set, and a rule with metric_kind: presence only ever raises at critical."
 
   E22:
     severity: ERROR
@@ -189,8 +210,11 @@ codes:
   E23:
     severity: ERROR
     subject: "Question {question}"
+    # Finding 1.2-031, the fix half. The message is DELIBERATELY unchanged: it speaks of
+    # everything this company can buy, which after item 3.4 includes the shared platform, so
+    # it did not stop being true the way E02's did. See dod-rework-2.md section 11.
     message: "Needs {entity} information at '{level}' detail, and nothing this company can buy produces it."
-    fix: "Fix: add a catalog item owning {entity} at '{level}' or finer, or lower the requirement in questions.yaml."
+    fix: "Fix: add {entity} at '{level}' or finer to owns_entities on an item in catalog.yaml or a service in platform.yaml, or lower the requirement in questions.yaml."
 
   # ---- inherited invariants from 1.1 section 6, named as codes by spec v1.2 section 5.1
 
@@ -249,6 +273,14 @@ codes:
     subject: "Catalog item {item}"
     message: "Has no costs a team could wrongly leave out, so its cost forecast is trivially winnable."
     fix: "Fix: add decoy_cost_categories in catalog.yaml, or move a genuinely optional cost out of true_cost_categories."
+
+  # Per-strategy deck coverage. Specified by 1.5 section 5.2a and handed to 1.2 as item 3 of
+  # its section 10; W05's deck-depth proxy cannot see it.
+  W08:
+    severity: WARN
+    subject: "{strategy}"
+    message: "Only {count} of the event cards can ever be dealt to a team that declared it, and a deck needs at least {minimum} for a strategy to be worth declaring."
+    fix: "Fix: in events.yaml, name '{strategy_key}' in the strategy_affinity of more events, or author new ones aimed at it. An event with no strategy_affinity at all is dealt to everybody."
 
 # Alternate wordings. Same code, different condition shape -- see the header note.
 variants:

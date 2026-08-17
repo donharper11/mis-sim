@@ -37,6 +37,12 @@ W01_MIN_IDENTICAL_ROWS = 6
 #: W02 threshold, taken verbatim from spec 5.3 ("no strategy weights above 0.05").
 W02_MIN_WEIGHT = 0.05
 
+#: W08 threshold -- 1.5 spec section 5.2a, at N = 6 as ruled by its open decision O4
+#: ("6, one per round"; the packs it was ruled against play six rounds). It is a flat
+#: constant, NOT a function of pack.rounds: O4 fixes the number, and naming a pack here to
+#: derive it would breach invariant I4 as surely as branching on one would.
+W08_MIN_DRAWS = 6
+
 _SECTION_FILE = {
     "metadata": "pack.yaml",
     "strategies": "strategies.yaml",
@@ -395,6 +401,40 @@ def _demand_finding(key: str, label: str, given: int, rounds: int, source: PackS
 # --------------------------------------------------------------------------------------
 
 
+def _can_raise(rule: Any) -> bool:
+    """Can this watch rule ever put a signal on the ledger?
+
+    Rework-2 items 3.2 and 3.3, from 1.5 spec section 5.1a and decision 10. There are two
+    evaluation paths, not one:
+
+      presence   the metric is a boolean. It raises at `critical` the moment the condition
+                 is present, and carries no threshold at all -- so it can always raise, and
+                 the absence of thresholds is its correct shape rather than a defect.
+      threshold  the metric is a float. It can raise only across a threshold that has
+                 actually been authored.
+    """
+    if rule.metric_kind == "presence":
+        return True
+    return rule.warn_above is not None or rule.critical_above is not None
+
+
+def _raisable_severities(rule: Any) -> set[str]:
+    """The severities this rule can actually attain.
+
+    Rework-2 item 3.3, finding 1.1-r2-006. 1.5 decision 10: a presence condition is true or
+    it is not, so it reaches `critical` and NEVER `warning` -- there is no magnitude to be
+    mildly concerned about and no tier below critical to fall to.
+    """
+    if rule.metric_kind == "presence":
+        return {"critical"}
+    severities: set[str] = set()
+    if rule.warn_above is not None:
+        severities.add("warning")
+    if rule.critical_above is not None:
+        severities.add("critical")
+    return severities
+
+
 class Lens:
     """Derived views over a loaded pack, shared by the typed checks."""
 
@@ -409,17 +449,22 @@ class Lens:
         self.watched = {rule.capability for rule in pack.watch_rules}
         self.rules = {rule.key: rule for rule in pack.watch_rules}
         # spec v1.2 section 3 decision 7: a rule carrying neither threshold can never fire,
-        # so it does not count as watching anything. E20's predicate turns on this set.
+        # so it does not count as watching anything. Rework-2 item 3.1 narrows that to
+        # `threshold` rules only -- 1.5 section 5.1a makes carrying no threshold the CORRECT
+        # shape for a `presence` rule, so E12 must exempt them or it fires on exactly the
+        # rules 1.5 decision 8 makes legal.
         self.thresholdless = [
             rule
             for rule in pack.watch_rules
-            if rule.warn_above is None and rule.critical_above is None
+            if rule.metric_kind == "threshold"
+            and rule.warn_above is None
+            and rule.critical_above is None
         ]
-        self.watched_with_threshold = {
-            rule.capability
-            for rule in pack.watch_rules
-            if rule.warn_above is not None or rule.critical_above is not None
-        }
+        # Rework-2 item 3.2: E20's predicate is "no watch rule that CAN RAISE A SIGNAL".
+        # A presence rule raises at critical with no threshold to cross (1.5 decision 10),
+        # so it is coverage; a threshold rule is coverage only once it carries a threshold.
+        self.mute_rules = [rule for rule in pack.watch_rules if not _can_raise(rule)]
+        self.signal_covered = {rule.capability for rule in pack.watch_rules if _can_raise(rule)}
         self.catalog_keys = {item.key for item in pack.catalog}
         self.strategy_keys = {strategy.key for strategy in pack.strategies}
         # A capability IS a value chain activity (1.1 O1); `chain_position` is authored as
@@ -434,8 +479,12 @@ class Lens:
         self.required_roles = {
             role for capability in pack.capabilities for role in capability.required_roles
         }
+        # Rework-2 item 3.4, from 1.1 rework-2 R2. `owned` is what E02 and E23 consult, and
+        # it was built from pack.catalog alone -- so PlatformService.owns_entities was inert
+        # and no pack could satisfy an entity requirement through a shared platform service.
+        # The asymmetry was visible two lines up: `filled_roles` already unions the services.
         self.owned: dict[str, int] = {}
-        for item in pack.catalog:
+        for item in [*pack.catalog, *pack.platform.services]:
             for held in item.owns_entities:
                 rank = self.rank(held.entity, held.level_of_detail)
                 if rank is None:
@@ -672,20 +721,25 @@ def check_data_flows(lens: Lens) -> list[Finding]:
 
 
 def check_unwatched_capabilities(lens: Lens) -> list[Finding]:
-    """E20 -- a capability with no watch rule carrying at least one threshold.
+    """E20 -- a capability with no watch rule that can raise a signal.
 
     Widened in v1.2 (finding 1.2-001). The old predicate was "appears in no watch rule",
     which is a different test from the rationale E20 has always carried -- "it can never
     raise a signal". A capability watched only by a thresholdless rule is exactly as mute
     as one watched by nothing, and the narrow predicate let CG-1's closure condition be
     satisfied by authoring more rules that cannot fire.
+
+    Widened again in rework-2 (item 3.2). v1.2's predicate read the thresholds directly,
+    which made a correctly-authored `presence` rule read as mute -- so 1.3 could close CG-1
+    exactly as 1.5 decision 8 tells it to and E20 would still fire. Coverage is now
+    `_can_raise`, which is the rationale itself rather than a proxy for it.
     """
     findings: list[Finding] = []
     for capability in lens.pack.capabilities:
-        if capability.key in lens.watched_with_threshold:
+        if capability.key in lens.signal_covered:
             continue
         mute_rules = sorted(
-            rule.key for rule in lens.thresholdless if rule.capability == capability.key
+            rule.key for rule in lens.mute_rules if rule.capability == capability.key
         )
         if mute_rules:
             reason = _reason("only_thresholdless", rules=", ".join(mute_rules))
@@ -705,11 +759,16 @@ def check_unwatched_capabilities(lens: Lens) -> list[Finding]:
 
 
 def check_thresholdless_rules(lens: Lens) -> list[Finding]:
-    """E12 -- a watch rule carrying neither warn_above nor critical_above.
+    """E12 -- a THRESHOLD watch rule carrying neither warn_above nor critical_above.
 
     Spec v1.2 section 3 decision 7, ruled by the user 2026-08-14. Such a rule can never
     fire, so it is not a watch rule -- it is the appearance of one, which is worse than its
     absence because it satisfies a coverage count while watching nothing.
+
+    Rework-2 item 3.1 exempts `metric_kind: presence`: carrying no threshold is that kind's
+    correct shape (1.5 section 5.1a), and models.py already refuses to construct a presence
+    rule that carries one, so the exemption cannot hide a real defect. The predicate lives
+    in `Lens.thresholdless`.
     """
     return [
         make_finding(
@@ -728,12 +787,7 @@ def _raisable(lens: Lens, signal: str) -> set[str]:
     rule = lens.rules.get(signal)
     if rule is None:
         return set()
-    severities: set[str] = set()
-    if rule.warn_above is not None:
-        severities.add("warning")
-    if rule.critical_above is not None:
-        severities.add("critical")
-    return severities
+    return _raisable_severities(rule)
 
 
 _THRESHOLD_FIELD = {"warning": "warn_above", "critical": "critical_above"}
@@ -752,14 +806,26 @@ def check_impossible_events(lens: Lens) -> list[Finding]:
             if condition.signal not in lens.rules:
                 continue  # E06 already reports the dangling reference
             if condition.severity not in _raisable(lens, condition.signal):
-                reasons.append(
-                    _reason(
-                        "severity_unreachable",
-                        signal=condition.signal,
-                        severity=condition.severity,
-                        threshold_field=_THRESHOLD_FIELD[condition.severity],
+                # A presence rule is unreachable for a different reason than a threshold
+                # rule is, and telling an author to "set the warn_above threshold" on one
+                # is telling them to author a shape models.py rejects. Rework-2 item 3.3.
+                if lens.rules[condition.signal].metric_kind == "presence":
+                    reasons.append(
+                        _reason(
+                            "severity_unreachable_presence",
+                            signal=condition.signal,
+                            severity=condition.severity,
+                        )
                     )
-                )
+                else:
+                    reasons.append(
+                        _reason(
+                            "severity_unreachable",
+                            signal=condition.signal,
+                            severity=condition.severity,
+                            threshold_field=_THRESHOLD_FIELD[condition.severity],
+                        )
+                    )
         for signal, severities in wanted.items():
             if len(severities) > 1:
                 first, second = sorted(severities)
@@ -1095,6 +1161,46 @@ def check_deck_depth(lens: Lens) -> list[Finding]:
     ]
 
 
+def check_strategy_draws(lens: Lens) -> list[Finding]:
+    """W08 -- a strategy too few cards in the deck can ever be dealt to.
+
+    1.5 spec section 5.2a, at N = 6 (its O4), and 1.5 section 10's to-1.2 item 3. W05's
+    deck-DEPTH proxy cannot see this: a six-card deck all affine to one strategy passes it,
+    and that is CG-2's actual shape -- "strategies that draw nothing".
+
+        draws(S) = events whose strategy_affinity includes S, or is empty
+
+    An event with no affinity is drawn by everyone, which is why it counts for every
+    strategy here and is separately reported by W03.
+
+    WARN, not ERROR (1.5 section 5.2a): a thin deck is authorable content rather than a
+    broken pack, and 1.7's calibration is where a deck that starves a strategy actually
+    fails.
+    """
+    findings: list[Finding] = []
+    for strategy in lens.pack.strategies:
+        draws = [
+            event
+            for event in lens.pack.events
+            if not event.strategy_affinity or strategy.key in event.strategy_affinity
+        ]
+        if len(draws) >= W08_MIN_DRAWS:
+            continue
+        findings.append(
+            make_finding(
+                "W08",
+                "events.yaml",
+                f"strategy_affinity.{strategy.key}",
+                line=None,
+                strategy=lens.label("strategies", strategy.key),
+                strategy_key=strategy.key,
+                count=len(draws),
+                minimum=W08_MIN_DRAWS,
+            )
+        )
+    return findings
+
+
 def check_training_choice(lens: Lens) -> list[Finding]:
     """W06 -- every training tier reaching everybody is not a choice."""
     return [
@@ -1155,6 +1261,7 @@ def validate(pack: Casepack, source: PackSource, raw: dict[str, Any]) -> list[Fi
     findings += check_untargeted_events(lens)
     findings += check_dead_catalog(lens)
     findings += check_deck_depth(lens)
+    findings += check_strategy_draws(lens)
     findings += check_training_choice(lens)
     findings += check_cost_decoys(lens)
     return findings

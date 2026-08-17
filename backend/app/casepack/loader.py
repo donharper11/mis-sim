@@ -55,7 +55,10 @@ def _optional(pack_dir: Path, relative: str, default: Any) -> Any:
     path = pack_dir / relative
     if not path.exists():
         return default
-    return _read_yaml(path)
+    # Finding 1.1-r2-001: an empty or comment-only file reads as {}, which is not a list, so
+    # creating the file before authoring it destroyed the whole pack with E00 -- the exact
+    # opposite of what an optional section means, and step one of closing CG-5.
+    return _read_yaml(path) or default
 
 
 def _load_preferences(pack_dir: Path) -> dict[str, Any]:

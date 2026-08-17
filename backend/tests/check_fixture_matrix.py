@@ -7,9 +7,18 @@ Exits 0 when everything holds, 1 otherwise. No test framework, so no new depende
 
 Three things are asserted here, not one:
 
-  MATRIX  every fixture pack raises the code it is named for, at the exit code it claims,
-          and no code the spec names is left without a fixture. This is spec section 8
-          step 5: a code with no fixture is untested.
+  MATRIX  every fixture pack raises the code it is named for, DOES NOT raise the codes it
+          is named for not raising, returns the exit code it claims, and no code the spec
+          names is left without a fixture. This is spec section 8 step 5: a code with no
+          fixture is untested.
+
+          The FORBIDDEN column is new in rework-2, and it is the point of that packet.
+          Every item in it changes what the validator says about pack shapes that do not
+          exist yet -- a presence watch rule, an entity held by a platform service, an
+          optional section created before it is authored. A suite that only proves errors
+          still fire cannot see any of it, so each of those items ships as a PAIR: the
+          illegal shape, which must still fire, and the newly legal shape, which must now
+          be silent. `ANY` forbids every code, which is what "passes clean" means.
 
   I1      SET EQUALITY between the codes this build implements and the codes spec.md
           sections 5.1-5.3 name. Added here in the v1.2 rework (finding 1.2-017). The old
@@ -34,32 +43,55 @@ PACKS = REPO / "backend/tests/fixtures/packs"
 CLI = REPO / "backend/bin/validate_casepack"
 SPEC = REPO / "handoffs/1.2-validator/spec.md"
 
-# fixture -> (codes it must raise, exit code it must return)
-MATRIX: dict[str, tuple[set[str], int]] = {
-    "minimal_valid": (set(), 0),
-    "broken_E00": ({"E00"}, 1),
-    "broken_E01": ({"E01"}, 1),
-    "broken_E02": ({"E02"}, 1),
-    "broken_E03": ({"E03"}, 1),
-    "broken_E04": ({"E04"}, 1),
-    "broken_E05": ({"E05"}, 1),
-    "broken_E06": ({"E06"}, 1),
-    "broken_E07": ({"E07"}, 1),
-    "broken_E08": ({"E08"}, 1),
-    "broken_E09": ({"E09"}, 1),
-    "broken_E10": ({"E10"}, 1),
-    "broken_E11": ({"E11"}, 1),
-    "broken_E12": ({"E12"}, 1),
-    "broken_E13": ({"E13"}, 1),
-    "broken_E14": ({"E14"}, 1),
-    "broken_E20": ({"E20"}, 1),
-    "broken_E20_mute": ({"E20", "E12"}, 1),
-    "broken_E21": ({"E21"}, 1),
-    "broken_E22": ({"E22"}, 1),
-    "broken_E23": ({"E23"}, 1),
-    "broken_I3": ({"I3"}, 1),
-    "warn_W01": ({"W01"}, 0),
-    "warn_heuristics": ({"W02", "W03", "W04", "W05", "W06", "W07"}, 0),
+#: forbid every code -- the fixture must produce no finding at all
+ANY = "*"
+
+# fixture -> (codes it must raise, codes it must NOT raise, exit code it must return)
+MATRIX: dict[str, tuple[set[str], set[str], int]] = {
+    "minimal_valid": (set(), {ANY}, 0),
+    "broken_E00": ({"E00"}, set(), 1),
+    "broken_E01": ({"E01"}, set(), 1),
+    "broken_E02": ({"E02"}, set(), 1),
+    "broken_E03": ({"E03"}, set(), 1),
+    "broken_E04": ({"E04"}, set(), 1),
+    "broken_E05": ({"E05"}, set(), 1),
+    "broken_E06": ({"E06"}, set(), 1),
+    "broken_E07": ({"E07"}, set(), 1),
+    "broken_E08": ({"E08"}, set(), 1),
+    "broken_E09": ({"E09"}, set(), 1),
+    "broken_E10": ({"E10"}, set(), 1),
+    "broken_E11": ({"E11"}, set(), 1),
+    "broken_E12": ({"E12"}, {"E20"}, 1),
+    "broken_E13": ({"E13"}, set(), 1),
+    "broken_E14": ({"E14"}, set(), 1),
+    "broken_E20": ({"E20"}, set(), 1),
+    "broken_E20_mute": ({"E20", "E12"}, set(), 1),
+    "broken_E21": ({"E21"}, {"E12", "E20"}, 1),
+    "broken_E22": ({"E22"}, set(), 1),
+    "broken_E23": ({"E23"}, set(), 1),
+    "broken_I3": ({"I3"}, set(), 1),
+    "warn_W01": ({"W01"}, set(), 0),
+    "warn_heuristics": ({"W02", "W03", "W04", "W05", "W06", "W07"}, set(), 0),
+    # ---- rework-2's four pairs, plus the one-line loader fix -----------------------
+    # 3.1 E12 exempts presence · 3.2 E20 counts a presence rule as coverage.
+    #     broken_E20_mute and broken_E12 above are the illegal halves: a THRESHOLD rule
+    #     carrying no threshold, which stays an error and stays mute.
+    "ok_presence_rule": (set(), {ANY}, 0),
+    # 3.3 _raisable consults metric_kind. broken_E21 above is the unreachable half.
+    #     ok_presence_rule is also the reachable half -- its deck waits on the presence
+    #     rule at `critical` and E21 is silent. This fixture is decision 10's other edge:
+    #     a presence rule reaches critical and NEVER warning, so an event waiting for a
+    #     warning from one must still be reported.
+    "broken_E21_presence_warning": ({"E21"}, {"E12", "E20"}, 1),
+    # 3.4 Lens.owned unions the platform services. broken_E02 above is the unowned half:
+    #     an entity nothing holds at any level, which stays an error.
+    "ok_service_owns_entity": (set(), {ANY}, 0),
+    # 3.5 W08. Seven cards for four rounds, so W05 is silent and only W08 can see that
+    #     one strategy draws nothing -- CG-2's shape. minimal_valid is the silent half.
+    "broken_W08": ({"W08"}, {"W05"}, 0),
+    # 3.6 finding 1.1-r2-001: a comment-only optional section is "nothing authored yet",
+    #     not a dead pack. minimal_valid, which has no such file at all, is the other half.
+    "ok_obligations_empty": (set(), {ANY}, 0),
 }
 
 # I8 (models.py dropping a value on reload) has no fixture: it is a property of the schema
@@ -190,20 +222,25 @@ def check_matrix() -> tuple[list[str], set[str], set[str]]:
     problems: list[str] = []
     covered: set[str] = set()
     width = max(len(name) for name in MATRIX)
-    print(f"{'fixture'.ljust(width)}  want  got  codes raised")
-    for name, (wanted, wanted_exit) in MATRIX.items():
+    print(f"{'fixture'.ljust(width)}  want  got  must raise / must not raise / codes raised")
+    for name, (wanted, forbidden, wanted_exit) in MATRIX.items():
         proc = run_cli("--json", str(PACKS / name))
         findings = json.loads(proc.stdout) if proc.stdout.strip() else []
         raised = {finding["code"] for finding in findings}
         covered |= raised
         missing = wanted - raised
-        ok = not missing and proc.returncode == wanted_exit
+        leaked = raised if ANY in forbidden else raised & forbidden
+        ok = not missing and not leaked and proc.returncode == wanted_exit
         print(
             f"{name.ljust(width)}  {wanted_exit:>4}  {proc.returncode:>3}  "
-            f"{','.join(sorted(raised)) or '-'}   {'PASS' if ok else 'FAIL'}"
+            f"+[{','.join(sorted(wanted)) or '-'}] "
+            f"-[{','.join(sorted(forbidden)) or '-'}] "
+            f"got[{','.join(sorted(raised)) or '-'}]   {'PASS' if ok else 'FAIL'}"
         )
         if missing:
             problems.append(f"{name}: did not raise {sorted(missing)}")
+        if leaked:
+            problems.append(f"{name}: raised {sorted(leaked)}, which this fixture forbids")
         if proc.returncode != wanted_exit:
             problems.append(f"{name}: exit {proc.returncode}, expected {wanted_exit}")
     return problems, covered, set()
