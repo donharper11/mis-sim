@@ -205,3 +205,25 @@ Push `build/1.2-rework-2` and verify with `git ls-remote` against your local HEA
 substitution was made silently and a vacuous check survived to audit.
 
 Stop and report on anything this document does not settle.
+
+---
+
+## 7. Defects in this instruction — recorded 2026-08-18
+
+The rework audit filed two findings against **this document**, not against the build. Both
+are recorded here rather than quietly corrected, per `SPEC_PROTOCOL §2.1`.
+
+| Finding | Defect |
+|---|---|
+| `1.2-032` | §5's *"add exactly that one line to §5.3, and nothing else in the spec"* **had no compliant route.** `I1` reads the spec's **header** code-list line as its authority and hard-exits on a spec that disagrees with itself, so adding `W08` to §5.3 alone makes `I1` crash rather than pass. The auditor proved it both ways. The builder took the minimum self-consistent two-line edit and declared it — the correct response to an impossible instruction |
+| `1.2-033` | The same clause forbade the **version bump and changelog entry `GOVERNANCE §8` requires** of a spec change. An instruction cannot authorise an edit and simultaneously forbid the hygiene that edit obliges |
+
+**This is `SPEC_PROTOCOL §4.1` again — *name one compliant route* — and this time in a rework
+instruction rather than a spec.** The rule was written for invariant sets; it applies to any
+document that constrains a builder. The lesson worth carrying: **an authorisation scoped by
+line count is a guess about a file the author is not looking at.** Scope by *intent* — "add
+`W08` to the code list wherever the spec enumerates codes, and bump the version" — and the
+builder can satisfy it without having to choose which half of the instruction to break.
+
+Fourth instance of this class on the project, after 1.2's pre-flight rows 3 and 4, 1.5's
+row 5, and 1.3's row 1a.

@@ -131,7 +131,32 @@ W02 W04 W05                              → CG-2, buildable today
 
 **Eleven of the twenty errors need additions 1 and 4 before any authoring can clear them.**
 
-> ### The 1.1 gate is lifted. It was not enough. *(added 2026-08-17)*
+> ### ✅ SUPERSEDED 2026-08-18 — both gates are now lifted. Read this first.
+>
+> 1.2's second rework (`build/1.2-rework-2`) taught the validator the fields, and the
+> experiment below **now passes**: declaring `metric_kind: presence` clears `E12 ×2` and
+> `E21 ×2` and drops `E20` from six to five. Reproduced independently twice.
+>
+> **`I6`, `I8`, `I9` and `I12` are reachable.** The box below is retained as the record of
+> why they were not, and its two conclusions are now **false**: `I6` is *not* unreachable,
+> and `E02` *is* closeable — by 1.3 declaring `central_sign_on.owns_entities`.
+>
+> **What is still outstanding for a 1.3 dispatch:**
+>
+> | Item | Status |
+> |---|---|
+> | `I6`, `I8`, `I9`, `I12` | **reachable** — no deferral clause needed |
+> | `I11` (obligation rules resolve) | **still has no executable check** (`1.2-037`). A dispatch must defer it explicitly, or 1.2 must add the cross-reference check first |
+> | `E02 ×1` | still fires as shipped — **1.3's to clear**, by declaring the ownership |
+> | `1.2-024` | unclosed — the `Labels` sections exist but no message consults them |
+> | `1.2-031` | `E02`/`E23` still say *"add a catalog item"* when a platform service is now a legal holder. **1.3's builder is the first person this misleads** |
+> | `1.2-035` | emptying `strategy_affinity` to satisfy `W08` trades one `W08` for seven `W03`. A real authoring trap |
+>
+> **Measured forward:** with `metric_kind` declared *and* `central_sign_on.owns_entities`
+> added, Riverside goes **20 errors → 14**, and all fourteen (`E07 ×8`, `E20 ×5`, `E14 ×1`)
+> are pure authoring — which is exactly what this packet is for.
+
+> ### The 1.1 gate is lifted. It was not enough. *(added 2026-08-17, superseded above)*
 >
 > `build/1.1-rework-2` delivered all four additions, and pre-flight row 1a now returns its
 > exact expected output. **The eleven errors did not move.**
