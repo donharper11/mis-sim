@@ -335,10 +335,30 @@ was reported before, because before 1.2 there was nothing to report them.
 > opened and `E13` was supposed to close.
 >
 > **1.3 is where this becomes urgent, because 1.3 regenerates `initial_state` wholesale.**
-> The likely answer is that Porter's nine belong in a platform-level constant beside
-> `ACTION_TYPES` and `ARCHETYPES`, and `E13` resolves against *that*, not against
-> capabilities. **This spec does not decide it** — it is a 1.2 check and a possible
-> `CONTRACTS.md` entry. Named here so it is settled before a builder authors into it.
+>
+> ### RULED 2026-08-18 by the author
+>
+> **Porter's nine value-chain activities are a platform-level constant, not pack content,
+> and `E13`'s `contributing` arm resolves against that constant — never against pack
+> capabilities.**
+>
+> They sit beside `ACTION_TYPES` and `ARCHETYPES` in `checks.py`, for the same reason those
+> do: they are vocabulary the *engine* knows, identical in every casepack, and a hospital
+> pack will use the same nine. A capability is what a company chose to build; an activity is
+> a slot in a model that predates the company. Resolving one against the other is a category
+> error, which is exactly why it produced eight false errors on correct content.
+>
+> **What 1.3 does with this ruling:** author `value_chain_coverage` against the nine, using
+> those exact keys, and treat a key outside them as an error in your own authoring.
+>
+> **What 1.3 does NOT do:** implement the check. `E13`'s new arm is a **1.2** change and it
+> is not built — so `value_chain_coverage` and `unit_responses[].contributing` remain
+> unvalidated during this packet. **Author as though the check existed.** It is on 1.2's
+> list and it will arrive; content authored against the ruling will pass it, and content
+> authored loosely will not.
+>
+> *Reversible if 1.2's implementation shows the nine are not in fact case-invariant. Nothing
+> in this packet depends on the ruling being permanent — only on it being decided.*
 
 ### 5.2 The judged part — catalog items
 
@@ -439,7 +459,8 @@ demonstrate provenance table: rows in, rows out, mode, per source table
 > answer — 1.2's rows 3 and 4, 1.5's row 5, now this one — and all four were *greps whose
 > pattern did not match the artifact*. The replacement introspects the model instead: it
 > cannot silently no-match, and every element of the expected output is named.
-| 1b | **The `1.2-020` ruling has been made** | `[A]` | read §5.1b's ruling box; confirm the dispatch names a decision | a decision exists. **Absent → STOP.** 1.3 regenerates `initial_state`, and authoring into an undecided vocabulary is how the hole reopens |
+| 1b | **The `1.2-020` ruling has been made** | `[A]` | read §5.1b's ruling box | **SATISFIED 2026-08-18** — Porter's nine are a platform constant; `E13` resolves against it, not against capabilities. Author `value_chain_coverage` against the nine |
+| 1c | **Two checks are DEFERRED, not waived** | `[A]` | read the deferral box in §9 | the dispatch names both. **Absent → STOP** — a deferred check that nobody recorded is an invisible gap |
 | 2 | mis_lite reachable read-only | `[V]` | `PGPASSWORD=… psql -h 192.168.50.38 -U donwh -d mis_lite -c "select 1"` | 1 |
 | 3 | Row counts match `design/01` §2 | `[V]` | count each table in §5.1 | match, or report drift |
 | 4 | `component_strategy_fit` = 168 | `[V]` | `select count(*) from component_strategy_fit` | 168 |
@@ -495,10 +516,21 @@ looks for it in all nine.
 | **Seed** — harvest command reproducible from a clean pack directory | | |
 | Browser / auth / instance canaries | | **N-A** — headless |
 
-> **If the dispatch defers the 1.1 gate** (§3a), `I6`, `I8` and `I11` are **deferred, not
-> waived**, and the packet returns for a second pass. Record the deferral in `dod.md` with
-> the errors still outstanding — a DoD row marked N/A without a reason is how a gap becomes
-> invisible. Everything else in this table is achievable today.
+> ### Deferrals — updated 2026-08-18, and these are the only two
+>
+> The 1.1 and 1.2 gates are both **lifted**. `I6`, `I8`, `I9` and `I12` are reachable and
+> are **not** deferred; the §3a paragraph they came from is superseded.
+>
+> **Exactly two checks are deferred, both because 1.2 has not built them yet:**
+>
+> | Deferred | Why | What 1.3 does instead |
+> |---|---|---|
+> | **`I11`** — obligation rules resolve against real entities and policies | `1.2-037`: no validator check exists. `grep -n obligation validate.py` → zero | Author `obligation_rules.yaml` correctly anyway, and **hand-verify** every `entity`, `policy` and `arms` key against the pack. Paste that cross-check in `dod.md` — it is the evidence standing in for the missing check |
+> | **`E13`'s `value_chain_coverage` arm** | The `1.2-020` ruling is made but not implemented | Author against Porter's nine as ruled, and hand-verify the keys the same way |
+>
+> **Deferred is not waived.** Record both in `dod.md` with what you verified by hand and what
+> remains unchecked by machine. A DoD row marked N/A without a reason is how a gap becomes
+> invisible — and both of these guard content this packet is authoring for the first time.
 
 ---
 
