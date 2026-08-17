@@ -1,0 +1,122 @@
+[
+  {
+    "change_mgmt_id": 1,
+    "fit_multiplier": 0.99,
+    "strategy_fit_id": 1,
+    "strategy_id": 1
+  },
+  {
+    "change_mgmt_id": 1,
+    "fit_multiplier": 1.01,
+    "strategy_fit_id": 2,
+    "strategy_id": 2
+  },
+  {
+    "change_mgmt_id": 1,
+    "fit_multiplier": 1.12,
+    "strategy_fit_id": 3,
+    "strategy_id": 3
+  },
+  {
+    "change_mgmt_id": 1,
+    "fit_multiplier": 0.8,
+    "strategy_fit_id": 4,
+    "strategy_id": 4
+  },
+  {
+    "change_mgmt_id": 2,
+    "fit_multiplier": 0.98,
+    "strategy_fit_id": 5,
+    "strategy_id": 1
+  },
+  {
+    "change_mgmt_id": 2,
+    "fit_multiplier": 1.19,
+    "strategy_fit_id": 6,
+    "strategy_id": 2
+  },
+  {
+    "change_mgmt_id": 2,
+    "fit_multiplier": 1.23,
+    "strategy_fit_id": 7,
+    "strategy_id": 3
+  },
+  {
+    "change_mgmt_id": 2,
+    "fit_multiplier": 0.89,
+    "strategy_fit_id": 8,
+    "strategy_id": 4
+  },
+  {
+    "change_mgmt_id": 3,
+    "fit_multiplier": 1.02,
+    "strategy_fit_id": 9,
+    "strategy_id": 1
+  },
+  {
+    "change_mgmt_id": 3,
+    "fit_multiplier": 1.11,
+    "strategy_fit_id": 10,
+    "strategy_id": 2
+  },
+  {
+    "change_mgmt_id": 3,
+    "fit_multiplier": 1.37,
+    "strategy_fit_id": 11,
+    "strategy_id": 3
+  },
+  {
+    "change_mgmt_id": 3,
+    "fit_multiplier": 0.81,
+    "strategy_fit_id": 12,
+    "strategy_id": 4
+  },
+  {
+    "change_mgmt_id": 4,
+    "fit_multiplier": 0.93,
+    "strategy_fit_id": 13,
+    "strategy_id": 1
+  },
+  {
+    "change_mgmt_id": 4,
+    "fit_multiplier": 1.06,
+    "strategy_fit_id": 14,
+    "strategy_id": 2
+  },
+  {
+    "change_mgmt_id": 4,
+    "fit_multiplier": 1.18,
+    "strategy_fit_id": 15,
+    "strategy_id": 3
+  },
+  {
+    "change_mgmt_id": 4,
+    "fit_multiplier": 0.78,
+    "strategy_fit_id": 16,
+    "strategy_id": 4
+  },
+  {
+    "change_mgmt_id": 5,
+    "fit_multiplier": 0.99,
+    "strategy_fit_id": 17,
+    "strategy_id": 1
+  },
+  {
+    "change_mgmt_id": 5,
+    "fit_multiplier": 1.19,
+    "strategy_fit_id": 18,
+    "strategy_id": 2
+  },
+  {
+    "change_mgmt_id": 5,
+    "fit_multiplier": 1.22,
+    "strategy_fit_id": 19,
+    "strategy_id": 3
+  },
+  {
+    "change_mgmt_id": 5,
+    "fit_multiplier": 0.86,
+    "strategy_fit_id": 20,
+    "strategy_id": 4
+  }
+]

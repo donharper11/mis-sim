@@ -1,0 +1,26 @@
+[
+  {
+    "cost_value": 75000.0,
+    "description": "An internal-only network providing high security for internal operations.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "network_type": "Intranet",
+    "network_type_id": 1
+  },
+  {
+    "cost_value": 90000.0,
+    "description": "A network configuration that extends controlled access to partners and vendors.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "network_type": "Extranet",
+    "network_type_id": 2
+  },
+  {
+    "cost_value": 200000.0,
+    "description": "A fully connected network that supports real-time data from IoT devices.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "network_type": "IoT-Enabled Network",
+    "network_type_id": 3
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "cost_value": 20000.0,
+    "description": "Includes essential maintenance and limited troubleshooting.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "support_level_id": 1,
+    "support_level_name": "Basic Support"
+  },
+  {
+    "cost_value": 50000.0,
+    "description": "24/7 support with proactive system monitoring.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "support_level_id": 2,
+    "support_level_name": "Standard Support"
+  },
+  {
+    "cost_value": 100000.0,
+    "description": "Dedicated support team with priority issue resolution.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "support_level_id": 3,
+    "support_level_name": "Premium Support"
+  }
+]

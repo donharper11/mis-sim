@@ -1,15 +1,97 @@
-- key: encrypt_customer_data
-  category: data_governance
-  cost: 1500
-  effects: {privacy_risk: -0.2, staff_load: 0.05}
-  provenance: {source: HARVESTED, note: "mis_lite Data Encryption Policy"}
-- key: compliance_audit
-  category: data_governance
+# CG-4 -- six information-policy switches, each with its stated cost.
+#
+# RE-KEYED, and the decision is deliberate. The three switches this pack carried were keyed
+# by MECHANISM -- `encrypt_customer_data`, `compliance_audit`, `access_review` -- against
+# the six DIMENSIONS the information-policy design settled on: collection · retention ·
+# access · logging · egress · staff monitoring. Three reasons the keys move:
+#
+#  1. A mechanism is one way to satisfy a policy, not the policy. "Encrypt customer data"
+#     is an implementation of a data-egress position; a team that instead stops the export
+#     has met the same obligation by another route, and a mechanism-keyed switch cannot
+#     express that.
+#  2. `obligation_rules.yaml` reads `policy` + `permissive_value` (1.5 section 5.4). A
+#     permissive value only exists for a dimension: retention can be `indefinite`, an
+#     "access review" cannot. Mechanism keys make CG-5 unauthorable.
+#  3. Only one of the three -- `access_review` -- covered any of the six at all, so keeping
+#     them would have meant six switches of which three were duplicates.
+#
+# Nothing outside this file and `labels.yaml` referenced the old keys (checked across the
+# repo; the only other hits are 1.2's own test fixture packs, which are separate packs).
+#
+# Every switch carries a cost, because a switch with no cost is a morality quiz rather than
+# a trade-off. Each also carries at least one effect that is NOT in the firm's favour --
+# collection limits shrink what analytics can see, monitoring costs staff trust -- for the
+# same reason.
+
+- key: data_collection
+  category: information_policy
   cost: 20000
-  effects: {compliance_risk: -0.3, run_rate: 0}
-  provenance: {source: HARVESTED, note: "mis_lite Compliance Auditing Tool"}
-- key: access_review
-  category: identity
+  effects: {privacy_risk: -0.20, customer_trust: 0.10, analytics_reach: -0.15}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite data_governance_policies row 2, Data Classification Standards
+      (cost_value 20000). What the firm collects and why it is entitled to.
+      TODO: calibrate -- the effect vector is authored; mis_lite carries cost only.
+
+- key: data_retention
+  category: information_policy
+  cost: 15000
+  effects: {privacy_risk: -0.20, storage_cost: -0.05, analytics_reach: -0.10}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite data_governance_policies row 1, Data Retention Policy (cost_value 15000)
+      carried exactly. Left unset, records are kept indefinitely -- the permissive value
+      `customer_pii_retention` in obligation_rules.yaml reads.
+      TODO: calibrate -- effect vector authored.
+
+- key: data_access
+  category: information_policy
   cost: 9000
-  effects: {privacy_risk: -0.1, recovery_confidence: 0.1}
-  provenance: {source: AUTHORED, note: "supports 0.4 security exposure around customer-data access"}
+  effects: {privacy_risk: -0.10, recovery_confidence: 0.10, staff_load: 0.05}
+  provenance:
+    source: AUTHORED
+    note: >-
+      Carried forward from the `access_review` switch 1.1 authored, at its cost, re-keyed
+      to the dimension it was covering. 0.4 security screen: "4 separate logins".
+      TODO: calibrate -- 9000 is inherited, not measured.
+
+- key: access_logging
+  category: information_policy
+  cost: 30000
+  effects: {compliance_risk: -0.30, privacy_risk: -0.10, staff_load: 0.08}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite data_governance_policies row 3, Audit and Reporting Standards
+      (cost_value 30000). This is the switch the 0.4 security screen names in plain
+      words -- "no record of who views customer data".
+      TODO: calibrate -- effect vector authored.
+
+- key: data_egress
+  category: information_policy
+  cost: 12000
+  effects: {privacy_risk: -0.15, integration_friction: 0.10, partner_reach: -0.10}
+  provenance:
+    source: AUTHORED
+    note: >-
+      What may leave the firm's systems -- extracts to suppliers, marketing lists, a
+      supplier portal. mis_lite's nearest row is it_infrastructure_addons_master row 3,
+      Data Encryption Policy (cost_value 1500), and it was NOT carried across: 1500 buys
+      encryption in transit, not a position on what may be sent at all, and using it would
+      state a cost the source does not support.
+      TODO: calibrate -- 12000 is authored judgement.
+
+- key: staff_monitoring
+  category: information_policy
+  cost: 7000
+  effects: {insider_risk: -0.25, employee_trust: -0.20, staff_load: 0.05}
+  provenance:
+    source: AUTHORED
+    note: >-
+      What the firm records about its own people. No mis_lite source: the prior build had
+      no employee-privacy dimension at all. The effect vector is the only one here where
+      the two named effects pull in opposite directions, which is the point -- this is the
+      switch that is not free even when it works.
+      TODO: calibrate -- cost and effects are authored judgement.

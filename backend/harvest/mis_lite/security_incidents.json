@@ -1,0 +1,26 @@
+[
+  {
+    "description": "Ransomware attack on financial system due to weak firewall.",
+    "impact_cost": 100000.0,
+    "incident_id": 1,
+    "probability": 70.0,
+    "round_id": 2,
+    "trigger": "Weak Firewall"
+  },
+  {
+    "description": "Unauthorized access to CRM database due to outdated encryption.",
+    "impact_cost": 50000.0,
+    "incident_id": 2,
+    "probability": 60.0,
+    "round_id": 3,
+    "trigger": "Outdated Encryption"
+  },
+  {
+    "description": "Phishing attack on employee accounts due to lack of training program.",
+    "impact_cost": 30000.0,
+    "incident_id": 3,
+    "probability": 50.0,
+    "round_id": 4,
+    "trigger": "No Training Program"
+  }
+]

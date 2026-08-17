@@ -1,0 +1,233 @@
+[
+  {
+    "cost_value": 60000.0,
+    "description": "Basic supply chain management",
+    "infrastructure_type_id": null,
+    "max_value": 30.0,
+    "min_value": 1.0,
+    "module_id": 1,
+    "module_level": "Basic",
+    "module_name": "SCM",
+    "vendor_name": "SAP"
+  },
+  {
+    "cost_value": 120000.0,
+    "description": "SCM with vendor tracking and analytics",
+    "infrastructure_type_id": null,
+    "max_value": 70.0,
+    "min_value": 51.0,
+    "module_id": 2,
+    "module_level": "Mid",
+    "module_name": "SCM",
+    "vendor_name": "SAP"
+  },
+  {
+    "cost_value": 220000.0,
+    "description": "Full enterprise SCM solution with IoT integration",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 91.0,
+    "module_id": 3,
+    "module_level": "Advanced",
+    "module_name": "SCM",
+    "vendor_name": "Oracle"
+  },
+  {
+    "cost_value": 30000.0,
+    "description": "Basic employee records and payroll tracking",
+    "infrastructure_type_id": null,
+    "max_value": 30.0,
+    "min_value": 1.0,
+    "module_id": 4,
+    "module_level": "Basic",
+    "module_name": "HRM",
+    "vendor_name": "Workday"
+  },
+  {
+    "cost_value": 140000.0,
+    "description": "Comprehensive HR management with performance analytics",
+    "infrastructure_type_id": null,
+    "max_value": 95.0,
+    "min_value": 86.0,
+    "module_id": 5,
+    "module_level": "Advanced",
+    "module_name": "HRM",
+    "vendor_name": "SAP"
+  },
+  {
+    "cost_value": 40000.0,
+    "description": "Basic reporting and dashboard capabilities",
+    "infrastructure_type_id": null,
+    "max_value": 30.0,
+    "min_value": 1.0,
+    "module_id": 6,
+    "module_level": "Basic",
+    "module_name": "BI Tools",
+    "vendor_name": "Microsoft"
+  },
+  {
+    "cost_value": 110000.0,
+    "description": "Advanced BI dashboards with real-time insights",
+    "infrastructure_type_id": null,
+    "max_value": 90.0,
+    "min_value": 71.0,
+    "module_id": 7,
+    "module_level": "Advanced",
+    "module_name": "BI Tools",
+    "vendor_name": "Microsoft"
+  },
+  {
+    "cost_value": 180000.0,
+    "description": "AI-powered dashboards with predictive analysis",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 96.0,
+    "module_id": 8,
+    "module_level": "Advanced",
+    "module_name": "BI Tools",
+    "vendor_name": "Tableau"
+  },
+  {
+    "cost_value": 70000.0,
+    "description": "Inventory control with barcode scanning support",
+    "infrastructure_type_id": null,
+    "max_value": 50.0,
+    "min_value": 31.0,
+    "module_id": 9,
+    "module_level": "Basic",
+    "module_name": "Inventory",
+    "vendor_name": "NetSuite"
+  },
+  {
+    "cost_value": 130000.0,
+    "description": "Full inventory management with real-time tracking",
+    "infrastructure_type_id": null,
+    "max_value": 85.0,
+    "min_value": 71.0,
+    "module_id": 10,
+    "module_level": "Mid",
+    "module_name": "Inventory",
+    "vendor_name": "SAP"
+  },
+  {
+    "cost_value": 200000.0,
+    "description": "Integrated inventory management with predictive restocking",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 96.0,
+    "module_id": 11,
+    "module_level": "Advanced",
+    "module_name": "Inventory",
+    "vendor_name": "SAP"
+  },
+  {
+    "cost_value": 40000.0,
+    "description": "A suite of decision support tools for scenario planning and forecasts.",
+    "infrastructure_type_id": null,
+    "max_value": 30.0,
+    "min_value": 1.0,
+    "module_id": 12,
+    "module_level": "Basic",
+    "module_name": "DSS Tools",
+    "vendor_name": "Tableau"
+  },
+  {
+    "cost_value": 120000.0,
+    "description": "Advanced DSS with predictive risk modeling and alerts.",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 70.0,
+    "module_id": 13,
+    "module_level": "Advanced",
+    "module_name": "DSS Tools",
+    "vendor_name": "Microsoft"
+  },
+  {
+    "cost_value": 60000.0,
+    "description": "A set of tools to improve internal collaboration and knowledge sharing.",
+    "infrastructure_type_id": null,
+    "max_value": 30.0,
+    "min_value": 1.0,
+    "module_id": 14,
+    "module_level": "Basic",
+    "module_name": "Collaboration Tools",
+    "vendor_name": "Microsoft"
+  },
+  {
+    "cost_value": 120000.0,
+    "description": "Advanced collaboration tools with integrated task tracking and team dashboards.",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 70.0,
+    "module_id": 15,
+    "module_level": "Advanced",
+    "module_name": "Collaboration Tools",
+    "vendor_name": "Confluence"
+  },
+  {
+    "cost_value": 20000.0,
+    "description": "Supports analysis of customer data to improve decision-making and marketing strategies",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "module_id": 16,
+    "module_level": "Advanced",
+    "module_name": "Analytical CRM",
+    "vendor_name": "Salesforce Analytics"
+  },
+  {
+    "cost_value": 15000.0,
+    "description": "Manages customer-facing business processes like sales, marketing, and support",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "module_id": 17,
+    "module_level": "Mid",
+    "module_name": "Operational CRM",
+    "vendor_name": "HubSpot CRM"
+  },
+  {
+    "cost_value": 12000.0,
+    "description": "Enables seamless communication and data sharing among stakeholders to improve customer experience",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "module_id": 18,
+    "module_level": "Basic",
+    "module_name": "Collaborative CRM",
+    "vendor_name": "Zoho CRM"
+  },
+  {
+    "cost_value": 18000.0,
+    "description": "Captures, organizes, and shares knowledge assets within the organization",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "module_id": 19,
+    "module_level": "Advanced",
+    "module_name": "Knowledge Management System (KMS)",
+    "vendor_name": "Confluence by Atlassian"
+  },
+  {
+    "cost_value": 22000.0,
+    "description": "Provides tools for budgeting, financial reporting, and cash flow management",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "module_id": 20,
+    "module_level": "Advanced",
+    "module_name": "Finance Module",
+    "vendor_name": "Oracle Financial Cloud"
+  },
+  {
+    "cost_value": 15000.0,
+    "description": "Manages accounts payable, accounts receivable, and general ledger",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "module_id": 21,
+    "module_level": "Mid",
+    "module_name": "Accounting Module",
+    "vendor_name": "QuickBooks Online"
+  }
+]

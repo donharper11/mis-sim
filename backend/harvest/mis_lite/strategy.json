@@ -1,0 +1,22 @@
+[
+  {
+    "description": "Focus on low-cost production and operations",
+    "strategy_id": 1,
+    "strategy_name": "Cost Leadership"
+  },
+  {
+    "description": "Emphasize unique products and customer experience",
+    "strategy_id": 2,
+    "strategy_name": "Differentiation"
+  },
+  {
+    "description": "Use information systems to tighten linkages with suppliers and develop intimacy with customers",
+    "strategy_id": 3,
+    "strategy_name": "Customer and Supplier Intimacy"
+  },
+  {
+    "description": "Target a specific market segment with tailored services",
+    "strategy_id": 4,
+    "strategy_name": "Focus Strategy"
+  }
+]

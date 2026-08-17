@@ -2,7 +2,7 @@
   roles_filled: [pos_app, transaction_store]
   serves: [store_operations]
   deployment_modes:
-    on_prem: {capex: 0, opex: 1800, lead_time_rounds: 0}
+    on_prem: {capex: 0, opex: 3100, lead_time_rounds: 0}   # 0.3 s5.6 / components.html: $3,100 per round
     cloud: {capex: 8000, opex: 4200, lead_time_rounds: 1}
     saas: {capex: 0, opex: 6100, lead_time_rounds: 0, bypasses_platform: true}
   sizing: {driver: transactions, base: {compute: 1, storage_gb: 300}, per_unit: {compute: 0.2, storage_gb: 25, per: 10000}}
@@ -24,7 +24,7 @@
   roles_filled: [order_app, transaction_export]
   serves: [order_fulfilment, store_operations]
   deployment_modes:
-    on_prem: {capex: 98000, opex: 3900, lead_time_rounds: 1}
+    on_prem: {capex: 98000, opex: 2400, lead_time_rounds: 1}   # 0.3 s5.6 / components.html: $2,400 per round
     cloud: {capex: 24000, opex: 8800, lead_time_rounds: 0}
     saas: {capex: 0, opex: 11800, lead_time_rounds: 0, bypasses_platform: true}
   sizing: {driver: orders, base: {compute: 2, storage_gb: 600}, per_unit: {compute: 0.5, storage_gb: 100, per: 10000}}
@@ -68,7 +68,7 @@
   roles_filled: [accounting_app]
   serves: [financial_reporting]
   deployment_modes:
-    on_prem: {capex: 0, opex: 1200, lead_time_rounds: 0}
+    on_prem: {capex: 0, opex: 900, lead_time_rounds: 0}   # 0.3 s5.6 / components.html: $900 per round
     cloud: {capex: 6000, opex: 3000, lead_time_rounds: 0}
     saas: {capex: 0, opex: 4500, lead_time_rounds: 0, bypasses_platform: true}
   sizing: {driver: reporting_periods, base: {compute: 1, storage_gb: 200}, per_unit: {compute: 0.1, storage_gb: 20, per: 1000}}
@@ -87,8 +87,13 @@
   config_tiers: {core: {capex_multiplier: 1.0, compute_multiplier: 1.0}, reporting: {capex_multiplier: 1.2, compute_multiplier: 1.1}}
   provenance: {source: PINNED, note: "0.4 finance unit row"}
 - key: store_spreadsheets
-  roles_filled: [spreadsheet_workaround]
-  serves: [store_operations]
+  # `transaction_export` added by 1.3: today the finance team's numbers come off the store
+  # spreadsheets, which is exactly why "spreadsheets still daily" is a standing warning.
+  # Declaring the role it actually fills also clears W04 -- the item previously filled only
+  # `spreadsheet_workaround`, which no capability asks for, so buying it could never help
+  # anyone even though the case has it running.
+  roles_filled: [spreadsheet_workaround, transaction_export]
+  serves: [store_operations, financial_reporting]
   deployment_modes:
     on_prem: {capex: 0, opex: 0, lead_time_rounds: 0}
     cloud: {capex: 0, opex: 600, lead_time_rounds: 0}
@@ -218,3 +223,150 @@
   decoy_cost_categories: [backup]
   config_tiers: {core: {capex_multiplier: 1.0, compute_multiplier: 1.0}}
   provenance: {source: AUTHORED, note: "fills the service capability gap shown in 0.4"}
+
+# --------------------------------------------------------------------------------------
+# 1.3 harvest -- items added from mis_lite `component_types_master` (the buildable half,
+# design/01 section 3) and from the COMPONENTS table pinned in 0.3 section 5.6.
+#
+# The first two close a gap between the pinned mockups and the pack: 0.3 section 5.6 lists
+# six components at unit level and the pack carried four of them.
+#
+# ERP modules (21 rows), e-commerce features (9 rows) and MIS initiatives (12 rows) are
+# NOT one catalog row each. In mis_lite they are LEVELS within a single decision -- a team
+# sets an adoption level per module, and `erp_modules_master` is literally a family x
+# Basic/Mid/Advanced ladder. The new schema expresses a level as `config_tiers` on a
+# catalog item, so that is where they land. Forty-two extra shopping-list rows would also
+# be the thing GOVERNANCE section 2 names first among what this must not feel like.
+# --------------------------------------------------------------------------------------
+
+- key: order_db_cluster
+  roles_filled: [transaction_store]
+  serves: [order_fulfilment, store_operations]
+  deployment_modes:
+    on_prem: {capex: 10000, opex: 600, lead_time_rounds: 1}
+    cloud: {capex: 3000, opex: 2400, lead_time_rounds: 0}
+    saas: {capex: 0, opex: 3200, lead_time_rounds: 0, bypasses_platform: true}
+  sizing: {driver: orders, base: {compute: 1, storage_gb: 400}, per_unit: {compute: 0.3, storage_gb: 60, per: 10000}}
+  availability: 0.99
+  service_life_rounds: 6
+  staff_load: 0.3
+  owns_entities: [{entity: order, level_of_detail: order_line}]
+  must_be_fed_by: []
+  must_feed: [{entity: order, to_capability: financial_reporting}]
+  people_affected: {org_unit: it, count: 2}
+  training_options: {none: {cost: 0, coverage: 0.0}, basic: {cost: 3000, coverage: 0.6}, full: {cost: 7000, coverage: 1.0}}
+  process_option: null
+  rgt_tag: run
+  true_cost_categories: [maintenance, capacity, backup]
+  decoy_cost_categories: [training, process_redesign]
+  config_tiers: {core: {capex_multiplier: 1.0, compute_multiplier: 1.0}, clustered: {capex_multiplier: 1.6, compute_multiplier: 1.8}}
+  provenance:
+    source: PINNED
+    note: >-
+      0.3 section 5.6 COMPONENTS row "Order DB cluster · Database · on-prem · Outbound
+      logistics · Store ops · $600/round · Complete" -- the run cost is pinned. Capex
+      basis harvested from mis_lite component_types_master row 3, SQL Database
+      (cost_value 10000). people_affected names the two IT staff who run it; the mockup
+      shows no end users, and the schema requires a positive count.
+      TODO: calibrate -- the cloud and saas ladder is authored.
+
+- key: store_back_office_pc
+  roles_filled: [client_access]
+  serves: [store_operations]
+  deployment_modes:
+    on_prem: {capex: 6000, opex: 200, lead_time_rounds: 0}
+    cloud: {capex: 1000, opex: 900, lead_time_rounds: 0}
+    saas: {capex: 0, opex: 1200, lead_time_rounds: 0, bypasses_platform: true}
+  sizing: {driver: stores, base: {compute: 0.5, storage_gb: 60}, per_unit: {compute: 0.1, storage_gb: 10, per: 1}}
+  availability: 0.95
+  service_life_rounds: 4
+  staff_load: 0.2
+  owns_entities: []
+  must_be_fed_by: []
+  must_feed: []
+  people_affected: {org_unit: store_operations, count: 8}
+  training_options: {none: {cost: 0, coverage: 0.0}, basic: {cost: 2000, coverage: 0.7}, full: {cost: 5000, coverage: 1.0}}
+  process_option: null
+  rgt_tag: run
+  true_cost_categories: [lifecycle, maintenance]
+  decoy_cost_categories: [integration, data_migration]
+  config_tiers: {core: {capex_multiplier: 1.0, compute_multiplier: 1.0}}
+  provenance:
+    source: PINNED
+    note: >-
+      0.3 section 5.6 COMPONENTS row "Store back-office PC · Hardware · on-prem ·
+      Operations · Store ops · 8 users · $200/round · Complete". Run cost and user count
+      are pinned; it fills `client_access` because the back-office machine is how the
+      store reaches the systems.
+      TODO: calibrate -- capex 6000 is authored. mis_lite's nearest row is
+      component_types_master row 1, High-Performance Server (cost_value 20000), which is
+      a data-centre server rather than a store machine, so the harvested figure was not
+      carried across.
+
+- key: nosql_database
+  roles_filled: [transaction_store]
+  serves: [order_fulfilment, customer_insight]
+  deployment_modes:
+    on_prem: {capex: 12000, opex: 900, lead_time_rounds: 1}
+    cloud: {capex: 4000, opex: 3100, lead_time_rounds: 0}
+    saas: {capex: 0, opex: 4200, lead_time_rounds: 0, bypasses_platform: true}
+  sizing: {driver: orders, base: {compute: 1, storage_gb: 500}, per_unit: {compute: 0.25, storage_gb: 90, per: 10000}}
+  availability: 0.97
+  service_life_rounds: 5
+  staff_load: 0.4
+  owns_entities: [{entity: customer, level_of_detail: household}]
+  must_be_fed_by: [{entity: sale, from_capability: store_operations}]
+  must_feed: [{entity: customer, to_capability: customer_insight}]
+  people_affected: {org_unit: it, count: 2}
+  training_options: {none: {cost: 0, coverage: 0.0}, basic: {cost: 4000, coverage: 0.5}, full: {cost: 9000, coverage: 1.0}}
+  process_option: null
+  rgt_tag: grow
+  true_cost_categories: [data_migration, capacity, training]
+  decoy_cost_categories: [process_redesign, backup]
+  config_tiers: {core: {capex_multiplier: 1.0, compute_multiplier: 1.0}, replicated: {capex_multiplier: 1.5, compute_multiplier: 1.7}}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite component_types_master row 4, NoSQL Database (cost_value 12000). Added
+      deliberately as a second filler of `transaction_store`: before 1.3 every role in the
+      pack had exactly one filler, so no placement or technology decision had an
+      alternative to weigh against, and a catalogue with no choice cannot teach a
+      trade-off.
+      TODO: calibrate -- availability, service life and the placement ladder are authored;
+      mis_lite carries only a cost.
+
+- key: erp_suite
+  roles_filled: [accounting_app, transaction_export, order_app]
+  serves: [financial_reporting, order_fulfilment]
+  deployment_modes:
+    on_prem: {capex: 75000, opex: 5200, lead_time_rounds: 2}
+    cloud: {capex: 20000, opex: 11500, lead_time_rounds: 1}
+    saas: {capex: 0, opex: 14000, lead_time_rounds: 0, bypasses_platform: true}
+  sizing: {driver: orders, base: {compute: 3, storage_gb: 900}, per_unit: {compute: 0.6, storage_gb: 120, per: 10000}}
+  availability: 0.98
+  service_life_rounds: 6
+  staff_load: 0.8
+  owns_entities: [{entity: ledger, level_of_detail: journal_line}, {entity: order, level_of_detail: order_line}]
+  must_be_fed_by: [{entity: product, from_capability: store_operations}]
+  must_feed: [{entity: order, to_capability: financial_reporting}]
+  people_affected: {org_unit: finance, count: 8}
+  training_options: {none: {cost: 0, coverage: 0.0}, basic: {cost: 15000, coverage: 0.5}, full: {cost: 42000, coverage: 1.0}}
+  process_option: {cost: 26000, label_key: redesign_order_to_cash}
+  rgt_tag: transform
+  true_cost_categories: [integration, data_migration, training, process_redesign]
+  decoy_cost_categories: [backup, capacity]
+  config_tiers:
+    basic: {capex_multiplier: 1.0, compute_multiplier: 1.0}
+    mid: {capex_multiplier: 1.57, compute_multiplier: 1.4}
+    advanced: {capex_multiplier: 2.58, compute_multiplier: 2.1}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite component_types_master row 9, ERP Software Suite (cost_value 30000), plus
+      erp_modules_master (21 rows). on_prem capex 75000 = 30000 suite licence + 44571, the
+      mean cost_value of the seven Basic-level module rows, rounded. The config tiers are
+      that ladder converted to multipliers: mean Basic 44571, mean Mid 70000, mean
+      Advanced 115000, giving 1.00 / 1.57 / 2.58. This is the one place the 21 module rows
+      become pack content, and it is why they are not 21 catalog rows.
+      TODO: calibrate -- compute multipliers, opex and lead times are authored; mis_lite
+      carries cost only.

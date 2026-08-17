@@ -1,0 +1,74 @@
+[
+  {
+    "cost_value": 5000.0,
+    "description": "Tracks and manages orders end-to-end",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "process_id": 1,
+    "process_name": "Order Fulfillment"
+  },
+  {
+    "cost_value": 4000.0,
+    "description": "Manages stock levels and replenishment",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "process_id": 2,
+    "process_name": "Inventory Management"
+  },
+  {
+    "cost_value": 3000.0,
+    "description": "Optimizes purchasing approvals",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "process_id": 3,
+    "process_name": "Procurement Workflow"
+  },
+  {
+    "cost_value": 3500.0,
+    "description": "Streamlines product returns process",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "process_id": 4,
+    "process_name": "Customer Returns"
+  },
+  {
+    "cost_value": 4500.0,
+    "description": "Improves interaction with suppliers",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "process_id": 5,
+    "process_name": "Supplier Collaboration"
+  },
+  {
+    "cost_value": 3000.0,
+    "description": "Syncs vendor data through cloud-based APIs.",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "process_id": 6,
+    "process_name": "Cloud Vendor Sync"
+  },
+  {
+    "cost_value": 4000.0,
+    "description": "Optimizes dispatch operations within local centers.",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "process_id": 7,
+    "process_name": "Local Dispatch System"
+  },
+  {
+    "cost_value": 2500.0,
+    "description": "Enables suppliers to upload invoices via the cloud.",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "process_id": 8,
+    "process_name": "Digital Invoice Portal"
+  }
+]

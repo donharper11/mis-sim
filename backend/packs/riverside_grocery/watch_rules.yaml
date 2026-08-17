@@ -1,21 +1,117 @@
+# CG-1 -- every capability must be able to raise a signal, and every rule declares its kind.
+#
+# `metric_kind` is declared explicitly on all eight rules. The schema defaults it to
+# `threshold` as a migration affordance (models.py), but 1.3's I8 requires the declaration,
+# and a rule that leaves it unstated is indistinguishable from an unfinished one.
+#
+# Thresholds carry TODO: calibrate wherever the number is authored judgement rather than a
+# figure pinned by 0.3 section 5.6 / 0.4. 1.7's harness is where they get tested; a
+# confident wrong number is worse than a flagged one (spec section 5.2).
+
 - key: ord_cap_01
   capability: order_fulfilment
   metric: capacity_utilisation
+  metric_kind: threshold
   warn_above: 0.80
   critical_above: 0.95
   cleared_by: [scale_node, add_node, move_to_cloud]
-  provenance: {source: PINNED, note: "0.4 dashboard order system near capacity"}
+  provenance: {source: PINNED, note: "0.4 dashboard order system near capacity; thresholds pinned by 0.3 section 5.6"}
+
 - key: wh_rollout_01
   capability: order_fulfilment
-  metric: adoption
+  metric: rollout_without_support
+  metric_kind: presence
   warn_above: null
   critical_above: null
   cleared_by: [add_training, redesign_process, fund_response]
-  provenance: {source: PINNED, note: "0.4 warehouse implementation gap"}
+  provenance:
+    source: PINNED
+    note: >-
+      0.4 warehouse implementation gap -- the warehouse system is live with no training,
+      no process change and no communication. Presence-shaped: the gap is open or it is
+      not, so it raises at critical with no threshold (1.5 decision 10). The metric was
+      named `adoption` while the rule carried no thresholds; renamed to
+      `rollout_without_support` because a presence metric must read as a yes/no condition
+      (docs/casepack-schema.md) and a boolean called `adoption` reads as a ratio.
+
 - key: sec_identity_01
   capability: firm_infrastructure
   metric: missing_identity_access
+  metric_kind: presence
   warn_above: null
   critical_above: null
   cleared_by: [add_node, add_policy]
-  provenance: {source: PINNED, note: "0.4 security exposure list"}
+  provenance: {source: PINNED, note: "0.4 security exposure list -- central sign-on not provisioned. Presence-shaped: nothing is managing who can sign in, or something is."}
+
+- key: store_cap_01
+  capability: store_operations
+  metric: capacity_utilisation
+  metric_kind: threshold
+  warn_above: 0.80
+  critical_above: 0.95
+  cleared_by: [scale_node, add_node, move_to_cloud]
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-1. Checkout and back-office load against the capacity the stores have.
+      Thresholds mirror ord_cap_01 because the same capacity model drives both.
+      TODO: calibrate -- 0.80/0.95 is carried across from order fulfilment, not measured
+      for store operations.
+
+- key: fin_close_01
+  capability: financial_reporting
+  metric: availability_shortfall
+  metric_kind: threshold
+  warn_above: 0.02
+  critical_above: 0.05
+  cleared_by: [upgrade_component, add_service_tier, add_node]
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-1. The period close depends on the accounting package staying up and on its feed
+      from order fulfilment. Measured as agreed availability minus realised availability.
+      TODO: calibrate -- 2% and 5% are authored judgement against catalog availability
+      figures of 0.96-0.99; no pinned figure exists.
+
+- key: cust_data_01
+  capability: customer_insight
+  metric: data_coverage_gap
+  metric_kind: threshold
+  warn_above: 0.30
+  critical_above: 0.60
+  cleared_by: [add_node, upgrade_component, add_policy]
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-1. The share of customers the firm cannot see at household detail. This is the
+      capability the 0.4 review warns about -- "customer insight carries strategy weight
+      with no spend" -- and it had no rule at all.
+      TODO: calibrate -- 0.30/0.60 is authored judgement.
+
+- key: mkt_channel_01
+  capability: marketing_sales
+  metric: capacity_utilisation
+  metric_kind: threshold
+  warn_above: 0.80
+  critical_above: 0.95
+  cleared_by: [scale_node, add_node, move_to_cloud]
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-1. Online channel load against the capacity the e-commerce site has.
+      TODO: calibrate -- thresholds carried across from ord_cap_01.
+
+- key: svc_backlog_01
+  capability: service
+  metric: capacity_utilisation
+  metric_kind: threshold
+  warn_above: 0.75
+  critical_above: 0.90
+  cleared_by: [scale_node, add_node, add_training]
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-1. Open service tickets against what the service desk can close in a round. Set
+      tighter than the other capacity rules because a service backlog is visible to
+      customers before it is visible in a utilisation figure.
+      TODO: calibrate -- 0.75/0.90 is authored judgement.
