@@ -1,0 +1,153 @@
+You are the BUILDER for module 1.3 of the MIS Simulation — the mis_lite
+harvest into Riverside pack v1.
+
+This is a CONTENT packet. You author and transform pack data. You write almost
+no engine code.
+
+REPO: /home/ubuntu/projects/mis-sim
+BRANCH: cut build/1.3-harvest from main at 0e7dfe7.
+Never push to main. Never merge. Never run 'git add -A' — this working
+directory is shared with other agents; add files by explicit path. Leave HEAD
+where you found it when you finish.
+
+READ, IN FULL, IN THIS ORDER, BEFORE ANY OTHER ACTION:
+  1. ~/projects/mis-sim/handoffs/1.3-harvest/spec.md   v1.1 — YOUR SPEC.
+     Read section 3a first (both gates, now lifted), then 5.1a (CG-1..CG-6),
+     5.1b (content defects you inherit, and the 1.2-020 ruling), then the rest.
+  2. ~/projects/mis-sim/GOVERNANCE.md    2.1 business language, 4.9 seed data
+     never stubs, 4.10, 5 standing laws, 6 roles
+  3. ~/projects/mis-sim/QUALITY_PROTOCOL.md   1 — verify state, not exit codes
+  4. ~/projects/mis-sim/CONTRACTS.md   the trialNNN note and the fit-multiplier
+     conversion warning are binding on you
+  5. ~/projects/mis-sim/design/01-mis_lite-harvest.md   THE WHOLE THING.
+     Section 2 is your transform source, section 3 is the component-master
+     problem, section 4 is the seed-quality failure that W01 exists to catch.
+  6. ~/projects/mis-sim/handoffs/1.5-event-signal-engine/spec.md
+     Section 5.4 is the obligation_rules shape you author into. Decision 8 and
+     5.1a are metric_kind. Section 5.2a is the deck-coverage rule.
+  7. ~/projects/mis-sim/findings/content-coverage-2026-07-27.md   CG-1..CG-6,
+     with CG-1 restated 2026-08-14 and its count corrected 5 -> 6.
+  8. ~/projects/mis-sim/docs/casepack-schema.md   what an instructor authors
+     from. If you author something this document does not describe, one of the
+     two is wrong — STOP and report which.
+
+WHERE THIS PACKET SITS
+
+  Everything upstream is merged and clean. 1.1's schema has metric_kind,
+  obligation_rules, four new Labels sections, PlatformService.owns_entities and
+  five EventPrecondition fields. 1.2's validator understands all of them.
+
+  Riverside today: 20 errors, 7 warnings, exit 1. Your job is to take that to
+  ZERO ERRORS. That is invariant I6 and it is this packet's exit condition —
+  GOVERNANCE 5's "no casepack reaches a section until validate_casepack passes
+  clean" becomes real here, for the first time.
+
+  MEASURED FOR YOU, so you know the shape of the work: declaring metric_kind:
+  presence on wh_rollout_01 and sec_identity_01, and adding
+  central_sign_on.owns_entities, takes 20 errors to 14. The remaining fourteen
+  are E07 x8 (missing label keys), E20 x5 (unwatched capabilities) and E14 x1
+  (the capital figure authored twice). All fourteen are pure authoring. There
+  is no blocked work left in this packet.
+
+THE VALIDATOR IS YOUR INSTRUMENT — USE IT CONSTANTLY
+
+  ./backend/bin/validate_casepack backend/packs/riverside_grocery
+
+  Its messages were rewritten on 2026-08-18 specifically so they tell a pack
+  author what to do. E20's fix names metric_kind: threshold AND presence as
+  alternatives. E12's tells you when presence is the right answer. E02's names
+  platform.yaml as well as catalog.yaml. Read the Fix: lines — they are
+  current, they were each verified by making the edit they describe, and they
+  are better guidance than your memory of this prompt.
+
+  Run it after every meaningful change. Do not batch a hundred edits and hope.
+
+BUILD — spec section 8 has the six steps. The content work in brief:
+
+  CG-1  every capability must be able to raise a signal. Six of seven cannot.
+        Declare metric_kind on EVERY rule. wh_rollout_01 (metric: adoption) and
+        sec_identity_01 (metric: missing_identity_access) are presence-shaped —
+        that is what they were always trying to be. Author threshold rules for
+        the five unwatched capabilities. Clears E20 x5 and E12 x2.
+  CG-2  every strategy drawn by at least 6 events. Today: cost_leadership 3,
+        customer_supplier_intimacy 2, differentiation 1, focus_strategy 1.
+        Clears W08 x4.
+        TRAP, finding 1.2-035: emptying strategy_affinity to satisfy W08 trades
+        one W08 for seven W03. Author real affinities; do not game the check.
+  CG-3  resolve project duration — authored field or runtime state, STATED
+        either way. Follow-through cannot detect abandonment without it.
+  CG-4  six policy switches with stated costs. Three exist, keyed by mechanism
+        rather than by policy dimension. The six are collection, retention,
+        access, logging, egress, staff monitoring. Decide whether to re-key the
+        existing three and say so.
+  CG-5  author obligation_rules.yaml in 1.5 section 5.4's shape.
+  CG-6  ELIMINATE the second home for capital_remaining, do not reconcile it.
+        Clearing E14 by deleting one number satisfies the validator and NOT the
+        spec — SPEC_PROTOCOL 3 says eliminate rather than reconcile. Derived,
+        round 3 is 46000; 16 merged mockups display 44,000 and 2 display 46,000.
+        REPORT which should change. Do not silently pick.
+  1.2-012  author the eight missing label keys. E07 x8 is the largest single
+        error group in the pack, and a Rollout screen today renders
+        redesign_picking at a student.
+  1.2-011  declare central_sign_on.owns_entities so firm_infrastructure's
+        user_account requirement is satisfiable. Clears E02.
+
+TWO DEFERRED CHECKS — spec section 9's deferral box. Pre-flight row 1c stops
+you if this dispatch does not name them, so here they are, named:
+
+  I11 — obligation rules resolving against real entities and policies. NO
+        VALIDATOR CHECK EXISTS (finding 1.2-037).
+  E13's value_chain_coverage arm — the 1.2-020 ruling is made but not built.
+
+  For BOTH: author correctly anyway, then HAND-VERIFY every entity, policy and
+  arms key against the pack and paste that cross-check in dod.md. That
+  hand-check is the evidence standing in for the machine check. Deferred is not
+  waived.
+
+THE 1.2-020 RULING, since you will author into it: Porter's nine value-chain
+activities are a PLATFORM CONSTANT, not pack content. Author
+value_chain_coverage against those nine exact keys. They are not capabilities
+and must never be resolved against capabilities — that category error produced
+eight false errors on correct content, which is why the check was withheld.
+
+BINDING CONSTRAINTS:
+  - READ-ONLY against mis_lite at 192.168.50.38. No INSERT, UPDATE, DELETE,
+    ALTER or DROP, ever. That is invariant I1.
+  - Drop trialNNN columns entirely (CONTRACTS.md).
+  - Fit multipliers are CONVERTED to weights summing to 1.0, never copied raw.
+    Keep the raw values in provenance.
+  - No textbook prose in student-visible labels (I3). mis_lite's descriptions
+    are largely textbook prose and must be rewritten to business language.
+  - Do not change the schema. If content will not fit, STOP and report — that
+    is 1.1's, and this is spec section 1's explicit out-of-scope.
+  - Do not touch validate.py or models.py.
+  - PROVENANCE.md is mandatory. A harvest with no provenance file is not done.
+  - Anything you cannot justify: mark TODO: calibrate AND list it in your
+    report. Silent TODOs are a defect under GOVERNANCE 4.9.
+
+DECLARE EVERY SUBSTITUTION. On this project an undeclared substitution let a
+vacuous pre-flight row survive to audit (1.2-004). Two builders since have
+declared theirs and both were vindicated — one of them was upheld against an
+author ruling that turned out to be wrong.
+
+BEFORE CLAIMING DONE:
+  - Run all pre-flight rows 1, 1a, 1b, 1c, 2-6 and report each. Row 5 is the
+    important one: check all nine *_mapping tables for the placeholder-seeding
+    pattern design/01 section 4 found in one of them.
+  - validate_casepack on riverside_grocery → EXIT 0, pasted in full.
+  - Fill handoffs/1.3-harvest/dod.md with evidence for every row.
+  - PROVENANCE.md complete — rows in, rows out, mode, per source table, every
+    discarded table with its reason, and the raw fit multipliers.
+  - docs/curriculum-coverage.md — the ~26 concepts that do not become catalog
+    items.
+  - The two hand-verifications for the deferred checks.
+  - The CG-6 mockup conflict, reported with a recommendation.
+  - Every TODO: calibrate, listed.
+  - Verify your push landed: compare git ls-remote origin build/1.3-harvest
+    against your local HEAD. Exit 0 is not proof.
+  - Push and report. DO NOT MERGE. A fresh auditor takes it from there.
+
+Report: pre-flight table, what you transformed vs what you authored, the final
+validator run, the CG-1..CG-6 closures one by one, both hand-verifications,
+the CG-6 recommendation, every substitution, every TODO, and anything you
+stopped on.
