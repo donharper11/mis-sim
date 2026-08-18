@@ -1,7 +1,8 @@
 # 1.1 — Third Rework Instruction
 
 **Drafted by:** the AUTHOR · **Date:** 2026-08-18
-**Branch to cut:** `build/1.1-rework-3`, from `main` @ `03e401c`
+**Branch to cut:** `build/1.1-rework-3`, from **the commit that adds this document** —
+`cba47c8`, not the `03e401c` this line originally named. *(corrected 2026-08-18)*
 **Scope:** two fields on one model. **Nothing else.**
 
 > `rework.md` (July, closed) and `rework-2.md` (2026-08-17, merged) are different packets.
@@ -153,3 +154,25 @@ or `dod-rework-2.md`. Push `build/1.1-rework-3`, verify with `git ls-remote` aga
 local HEAD, and report. **Do not merge.**
 
 **Declare every substitution.** Stop and report on anything this document does not settle.
+
+---
+
+## 7. A defect in this instruction — recorded 2026-08-18
+
+§ header named `03e401c` as the branch base. **That is the commit before this document
+existed.** Branching there would have cut the branch out from under its own instruction, and
+the dispatch prompt — written after this file was committed — correctly named `cba47c8`. The
+two documents disagreed, the builder followed the prompt, and it declared the deviation as
+substitution 1.
+
+**The authoring slip is structural, not a typo.** I write "branch from `main` @ `<sha>`" while
+looking at `main`, then commit the instruction — which moves `main`. Every rework instruction
+in this project is written in a state it invalidates by being saved.
+
+**The fix, applied from here on: name the base as *the commit that adds this document*,**
+never a SHA read before writing it. A SHA is only correct in a document that is never
+committed.
+
+Sixth instance of an instruction naming a route that could not be taken as written, after
+1.2's pre-flight rows 3 and 4, 1.5's row 5, 1.3's row 1a, 1.2 rework-2's one-line spec
+authorisation, and 1.3's "eliminate the second home".
