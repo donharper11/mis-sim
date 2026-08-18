@@ -1,0 +1,127 @@
+You are the BUILDER for the THIRD REWORK of module 1.1 — the casepack schema.
+
+Two fields on one model. This is a small packet. Resist making it bigger.
+
+REPO: /home/ubuntu/projects/mis-sim
+BRANCH: cut build/1.1-rework-3 from main at 03e401c.
+Never push to main. Never merge. Never run 'git add -A' — this working
+directory is shared; add by explicit path. Leave HEAD where you found it.
+
+READ, IN FULL, IN THIS ORDER, BEFORE ANY OTHER ACTION:
+  1. ~/projects/mis-sim/handoffs/1.1-casepack-schema/rework-3.md  <-- START HERE.
+     The two fields, the one constraint, the compatibility rule, the
+     do-not-do list, and what this packet deliberately does NOT finish.
+     NOTE: rework.md (July, closed) and rework-2.md (merged 2026-08-17) are
+     DIFFERENT packets. Do not edit either.
+  2. ~/projects/mis-sim/GOVERNANCE.md          4.9, 4.10, 5, 6, 7
+  3. ~/projects/mis-sim/QUALITY_PROTOCOL.md    1 — verify state, not exit codes
+  4. ~/projects/mis-sim/handoffs/1.5-event-signal-engine/spec.md
+     Section 5.4 — the obligation shape, and the box explaining why
+     permissive_value has no referent today. That box is why you are here.
+  5. ~/projects/mis-sim/findings/1.3-2026-08-18-audit.md — finding 1.3-012.
+
+WHY THIS EXISTS:
+
+  obligation_rules.yaml is authored, merged and correct — six rules reading
+  policy + permissive_value. PolicyOption has NO value field at all: key,
+  category, cost, effects, provenance, and nothing else. So permissive_value
+  is a string pointing at nothing, and the audit confirmed no keying of
+  policies fixes it, because the missing thing is the vocabulary itself.
+
+  The whole Chapter 4 ethics layer is authored, merged, and inert.
+
+  Without these fields the engine cannot tell whether a team has moved off the
+  permissive default — which is the entire mechanism by which an ignored
+  obligation arms an event.
+
+BUILD — exactly two fields:
+
+  options: list[SnakeKey] = Field(default_factory=list)
+      the states this switch can be in, e.g. [minimal, standard, indefinite]
+      Ordering is authoring convention, NOT semantics. Do not infer strictness
+      from position.
+
+  default: SnakeKey | None = None
+      the state a team holds by NOT deciding. It is what makes the ethics
+      layer cost something to ignore rather than something to opt into.
+      Usually the same value an obligation names as permissive, but they are
+      DISTINCT CONCEPTS and stay separate fields: default is where you start,
+      permissive_value is what obliges. A pack may legitimately start a team
+      somewhere already compliant.
+
+  ONE constraint, at the model:
+      options non-empty  ->  default MUST be a member of options
+
+  Enforce nothing else. Do NOT require options to be non-empty. Do NOT require
+  default when options is empty.
+
+THE COMPATIBILITY RULE — this is the part that matters:
+
+  Nothing you do may break the loading of an existing pack.
+
+  ALL 29 fixture packs carry policies.yaml, and so does riverside_grocery.
+  Making either field required breaks all thirty: they stop loading,
+  validate_casepack reports E00 instead of its real result, and
+  check_fixture_matrix.py goes red.
+
+  Both fields are OPTIONAL with defaults that preserve today's behaviour. A
+  policy with no options is the legacy shape and must load exactly as it does
+  now.
+
+  The membership constraint is safe to enforce because no pack declares
+  options today — VERIFY THAT with a command before you rely on it, and paste
+  the output.
+
+HARD CONSTRAINTS:
+  - DO NOT touch backend/packs/. Declaring Riverside's options is CONTENT and
+    it is 1.3's. git diff must be empty.
+  - DO NOT touch backend/tests/fixtures/. Those are 1.2's.
+  - DO NOT touch validate.py. Checking permissive_value against options is
+    1.2's next packet, sequenced after this one.
+  - DO NOT add a third field, however tempting. If you think one is needed,
+    STOP and report.
+
+THE LOAD-BEARING CHECK — before and after:
+
+    ./backend/bin/validate_casepack backend/packs/riverside_grocery
+
+  Riverside must stay 0 errors, 0 warnings, exit 0 — it went clean for the
+  first time in the packet that just merged, and this packet must not disturb
+  that. Paste both runs.
+
+THE SHAPE PROOF — the most important line in your report:
+
+  Build a scratch pack OUTSIDE backend/packs/ whose policy declares options
+  and default, and whose obligation's permissive_value names one of those
+  options. It must load and validate clean. That is the thing this packet
+  exists to make possible.
+
+BEFORE CLAIMING DONE:
+  - Construct all four constraint cases and paste them: no options; options
+    with a valid default; options with a default NOT in them (must be
+    REJECTED); options with no default (must be ACCEPTED).
+  - Update docs/casepack-schema.md for both fields, with a worked example and
+    the distinction between default and an obligation's permissive_value. An
+    instructor authors packs from that document; a field absent from it is
+    invisible.
+  - Paste check_fixture_matrix.py, exit 0, all 29.
+  - Paste the empty diffs for backend/packs/, backend/tests/ and validate.py.
+  - Re-run 1.1's I1-I8 and paste them.
+  - Fill handoffs/1.1-casepack-schema/dod-rework-3.md — a NEW file. Do not
+    overwrite dod.md or dod-rework-2.md.
+  - STATE PLAINLY that this packet changes no observable behaviour anywhere:
+    the ethics layer stays as inert as it is today until 1.3 declares
+    Riverside's options and 1.2 adds the check. A clean run must not be
+    allowed to imply otherwise.
+  - Verify your push landed: compare git ls-remote origin build/1.1-rework-3
+    against your local HEAD. Exit 0 is not proof.
+  - Push and report. DO NOT MERGE. A fresh auditor takes it from there.
+
+DECLARE EVERY SUBSTITUTION. On this project an undeclared substitution let a
+vacuous pre-flight row survive to audit (1.2-004). Builders who declared theirs
+have been vindicated repeatedly, including once against an author ruling that
+turned out to be wrong.
+
+Report: the two fields, all four constraint cases, both Riverside runs, the
+shape proof, the three empty diffs, what this packet does not finish, every
+substitution, and anything you stopped on.
