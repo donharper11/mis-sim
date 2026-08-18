@@ -1,0 +1,92 @@
+[
+  {
+    "cost_value": 15000.0,
+    "description": "Provides AI-powered product recommendations for customers.",
+    "feature_id": 1,
+    "feature_name": "Personalized Recommendations",
+    "infrastructure_type_id": 1,
+    "max_value": 85.0,
+    "min_value": 1.0,
+    "platform_id": 1
+  },
+  {
+    "cost_value": 8000.0,
+    "description": "Sends automated follow-up emails to customers who abandoned their carts.",
+    "feature_id": 2,
+    "feature_name": "Cart Abandonment Recovery",
+    "infrastructure_type_id": null,
+    "max_value": 70.0,
+    "min_value": 1.0,
+    "platform_id": 2
+  },
+  {
+    "cost_value": 5000.0,
+    "description": "Enables support for multiple languages to reach a broader audience.",
+    "feature_id": 3,
+    "feature_name": "Multi-Language Support",
+    "infrastructure_type_id": 1,
+    "max_value": 60.0,
+    "min_value": 1.0,
+    "platform_id": 3
+  },
+  {
+    "cost_value": 10000.0,
+    "description": "Simplifies the checkout process with a single-click payment feature.",
+    "feature_id": 4,
+    "feature_name": "One-Click Checkout",
+    "infrastructure_type_id": null,
+    "max_value": 90.0,
+    "min_value": 1.0,
+    "platform_id": 4
+  },
+  {
+    "cost_value": 12000.0,
+    "description": "Integrates the e-commerce platform with a branded mobile app.",
+    "feature_id": 5,
+    "feature_name": "Mobile App Integration",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "platform_id": 1
+  },
+  {
+    "cost_value": 10000.0,
+    "description": "Allows recurring payments for subscription-based products or services.",
+    "feature_id": 6,
+    "feature_name": "Subscription Service",
+    "infrastructure_type_id": 2,
+    "max_value": 75.0,
+    "min_value": 1.0,
+    "platform_id": 5
+  },
+  {
+    "cost_value": 6000.0,
+    "description": "Adds a loyalty program with points and discounts for returning customers.",
+    "feature_id": 7,
+    "feature_name": "Loyalty Program Integration",
+    "infrastructure_type_id": null,
+    "max_value": 70.0,
+    "min_value": 1.0,
+    "platform_id": 3
+  },
+  {
+    "cost_value": 4000.0,
+    "description": "Allows customers to log in and share products via social media platforms.",
+    "feature_id": 8,
+    "feature_name": "Social Media Integration",
+    "infrastructure_type_id": 1,
+    "max_value": 60.0,
+    "min_value": 1.0,
+    "platform_id": 1
+  },
+  {
+    "cost_value": 9000.0,
+    "description": "Displays up-to-date inventory levels for online customers.",
+    "feature_id": 9,
+    "feature_name": "Real-Time Inventory Updates",
+    "infrastructure_type_id": null,
+    "max_value": 85.0,
+    "min_value": 1.0,
+    "platform_id": 4
+  }
+]

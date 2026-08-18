@@ -1,0 +1,26 @@
+[
+  {
+    "cost_value": 300000.0,
+    "deployment_type": "On-Premise",
+    "deployment_type_id": 1,
+    "description": "Local data centers with full control over infrastructure but higher maintenance costs.",
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "cost_value": 200000.0,
+    "deployment_type": "Cloud",
+    "deployment_type_id": 2,
+    "description": "Scalable cloud infrastructure with lower maintenance but dependent on third-party providers.",
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "cost_value": 250000.0,
+    "deployment_type": "Hybrid",
+    "deployment_type_id": 3,
+    "description": "A combination of cloud and on-premise systems for flexibility and cost-efficiency.",
+    "max_value": 100.0,
+    "min_value": 1.0
+  }
+]

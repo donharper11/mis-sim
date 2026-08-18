@@ -1,3 +1,19 @@
+# Shared platform services -- what the whole firm runs on.
+#
+# Harvested from mis_lite `it_infrastructure_addons_master` (11 rows) and from the buildable
+# half of `component_types_master` (design/01 section 3), then reconciled against the
+# firm-wide panel pinned in handoffs/0.3-mockup-pilot/spec.md section 5.6:
+#
+#   On-premises  Compute pool 100% used · Storage pool 70% used · Network & WAN ·
+#                Backup & recovery
+#   Cloud        End-user email (placed R2)
+#   Not provisioned  Central sign-on · Data platform
+#
+# Descriptions are NOT carried across from mis_lite: they are textbook prose
+# ("Traditional rack servers suitable for basic workloads") and invariant I3 forbids it in
+# student-visible text. Display wording lives in labels.yaml; the originals are kept in
+# PROVENANCE.md (open decision O2).
+
 services:
   - key: client_network
     roles_filled: [client_access, network_path]
@@ -7,7 +23,38 @@ services:
       saas: {capex: 0, opex: 6500, lead_time_rounds: 0, bypasses_platform: true}
     capacity_pct: 65
     staff_load: 0.6
-    provenance: {source: AUTHORED, note: "platform pool required by capability roles"}
+    provenance: {source: PINNED, note: "0.3 section 5.6 Network & WAN panel; platform pool required by capability roles"}
+
+  - key: compute_pool
+    roles_filled: [compute_capacity]
+    placement_options:
+      on_prem: {capex: 20000, opex: 1800, lead_time_rounds: 1}
+      cloud: {capex: 25000, opex: 6200, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 8000, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 100
+    staff_load: 0.4
+    provenance:
+      source: HARVESTED
+      note: >-
+        mis_lite component_types_master High-Performance Server (cost_value 20000) and
+        Virtualization / IaaS as the cloud alternative. capacity_pct 100 is PINNED by
+        0.3 section 5.6 -- "Compute pool 100% used", which is why the wizard warns that
+        Centraline IM 7 on-premises would use all remaining capacity.
+
+  - key: storage_pool
+    roles_filled: [storage_capacity]
+    placement_options:
+      on_prem: {capex: 15000, opex: 1200, lead_time_rounds: 1}
+      cloud: {capex: 5000, opex: 4000, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 5200, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 70
+    staff_load: 0.3
+    provenance:
+      source: HARVESTED
+      note: >-
+        mis_lite component_types_master Cloud-Based Storage (cost_value 15000).
+        capacity_pct 70 is PINNED by 0.3 section 5.6 -- "Storage pool 70% used".
+
   - key: backup_recovery
     roles_filled: [backup_recovery]
     placement_options:
@@ -16,7 +63,26 @@ services:
       saas: {capex: 0, opex: 7000, lead_time_rounds: 0, bypasses_platform: true}
     capacity_pct: 40
     staff_load: 0.4
-    provenance: {source: HARVESTED, note: "mis_lite Continuous Backups and Disaster Recovery Plan"}
+    provenance: {source: HARVESTED, note: "mis_lite it_infrastructure_addons_master rows 1-2, Continuous Backups (2000) and Disaster Recovery Plan (5000). 0.3 section 5.6 notes it has never been restore-tested."}
+
+  - key: failover_cluster
+    roles_filled: [failover]
+    placement_options:
+      on_prem: {capex: 30000, opex: 2400, lead_time_rounds: 1}
+      cloud: {capex: 8000, opex: 6000, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 7800, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 0
+    staff_load: 0.3
+    provenance:
+      source: HARVESTED
+      note: >-
+        mis_lite it_infrastructure_addons_master row 9, Failover Clustering (cost_value
+        30000, taken as the on-premises capex). Load-bearing for 1.5 section 5.3: outage
+        duration multiplies by `no_failover_multiplier` when no failover edge exists, so
+        the same event card produces opposite outcomes for two teams.
+        TODO: calibrate -- the cloud and saas figures are authored; mis_lite carries one
+        cost per addon and no placement ladder.
+
   - key: central_sign_on
     roles_filled: [identity_access]
     placement_options:
@@ -25,7 +91,17 @@ services:
       saas: {capex: 0, opex: 7500, lead_time_rounds: 0, bypasses_platform: true}
     capacity_pct: 0
     staff_load: 0.3
-    provenance: {source: HARVESTED, note: "mis_lite Identity and Access Management"}
+    owns_entities:
+      - {entity: user_account, level_of_detail: named_user}
+    provenance:
+      source: HARVESTED
+      note: >-
+        mis_lite it_infrastructure_addons_master row 7, Identity and Access Management
+        (cost_value 25000). `owns_entities` closes finding 1.2-011: filling the identity
+        role is not the same as holding the accounts, and firm_infrastructure's
+        user_account requirement was unsatisfiable without it. Identity is the system of
+        record for named users, so it holds them at `named_user` detail.
+
   - key: intrusion_detection
     roles_filled: [security_monitoring]
     placement_options:
@@ -34,13 +110,76 @@ services:
       saas: {capex: 0, opex: 5600, lead_time_rounds: 0, bypasses_platform: true}
     capacity_pct: 0
     staff_load: 0.2
-    provenance: {source: HARVESTED, note: "mis_lite Intrusion Detection System"}
+    provenance: {source: HARVESTED, note: "mis_lite it_infrastructure_addons_master row 6, Intrusion Detection System (cost_value 4000)"}
+
+  - key: threat_detection
+    roles_filled: [security_monitoring]
+    placement_options:
+      on_prem: {capex: 40000, opex: 3200, lead_time_rounds: 1}
+      cloud: {capex: 12000, opex: 8400, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 10500, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 0
+    staff_load: 0.5
+    provenance:
+      source: HARVESTED
+      note: >-
+        mis_lite it_infrastructure_addons_master row 8, Advanced Threat Detection
+        (cost_value 40000). Deliberately a second filler of `security_monitoring`: the
+        pack had exactly one filler for every role, so no security decision had an
+        alternative to weigh it against.
+        TODO: calibrate -- cloud and saas figures authored.
+
+  - key: integration_api
+    roles_filled: [integration_bus]
+    placement_options:
+      on_prem: {capex: 3000, opex: 900, lead_time_rounds: 0}
+      cloud: {capex: 3000, opex: 2600, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 3400, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 0
+    staff_load: 0.2
+    provenance: {source: HARVESTED, note: "mis_lite it_infrastructure_addons_master row 4, Cloud Integration API (cost_value 3000). 0.3 section 5.6 pins 7 connections between systems at $3,100 per round."}
+
+  - key: end_user_email
+    roles_filled: [end_user_messaging]
+    placement_options:
+      on_prem: {capex: 18000, opex: 1600, lead_time_rounds: 1}
+      cloud: {capex: 0, opex: 2200, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 2600, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 0
+    staff_load: 0.1
+    provenance:
+      source: PINNED
+      note: >-
+        0.3 section 5.6 -- the one cloud service on the firm-wide panel, placed in round 2.
+        Harvested cost basis: mis_lite component_types_master SaaS (cost_value 18000) for
+        the on-premises alternative.
+        TODO: calibrate -- the cloud and saas run-rates are authored.
+
+  - key: data_platform
+    roles_filled: [customer_data_store, analytics]
+    placement_options:
+      on_prem: {capex: 45000, opex: 3400, lead_time_rounds: 2}
+      cloud: {capex: 12000, opex: 7600, lead_time_rounds: 1}
+      saas: {capex: 0, opex: 9200, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 0
+    staff_load: 0.5
+    provenance:
+      source: PINNED
+      note: >-
+        0.3 section 5.6 lists it under "Not provisioned" beside central sign-on, so it is a
+        firm-wide option the case has not taken. Harvested cost basis: mis_lite
+        component_types_master Data Warehouse (20000) plus Data Lake (20000) consolidated
+        into one firm-wide platform rather than two catalog rows.
+        TODO: calibrate -- the placement ladder is authored.
+
 support_tiers:
-  - {key: basic, cost: 20000, fte_equivalent: 0.6, provenance: {source: HARVESTED, note: "mis_lite Basic Support"}}
-  - {key: standard, cost: 50000, fte_equivalent: 1.4, provenance: {source: HARVESTED, note: "mis_lite Standard Support"}}
-  - {key: premium, cost: 100000, fte_equivalent: 2.4, provenance: {source: HARVESTED, note: "mis_lite Premium Support"}}
+  - {key: basic, cost: 20000, fte_equivalent: 0.6, provenance: {source: HARVESTED, note: "mis_lite maintenance_support_levels row 1, Basic Support, cost_value 20000 carried exactly"}}
+  - {key: standard, cost: 50000, fte_equivalent: 1.4, provenance: {source: HARVESTED, note: "mis_lite maintenance_support_levels row 2, Standard Support, cost_value 50000 carried exactly"}}
+  - {key: premium, cost: 100000, fte_equivalent: 2.4, provenance: {source: HARVESTED, note: "mis_lite maintenance_support_levels row 3, Premium Support, cost_value 100000 carried exactly"}}
+
 integration_tiers:
-  - {key: basic, cost: 50000, provenance: {source: HARVESTED, note: "mis_lite Basic Integration"}}
-  - {key: advanced, cost: 120000, provenance: {source: HARVESTED, note: "mis_lite Advanced Integration"}}
-  - {key: vendor_managed, cost: 200000, provenance: {source: HARVESTED, note: "mis_lite Vendor-Managed Integration"}}
+  - {key: basic, cost: 50000, provenance: {source: HARVESTED, note: "mis_lite integration_services row 1, Basic Integration, cost_value 50000 carried exactly"}}
+  - {key: advanced, cost: 120000, provenance: {source: HARVESTED, note: "mis_lite integration_services row 2, Advanced Integration, cost_value 120000 carried exactly"}}
+  - {key: vendor_managed, cost: 200000, provenance: {source: HARVESTED, note: "mis_lite integration_services row 3, Vendor-Managed Integration, cost_value 200000 carried exactly"}}
+
 starting_staff_fte: 2.0

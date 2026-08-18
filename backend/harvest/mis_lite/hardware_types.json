@@ -1,0 +1,26 @@
+[
+  {
+    "cost_value": 100000.0,
+    "description": "Traditional rack servers suitable for basic workloads.",
+    "hardware_type_id": 1,
+    "hardware_type_name": "Standard Servers",
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "cost_value": 300000.0,
+    "description": "Servers optimized for intensive workloads such as data analytics.",
+    "hardware_type_id": 2,
+    "hardware_type_name": "High-Performance Compute Cluster",
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "cost_value": 250000.0,
+    "description": "Decentralized nodes for real-time processing closer to the source of data.",
+    "hardware_type_id": 3,
+    "hardware_type_name": "Edge Computing Nodes",
+    "max_value": 100.0,
+    "min_value": 1.0
+  }
+]

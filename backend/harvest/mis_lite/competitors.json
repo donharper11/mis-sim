@@ -1,0 +1,47 @@
+[
+  {
+    "annual_revenue": 200000000.0,
+    "competitor_id": 1,
+    "competitor_name": "OmniMart",
+    "description": "A low-cost leader with optimized supply chain operations and price competitiveness.",
+    "industry": "Retail",
+    "market_share": 35.0,
+    "strategy_id": 1
+  },
+  {
+    "annual_revenue": 300000000.0,
+    "competitor_id": 2,
+    "competitor_name": "LuxuryLink",
+    "description": "A premium retailer with exclusive product lines and exceptional customer service.",
+    "industry": "Retail",
+    "market_share": 20.0,
+    "strategy_id": 2
+  },
+  {
+    "annual_revenue": 150000000.0,
+    "competitor_id": 3,
+    "competitor_name": "ShopMate",
+    "description": "A boutique retailer focused on loyalty programs and personalized recommendations.",
+    "industry": "Retail",
+    "market_share": 15.0,
+    "strategy_id": 3
+  },
+  {
+    "annual_revenue": 100000000.0,
+    "competitor_id": 4,
+    "competitor_name": "FamilyMart",
+    "description": "A family-oriented retailer with a niche focus on household essentials.",
+    "industry": "Retail",
+    "market_share": 12.0,
+    "strategy_id": 4
+  },
+  {
+    "annual_revenue": 250000000.0,
+    "competitor_id": 5,
+    "competitor_name": "QuickKart",
+    "description": "A hybrid retailer combining low-cost essentials with customer retention programs.",
+    "industry": "Retail",
+    "market_share": 18.0,
+    "strategy_id": null
+  }
+]

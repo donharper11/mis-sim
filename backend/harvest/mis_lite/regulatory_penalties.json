@@ -1,0 +1,26 @@
+[
+  {
+    "description": "Data privacy violation due to inadequate user data protection.",
+    "fine_amount": 50000.0,
+    "penalty_id": 1,
+    "regulation": "GDPR Compliance",
+    "round_id": 2,
+    "stakeholder_displeasure": -10.0
+  },
+  {
+    "description": "Failure to submit financial audit by the deadline.",
+    "fine_amount": 80000.0,
+    "penalty_id": 2,
+    "regulation": "SOX Compliance",
+    "round_id": 3,
+    "stakeholder_displeasure": -15.0
+  },
+  {
+    "description": "Unauthorized system change without proper logging.",
+    "fine_amount": 30000.0,
+    "penalty_id": 3,
+    "regulation": "IT Change Policy",
+    "round_id": 4,
+    "stakeholder_displeasure": -5.0
+  }
+]

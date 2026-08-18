@@ -1,3 +1,11 @@
+# Every displayed string. Python code never supplies student-facing labels.
+#
+# Invariant I3 -- business language only. mis_lite's own descriptions are textbook prose,
+# and none of them is carried across; the originals are quoted in PROVENANCE.md against
+# open decision O2, which is also the only place in this pack they appear, because I3's
+# grep runs over this file. A label here says what a thing IS to the business, never how
+# the technology works.
+
 capabilities:
   order_fulfilment: Order Fulfilment
   store_operations: Store Operations
@@ -6,9 +14,11 @@ capabilities:
   marketing_sales: Marketing and Sales
   service: Service
   firm_infrastructure: Firm Infrastructure
+
 roles:
   transaction_store: Transaction store
   order_app: Order application
+  inventory_app: Inventory application
   client_access: Store access
   network_path: Network path
   wms_integration: Warehouse system connection
@@ -26,6 +36,12 @@ roles:
   identity_access: Central sign-on
   backup_recovery: Backup and recovery
   security_monitoring: Security monitoring
+  compute_capacity: Compute pool
+  storage_capacity: Storage pool
+  end_user_messaging: Staff email
+  failover: Standby copy for outages
+  integration_bus: Connections between systems
+
 sidebar:
   dashboard: Dashboard
   strategy: Strategy
@@ -38,11 +54,13 @@ sidebar:
   challenges: Challenges
   review: Review
   debrief: Debrief
+
 strategies:
   cost_leadership: Cost Leadership
   differentiation: Differentiation
   customer_supplier_intimacy: Customer and Supplier Intimacy
   focus_strategy: Focus Strategy
+
 stakeholders:
   stakeholder_senior_management: Senior Management/C-Suite
   stakeholder_finance: Finance
@@ -58,15 +76,74 @@ stakeholders:
   stakeholder_regulator: Regulator
   stakeholder_general_public: General Public
   stakeholder_media: Media
+
+# `events` is not a name map: it holds the persona's message, in their voice.
 events:
   event_inventory_numbers: The auditors asked how we know our inventory numbers are right. I did not have an answer.
   event_tablets_arrived: My crew found out about the new system when the tablets arrived.
   event_pos_support_ending: Support for your point-of-sale version ends in one round.
+  event_ransomware_demand: Someone has locked the finance systems and is asking to be paid. We are running the close on paper.
+  event_customer_records_exposed: A customer rang to ask why a company she has never heard of has her shopping history.
+  event_staff_accounts_phished: Fourteen staff clicked the same email this week. Two of them typed their password in.
+  event_privacy_regulator_letter: The regulator has written asking how long we keep customer records and who can read them. We have fourteen days.
+  event_audit_deadline_missed: We will not have the numbers by the deadline. Last year that cost us a fine and a paragraph in the annual report.
+  event_unlogged_change: Something changed in the ordering system on Tuesday night and nobody can tell me who did it.
+  event_checkout_queues: Saturday queues are running eight minutes longer than last month and customers are walking out.
+  event_service_backlog: We are closing fewer tickets than we open. The oldest one is nineteen days old.
+  event_supplier_portal_request: Three of our suppliers want to see stock levels themselves instead of phoning us every morning.
+  event_board_wants_numbers: The board wants to know which customers we are losing and why. I cannot answer that from what we hold.
+
 policies:
-  encrypt_customer_data: Encrypt customer data
-  compliance_audit: Compliance audit
-  access_review: Access review
+  data_collection: What customer information we collect
+  data_retention: How long we keep it
+  data_access: Who can see it
+  access_logging: What we record about who looked
+  data_egress: What may leave our systems
+  staff_monitoring: What we track about our own staff
+
+entities:
+  order: Orders
+  inventory: Stock
+  product: Products
+  sale: Sales
+  customer: Customers
+  ledger: Accounts
+  user_account: User accounts
+  service_ticket: Service tickets
+
+catalog:
+  pos_system_2011: POS System 2011
+  order_mgmt_v42: Order Mgmt v4.2
+  centraline_im7: Centraline IM 7
+  accounting_package: Accounting Package
+  store_spreadsheets: Store spreadsheets
+  next_gen_firewall: Perimeter firewall
+  customer_database: Customer database
+  analytics_workspace: Analytics workspace
+  ecommerce_site: E-commerce site
+  service_desk: Service desk
+  order_db_cluster: Order DB cluster
+  store_back_office_pc: Store back-office PC
+  nosql_database: Flexible customer store
+  erp_suite: Integrated business suite
+
+watch_rules:
+  ord_cap_01: Order fulfilment capacity
+  wh_rollout_01: Warehouse rollout without support
+  sec_identity_01: Nobody manages who can sign in
+  store_cap_01: Store operations capacity
+  fin_close_01: Reporting availability
+  cust_data_01: Customers we cannot see
+  mkt_channel_01: Online channel capacity
+  svc_backlog_01: Service backlog
+
+questions:
+  inventory_accuracy: Do we know our stock figures are right?
+  customer_order_detail: Can we see what an individual customer ordered?
+  transaction_cost: What does one transaction cost us to serve?
+
 misc:
+  # Stakeholder role lines
   role_executive_leadership: Executive Leadership
   role_finance_department: Finance Department
   role_general_workforce: General Workforce
@@ -81,3 +158,32 @@ misc:
   role_legal_compliance_authority: Legal Compliance Authority
   role_public_consumer_advocacy: Public/Consumer Advocacy
   role_news_public_relations: News/Public Relations
+  # Process-redesign options -- finding 1.2-012. Without these a Rollout screen renders
+  # `redesign_picking` at a student. Each says what the WORK changes to, not what the
+  # system does.
+  redesign_picking: Change how the warehouse picks orders
+  redesign_checkout: Change how staff serve the checkout
+  redesign_close: Change how finance closes the period
+  redesign_reporting: Change how the business gets its numbers
+  redesign_customer_followup: Change how we follow up with customers
+  redesign_online_fulfilment: Change how online orders reach the customer
+  redesign_service_queue: Change how service requests are picked up
+  redesign_order_to_cash: Change how an order becomes an invoice
+  # Strategy penalty lines
+  overprovisioning: Paying for headroom nobody uses
+  underinvestment_in_customer_data: Not knowing enough about your customers to act
+  disconnected_supplier_and_customer_records: Suppliers and customers held in separate places
+  broad_spend_without_segment_fit: Spending broadly when you chose to serve one segment
+  # Curriculum objectives, harvested from mis_lite `objectives` (5 rows). These are the
+  # declaration vocabulary a strategy is argued in, not screen furniture.
+  objective_operational_excellence: Operational excellence
+  objective_new_products_and_models: New products, services and business models
+  objective_customer_supplier_intimacy: Customer and supplier intimacy
+  objective_improved_decision_making: Improved decision making
+  objective_competitive_advantage: Competitive advantage
+  # Impact areas, harvested from mis_lite `impact_areas` (5 rows).
+  impact_operational_efficiency: Operational efficiency
+  impact_customer_intimacy: Customer intimacy
+  impact_market_share: Market share
+  impact_profitability: Profitability
+  impact_security_resilience: Security resilience

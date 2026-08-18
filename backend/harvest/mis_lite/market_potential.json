@@ -1,0 +1,252 @@
+[
+  {
+    "market_potential": 8000.0,
+    "objective_id": 1,
+    "round_id": 1
+  },
+  {
+    "market_potential": 9500.0,
+    "objective_id": 1,
+    "round_id": 2
+  },
+  {
+    "market_potential": 11000.0,
+    "objective_id": 1,
+    "round_id": 3
+  },
+  {
+    "market_potential": 12500.0,
+    "objective_id": 1,
+    "round_id": 4
+  },
+  {
+    "market_potential": 14000.0,
+    "objective_id": 1,
+    "round_id": 5
+  },
+  {
+    "market_potential": 15500.0,
+    "objective_id": 1,
+    "round_id": 6
+  },
+  {
+    "market_potential": 17000.0,
+    "objective_id": 1,
+    "round_id": 7
+  },
+  {
+    "market_potential": 18500.0,
+    "objective_id": 1,
+    "round_id": 8
+  },
+  {
+    "market_potential": 19500.0,
+    "objective_id": 1,
+    "round_id": 9
+  },
+  {
+    "market_potential": 20000.0,
+    "objective_id": 1,
+    "round_id": 10
+  },
+  {
+    "market_potential": 10000.0,
+    "objective_id": 2,
+    "round_id": 1
+  },
+  {
+    "market_potential": 9500.0,
+    "objective_id": 2,
+    "round_id": 2
+  },
+  {
+    "market_potential": 11000.0,
+    "objective_id": 2,
+    "round_id": 3
+  },
+  {
+    "market_potential": 10800.0,
+    "objective_id": 2,
+    "round_id": 4
+  },
+  {
+    "market_potential": 9600.0,
+    "objective_id": 2,
+    "round_id": 5
+  },
+  {
+    "market_potential": 10200.0,
+    "objective_id": 2,
+    "round_id": 6
+  },
+  {
+    "market_potential": 9500.0,
+    "objective_id": 2,
+    "round_id": 7
+  },
+  {
+    "market_potential": 11500.0,
+    "objective_id": 2,
+    "round_id": 8
+  },
+  {
+    "market_potential": 9800.0,
+    "objective_id": 2,
+    "round_id": 9
+  },
+  {
+    "market_potential": 10000.0,
+    "objective_id": 2,
+    "round_id": 10
+  },
+  {
+    "market_potential": 12000.0,
+    "objective_id": 3,
+    "round_id": 1
+  },
+  {
+    "market_potential": 12500.0,
+    "objective_id": 3,
+    "round_id": 2
+  },
+  {
+    "market_potential": 11500.0,
+    "objective_id": 3,
+    "round_id": 3
+  },
+  {
+    "market_potential": 12000.0,
+    "objective_id": 3,
+    "round_id": 4
+  },
+  {
+    "market_potential": 11800.0,
+    "objective_id": 3,
+    "round_id": 5
+  },
+  {
+    "market_potential": 12200.0,
+    "objective_id": 3,
+    "round_id": 6
+  },
+  {
+    "market_potential": 11000.0,
+    "objective_id": 3,
+    "round_id": 7
+  },
+  {
+    "market_potential": 13000.0,
+    "objective_id": 3,
+    "round_id": 8
+  },
+  {
+    "market_potential": 12000.0,
+    "objective_id": 3,
+    "round_id": 9
+  },
+  {
+    "market_potential": 12500.0,
+    "objective_id": 3,
+    "round_id": 10
+  },
+  {
+    "market_potential": 14000.0,
+    "objective_id": 4,
+    "round_id": 1
+  },
+  {
+    "market_potential": 14500.0,
+    "objective_id": 4,
+    "round_id": 2
+  },
+  {
+    "market_potential": 15000.0,
+    "objective_id": 4,
+    "round_id": 3
+  },
+  {
+    "market_potential": 15500.0,
+    "objective_id": 4,
+    "round_id": 4
+  },
+  {
+    "market_potential": 16000.0,
+    "objective_id": 4,
+    "round_id": 5
+  },
+  {
+    "market_potential": 16500.0,
+    "objective_id": 4,
+    "round_id": 6
+  },
+  {
+    "market_potential": 16800.0,
+    "objective_id": 4,
+    "round_id": 7
+  },
+  {
+    "market_potential": 17000.0,
+    "objective_id": 4,
+    "round_id": 8
+  },
+  {
+    "market_potential": 17200.0,
+    "objective_id": 4,
+    "round_id": 9
+  },
+  {
+    "market_potential": 17500.0,
+    "objective_id": 4,
+    "round_id": 10
+  },
+  {
+    "market_potential": 15000.0,
+    "objective_id": 5,
+    "round_id": 1
+  },
+  {
+    "market_potential": 14000.0,
+    "objective_id": 5,
+    "round_id": 2
+  },
+  {
+    "market_potential": 13000.0,
+    "objective_id": 5,
+    "round_id": 3
+  },
+  {
+    "market_potential": 12500.0,
+    "objective_id": 5,
+    "round_id": 4
+  },
+  {
+    "market_potential": 12000.0,
+    "objective_id": 5,
+    "round_id": 5
+  },
+  {
+    "market_potential": 11500.0,
+    "objective_id": 5,
+    "round_id": 6
+  },
+  {
+    "market_potential": 11000.0,
+    "objective_id": 5,
+    "round_id": 7
+  },
+  {
+    "market_potential": 10500.0,
+    "objective_id": 5,
+    "round_id": 8
+  },
+  {
+    "market_potential": 10200.0,
+    "objective_id": 5,
+    "round_id": 9
+  },
+  {
+    "market_potential": 10000.0,
+    "objective_id": 5,
+    "round_id": 10
+  }
+]

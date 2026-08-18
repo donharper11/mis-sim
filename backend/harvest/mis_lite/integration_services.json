@@ -1,0 +1,26 @@
+[
+  {
+    "cost_value": 50000.0,
+    "description": "Integration of core ERP modules with limited customizations.",
+    "integration_service_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "service_name": "Basic Integration"
+  },
+  {
+    "cost_value": 120000.0,
+    "description": "Fully customized integration across all ERP modules.",
+    "integration_service_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "service_name": "Advanced Integration"
+  },
+  {
+    "cost_value": 200000.0,
+    "description": "Integration managed entirely by the ERP vendor.",
+    "integration_service_id": 3,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "service_name": "Vendor-Managed Integration"
+  }
+]

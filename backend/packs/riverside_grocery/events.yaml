@@ -1,7 +1,26 @@
+# CG-2 -- every strategy must be drawn by at least six cards (1.5 section 5.2a, W08 at N=6).
+#
+# Before 1.3 the deck was three cards and the draws were cost_leadership 3,
+# customer_supplier_intimacy 2, differentiation 1, focus_strategy 1. Two of the three cards
+# waited on a severity their watch rule could never reach, so the effective deck was ONE.
+#
+# THE TRAP, and why this file does not fall into it (finding 1.2-035): an event with an
+# empty `strategy_affinity` is dealt to everybody, so emptying the field on every card
+# satisfies W08 instantly -- and trades one W08 for seven W03, because a card that fires
+# whatever the team declared is a card the strategy layer cannot teach with. Every card
+# below names its strategies explicitly, and names them because the pressure genuinely
+# lands on that strategy.
+#
+# Round timing stays emergent. `Event` carries no round field and never will (1.5 decision
+# 9): a card fires when its preconditions are true, never on a calendar. The `round_id`
+# column on mis_lite's `security_incidents` and `regulatory_penalties` is therefore NOT
+# harvested -- it is exactly the second timing system that ruling forbids.
+
+# ---------------------------------------------------------------------------- pinned, 0.4
 - key: inventory_audit_question
   preconditions:
     - {type: signal_open, signal: wh_rollout_01, severity: critical}
-  strategy_affinity: [cost_leadership, customer_supplier_intimacy]
+  strategy_affinity: [cost_leadership, customer_supplier_intimacy, focus_strategy]
   from_persona: tom_beckett
   body_key: event_inventory_numbers
   outcomes:
@@ -11,11 +30,12 @@
     - {key: fund, tags: [capacity_risk, compliance], cost: 6000}
     - {key: defer, tags: [cost_containment], cost: 0}
     - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
-  provenance: {source: PINNED, note: "0.4 challenges inbox item"}
+  provenance: {source: PINNED, note: "0.4 challenges inbox item. Affinity widened by 1.3 -- a firm that cannot evidence its stock figures is exposed under any strategy that leans on order fulfilment."}
+
 - key: warehouse_rollout_gap
   preconditions:
     - {type: signal_open, signal: wh_rollout_01, severity: critical}
-  strategy_affinity: [cost_leadership]
+  strategy_affinity: [cost_leadership, customer_supplier_intimacy]
   from_persona: dana_ruiz
   body_key: event_tablets_arrived
   outcomes:
@@ -26,6 +46,7 @@
     - {key: defer, tags: [insufficient_information], cost: 0}
     - {key: reject, tags: [cost_containment], cost: 0}
   provenance: {source: PINNED, note: "0.4 challenges opened item"}
+
 - key: pos_support_ending
   preconditions:
     - {type: signal_open, signal: ord_cap_01, severity: warning}
@@ -40,3 +61,215 @@
     - {key: defer, tags: [cost_containment], cost: 0}
     - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
   provenance: {source: PINNED, note: "0.4 services and challenges support end"}
+
+# ------------------------------------- harvested, mis_lite security_incidents (3 rows)
+- key: ransomware_on_finance
+  preconditions:
+    - {type: signal_open, signal: sec_identity_01, severity: critical}
+  strategy_affinity: [cost_leadership, differentiation, customer_supplier_intimacy, focus_strategy]
+  from_persona: maya_oduya
+  body_key: event_ransomware_demand
+  outcomes:
+    revenue_loss: 100000
+    scorecard: {financial: -12, internal_process: -8}
+  options:
+    - {key: fund, tags: [capacity_risk, compliance], cost: 40000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [insufficient_information], cost: 0}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite security_incidents row 1 -- "Ransomware attack on financial system due to
+      weak firewall", impact_cost 100000, carried exactly as revenue_loss. The trigger is
+      re-expressed as a precondition on the identity rule rather than on a firewall,
+      because in this pack the exposure the case actually carries is that nothing manages
+      who can sign in. round_id 2 deliberately not harvested (1.5 decision 9).
+      TODO: calibrate -- the scorecard deltas and the option costs are authored.
+
+- key: crm_data_exposed
+  preconditions:
+    - {type: signal_open, signal: cust_data_01, severity: critical}
+  strategy_affinity: [differentiation, customer_supplier_intimacy, focus_strategy]
+  from_persona: lena_hart
+  body_key: event_customer_records_exposed
+  outcomes:
+    revenue_loss: 50000
+    scorecard: {customer: -9, financial: -4}
+  options:
+    - {key: fund, tags: [compliance, strategic_priority], cost: 20000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite security_incidents row 2 -- "Unauthorized access to CRM database",
+      impact_cost 50000 carried exactly. Aimed at the three strategies that spend on
+      knowing the customer; a cost leader holding less customer data has less to lose.
+      TODO: calibrate -- scorecard deltas and option costs authored.
+
+- key: phishing_on_staff_accounts
+  preconditions:
+    - {type: signal_open, signal: sec_identity_01, severity: critical}
+  strategy_affinity: [cost_leadership, differentiation, customer_supplier_intimacy, focus_strategy]
+  from_persona: rob_alderman
+  body_key: event_staff_accounts_phished
+  outcomes:
+    revenue_loss: 30000
+    scorecard: {learning_growth: -7, internal_process: -4}
+  options:
+    - {key: fund, tags: [strategic_priority], cost: 12000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [insufficient_information], cost: 0}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite security_incidents row 3 -- "Phishing attack on employee accounts due to
+      lack of training program", impact_cost 30000 carried exactly. Dealt to every
+      strategy: nobody gets to opt out of their own staff.
+      TODO: calibrate -- scorecard deltas and option costs authored.
+
+# --------------------------------- harvested, mis_lite regulatory_penalties (3 rows)
+- key: privacy_regulator_letter
+  preconditions:
+    - {type: signal_open, signal: cust_data_01, severity: warning}
+  strategy_affinity: [cost_leadership, differentiation, customer_supplier_intimacy, focus_strategy]
+  from_persona: lena_hart
+  body_key: event_privacy_regulator_letter
+  outcomes:
+    revenue_loss: 50000
+    scorecard: {customer: -10, financial: -5}
+  options:
+    - {key: fund, tags: [compliance], cost: 15000}
+    - {key: defer, tags: [insufficient_information], cost: 0}
+    - {key: reject, tags: [cost_containment], cost: 0}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite regulatory_penalties row 1 -- GDPR Compliance, fine_amount 50000 carried
+      exactly as revenue_loss, stakeholder_displeasure -10 carried as the customer
+      scorecard delta. This is the event `customer_pii_retention` and
+      `customer_pii_collection` arm in obligation_rules.yaml.
+
+- key: financial_audit_deadline_missed
+  preconditions:
+    - {type: signal_open, signal: fin_close_01, severity: critical}
+  strategy_affinity: [cost_leadership, customer_supplier_intimacy, focus_strategy]
+  from_persona: maya_oduya
+  body_key: event_audit_deadline_missed
+  outcomes:
+    revenue_loss: 80000
+    scorecard: {financial: -15, internal_process: -6}
+  options:
+    - {key: fund, tags: [compliance, capacity_risk], cost: 18000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite regulatory_penalties row 2 -- SOX Compliance, fine_amount 80000 and
+      stakeholder_displeasure -15, both carried exactly.
+
+- key: unlogged_system_change
+  preconditions:
+    - {type: signal_open, signal: sec_identity_01, severity: critical}
+  strategy_affinity: [cost_leadership, differentiation, customer_supplier_intimacy, focus_strategy]
+  from_persona: rob_alderman
+  body_key: event_unlogged_change
+  outcomes:
+    revenue_loss: 30000
+    scorecard: {internal_process: -5}
+  options:
+    - {key: fund, tags: [compliance], cost: 9000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [insufficient_information], cost: 0}
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite regulatory_penalties row 3 -- IT Change Policy, fine_amount 30000 and
+      stakeholder_displeasure -5, both carried exactly. Armed by
+      `user_account_access_logging` in obligation_rules.yaml.
+
+# ------------------------------------------------------------------ authored, CG-2 depth
+- key: checkout_queues_lengthen
+  preconditions:
+    - {type: signal_open, signal: store_cap_01, severity: warning}
+  strategy_affinity: [cost_leadership, differentiation, focus_strategy]
+  from_persona: priya_shah
+  body_key: event_checkout_queues
+  outcomes:
+    revenue_loss: 18000
+    scorecard: {customer: -6, financial: -3}
+  options:
+    - {key: fund, tags: [capacity_risk, strategic_priority], cost: 14000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-2. Store operations had a capability, a demand curve and no card. Aimed at the
+      three strategies whose promise a queue breaks -- cheap, distinctive, or the one
+      segment you chose to serve.
+      TODO: calibrate -- revenue_loss and scorecard deltas are authored.
+
+- key: service_backlog_builds
+  preconditions:
+    - {type: signal_open, signal: svc_backlog_01, severity: critical}
+  strategy_affinity: [differentiation, customer_supplier_intimacy, focus_strategy]
+  from_persona: sam_okoro
+  body_key: event_service_backlog
+  outcomes:
+    revenue_loss: 9000
+    scorecard: {customer: -8, learning_growth: -3}
+  options:
+    - {key: fund, tags: [strategic_priority], cost: 11000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-2. The service capability existed only as a coverage gap on the 0.4 screen. Not
+      dealt to cost leadership: a cost leader who lets the service queue grow is following
+      their strategy, not failing it.
+      TODO: calibrate -- revenue_loss and scorecard deltas are authored.
+
+- key: supplier_portal_request
+  preconditions:
+    - {type: signal_open, signal: ord_cap_01, severity: warning}
+  strategy_affinity: [customer_supplier_intimacy, differentiation, focus_strategy]
+  from_persona: dana_ruiz
+  body_key: event_supplier_portal_request
+  outcomes:
+    revenue_loss: 0
+    scorecard: {customer: -4, internal_process: -3}
+  options:
+    - {key: fund, tags: [strategic_priority], cost: 15000}
+    - {key: defer, tags: [insufficient_information], cost: 0}
+    - {key: reject, tags: [cost_containment], cost: 0}
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-2, and the one card that puts the `data_egress` switch under pressure: the
+      suppliers are asking for stock levels to leave the firm's systems.
+      Cost basis harvested from mis_lite mis_initiatives_master row 12, Supplier
+      Management Portal (cost_value 15000).
+      TODO: calibrate -- scorecard deltas authored.
+
+- key: analytics_request_from_board
+  preconditions:
+    - {type: signal_open, signal: cust_data_01, severity: warning}
+  strategy_affinity: [differentiation, customer_supplier_intimacy, focus_strategy]
+  from_persona: tom_beckett
+  body_key: event_board_wants_numbers
+  outcomes:
+    revenue_loss: 0
+    scorecard: {learning_growth: -5, customer: -3}
+  options:
+    - {key: fund, tags: [strategic_priority], cost: 10000}
+    - {key: defer, tags: [insufficient_information], cost: 0}
+    - {key: reject, tags: [cost_containment], cost: 0}
+  provenance:
+    source: AUTHORED
+    note: >-
+      CG-2. Cost basis harvested from mis_lite mis_initiatives_master row 2, BI Dashboard
+      Setup (cost_value 100000) scaled to the response option rather than the build.
+      TODO: calibrate -- option cost and scorecard deltas authored.

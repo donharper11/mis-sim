@@ -1,0 +1,26 @@
+[
+  {
+    "cost_value": 100000.0,
+    "database_type_id": 1,
+    "database_type_name": "Relational DB",
+    "description": "Traditional on-premises relational database system optimized for transactional operations.",
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "cost_value": 150000.0,
+    "database_type_id": 2,
+    "database_type_name": "Hybrid Cloud DB",
+    "description": "A cloud-connected relational database that provides scalability and redundancy.",
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "cost_value": 200000.0,
+    "database_type_id": 3,
+    "database_type_name": "Big Data Solution",
+    "description": "A distributed data system optimized for large-scale data storage and analytics.",
+    "max_value": 100.0,
+    "min_value": 1.0
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "change_mgmt_id": 1,
+    "cost_value": 10000.0,
+    "description": "System-wide implementation of the ERP system at once",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "strategy_name": "Big Bang Rollout"
+  },
+  {
+    "change_mgmt_id": 2,
+    "cost_value": 8000.0,
+    "description": "Incremental implementation of system modules over multiple phases",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "strategy_name": "Phased Rollout"
+  },
+  {
+    "change_mgmt_id": 3,
+    "cost_value": 6000.0,
+    "description": "Small-scale testing in select departments before a full-scale rollout",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "strategy_name": "Pilot Testing"
+  },
+  {
+    "change_mgmt_id": 4,
+    "cost_value": 4000.0,
+    "description": "Key employees assigned to drive change adoption and guide teams",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "strategy_name": "Change Champions"
+  },
+  {
+    "change_mgmt_id": 5,
+    "cost_value": 5000.0,
+    "description": "End-user training programs to improve system adoption and usage",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "strategy_name": "Comprehensive Training"
+  },
+  {
+    "change_mgmt_id": 6,
+    "cost_value": 7000.0,
+    "description": "Dedicated support team post-implementation",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "strategy_name": "Ongoing Support Team"
+  },
+  {
+    "change_mgmt_id": 7,
+    "cost_value": 3500.0,
+    "description": "Cloud-based knowledge hub for documentation and FAQs",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "strategy_name": "Knowledge Sharing Portal"
+  },
+  {
+    "change_mgmt_id": 8,
+    "cost_value": 2500.0,
+    "description": "Structured post-rollout feedback to improve future iterations",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "strategy_name": "Feedback Loops"
+  }
+]

@@ -1,0 +1,100 @@
+[
+  {
+    "description": "Executive decision-making body overseeing corporate strategy",
+    "stakeholder_id": 1,
+    "stakeholder_name": "Senior Management/C-Suite",
+    "stakeholder_role": "Executive Leadership",
+    "stakeholder_type": "Internal"
+  },
+  {
+    "description": "Responsible for budgeting, financial planning, and reporting",
+    "stakeholder_id": 2,
+    "stakeholder_name": "Finance",
+    "stakeholder_role": "Finance Department",
+    "stakeholder_type": "Internal"
+  },
+  {
+    "description": "General employee group involved in daily operations",
+    "stakeholder_id": 3,
+    "stakeholder_name": "Employees",
+    "stakeholder_role": "General Workforce",
+    "stakeholder_type": "Internal"
+  },
+  {
+    "description": "Oversees logistics, supply chain, and operational workflows",
+    "stakeholder_id": 4,
+    "stakeholder_name": "Operations",
+    "stakeholder_role": "Operations Department",
+    "stakeholder_type": "Internal"
+  },
+  {
+    "description": "Manages IT systems, infrastructure, and technical support",
+    "stakeholder_id": 5,
+    "stakeholder_name": "IT Department",
+    "stakeholder_role": "Information Technology Team",
+    "stakeholder_type": "Internal"
+  },
+  {
+    "description": "Oversees recruitment, employee well-being, and training programs",
+    "stakeholder_id": 6,
+    "stakeholder_name": "HR",
+    "stakeholder_role": "Human Resources Department",
+    "stakeholder_type": "Internal"
+  },
+  {
+    "description": "Manages sales and customer outreach efforts, including campaigns and promotions",
+    "stakeholder_id": 7,
+    "stakeholder_name": "Marketing",
+    "stakeholder_role": "Marketing and Sales Department",
+    "stakeholder_type": "Internal"
+  },
+  {
+    "description": "Monitors ROI on IS investments and overall profitability.",
+    "stakeholder_id": 8,
+    "stakeholder_name": "Investor",
+    "stakeholder_role": "Shareholder",
+    "stakeholder_type": "External"
+  },
+  {
+    "description": "Interested in data privacy, faster service, and seamless online transactions.",
+    "stakeholder_id": 9,
+    "stakeholder_name": "Customer",
+    "stakeholder_role": "External Stakeholder",
+    "stakeholder_type": "External"
+  },
+  {
+    "description": "Relies on efficient order processing and real-time stock visibility.",
+    "stakeholder_id": 10,
+    "stakeholder_name": "Vendor",
+    "stakeholder_role": "Supply Chain Partner",
+    "stakeholder_type": "External"
+  },
+  {
+    "description": "Ensures compliance with cybersecurity standards.",
+    "stakeholder_id": 11,
+    "stakeholder_name": "Security Auditor",
+    "stakeholder_role": "External Auditor",
+    "stakeholder_type": "External"
+  },
+  {
+    "description": "Monitors regulatory compliance with laws like GDPR and SOX.",
+    "stakeholder_id": 12,
+    "stakeholder_name": "Regulator",
+    "stakeholder_role": "Legal Compliance Authority",
+    "stakeholder_type": "External"
+  },
+  {
+    "description": "Cares about ethical use of customer data and privacy policies.",
+    "stakeholder_id": 13,
+    "stakeholder_name": "General Public",
+    "stakeholder_role": "Public/Consumer Advocacy",
+    "stakeholder_type": "External"
+  },
+  {
+    "description": "Reports on system breaches and IS-related controversies.",
+    "stakeholder_id": 14,
+    "stakeholder_name": "Media",
+    "stakeholder_role": "News/Public Relations",
+    "stakeholder_type": "External"
+  }
+]

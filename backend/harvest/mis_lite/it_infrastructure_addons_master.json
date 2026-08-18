@@ -1,0 +1,112 @@
+[
+  {
+    "addon_id": 1,
+    "addon_name": "Continuous Backups",
+    "addon_type": "Backup & Recovery",
+    "cost_value": 2000.0,
+    "description": "Enables continuous backup of data",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 2,
+    "addon_name": "Disaster Recovery Plan",
+    "addon_type": "Backup & Recovery",
+    "cost_value": 5000.0,
+    "description": "Comprehensive recovery plan for emergencies",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 3,
+    "addon_name": "Data Encryption Policy",
+    "addon_type": "Data Governance",
+    "cost_value": 1500.0,
+    "description": "Enforces data encryption throughout the system",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 4,
+    "addon_name": "Cloud Integration API",
+    "addon_type": "Integration Services",
+    "cost_value": 3000.0,
+    "description": "Provides an API for cloud integrations",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 5,
+    "addon_name": "Routine Maintenance Support",
+    "addon_type": "Maintenance Support",
+    "cost_value": 2500.0,
+    "description": "Covers system updates and performance monitoring",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 6,
+    "addon_name": "Intrusion Detection System",
+    "addon_type": "Security Investments",
+    "cost_value": 4000.0,
+    "description": "Monitors and detects unauthorized access",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 7,
+    "addon_name": "Identity and Access Management",
+    "addon_type": "Security Investments",
+    "cost_value": 25000.0,
+    "description": "Manages user identities and roles with MFA and audit trails.",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 8,
+    "addon_name": "Advanced Threat Detection",
+    "addon_type": "Security Investments",
+    "cost_value": 40000.0,
+    "description": "Uses AI/ML to detect abnormal behaviors and potential intrusions.",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 9,
+    "addon_name": "Failover Clustering",
+    "addon_type": "Maintenance Support",
+    "cost_value": 30000.0,
+    "description": "Ensures high availability with automated failover in case of failure.",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 10,
+    "addon_name": "Compliance Auditing Tool",
+    "addon_type": "Data Governance",
+    "cost_value": 20000.0,
+    "description": "Provides automated reports to meet compliance requirements.",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "addon_id": 11,
+    "addon_name": "Performance Tuning Engine",
+    "addon_type": "Maintenance Support",
+    "cost_value": 35000.0,
+    "description": "Optimizes system performance for databases and applications.",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  }
+]

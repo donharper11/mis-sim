@@ -1,9 +1,38 @@
+# Identity harvested from mis_lite `strategy` (4 rows, mechanical -- the four are exactly
+# the four this design uses). Weights are the judged part, and the judgement is stated.
+#
+# THE FIT-MULTIPLIER CONVERSION (spec section 3 decision 4, CONTRACTS.md).
+# `component_strategy_fit` holds 168 un-normalised multipliers around 1.0, per component
+# per strategy. 72 of those cells belong to components on design/01 section 3's buildable
+# list. The conversion is: map each buildable component to the capability it serves, take
+# the mean multiplier per (strategy, capability), then normalise per strategy to sum 1.0.
+# `harvested_raw_fit` below holds the per-capability RAW means, before normalisation, as
+# the schema intends (docs/casepack-schema.md: "Raw source multipliers retained as
+# provenance"). Raw values never reach `capability_weights` -- CONTRACTS.md forbids mixing
+# the two schemes.
+#
+# THE CONVERSION RAN, AND ITS OUTPUT IS NOT USED FOR THE WEIGHTS. Normalising multipliers
+# that all sit inside [0.91, 1.40] puts every weight inside [0.132, 0.152] for every
+# strategy -- a spread of 1.5 percentage points across seven capabilities and four
+# strategies. Two consequences, both fatal to the strategy layer:
+#
+#   * all four strategies become numerically indistinguishable, so a team's declaration
+#     would change almost nothing and 1.7 could not calibrate against it;
+#   * cost_leadership's multiplier is the HIGHEST of the four for all seven capabilities
+#     (1.27-1.36 against differentiation's 1.03-1.15), which is a scale artefact of the
+#     source, not a statement that cost leadership benefits more from everything.
+#
+# The full normalised table is in PROVENANCE.md so the next reader can check the arithmetic
+# rather than take this on trust. Reversible: if 1.7's harness shows the authored weights
+# are wrong, the harvested table is one table away.
+
 - key: cost_leadership
   headline_metric: cost_per_transaction
   capability_weights:
     order_fulfilment: 0.35
     store_operations: 0.30
-    financial_reporting: 0.15
+    financial_reporting: 0.09
+    firm_infrastructure: 0.06
     customer_insight: 0.10
     marketing_sales: 0.10
   expected_concentration: 0.28
@@ -11,50 +40,117 @@
   maintenance_floor_pct: 0.15
   punishes: overprovisioning
   reopen_cost: 80000
-  harvested_raw_fit: {cost_leadership: 1.0}
-  provenance: {source: HARVESTED, note: "mis_lite strategy row 1; weights normalised from pinned 0.4 strategy display"}
+  harvested_raw_fit:
+    order_fulfilment: 1.330
+    store_operations: 1.320
+    financial_reporting: 1.330
+    customer_insight: 1.287
+    marketing_sales: 1.270
+    service: 1.320
+    firm_infrastructure: 1.355
+  provenance:
+    source: PINNED
+    note: >-
+      mis_lite strategy row 1, "Focus on low-cost production and operations". The weights
+      are PINNED by mockups/strategy.html, which displays them by VALUE-CHAIN ACTIVITY:
+      "Outbound logistics 0.35 · Operations 0.30 · Firm infrastructure 0.15 · Customer
+      insight 0.10 · Marketing & sales 0.10". Two capabilities sit at
+      support/firm_infrastructure -- financial_reporting and firm_infrastructure -- so the
+      0.15 the screen shows is their sum. 1.3 splits it 0.09 / 0.06 rather than 0.15 / 0.00.
+      The displayed line is unchanged; what changes is that firm_infrastructure stops being
+      a capability no strategy has any reason to invest in (W02), which is not a defensible
+      thing to say about the platform everything else runs on.
+
 - key: differentiation
   headline_metric: unique_customer_experience
   capability_weights:
-    customer_insight: 0.30
-    marketing_sales: 0.25
-    service: 0.20
-    order_fulfilment: 0.15
-    store_operations: 0.10
+    customer_insight: 0.28
+    marketing_sales: 0.24
+    service: 0.19
+    order_fulfilment: 0.14
+    store_operations: 0.09
+    firm_infrastructure: 0.06
   expected_concentration: 0.24
   target_rgt_mix: {run: 0.25, grow: 0.45, transform: 0.30}
   maintenance_floor_pct: 0.12
   punishes: underinvestment_in_customer_data
   reopen_cost: 80000
-  harvested_raw_fit: {differentiation: 1.0}
-  provenance: {source: HARVESTED, note: "mis_lite strategy row 2; weights authored to fit the harvested strategy description"}
+  harvested_raw_fit:
+    order_fulfilment: 1.073
+    store_operations: 1.113
+    financial_reporting: 1.047
+    customer_insight: 1.087
+    marketing_sales: 1.150
+    service: 1.150
+    firm_infrastructure: 1.033
+  provenance:
+    source: AUTHORED
+    note: >-
+      Identity harvested from mis_lite strategy row 2, "Emphasize unique products and
+      customer experience". Weights authored against that description and against the
+      capabilities the case actually has; the harvested normalisation is recorded above
+      and in PROVENANCE.md but is not used, for the reason stated at the head of this file.
+      firm_infrastructure carries 0.06 in every strategy: it is a support activity, so it
+      never leads, but a strategy that weights it at zero says the platform can fail
+      without cost.
+
 - key: customer_supplier_intimacy
   headline_metric: partner_response_time
   capability_weights:
-    customer_insight: 0.25
-    order_fulfilment: 0.25
-    store_operations: 0.20
-    service: 0.20
-    financial_reporting: 0.10
+    customer_insight: 0.24
+    order_fulfilment: 0.24
+    store_operations: 0.19
+    service: 0.18
+    financial_reporting: 0.09
+    firm_infrastructure: 0.06
   expected_concentration: 0.22
   target_rgt_mix: {run: 0.30, grow: 0.45, transform: 0.25}
   maintenance_floor_pct: 0.14
   punishes: disconnected_supplier_and_customer_records
   reopen_cost: 80000
-  harvested_raw_fit: {customer_supplier_intimacy: 1.0}
-  provenance: {source: HARVESTED, note: "mis_lite strategy row 3; weights authored to fit the harvested strategy description"}
+  harvested_raw_fit:
+    order_fulfilment: 1.117
+    store_operations: 1.073
+    financial_reporting: 1.077
+    customer_insight: 1.107
+    marketing_sales: 1.160
+    service: 1.010
+    firm_infrastructure: 1.090
+  provenance:
+    source: AUTHORED
+    note: >-
+      Identity harvested from mis_lite strategy row 3, "Use information systems to tighten
+      linkages with suppliers and develop intimacy with customers". Order fulfilment and
+      customer insight are deliberately level at 0.24 -- this is the one strategy that has
+      to hold both ends of the chain at once, and `supplier_portal_request` is the card
+      that tests it.
+
 - key: focus_strategy
   headline_metric: segment_service_margin
   capability_weights:
-    service: 0.30
-    customer_insight: 0.25
-    marketing_sales: 0.20
-    order_fulfilment: 0.15
-    financial_reporting: 0.10
+    service: 0.28
+    customer_insight: 0.24
+    marketing_sales: 0.19
+    order_fulfilment: 0.14
+    financial_reporting: 0.09
+    firm_infrastructure: 0.06
   expected_concentration: 0.30
   target_rgt_mix: {run: 0.25, grow: 0.35, transform: 0.40}
   maintenance_floor_pct: 0.12
   punishes: broad_spend_without_segment_fit
   reopen_cost: 80000
-  harvested_raw_fit: {focus_strategy: 1.0}
-  provenance: {source: HARVESTED, note: "mis_lite strategy row 4; weights authored to fit the harvested strategy description"}
+  harvested_raw_fit:
+    order_fulfilment: 1.180
+    store_operations: 1.283
+    financial_reporting: 1.220
+    customer_insight: 1.270
+    marketing_sales: 1.310
+    service: 1.160
+    firm_infrastructure: 1.205
+  provenance:
+    source: AUTHORED
+    note: >-
+      Identity harvested from mis_lite strategy row 4, "Target a specific market segment
+      with tailored services". Service leads at 0.28 and carries the highest
+      expected_concentration in the pack, because a focus strategy that spreads its spend
+      has stopped being one.

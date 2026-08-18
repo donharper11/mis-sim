@@ -1,0 +1,452 @@
+[
+  {
+    "component_id": 1,
+    "component_name": "High-Performance Server",
+    "component_type": "Hardware",
+    "cost_value": 20000.0,
+    "description": "Dedicated high-performance server",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 2,
+    "component_name": "Cloud-Based Storage",
+    "component_type": "Hardware",
+    "cost_value": 15000.0,
+    "description": "Cloud storage solution",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 3,
+    "component_name": "SQL Database",
+    "component_type": "Database",
+    "cost_value": 10000.0,
+    "description": "Relational SQL database",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 4,
+    "component_name": "NoSQL Database",
+    "component_type": "Database",
+    "cost_value": 12000.0,
+    "description": "Flexible NoSQL database",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 5,
+    "component_name": "VPN Network",
+    "component_type": "Network",
+    "cost_value": 8000.0,
+    "description": "Virtual private network",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 6,
+    "component_name": "5G Wireless Network",
+    "component_type": "Network",
+    "cost_value": 20000.0,
+    "description": "High-speed 5G network",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 7,
+    "component_name": "On-Premises Deployment",
+    "component_type": "Deployment",
+    "cost_value": 5000.0,
+    "description": "Traditional on-premise setup",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 8,
+    "component_name": "Cloud-Based Deployment",
+    "component_type": "Deployment",
+    "cost_value": 7000.0,
+    "description": "Cloud-hosted system",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 9,
+    "component_name": "ERP Software Suite",
+    "component_type": "Software",
+    "cost_value": 30000.0,
+    "description": "Comprehensive ERP software",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 10,
+    "component_name": "Mobile Digital Platform",
+    "component_type": "Hardware",
+    "cost_value": 12000.0,
+    "description": "Mobile computing devices used for business operations",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 11,
+    "component_name": "Consumerization of IT",
+    "component_type": "Hardware",
+    "cost_value": 10000.0,
+    "description": "Integration of consumer technology for business use",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 12,
+    "component_name": "Virtualization",
+    "component_type": "Hardware",
+    "cost_value": 15000.0,
+    "description": "Abstracting physical hardware resources for efficient use",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 13,
+    "component_name": "PaaS (Platform as a Service)",
+    "component_type": "Hardware",
+    "cost_value": 20000.0,
+    "description": "Cloud-based platform providing tools for app development",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 14,
+    "component_name": "IaaS (Infrastructure as a Service)",
+    "component_type": "Hardware",
+    "cost_value": 25000.0,
+    "description": "Cloud-based infrastructure resources",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 15,
+    "component_name": "Edge Computing",
+    "component_type": "Hardware",
+    "cost_value": 18000.0,
+    "description": "Computing at network edges closer to data sources",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 16,
+    "component_name": "Green Computing",
+    "component_type": "Hardware",
+    "cost_value": 15000.0,
+    "description": "Environmentally sustainable computing infrastructure",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 17,
+    "component_name": "High Performance Processors",
+    "component_type": "Hardware",
+    "cost_value": 22000.0,
+    "description": "Processors optimized for demanding workloads",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 18,
+    "component_name": "Power Saving Processors",
+    "component_type": "Hardware",
+    "cost_value": 14000.0,
+    "description": "Processors designed for low power consumption",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 19,
+    "component_name": "Linux/Open Source",
+    "component_type": "Software",
+    "cost_value": 5000.0,
+    "description": "Open-source operating systems and software solutions",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 20,
+    "component_name": "Web Software - Java",
+    "component_type": "Software",
+    "cost_value": 6000.0,
+    "description": "Web development frameworks and software using Java",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 21,
+    "component_name": "Web Software - JavaScript",
+    "component_type": "Software",
+    "cost_value": 5500.0,
+    "description": "Web frameworks and libraries using JavaScript",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 22,
+    "component_name": "Web Software - HTML",
+    "component_type": "Software",
+    "cost_value": 4000.0,
+    "description": "HTML-based front-end web development",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 23,
+    "component_name": "Web Software - HTML5",
+    "component_type": "Software",
+    "cost_value": 4500.0,
+    "description": "HTML5 for interactive and mobile-friendly web apps",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 24,
+    "component_name": "Web Services and SOA",
+    "component_type": "Software",
+    "cost_value": 12000.0,
+    "description": "Service-Oriented Architecture and web services integration",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 25,
+    "component_name": "SaaS (Software as a Service)",
+    "component_type": "Software",
+    "cost_value": 18000.0,
+    "description": "Cloud-based software applications",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 26,
+    "component_name": "Software Outsourcing",
+    "component_type": "Software",
+    "cost_value": 8000.0,
+    "description": "Third-party software development and maintenance",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 27,
+    "component_name": "Mashups and Apps",
+    "component_type": "Software",
+    "cost_value": 7000.0,
+    "description": "Combination of different apps into new integrated services",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 28,
+    "component_name": "Client/Server Computing",
+    "component_type": "Network",
+    "cost_value": 12000.0,
+    "description": "Distributed system with centralized servers and client devices",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 29,
+    "component_name": "Packet Switching",
+    "component_type": "Network",
+    "cost_value": 10000.0,
+    "description": "Data transmission method where data is sent in packets",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 30,
+    "component_name": "TCP/IP",
+    "component_type": "Network",
+    "cost_value": 8000.0,
+    "description": "Internet protocol suite for reliable communication",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 31,
+    "component_name": "Digital Signals",
+    "component_type": "Network",
+    "cost_value": 5000.0,
+    "description": "Digital signal processing in communication networks",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 32,
+    "component_name": "Analog Signals",
+    "component_type": "Network",
+    "cost_value": 4000.0,
+    "description": "Analog signal transmission for legacy networks",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 33,
+    "component_name": "LAN (Local Area Network)",
+    "component_type": "Network",
+    "cost_value": 6000.0,
+    "description": "Local Area Network for intra-office connectivity",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 34,
+    "component_name": "WAN (Wide Area Network)",
+    "component_type": "Network",
+    "cost_value": 15000.0,
+    "description": "Wide Area Network for global connectivity",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 35,
+    "component_name": "MAN (Metropolitan Area Network)",
+    "component_type": "Network",
+    "cost_value": 10000.0,
+    "description": "Metropolitan Area Network for city-wide coverage",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 36,
+    "component_name": "Blockchain",
+    "component_type": "Database",
+    "cost_value": 30000.0,
+    "description": "Decentralized, immutable ledger database",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 37,
+    "component_name": "Data Warehouse",
+    "component_type": "Database",
+    "cost_value": 20000.0,
+    "description": "Centralized repository for structured data analytics",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 38,
+    "component_name": "Data Mart",
+    "component_type": "Database",
+    "cost_value": 12000.0,
+    "description": "Subset of a data warehouse for department-specific data",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 39,
+    "component_name": "Hadoop",
+    "component_type": "Database",
+    "cost_value": 18000.0,
+    "description": "Big data processing and storage framework",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 40,
+    "component_name": "In-Memory Computing",
+    "component_type": "Database",
+    "cost_value": 25000.0,
+    "description": "Database solutions optimized for in-memory data storage",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 41,
+    "component_name": "OLAP (Analytic Platform)",
+    "component_type": "Database",
+    "cost_value": 22000.0,
+    "description": "Online Analytical Processing for multidimensional data analysis",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 42,
+    "component_name": "Data Mining",
+    "component_type": "Database",
+    "cost_value": 20000.0,
+    "description": "Data mining platforms for extracting insights from large datasets",
+    "infrastructure_type_id": null,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 43,
+    "component_name": "API Gateway",
+    "component_type": "Middleware",
+    "cost_value": 10000.0,
+    "description": "Manages API requests and connections",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 44,
+    "component_name": "Next-Gen Firewall",
+    "component_type": "Security",
+    "cost_value": 15000.0,
+    "description": "Advanced firewall with zero-trust features",
+    "infrastructure_type_id": 2,
+    "max_value": 100.0,
+    "min_value": 1.0
+  },
+  {
+    "component_id": 45,
+    "component_name": "Data Lake",
+    "component_type": "Database",
+    "cost_value": 20000.0,
+    "description": "Centralized repository for structured and unstructured data",
+    "infrastructure_type_id": 1,
+    "max_value": 100.0,
+    "min_value": 1.0
+  }
+]

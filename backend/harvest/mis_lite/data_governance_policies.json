@@ -1,0 +1,26 @@
+[
+  {
+    "cost_value": 15000.0,
+    "description": "Defines how long data should be stored and retained.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "policy_id": 1,
+    "policy_name": "Data Retention Policy"
+  },
+  {
+    "cost_value": 20000.0,
+    "description": "Categorizes data to ensure sensitive information is protected.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "policy_id": 2,
+    "policy_name": "Data Classification Standards"
+  },
+  {
+    "cost_value": 30000.0,
+    "description": "Establishes auditing procedures for regulatory compliance.",
+    "max_value": 100.0,
+    "min_value": 1.0,
+    "policy_id": 3,
+    "policy_name": "Audit and Reporting Standards"
+  }
+]
