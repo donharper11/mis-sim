@@ -92,6 +92,28 @@ neither caught it nor reported it. The auditor did both.
 
 ---
 
+## E. Reframed by `design/07` — 2026-08-18
+
+The design map found these are **not** the problems they were filed as. Recorded so the
+register and the design agree.
+
+| Was filed as | Actually |
+|---|---|
+| `B6` — "the ethics layer is inert because obligation rules do not resolve" | **Half the story.** The obligation half is one of three paths. Policy also has **no stakeholder preference file** and **no scoring sub-factor**. `design/07 §3.5`. The user identified this; the audits never could, because each saw one symptom |
+| `B12` — "54 of 75 options have `lead_time_rounds: 0`" | A **content** defect in a fully-built path, not a missing feature. *Follow-through* has a UI, a casepack field and a Mgmt sub-factor; the content zeroes it out. `design/07 §4` |
+
+**New, from the map rather than from an audit:**
+
+| # | Item | Owner |
+|---|---|---|
+| E1 | `preferences/policies.yaml` does not exist — the six switches are invisible to stakeholders, to scoring, **and to the persona layer** | **1.3 follow-up** |
+| E2 | *information-policy discipline* has no Mgmt sub-factor — a team that never opens the screen is not neutral, it is unmanaged | **1.4 spec** |
+| E3 | `preferences/services.yaml` does not exist — support-tier decisions draw no human reaction | **1.3 follow-up** |
+| E4 | Governance has no consequence path — an unowned capability with an open critical signal should arm an event | **1.5** |
+| E5 | `it.ideal_staff_load` is filed under `catalog` preferences; under G1 staffing is its own class | **4.5** |
+
+---
+
 ## Standing rule
 
 > **A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is

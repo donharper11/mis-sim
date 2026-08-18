@@ -59,6 +59,7 @@ screenshots/  evidence attached to playthroughs
 | 04 | `design/04-decisions-g1-g6.md` | IT staffing as a load pool; stakeholder layer adopted, market layer deferred |
 | 05 | `design/05-implementation-plan.md` | Module inventory, phases, gates, risks |
 | 06 | `design/06-plan-index.md` | **The authoritative packet list** — every packet, one page |
+| 07 | `design/07-decision-consequence-map.md` | **Every decision → its stakeholder preference, scoring path and consequence.** The three-path test, and the two classes that fail it |
 
 ---
 
