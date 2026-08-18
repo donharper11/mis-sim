@@ -1,0 +1,110 @@
+You are the BUILDER for the 1.3 CONTENT FOLLOW-UP.
+
+Pack content only. No engine code, no schema, no validator.
+
+REPO: /home/ubuntu/projects/mis-sim
+BRANCH: cut build/1.3-followup from main at 9905148 — the commit that adds
+your instruction. (Base named as a commit, not a SHA read earlier; a SHA read
+before writing is only correct in a document never committed.)
+Never push to main. Never merge. Never run 'git add -A' — shared working
+directory, add by explicit path. Leave HEAD where you found it.
+
+READ, IN FULL, IN THIS ORDER:
+  1. ~/projects/mis-sim/handoffs/1.3-harvest/followup.md   <-- START HERE.
+     Four items, the constraints, the DoD.
+  2. ~/projects/mis-sim/design/07-decision-consequence-map.md
+     THE DESIGN INTENT. Section 3.5 is the authoring guide for policies and
+     section 3.6 for services. Read these before authoring a single line.
+  3. ~/projects/mis-sim/GOVERNANCE.md   2.1 business language, 4.9 seed data
+     never stubs and authored values carry their rationale
+  4. ~/projects/mis-sim/design/04-decisions-g1-g6.md  G6 — decisions map to
+     alignment against each stakeholder's ideal. That is the mechanism you are
+     completing.
+  5. ~/projects/mis-sim/backend/packs/riverside_grocery/preferences/*.yaml
+     The three that exist. Match their shape.
+  6. ~/projects/mis-sim/backend/packs/riverside_grocery/obligation_rules.yaml
+     It already names the permissive value of all six switches. Half your
+     vocabulary work is authored.
+
+WHY THIS EXISTS:
+
+  1.3 took Riverside to a clean validator run. That proves the pack is
+  well-formed. It does not prove the decisions land.
+
+  Today a student can spend capital setting all six information-policy
+  switches, or none, and NOTHING DIFFERS. No stakeholder notices, no scoring
+  factor moves, and the obligation rules are inert. That is the whole of
+  Laudon Chapter 4 being decorative.
+
+  And 54 of 75 purchase options complete in zero rounds, so follow-through —
+  which has a UI, a casepack field and a Management sub-factor — has almost
+  nothing to score. "Started five things, finished none" is currently an
+  impossible failure rather than a teachable one.
+
+BUILD — four items, all detailed in followup.md section 2:
+
+  2.1  preferences/policies.yaml   NEW. Six switches x archetype ideals.
+  2.2  options + default on all six policies in policies.yaml
+  2.3  honest lead_time_rounds across the 54 zeroes
+  2.4  preferences/services.yaml   NEW.
+
+THE TWO AUTHORING RULES THAT MATTER MOST:
+
+  1. AUTHOR PER SWITCH, NOT ONE BLANKET POSTURE PER ARCHETYPE.
+     Employees caring intensely about staff_monitoring and barely about
+     data_egress IS the teaching content. A single ideal_posture per archetype
+     would flatten exactly the tension this packet exists to create.
+
+     The design intent is that stakeholders want INCOMPATIBLE things, so no
+     setting pleases everyone: finance and marketing want permissive, the
+     regulator and customers want strict, employees want strict on monitoring
+     specifically. A student setting every switch to strict should make
+     Finance, Marketing and Operations unhappy AND be poorer for it.
+
+  2. THE SIM TAKES NO POSITION. Every preference is stated as an INTEREST,
+     never a verdict. If an entry reads as "this is the right answer", it is
+     wrong. GOVERNANCE: ships attributes and consequences, never a stance.
+
+     IF AUTHORING A STAKEHOLDER'S VIEW REQUIRES YOU TO DECIDE WHETHER A POLICY
+     SETTING IS RIGHT — STOP AND REPORT. That is the one thing this packet
+     must not do.
+
+CONSTRAINTS:
+  - Content only. Nothing outside backend/packs/riverside_grocery/ changes.
+    git diff on backend/app/, backend/tests/ and docs/ must be empty.
+  - Riverside must stay 0 errors, 0 warnings, exit 0. You are adding content
+    to a clean pack. If it stops validating, the content is wrong — do not
+    reach for the validator.
+  - No preference file for a class design/07 does not list. Governance and
+    People are recorded there as later work, with reasons.
+  - PROVENANCE.md gets a row for each new file, AUTHORED, with rationale.
+  - Anything you cannot justify: TODO: calibrate, and list it.
+  - Do NOT invent the information-policy discipline scoring sub-factor. That
+    is 1.4's spec. A builder inventing a scoring rule inside a pack is how
+    engine design leaks into content.
+
+HAND-VERIFY, because no machine check exists yet:
+  Every permissive_value in obligation_rules.yaml must name a member of its
+  policy's options. There is no validator check for this — it is 1.2's next
+  packet — so your pasted cross-check IS the evidence.
+
+BEFORE CLAIMING DONE:
+  - Riverside before and after: 0 errors, 0 warnings, exit 0, both pasted.
+  - The hand-verification, pasted in full.
+  - Show the VARIATION in policies.yaml — prove no archetype expresses a
+    blanket posture across all six switches.
+  - The lead_time_rounds distribution and the reasoning band you used.
+  - Three empty diffs: backend/app/, backend/tests/, docs/.
+  - PROVENANCE.md rows for both new files.
+  - Every TODO: calibrate, listed.
+  - Fill handoffs/1.3-harvest/dod-followup.md — a NEW file, do not overwrite
+    dod.md.
+  - Verify your push landed: git ls-remote origin build/1.3-followup against
+    local HEAD. Exit 0 is not proof.
+  - Push and report. DO NOT MERGE. A fresh auditor takes it from there.
+
+DECLARE EVERY SUBSTITUTION.
+
+Report: the four items, the variation proof, the hand-verification, the
+lead_time reasoning, every substitution, every TODO, and anything you stopped
+on — especially anything that would have required the sim to take a stance.
