@@ -38,11 +38,15 @@ exit 0.
 | `labels.misc` impact areas | `impact_areas` | 5 | 5 | mechanical | rewritten to business language (O2) |
 | `preferences/platform.yaml` | `stakeholder_infrastructure_preference` + `it_infrastructure_types` | 14 | 7 internal archetypes (+7 external, authored) | mechanical | `preference_weight` carried exactly as `cloud_weight` / `on_prem_weight`; `ideal_placement` derived from the pair. **Corrected `finance` from `on_prem` to `cloud`** — the source says 1.1 vs 0.8 and the pack had asserted the opposite |
 | `obligation_rules[]` | — | — | 6 | authored | CG-5. No mis_lite source: the prior build had no privacy layer |
+| `preferences/policies.yaml` | — | — | 9 archetypes · 36 rows | authored | **NEW, 1.3 follow-up.** design/07 §3.5 — the PREFERENCE path for information policy. No mis_lite source: the source models stakeholder preference over infrastructure placement only and has no policy dimension. §10 below |
+| `preferences/services.yaml` | — | — | 6 archetypes · 11 rows | authored | **NEW, 1.3 follow-up.** design/07 §3.6. The tier keys and every figure the views are about are harvested and already in `platform.yaml`; who holds a view and how strongly is authored |
+| `policies[].options`, `.default` | — | — | 6 × 3 states + 6 defaults | authored | 1.3 follow-up. The permissive value of each switch was already named by `obligation_rules.yaml`, so half the vocabulary was authored before this packet; the middle and restrictive states and the six defaults are new. §10 |
+| `lead_time_rounds` | `mis_initiatives_master.duration_in_rounds` | 12 | 37 rows re-authored | judged | 1.3 follow-up. 54 of 75 placement options completed in zero rounds. The band is anchored on the source's 12 durations (range 1–5, **no initiative shorter than one round**); the placement gradient is authored. §10 |
 | `watch_rules[]` | — | — | 8 | authored / pinned | CG-1. 3 pinned from 0.4, 5 authored |
 | `capabilities[]`, `entities[]`, `questions[]` | — | — | unchanged | — | authored by 1.1; 1.3 changed none of them |
 
-**Totals:** 2,456 rows extracted · 25 tables in the transform map · 9 discarded (§5) ·
-27 `TODO: calibrate` markers (§7).
+**Totals:** 2,456 rows extracted · 26 tables in the transform map · 9 discarded (§5) ·
+30 `TODO: calibrate` markers (§7).
 
 ---
 
@@ -207,7 +211,7 @@ distinct) show authored variation.
 
 ---
 
-## 7. Every `TODO: calibrate` — 27 markers
+## 7. Every `TODO: calibrate` — 30 markers
 
 `GOVERNANCE §4.9` rule 5: estimates are allowed; unmarked estimates are not. Every value
 below is authored judgement that 1.7's harness is expected to move.
@@ -217,9 +221,11 @@ below is authored judgement that 1.7's harness is expected to move.
 | `watch_rules.yaml` | 5 | thresholds on `store_cap_01`, `fin_close_01`, `cust_data_01`, `mkt_channel_01`, `svc_backlog_01`. Only `ord_cap_01`'s 0.80/0.95 is pinned |
 | `events.yaml` | 7 | scorecard deltas and option costs on all seven non-pinned cards. `revenue_loss` on the six harvested cards is **not** a TODO — those are `impact_cost` / `fine_amount` carried exactly |
 | `policies.yaml` | 6 | every effect vector; `data_egress` cost 12000; `data_access` cost 9000 inherited from 1.1; `staff_monitoring` cost and effects entirely |
-| `catalog.yaml` | 4 | `store_back_office_pc` capex; the cloud/saas ladders on the three new items; `erp_suite` compute multipliers, opex, lead times |
+| `catalog.yaml` | 5 | `store_back_office_pc` capex; the cloud/saas ladders on the three new items; `erp_suite` compute multipliers, opex, lead times; **and the whole lead-time band (§10)** |
 | `platform.yaml` | 4 | cloud and saas figures on `failover_cluster`, `threat_detection`, `end_user_email`, `data_platform` |
 | `preferences/platform.yaml` | 1 | the `weight` column throughout — how much each archetype's view counts. mis_lite weighted every stakeholder the same |
+| `preferences/policies.yaml` | 1 | both `weight` columns throughout — the archetype-level weight and the per-switch weight. Which switch matters most to whom is authored judgement. The `ideal_posture` values are **not** marked: each is either stated in design/07 §3.5 or read off an effect vector or an obligation rule already in the pack, and every one is cited in the file |
+| `preferences/services.yaml` | 1 | both `weight` columns, on the same footing. The `ideal_tier` values are not marked — each is stated in design/07 §3.6 or read off a figure in `platform.yaml` |
 
 **Nothing pinned by 0.3 §5.6 or the 0.4 mockups carries a TODO.** All 43 pinned figures
 match — `backend/scripts/harvest_readback.py`.
@@ -284,7 +290,7 @@ with automated failover"*.
 
 | Half | Where it lives | Evidence |
 |---|---|---|
-| How long a project takes | `catalog[].deployment_modes[].lead_time_rounds` and `platform.services[].placement_options[].lead_time_rounds`, authored on every row | 0.3 §5.6 wizard pins it: *"On our on-premises platform … available in 2 rounds"* = `centraline_im7.on_prem.lead_time_rounds: 2` |
+| How long a project takes | `catalog[].deployment_modes[].lead_time_rounds` and `platform.services[].placement_options[].lead_time_rounds`, present on every row — **but 54 of the 75 were `0` when this was written, which is corrected and explained in §10** | 0.3 §5.6 wizard pins it: *"On our on-premises platform … available in 2 rounds"* = `centraline_im7.on_prem.lead_time_rounds: 2` |
 | Whether it is still in flight | 1.6 spec open decision **O2**: *"an `in_flight` collection on team state, materialising into the graph at `arrival_round`"* | runtime, not authored |
 
 **Abandoned** is therefore computable: a decision line that entered `in_flight` and left it
@@ -298,3 +304,141 @@ No new field is required and none was added — spec §1 puts schema changes out
 schema's `lead_time_rounds` is the same fact expressed per placement rather than per
 initiative, which is strictly more useful — the cloud option is genuinely faster than the
 on-premises one, and mis_lite could not say so.
+
+
+---
+
+## 10. The 1.3 follow-up — policy vocabularies, policy and service preferences, lead times
+
+`design/07-decision-consequence-map.md` applies one test — *a decision is real only if a
+stakeholder holds a view on it, a sub-factor consumes it, and it can move a signal or an
+event* — and two of this pack's decision classes failed it. All four items below are
+content. None needed a schema change.
+
+### 10.1 `policies[].options` and `.default` — the vocabularies
+
+`PolicyOption.options` and `.default` landed in 1.1 rework-3 and no pack used them, so
+every `permissive_value` in `obligation_rules.yaml` was a string pointing at nothing and
+the privacy layer was inert. Each switch now declares three states and a default.
+
+| Policy | `options` | `default` | Why that default |
+|---|---|---|---|
+| `data_collection` | `everything_by_default` · `purpose_limited` · `minimal` | `everything_by_default` | a firm that has never asked what it may collect is collecting what the tills and the loyalty scheme produce |
+| `data_retention` | `indefinite` · `standard_period` · `minimal` | `indefinite` | the case's actual state — nobody has deleted anything since 2011 |
+| `data_access` | `open_to_all_staff` · `role_based` · `need_to_know` | `open_to_all_staff` | 0.4's security screen: four separate logins and no position behind them |
+| `access_logging` | `unlogged` · `sampled` · `full_audit_trail` | `unlogged` | 0.4 states it in plain words — *"no record of who views customer data"* |
+| `data_egress` | `unrestricted` · `approved_destinations` · `no_export` | `unrestricted` | extracts already move to suppliers, to marketing and into the store spreadsheets |
+| `staff_monitoring` | `untracked` · `aggregate_only` · `individual_activity` | `untracked` | nothing is recorded about staff today, and leaving it there arms `phishing_on_staff_accounts` |
+
+**The permissive half was authored before this packet.** `obligation_rules.yaml` already
+named all six permissive values; what is new is the middle and restrictive states and the
+six `default` declarations.
+
+**Order carries no meaning.** `models.py` is explicit — *"do not infer strictness from
+position"*. The lists read permissive-to-restrictive only for a human, and on
+`staff_monitoring` that reading would be actively wrong: its permissive end is the
+low-surveillance end.
+
+**Hand-verified**, because no validator check exists (it is 1.2's next packet): all six
+`permissive_value`s in `obligation_rules.yaml` name a member of their policy's `options`,
+and all six are also that policy's `default`. All 36 `ideal_posture` values in
+`preferences/policies.yaml` likewise name a declared option. Both cross-checks are pasted
+in `handoffs/1.3-harvest/dod-followup.md`.
+
+### 10.2 `preferences/policies.yaml` — 9 archetypes, 36 rows, authored per switch
+
+The nine archetypes are exactly the nine `design/07` §3.5 names. `hr`, `investor`, `it`,
+`media` and `vendor` have no rows, deliberately — the design does not give them a view on
+this class and inventing one would be authoring past it.
+
+Ideals are authored **per switch, not per archetype**, and the file carries no
+archetype-wide posture at all. `finance` holds a view on all six and is permissive on four
+of them; `employees` hold exactly one view. No archetype expresses one posture at one
+weight across all six.
+
+Two rows deserve naming because they run against the obvious reading, and both are read off
+this pack rather than off an opinion:
+
+- **`finance` wants `standard_period` on retention.** A retention position is the only one
+  of the six whose effect vector *reduces* a running cost (`storage_cost: -0.05`).
+- **`regulator` wants `standard_period` where `security_auditor` wants `minimal`.** Two
+  archetypes both asking the firm to constrain itself, and they still disagree — the
+  regulator's interest is that a defined period exists, the auditor's is that less is held.
+
+**`staff_monitoring` runs on the opposite axis to the other five**, and the file says so.
+Its permissive value is `untracked`, so the undecided end is the *low*-surveillance end.
+`design/07`'s table reads *"employees want strict on staff_monitoring"*, but its own reason
+column says *"being watched is not free"* — the interest governs, so `employees` want
+`untracked` and are the one archetype already aligned with doing nothing.
+`security_auditor` wants `individual_activity` on the same switch, because
+`insider_risk: -0.25` is the risk they are employed to look at. Neither side is endorsed.
+
+### 10.3 `preferences/services.yaml` — 6 archetypes, 11 rows
+
+Exactly the six `design/07` §3.6 names. `it`'s view is the strongest in the file and is a
+capacity argument rather than a comfort one: `premium` support carries 2.4 FTE against a
+`starting_staff_fte` of 2.0, so the load the tier does not absorb is load the two existing
+IT staff carry. That is G1's staffing pool made visible. `vendor` prefers the higher tier
+because it is their revenue, and that is recorded plainly.
+
+### 10.4 `lead_time_rounds` — the band, and why 54 zeroes was a defect
+
+54 of 75 placement options completed in zero rounds, so *follow-through* — a named
+Management sub-factor with a UI, a casepack field and a formula — had almost nothing to act
+on, and *"started five things, finished none"* was an impossible failure rather than a
+teachable one.
+
+**The band:**
+
+| Rounds | What it is |
+|---|---|
+| **0** | already running, or nothing to install and nobody to retrain |
+| **1** | a departmental application or a shared platform service: procure, configure, integrate, cut one department over |
+| **2** | touches every store, the warehouse or the general ledger: migration plus a period of parallel running |
+
+**Anchored on the source.** `mis_initiatives_master.duration_in_rounds`, 12 rows, range
+1–5: BI dashboard 1 · CRM enhancements 1 · data governance 1 · data quality audit 1 · ERP
+finance module 2 · endpoint security 2 · training programme 2 · unit-based ERP 2 · system
+tuning 2 · data migration 3 · predictive analytics 4 · supplier portal 5. **The source has
+no initiative shorter than one round**, which is the strongest single argument that 54
+zeroes was a content defect and not a modelling choice.
+
+**Placement gradient — authored, and it corrects §9.** §9 says the cloud option *"is
+genuinely faster than the on-premises one"*. mis_lite's own data does not support that as a
+general rule: its four cloud initiatives average 2.75 rounds against 2.0 for its two
+on-premises ones. What is defensible is narrower, and it is what was applied here:
+placement changes the answer only where the delay was *infrastructure*. `saas` rows carry
+`bypasses_platform: true` — the firm does not build the platform underneath them — so SaaS
+is one round faster where that build was the wait, and no faster where the wait is
+migration, training or process change.
+
+**Only the zeroes were re-authored.** The 21 rows already carrying 1 or 2, including every
+row 0.3 §5.6 pins, are untouched.
+
+| | before | after |
+|---|---|---|
+| 0 rounds | 54 | 17 |
+| 1 round | 17 | 51 |
+| 2 rounds | 4 | 7 |
+
+**The 17 rows still at 0 are deliberate.** Two incumbent on-premises systems the firm
+already runs (`pos_system_2011`, `accounting_package`, both at capex 0); the store
+spreadsheets and the back-office PC; three subscribed services that start working when the
+invoice is signed (`next_gen_firewall` saas, `service_desk` saas — there is no incumbent
+service desk to migrate from — and `intrusion_detection` saas); `end_user_email` cloud and
+saas, the one service 0.3 §5.6 pins as already placed in the cloud; and `compute_pool` and
+`storage_pool` cloud and saas, where capacity on demand *is* the difference between the
+placements and 0.3 §5.6 pins the compute pool at 100% used.
+
+**TODO: calibrate — the whole band**, and two rows specifically:
+
+- `erp_suite.on_prem` is 2, below the 3 the band would give a firm-wide replacement
+  carrying both a data migration and the finance close. It is left as authored because it
+  is not one of the 54 zeroes.
+- `central_sign_on` is 1 on all three placements. Issuing credentials to 620 staff is
+  plausibly 2; the existing on-premises 1 is what holds the other two down.
+
+One round now dominates the distribution (51 of 75). That is a fair reflection of a pack
+whose catalogue is mostly departmental systems and shared services, but it means the
+sharpest follow-through failures rest on the 7 two-round options. 1.7's harness is expected
+to spread it.

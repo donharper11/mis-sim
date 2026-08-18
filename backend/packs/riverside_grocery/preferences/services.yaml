@@ -1,0 +1,130 @@
+# Stakeholder preferences on the firm's service tiers.
+#
+# design/07 section 3.6. The PREFERENCE path for decision class 6. Support and integration
+# tiers already feed Tech reliability and Org staff load, and vendor-support-ending events
+# are already in the deck -- two of the three paths. What was missing was any human
+# reaction: a team upgrading from Basic to Premium support saw a cost and a reliability
+# number and nobody noticed.
+#
+# THE SIM TAKES NO POSITION. Every row is an interest. Nobody here is right: the tier that
+# answers the phone fastest is the tier that costs 100000 a round against 20000, and both
+# of those facts are on the same page.
+#
+# ---------------------------------------------------------------------------------------
+# SHAPE -- the same convention as preferences/policies.yaml
+# ---------------------------------------------------------------------------------------
+#
+#   defaults_by_archetype:
+#     <archetype>:
+#       weight: <float>            how much this archetype's views on services count
+#       by_decision:
+#         support_tier:            the `key` list in platform.yaml `support_tiers`
+#           ideal_tier: <value>      basic | standard | premium
+#           weight: <float>          how much this decision matters to this archetype
+#         integration_tier:        the `key` list in platform.yaml `integration_tiers`
+#           ideal_tier: <value>      basic | advanced | vendor_managed
+#           weight: <float>
+#
+# `ideal_tier` rather than `ideal_posture` because the pack calls these tiers, and the
+# value is always a declared tier key -- never an abstract high/low. An archetype with no
+# view on one of the two decisions has no row for it.
+#
+# ---------------------------------------------------------------------------------------
+# THE NUMBERS THESE VIEWS ARE ABOUT, from platform.yaml
+# ---------------------------------------------------------------------------------------
+#
+#   support tiers        basic 20000 / 0.6 FTE · standard 50000 / 1.4 · premium 100000 / 2.4
+#   integration tiers    basic 50000 · advanced 120000 · vendor_managed 200000
+#   starting_staff_fte   2.0
+#
+# The `fte_equivalent` column is why `it`'s view below is not a preference for comfort.
+# Under G1, support tier IS staffing: premium adds 2.4 FTE against a starting pool of 2.0,
+# and the load that tier does not absorb is load the two existing IT staff carry. That is
+# the G1 pool made visible, which is exactly what design/07 section 3.6 asks for.
+#
+# Six archetypes hold a view, exactly the six design/07 section 3.6 names: operations,
+# employees, it, finance, c_suite, vendor. The other eight have no rows. `customer` is the
+# closest call -- service tier reaches the shop floor eventually -- but it reaches them
+# through reliability, which they already hold a view on in preferences/catalog.yaml and
+# preferences/platform.yaml, and stating it twice would double-count one interest.
+
+defaults_by_archetype:
+
+  # --- the people who place the calls ---------------------------------------------------
+
+  operations:
+    weight: 0.8
+    by_decision:
+      # 8 stores and a warehouse. When the POS stops, the till stops, and operations is
+      # the department holding the phone.
+      support_tier: {ideal_tier: premium, weight: 0.9}
+      # Weaker, but real and already in the deck: "Three of our suppliers want to see
+      # stock levels themselves instead of phoning us every morning"
+      # (`event_supplier_portal_request`) is an integration question.
+      integration_tier: {ideal_tier: advanced, weight: 0.5}
+
+  employees:
+    weight: 0.7
+    by_decision:
+      # 620 people who do not hold the budget and do wait on the answer.
+      support_tier: {ideal_tier: premium, weight: 0.7}
+      # No integration row: how systems talk to each other is not something the shop floor
+      # experiences as a decision.
+
+  it:
+    weight: 0.8
+    by_decision:
+      # The strongest single view in this file, and it is a capacity argument rather than
+      # a comfort one: premium is 2.4 FTE against a starting pool of 2.0, and every unit
+      # the tier does not carry is carried by the two people who are already there.
+      support_tier: {ideal_tier: premium, weight: 1.0}
+      # Same argument one step along -- vendor-managed integration is work IT does not do.
+      integration_tier: {ideal_tier: vendor_managed, weight: 0.8}
+
+  # --- the people who pay for it --------------------------------------------------------
+
+  finance:
+    weight: 0.9
+    by_decision:
+      # 20000 against 100000, every round, for something whose value shows up only when
+      # something breaks.
+      support_tier: {ideal_tier: basic, weight: 0.9}
+      integration_tier: {ideal_tier: basic, weight: 0.8}
+
+  c_suite:
+    weight: 0.8
+    by_decision:
+      support_tier: {ideal_tier: basic, weight: 0.6}
+      # NOT the cheap tier, and this is the row that keeps the board from being simply a
+      # second finance. `event_board_wants_numbers` -- "The board wants to know which
+      # customers we are losing and why. I cannot answer that from what we hold" -- is a
+      # question only answerable across systems that are joined up.
+      integration_tier: {ideal_tier: advanced, weight: 0.4}
+
+  # --- the other side of the contract ---------------------------------------------------
+
+  vendor:
+    weight: 0.7
+    by_decision:
+      # Recorded plainly because it is honest, not because the vendor is wrong: the higher
+      # tier is their revenue. An external stakeholder whose interest is openly commercial
+      # is a better lesson than one modelled as neutral.
+      integration_tier: {ideal_tier: vendor_managed, weight: 1.0}
+      support_tier: {ideal_tier: premium, weight: 0.8}
+
+overrides: []
+# No case-specific overrides. The tiers are firm-wide and priced identically whatever the
+# team has bought, so there is no item for an override to attach to.
+
+provenance:
+  source: AUTHORED
+  note: >-
+    design/07 section 3.6, the PREFERENCE path for decision class 6. The tier keys and
+    every figure the views are about are HARVESTED and already in platform.yaml --
+    maintenance_support_levels (20000 / 50000 / 100000) and integration_services
+    (50000 / 120000 / 200000), all carried exactly. What is authored here is who holds a
+    view and how strongly; mis_lite has no stakeholder-to-service-tier mapping. The six
+    archetypes are exactly the six design/07 names.
+    TODO: calibrate -- both weight columns throughout, on the same footing as
+    preferences/platform.yaml's. The ideal tiers themselves are each stated in design/07
+    section 3.6 or read off a figure in platform.yaml, and are not marked.
