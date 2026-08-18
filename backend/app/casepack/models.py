@@ -432,7 +432,39 @@ class PolicyOption(StrictModel):
     category: SnakeKey
     cost: int = Field(ge=0)
     effects: dict[SnakeKey, float | int | str]
+    #: The states this switch can be in -- the policy's value vocabulary, e.g.
+    #: `[minimal, standard, indefinite]` for `data_retention`. Without it an
+    #: obligation's `permissive_value` is a string pointing at nothing (`1.3-012`,
+    #: and the box in 1.5 spec 5.4). Ordering is an authoring convention and
+    #: carries no meaning: do not infer strictness from position.
+    #:
+    #: Optional, and empty by default. A policy that declares no options is the
+    #: legacy shape and loads exactly as it did before this field existed.
+    options: list[SnakeKey] = Field(default_factory=list)
+    #: The state a team holds by NOT deciding. This is what makes the ethics layer
+    #: cost something to ignore rather than something to opt into.
+    #:
+    #: Usually the same value an obligation names as its `permissive_value`, but
+    #: the two are distinct concepts and stay separate fields: `default` is where
+    #: a team starts, `permissive_value` is what obliges. A pack may legitimately
+    #: start a team somewhere already compliant.
+    default: SnakeKey | None = None
     provenance: Provenance
+
+    @model_validator(mode="after")
+    def default_is_a_declared_option(self) -> PolicyOption:
+        """If a policy enumerates its states, its default must be one of them.
+
+        The one constraint enforced here, and deliberately the only one. `options`
+        is not required to be non-empty, and `default` is not required when
+        `options` is empty -- all 30 packs in the repository carry `policies.yaml`
+        with neither field, and every one of them must keep loading unchanged.
+        """
+        if self.options and self.default is not None and self.default not in self.options:
+            raise ValueError(
+                f"policies.{self.key}.default '{self.default}' must be one of options {self.options}"
+            )
+        return self
 
 
 class Question(StrictModel):

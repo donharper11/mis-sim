@@ -373,7 +373,7 @@ policy switches then change no outcome, which is a content gap rather than a bro
 | `entity` | snake string | yes | An entity the pack defines in `entities.yaml` |
 | `condition` | snake string | yes | What makes the obligation true, e.g. `policy_permits` |
 | `policy` | snake string | yes | The policy switch the condition reads |
-| `permissive_value` | string | yes | The value of that policy which leaves the obligation open |
+| `permissive_value` | string | yes | The value of that policy which leaves the obligation open. Should name one of that policy's `options` — see [`default` is not `permissive_value`](#default-is-not-permissive_value) |
 | `severity` | enum | no | `critical` only, and the default. See below |
 | `cleared_by` | snake string list | yes | Action type keys matched exactly, as in `watch_rules.yaml` |
 | `arms` | snake string list | no | Event keys this obligation can arm; defaults to empty |
@@ -454,6 +454,8 @@ contradictions.
 | `category` | snake string | yes | Policy group |
 | `cost` | integer | yes | Non-negative |
 | `effects` | map | yes | Authored effect vector |
+| `options` | snake string list | no | The states this switch can be in. Defaults to empty |
+| `default` | snake string | no | The state a team holds by not deciding. Defaults to unset |
 | `provenance` | object | yes | Source tag and rationale |
 
 Worked example:
@@ -464,6 +466,82 @@ Worked example:
   cost: 1500
   effects: {privacy_risk: -0.2, staff_load: 0.05}
 ```
+
+### `options` and `default` — a policy's value vocabulary
+
+A policy is a **switch**, and a switch has positions. `options` enumerates them, and
+`default` names the position a team occupies before it has decided anything.
+
+```yaml
+- key: data_retention
+  category: data_governance
+  cost: 9000
+  effects: {privacy_risk: -0.25, staff_load: 0.05}
+  options: [minimal, standard, indefinite]
+  default: indefinite
+  provenance:
+    source: AUTHORED
+    note: how long customer contact and purchase history is kept
+```
+
+**Ordering is an authoring convention, not semantics.** Listing `minimal` first does not
+make it the strict end. Nothing reads position, and nothing should be authored on the
+assumption that it does.
+
+**`default` is what makes the ethics layer cost something to ignore.** A team that never
+opens the Security screen still holds a policy position — the one you authored here. If the
+default you choose is the permissive one, ignoring the obligation has a price. If you author
+no default at all, a team starts nowhere and the ethics layer becomes something to opt into
+rather than something to manage. A pack may legitimately start a team somewhere already
+compliant; that is a deliberate authoring choice about where this company begins, not an
+oversight.
+
+**One rule is enforced:** if `options` is non-empty, `default` must be one of them. A pack
+that names a `default` outside its own `options` will not load.
+
+```yaml
+options: [minimal, standard, indefinite]
+default: forever          # rejected -- 'forever' is not one of the declared options
+```
+
+Everything else is left open on purpose. `options` may be omitted — a policy without it is
+the legacy shape and loads exactly as it always has. `default` may be omitted too, with or
+without `options`.
+
+### `default` is not `permissive_value`
+
+These two look alike and are frequently the same string. They are different concepts and
+they live in different files.
+
+| | Lives in | Means |
+|---|---|---|
+| `default` | `policies.yaml` | **where a team starts** — the position held by not deciding |
+| `permissive_value` | `obligation_rules.yaml` | **what obliges** — the position that leaves an obligation open |
+
+Read together, the pair is what tells the engine whether a team has moved:
+
+```yaml
+# policies.yaml
+- key: data_retention
+  options: [minimal, standard, indefinite]
+  default: indefinite            # this company keeps everything, until someone changes it
+
+# obligation_rules.yaml
+- key: customer_pii_retention
+  entity: customer
+  condition: policy_permits
+  policy: data_retention
+  permissive_value: indefinite   # and keeping everything is what the regulator objects to
+```
+
+Here they coincide, so the pack starts permissive: the obligation is open from round 1 and
+stays open until a team moves the switch. Author them apart and the pack starts compliant —
+`default: standard` against `permissive_value: indefinite` means a team has to actively
+choose the exposure. Both are valid packs. Which one you author is a statement about the
+company, and it should be one you made on purpose.
+
+`permissive_value` should name a member of the policy's `options`; otherwise it points at a
+state the switch cannot be in. The validator does not yet check this — author it correctly.
 
 ## `questions.yaml`
 
