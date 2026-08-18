@@ -93,7 +93,7 @@ staff_monitoring`. The teaching value is that **stakeholders want incompatible t
 |---|---|---|
 | `finance` · `c_suite` | permissive, cheap | every switch costs capital and constrains operations |
 | `regulator` · `security_auditor` | strict retention, access, logging | it is their job |
-| `employees` | strict on `staff_monitoring` | being watched is not free |
+| `employees` | **`untracked`** on `staff_monitoring`, no view elsewhere | being watched is not free — see §3.5a |
 | `customer` · `general_public` | strict on collection, retention, egress | it is their data |
 | `marketing` | permissive collection | targeting needs data |
 | `operations` | permissive access | strict access slows the floor down |
@@ -103,6 +103,63 @@ are unhappy and you are poorer. Set none and the Regulator and your customers ar
 no position that pleases everyone — which is exactly `GOVERNANCE`'s *"ships attributes and
 consequences, never a stance."* The sim never says which is right; the stakeholders disagree
 and the student lives with it.
+
+### 3.5a `staff_monitoring` runs the opposite way, and that is the point
+
+**Corrected 2026-08-18.** The table above originally read *"employees want **strict** on
+`staff_monitoring`"*. In the pack's own vocabulary that is false, and it says the opposite of
+what was meant.
+
+Five of the six switches share an axis: moving away from the default means **the firm
+constrains its handling of other people's data** — collect less, keep it less long, restrict
+who sees it, log more, export less. `staff_monitoring` does not. Its permissive value is
+`untracked`, so moving away from the default means **the firm watches its own people more**.
+
+```
+data_collection    everything_by_default → purpose_limited → minimal        firm constrains itself
+data_retention     indefinite            → standard_period → minimal        firm constrains itself
+data_access        open_to_all_staff     → role_based      → need_to_know   firm constrains itself
+access_logging     unlogged              → sampled         → full_audit     firm constrains itself
+data_egress        unrestricted          → approved_dsts   → no_export      firm constrains itself
+staff_monitoring   untracked             → aggregate_only  → individual     firm constrains ITS PEOPLE
+```
+
+**This is not a modelling error and must not be "fixed" by re-framing the switch.** Laudon
+Ch 4 covers both halves of information policy — the firm's duty to the people whose data it
+holds, *and* the firm's power over the people who work for it. They are genuinely different
+obligations pointing in opposite directions, and putting them on one screen with opposite
+axes is the honest model.
+
+**It is also the sharpest teaching moment on the screen.** A student who sets every switch to
+its strictest value has not "done the right thing" — they have protected customers *and*
+placed every employee under individual surveillance. There is no column of the table where
+maximum strictness is uniformly good, which is precisely why the sim cannot take a stance.
+
+`employees` therefore want `untracked` and are **the one archetype aligned with doing
+nothing** on their switch. `security_auditor` wants `individual_activity` on the same switch,
+because that setting reduces insider risk — the thing they are employed to look at — while
+the same setting reduces employee trust. Both are true; neither is endorsed.
+
+### 3.5b `options` is ORDINAL — permissive at index 0
+
+**Ruled 2026-08-18.** `PolicyOption.options` is ordered, **least constrained first**, and all
+six of Riverside's vocabularies are already authored that way.
+
+This matters because alignment scoring depends on it. Without an order, a stakeholder's
+`ideal_posture` can only be matched **exactly** — so a team that set `minimal` retention when
+the Regulator wanted `standard_period` would score identically to one that left it
+`indefinite`. **Being stricter than asked would count the same as ignoring the ask**, which is
+not a defensible model of anyone's preference.
+
+With an order, alignment is **distance**, and overshooting costs less than ignoring.
+
+Two consequences, both filed:
+
+- **`CONTRACTS.md` needs the entry** (`1.1-r3-005` / register `B21`). Its only sibling
+  per-pack vocabulary, `entity.level_of_detail`, already declares itself ordinal — this
+  follows the precedent rather than inventing one.
+- **`models.py`'s docstring says order carries no meaning** and must be corrected, or the
+  next builder will read the schema and the design as contradicting each other. **1.1.**
 
 **SCORE.** Alignment feeds Org (via stakeholder alignment, G6 layer 1). Additionally propose
 a **Mgmt** sub-factor — *information-policy discipline*: has the team taken a position at all,

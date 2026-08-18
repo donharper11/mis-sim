@@ -114,6 +114,23 @@ register and the design agree.
 
 ---
 
+## F. From the 1.3 follow-up build — 2026-08-18
+
+| # | Item | Owner |
+|---|---|---|
+| F1 | **`models.py`'s `options` docstring says order carries no meaning.** `design/07 §3.5b` now rules it **ordinal**, permissive at index 0. Schema and design contradict each other until this is corrected | **1.1 next** |
+| F2 | **`CONTRACTS.md` has no `PolicyOption.options` entry**, and its only sibling vocabulary (`entity.level_of_detail`) declares itself ordinal. Same as `B21`, now with a ruling behind it | **CONTRACTS** |
+| F3 | **`W01` is blind to two of five preference domains.** The placeholder-seeding heuristic only inspects rows carrying an `ideal_value` key at the top level of `defaults_by_archetype`; the two new files nest under `by_decision` and use `ideal_posture` / `ideal_tier`. Nothing was dodged — the variation table substitutes — but the check no longer covers what it claims to | **1.2 next** |
+| F4 | **Alignment is exact-match until `options` ordinality is consumed.** A team stricter than a stakeholder asked scores the same as one that ignored them. `3.5b` rules the fix; 1.4 must implement distance rather than equality | **1.4 spec** |
+| F5 | `lead_time_rounds` now has 51 of 75 at exactly 1 round, so the sharpest follow-through failures rest on only 7 two-round options | **1.7 calibration** |
+| F6 | `it` has a pack-grounded interest in `data_access` and `access_logging` via their `staff_load` terms, but `design/07 §3.5` does not list it, so it was flagged rather than authored | **author / 1.3** |
+
+**Closed by this build:** `E1` (`preferences/policies.yaml` exists), `E3`
+(`preferences/services.yaml` exists), `B12` / `E2`-half (`lead_time_rounds`: 54 zeroes → 17),
+and the content half of `B6` (all six policies declare `options` and `default`).
+
+---
+
 ## Standing rule
 
 > **A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is
