@@ -157,22 +157,57 @@ local HEAD, and report. **Do not merge.**
 
 ---
 
-## 7. A defect in this instruction — recorded 2026-08-18
+## 7. A defect in this instruction — and a worse one in its dispatch
 
-§ header named `03e401c` as the branch base. **That is the commit before this document
-existed.** Branching there would have cut the branch out from under its own instruction, and
-the dispatch prompt — written after this file was committed — correctly named `cba47c8`. The
-two documents disagreed, the builder followed the prompt, and it declared the deviation as
-substitution 1.
+**Corrected 2026-08-18 after the rework audit (`1.1-r3-001`) disproved the first version of
+this section.** The original account was wrong in its reasoning, and the correction matters
+more than the thing it was explaining.
 
-**The authoring slip is structural, not a typo.** I write "branch from `main` @ `<sha>`" while
-looking at `main`, then commit the instruction — which moves `main`. Every rework instruction
-in this project is written in a state it invalidates by being saved.
+### What actually happened
 
-**The fix, applied from here on: name the base as *the commit that adds this document*,**
-never a SHA read before writing it. A SHA is only correct in a document that is never
-committed.
+| | |
+|---|---|
+| `rework-3.md` §header, as committed | `03e401c` |
+| `1.1-rework-3-builder.txt`, as committed | `03e401c` |
+| Both files | **the same commit, `cba47c8`** — not one written after the other |
+| **The message actually sent to the builder** | **`cba47c8`** |
 
-Sixth instance of an instruction naming a route that could not be taken as written, after
-1.2's pre-flight rows 3 and 4, 1.5's row 5, 1.3's row 1a, 1.2 rework-2's one-line spec
-authorisation, and 1.3's "eliminate the second home".
+The builder was right that it received `cba47c8`, and right that `03e401c` predates the
+instruction and would have cut the branch out from under it. The auditor was right that no
+*tracked* prompt ever said `cba47c8`. Both are true because **the dispatched prompt and the
+committed prompt were not the same text.**
+
+### The real defect, which is the author's
+
+`handoffs/_prompts/README.md`: *"Update the file when you re-dispatch. A prompt that no
+longer matches what was sent is worse than none."*
+
+I edited the branch base while dispatching and never updated the file. So
+`handoffs/_prompts/` — which exists precisely so a dispatch is recoverable, because **when a
+build goes wrong the prompt is evidence** — held the wrong evidence. Every downstream
+account of this packet reasoned from it: the builder's substitution note, the auditor's
+finding, and the first version of this section, which asserted the prompt was "written after
+this file was committed" when both were in one commit.
+
+The prompt file is corrected to match what was sent, with the discrepancy noted in place
+rather than silently overwritten.
+
+### Two lessons, and the second is the one worth keeping
+
+1. **Name the base as *the commit that adds this document*, never a SHA read before writing
+   it.** A SHA is only correct in a document that is never committed. That stands.
+2. **A dispatch that differs from its tracked prompt corrupts every audit downstream of
+   it.** Nobody was in a position to catch this: the builder could not see the committed
+   file's text, the auditor could not see the dispatched message, and each reasonably
+   concluded the other was mistaken. **Only the dispatcher can keep those two in sync, and
+   the dispatcher is the one who broke them.**
+
+`GOVERNANCE §4.4` still applies to the builder: both documents *as it could see them* were
+unanimous, and overriding a unanimous instruction is a stop-and-report, not a substitution.
+Its judgement was correct and its reasoning was sound on the evidence it had. But it
+declared a deviation from an instruction it had not actually received, and I adopted that
+claim into `main` without checking it — which is `SPEC_PROTOCOL §2.1`, findings carry their
+proof, failing at the author.
+
+Seventh instance of an instruction naming a route that could not be taken as written; the
+first where the instruction and its dispatch disagreed.

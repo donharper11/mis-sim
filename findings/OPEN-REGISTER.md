@@ -48,6 +48,11 @@ anything. Each names the packet that closes it.
 | B15 | `1.3-011` / row 5 | **any future harvest** | 630 mapping rows are placeholder-seeded; four tables have one distinct tuple repeated |
 | B16 | 27 `TODO: calibrate` | **1.7** | Permitted under `§4.9`. `1.3-014` names the five watch-rule thresholds the gate actually turns on |
 | B17 | `1.3-009` | **1.3 follow-up** | Six extracted tables named in §5.1's transform map have no `PROVENANCE.md` disposition. Content judgement, belongs to whoever authors the pack |
+| B18 | **`1.1-r3-002`** | **1.2 next** | **One bad value hides every other error.** A `default` outside its own `options` collapses the entire report to a single `E00 "Unreadable pack"` — proved on `broken_E05`, where a real `E05` and two `W08`s vanished. An author with one typo loses all their other diagnostics. Upgrades `B7`, which had only the wording |
+| B19 | `1.1-r3-003` | **1.2 next** | `options: ["Indefinite", "NOT snake!", "9lives"]` validates clean. `SnakeKey` is a bare alias and `I3` cannot reach these fields, so machine keys students never see are unconstrained |
+| B20 | `1.1-r3-006` | **1.2 or docs** | `options: [on, off]` is parsed by YAML as booleans and rejected as "restore or repair policies.yaml". A pack author writing the most natural two-state switch gets a misleading error |
+| B21 | `1.1-r3-005` | **`CONTRACTS.md`** | `PolicyOption.options` has no CONTRACTS entry, and its only sibling per-pack vocabulary (`entity.level_of_detail`) declares itself **ordinal** — the opposite rule. 1.5 and 4.3 both need to know which |
+| B22 | `1.1-r3-007` | **1.2 next** | Duplicate and empty-string members of `options` are accepted |
 
 ## C. Needs a ruling from the user — cannot be fixed by anyone until decided
 
@@ -65,6 +70,19 @@ point of this section.
 
 `1.1-r2-007` · `1.1-r2-008` · `1.1-r2-009` · `1.1-r2-010` · `1.1-r2-011` · `1.1-r2-012` ·
 `1.3-003` · `1.3-007` · `1.3-010` · `1.3-015` · `1.3-016`
+
+**Added 2026-08-18 — `1.1-r3-001`, and this one is a lineage failure, not an omission.**
+The dispatched prompt for 1.1 rework-3 named a different branch base than the committed
+prompt file. `handoffs/_prompts/` exists so that *when a build goes wrong, the prompt is
+evidence* — and it held the wrong evidence. The builder declared a deviation from an
+instruction it had never received; the auditor correctly found no tracked prompt saying what
+the builder claimed; and I adopted the builder's account into `main` as a governance lesson
+without checking it, so three of its four factual clauses were wrong on `main` for a day.
+
+Nobody downstream could have caught it: the builder could not see the committed file, the
+auditor could not see the dispatched message. **Only the dispatcher can keep those in sync.**
+Corrected in `rework-3.md` §7 and in the prompt file, with the discrepancy noted in place
+rather than overwritten.
 
 Of these, one deserves naming outright: **`1.1-r2-011` — `ObligationRule` makes seven fields
 required, against `rework-2.md` §5's *absolute* prohibition on new required fields.** It is

@@ -3,7 +3,10 @@ You are the BUILDER for the THIRD REWORK of module 1.1 — the casepack schema.
 Two fields on one model. This is a small packet. Resist making it bigger.
 
 REPO: /home/ubuntu/projects/mis-sim
-BRANCH: cut build/1.1-rework-3 from main at 03e401c.
+BRANCH: cut build/1.1-rework-3 from main at cba47c8.
+  (CORRECTED 2026-08-18 to match what was actually dispatched. The file as
+   committed read 03e401c; the message sent to the builder read cba47c8.
+   See rework-3.md section 7.)
 Never push to main. Never merge. Never run 'git add -A' — this working
 directory is shared; add by explicit path. Leave HEAD where you found it.
 
