@@ -1,7 +1,8 @@
 # 1.2 — Casepack Validator · Build Spec
 
 **Authored under** `SPEC_PROTOCOL.md` v1.1 · **Author:** Claude · **Date:** 2026-07-26
-**Spec version:** v1.2 · **Amended:** 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
+**Spec version:** v1.3 · **Amended:** 2026-08-18 — `W08` added to the code list
+**Previously:** v1.2, 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
 **Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E14` · `E20`–`E23` · `W01`–`W08` · `I3` · `I8`
 **Phase:** 1 · **Depends on:** **1.1 as approved** · **Blocks:** 1.3, 6.1
 
@@ -515,6 +516,21 @@ This is consistent with `GOVERNANCE §5`: *"No casepack reaches a section until
 ---
 
 ## 10. Changelog
+
+**v1.3 — 2026-08-18.** Closes `1.2-033`. The versioned code list gained `W08` during the
+second rework and the version was not bumped, so the spec pointed at a code list it did not
+declare — `GOVERNANCE §8` requires the bump and the changelog entry together, and the rework
+instruction that authorised the edit had explicitly forbidden both (`1.2-032`).
+
+| Change | Why |
+|---|---|
+| Header: `W01`–`W07` → `W01`–`W08`, version v1.2 → v1.3 | `W08`, the per-strategy draw check, shipped in the second rework |
+| This entry | `GOVERNANCE §8` — a contract change is merged into the living document with a version bump and a changelog entry, never left implicit |
+
+**No invariant changed and no guard moved** (`R2`). `I1` reads the header code-list line as
+its authority, which is why the header and §5.3 must agree — and why the one-line
+authorisation that produced this defect had no compliant route.
+
 
 **v1.2 — 2026-08-14, post-audit.** Amended against
 `findings/1.2-2026-08-14-audit.md`, which returned **substance PASS WITH FINDINGS · spec

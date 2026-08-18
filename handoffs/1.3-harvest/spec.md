@@ -440,7 +440,7 @@ demonstrate provenance table: rows in, rows out, mode, per source table
 
 | # | Invariant | Check | Expected |
 |---|---|---|---|
-| I1 | No writes to mis_lite | `grep -rniE "INSERT\|UPDATE\|DELETE\|ALTER\|DROP" backend/scripts/harvest*` | zero |
+| I1 | No writes to mis_lite | `git ls-files 'backend/scripts/harvest*' \| xargs grep -niE "\b(insert\|update\|delete\|alter\|drop\|truncate\|create)\s+(into\|table\|from\|set\|index)"` — SQL write verbs in statement position, not bare substrings | zero |
 | I2 | No `trialNNN` anywhere in the pack | `grep -rn "trial" packs/riverside_grocery/` | zero |
 | I3 | No textbook prose in student-visible labels | `grep -rniE "traditional\|suitable for\|optimized for\|designed for" packs/riverside_grocery/labels.yaml` | zero |
 | I4 | Weights normalised, not copied | every strategy's `capability_weights` sums to 1.0 ±0.001 | 4/4 |
