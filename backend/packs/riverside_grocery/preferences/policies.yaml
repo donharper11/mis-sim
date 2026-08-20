@@ -1,0 +1,240 @@
+# Stakeholder preferences on the six information-policy switches.
+#
+# design/07 section 3.5. The PREFERENCE path for decision class 5 -- until this file
+# existed a student could spend capital on all six switches or none and nothing differed:
+# no archetype noticed, and a stakeholder with no opinion on policy also has nothing to say
+# when a persona is asked about it (design/07 section 4).
+#
+# ---------------------------------------------------------------------------------------
+# THE SIM TAKES NO POSITION. Every row below states an INTEREST, never a verdict.
+# ---------------------------------------------------------------------------------------
+#
+# Read the file as: *this is who is affected and how*, which is GOVERNANCE section 2.1's
+# second question. It is not, anywhere, *this is the right setting*. The archetypes
+# disagree with each other on every one of the six switches -- and two of them
+# (`regulator` and `security_auditor`) disagree with each other while both wanting the
+# firm to constrain itself. Set every switch to its most restrictive value and Finance,
+# Marketing and Operations are unhappy and you are poorer for it. Set none and the
+# Regulator, the customers and the auditor are. There is no setting that pleases everyone,
+# and the sim never says which is right.
+#
+# ---------------------------------------------------------------------------------------
+# SHAPE -- and it is a new convention, declared here
+# ---------------------------------------------------------------------------------------
+#
+#   defaults_by_archetype:
+#     <archetype>:
+#       weight: <float>              how much this archetype's information-policy views
+#                                    count in aggregate
+#       by_decision:
+#         <policy key>:              a `key` from the pack's top-level policies.yaml
+#           ideal_posture: <value>   a member of that policy's `options` list
+#           weight: <float>          how much THIS switch matters to THIS archetype,
+#                                    relative to the others it holds a view on
+#
+# Two things about this shape are deliberate.
+#
+# 1. THERE IS NO ARCHETYPE-WIDE `ideal_posture`. design/07's sketch shows one
+#    (`finance: {ideal_posture: permissive}`) but authoring it that way would flatten
+#    exactly the tension this file exists to create -- `employees` caring intensely about
+#    `staff_monitoring` and holding no view at all on `data_egress` is the teaching
+#    content. A single posture per archetype cannot express it. So the only ideals here
+#    are per switch.
+#
+# 2. `ideal_posture` NAMES AN OPTION VALUE, not the abstract word `strict` or `permissive`.
+#    `options` is ordinal -- least constrained at index 0, per design/07 section 3.5b -- so
+#    position does carry strictness, and alignment against an ideal is a distance along that
+#    order. Naming the option value directly is still exact, and it removes a real
+#    ambiguity: see the note on `staff_monitoring` below, where the ordinal "more
+#    constrained" end tightens on the firm's own people rather than on its data handling.
+#
+# An archetype holding no view on a switch simply has no row for it. That is information,
+# not an omission -- `employees` hold exactly one view here, and that is the point.
+#
+# ---------------------------------------------------------------------------------------
+# `staff_monitoring` runs the other way, and it matters
+# ---------------------------------------------------------------------------------------
+#
+# Five of the six switches share an axis: the firm constrains what it does with data.
+# `staff_monitoring` does not. Its permissive value is `untracked` (obligation_rules.yaml,
+# `staff_activity_untracked`), so on this switch the undecided end is the LOW-surveillance
+# end, and "more restrictive" would mean watching people more, not less.
+#
+# design/07's table reads "`employees` want strict on `staff_monitoring`", but its own
+# reason column says why -- "being watched is not free". The interest is what governs, and
+# the interest is that employees do not want their individual activity recorded. So
+# `employees` here want `untracked`, which is also the default. They are the one archetype
+# already aligned with doing nothing, and `security_auditor` -- who wants
+# `individual_activity`, because insider risk is the thing they are looking at -- is
+# directly opposite them. That opposition is the switch's whole content, and neither side
+# is endorsed.
+#
+# ---------------------------------------------------------------------------------------
+# WHO HOLDS A VIEW, AND WHO DOES NOT
+# ---------------------------------------------------------------------------------------
+#
+# Nine of the fourteen archetypes, exactly the nine design/07 section 3.5 names:
+# c_suite, finance, marketing, operations, employees, customer, general_public,
+# regulator, security_auditor.
+#
+# The other five -- `it`, `hr`, `investor`, `vendor`, `media` -- have NO rows, deliberately.
+# design/07 does not name them for this class, and authoring a view for them would be
+# inventing content past the design rather than implementing it. Two are worth a later
+# look and are recorded here rather than guessed at: `it` absorbs the staff load that
+# `data_access` and `access_logging` create (both carry a positive `staff_load` term in
+# policies.yaml), and `hr` is the department that would own a staff-monitoring position in
+# a real firm. Neither is authored here. See the report.
+
+defaults_by_archetype:
+
+  # --- the cost side -------------------------------------------------------------------
+  # Every switch costs capital and constrains operations, and that is the standing
+  # interest. It is not uniform, though, and two rows below run the other way for reasons
+  # that are in the pack rather than in anyone's opinion.
+
+  finance:
+    weight: 0.9
+    by_decision:
+      # The most expensive switch in the pack at 30000, so the strongest cost objection.
+      access_logging: {ideal_posture: unlogged, weight: 0.6}
+      data_collection: {ideal_posture: everything_by_default, weight: 0.5}
+      # NOT permissive, and the reason is in policies.yaml's own effect vector: a
+      # retention position is the only one of the six that REDUCES a running cost
+      # (`storage_cost: -0.05`). Finance's interest in what things cost points at a
+      # defined period here, not at keeping everything forever.
+      data_retention: {ideal_posture: standard_period, weight: 0.3}
+      # Also not permissive. The close depends on extracts moving between systems, and
+      # `ledger_egress_unrestricted` is the obligation that ends in a missed financial
+      # audit -- which lands on finance, not on the regulator.
+      data_egress: {ideal_posture: approved_destinations, weight: 0.5}
+      data_access: {ideal_posture: open_to_all_staff, weight: 0.4}
+      staff_monitoring: {ideal_posture: untracked, weight: 0.2}
+
+  c_suite:
+    weight: 0.8
+    by_decision:
+      data_collection: {ideal_posture: everything_by_default, weight: 0.5}
+      access_logging: {ideal_posture: unlogged, weight: 0.5}
+      data_access: {ideal_posture: open_to_all_staff, weight: 0.4}
+      data_retention: {ideal_posture: indefinite, weight: 0.3}
+      # The one place the board's interest parts from finance's. An incident that leaves
+      # the firm is the one that reaches the front page -- `crm_data_exposed` and
+      # `privacy_regulator_letter` are both in the deck -- and the exposure is the CEO's.
+      data_egress: {ideal_posture: approved_destinations, weight: 0.3}
+      # No row for staff_monitoring: the board does not run the floor.
+
+  # --- the operating side --------------------------------------------------------------
+
+  marketing:
+    weight: 0.6
+    by_decision:
+      # Marketing's defining interest, and the switch whose effect vector names the cost
+      # to them directly (`analytics_reach: -0.15`).
+      data_collection: {ideal_posture: everything_by_default, weight: 1.0}
+      # Segmentation runs on history. `analytics_reach: -0.10` again.
+      data_retention: {ideal_posture: indefinite, weight: 0.8}
+      # Lists to partners, and `partner_reach: -0.10`.
+      data_egress: {ideal_posture: unrestricted, weight: 0.6}
+      data_access: {ideal_posture: open_to_all_staff, weight: 0.3}
+      # No rows for access_logging or staff_monitoring: neither touches what marketing does.
+
+  operations:
+    weight: 0.8
+    by_decision:
+      # Strict access slows the floor down, and the floor is 140 people across 8 stores.
+      data_access: {ideal_posture: open_to_all_staff, weight: 1.0}
+      # In the deck already: "Three of our suppliers want to see stock levels themselves
+      # instead of phoning us every morning" (`event_supplier_portal_request`). An egress
+      # position is what stands between operations and answering that.
+      data_egress: {ideal_posture: unrestricted, weight: 0.5}
+      # `staff_load: 0.08` -- one more step at the till, every time.
+      access_logging: {ideal_posture: unlogged, weight: 0.4}
+      # No rows on collection, retention or staff monitoring: operations runs the floor,
+      # it does not own the customer record.
+
+  employees:
+    weight: 0.8
+    by_decision:
+      # One row. Not an oversight -- design/07 says employees are "indifferent elsewhere",
+      # and one intense view against five blanks is a truer picture of a workforce than
+      # six mild ones. `untracked` here is the low-surveillance end (see the header note);
+      # policies.yaml prices the other end at `employee_trust: -0.20`.
+      staff_monitoring: {ideal_posture: untracked, weight: 1.0}
+
+  # --- the outside -----------------------------------------------------------------------
+
+  customer:
+    weight: 0.8
+    by_decision:
+      # It is their data. The three switches design/07 names, weighted by how directly
+      # each one reaches an individual's own record.
+      data_egress: {ideal_posture: no_export, weight: 1.0}
+      data_collection: {ideal_posture: minimal, weight: 0.9}
+      data_retention: {ideal_posture: minimal, weight: 0.8}
+
+  general_public:
+    weight: 0.8
+    by_decision:
+      # The same three switches as `customer`, deliberately at different intensities. A
+      # customer speaks about their own record; the public speaks about the practice --
+      # what a grocer in this town collects about people and where it sends it. Retention
+      # length is the piece the public cares least about and the individual most.
+      data_egress: {ideal_posture: no_export, weight: 0.8}
+      data_collection: {ideal_posture: minimal, weight: 0.7}
+      data_retention: {ideal_posture: minimal, weight: 0.5}
+
+  regulator:
+    weight: 0.9
+    by_decision:
+      access_logging: {ideal_posture: full_audit_trail, weight: 1.0}
+      # `standard_period`, NOT `minimal` -- and this is the interesting row. The
+      # regulator's interest is that a defined period exists and is kept to, not that it
+      # is short. Note that this puts the regulator at odds with `security_auditor`, who
+      # wants `minimal` on the same switch for a different reason. Two archetypes both
+      # asking the firm to constrain itself, and they still do not agree.
+      data_retention: {ideal_posture: standard_period, weight: 1.0}
+      data_access: {ideal_posture: role_based, weight: 0.9}
+      # `customer_pii_collection` arms `privacy_regulator_letter` in this pack's own
+      # obligation rules, so collection is squarely in scope.
+      data_collection: {ideal_posture: purpose_limited, weight: 0.7}
+      # `ledger_egress_unrestricted` is the SOX-shaped obligation; mis_lite priced the
+      # matching penalty at 80000.
+      data_egress: {ideal_posture: approved_destinations, weight: 0.5}
+      # No row on staff_monitoring: nothing in this pack supports a regulatory interest in
+      # employee monitoring, and inventing one would be authoring past the design.
+
+  security_auditor:
+    weight: 0.9
+    by_decision:
+      access_logging: {ideal_posture: full_audit_trail, weight: 1.0}
+      data_access: {ideal_posture: need_to_know, weight: 0.9}
+      # Directly opposite `employees`, and grounded in the pack rather than in a view
+      # about surveillance: `staff_monitoring`'s effect vector carries
+      # `insider_risk: -0.25`, which is the risk this archetype is employed to look at.
+      # It costs `employee_trust: -0.20` at the same time. Both are true at once.
+      staff_monitoring: {ideal_posture: individual_activity, weight: 0.8}
+      data_egress: {ideal_posture: approved_destinations, weight: 0.7}
+      # `minimal`, where the regulator wants `standard_period`: less held is less to lose,
+      # which is an exposure argument rather than a compliance one.
+      data_retention: {ideal_posture: minimal, weight: 0.6}
+      data_collection: {ideal_posture: minimal, weight: 0.5}
+
+overrides: []
+# No case-specific overrides. Every row above is an archetype-level interest that would
+# read the same in any pack; nothing in Riverside's situation makes one of these switches
+# mean something different from what it means elsewhere. `overrides` is for the case, and
+# the case has nothing to add here yet.
+
+provenance:
+  source: AUTHORED
+  note: >-
+    design/07 section 3.5, the PREFERENCE path for decision class 5. No mis_lite source:
+    the source models stakeholder preference over infrastructure placement only
+    (`stakeholder_infrastructure_preference`, 14 rows, already harvested into
+    preferences/platform.yaml) and has no information-policy dimension at all. The nine
+    archetypes are exactly the nine design/07 names; the five it does not name have no
+    rows. Every entry states an interest and none states a verdict.
+    TODO: calibrate -- both weight columns throughout. Which switch matters most to whom
+    is authored judgement, and 1.7's harness is expected to move it. The ideal postures
+    are not marked: each is either stated in design/07 or read off an effect vector or an
+    obligation rule already in this pack, and both cases are cited in the comments above.

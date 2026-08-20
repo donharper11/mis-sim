@@ -1,10 +1,44 @@
+# LEAD TIMES -- re-authored by the 1.3 follow-up. The band is in PROVENANCE.md section 10.
+#
+# 54 of the pack's 75 placement options completed in zero rounds, so *follow-through* -- a
+# named Management sub-factor with a UI and a casepack field -- had almost nothing to act
+# on, and "started five things, finished none" was an impossible failure rather than a
+# teachable one (design/07 section 4).
+#
+# The band, in one line each:
+#   0  already running, or nothing to install and nobody to retrain
+#   1  a departmental application: procure, configure, integrate, cut one department over
+#   2  touches every store, the warehouse or the ledger: migration plus parallel running
+#
+# Anchored on mis_lite `mis_initiatives_master.duration_in_rounds` (12 rows, range 1-5):
+# BI dashboard 1 · CRM enhancements 1 · ERP finance module 2 · data migration 3. The
+# source has NO initiative shorter than one round, which is the strongest single argument
+# that 54 zeroes was a content defect rather than a modelling choice.
+#
+# Placement changes the answer only where the delay was infrastructure. `saas` rows carry
+# `bypasses_platform: true` -- the firm does not build the platform underneath them -- so
+# SaaS is one round faster than the same item on-premises where that build was the wait,
+# and no faster at all where the wait is migration, training or process change. Note that
+# mis_lite's own data does NOT support a general "cloud is faster" rule: its four cloud
+# initiatives average 2.75 rounds against 2.0 for its two on-premises ones, so the
+# gradient here is authored and marked.
+#
+# ONLY THE ZEROES WERE RE-AUTHORED. The 21 rows that already carried 1 or 2 are untouched,
+# including the ones 0.3 section 5.6 pins.
+#
+# The 17 rows still at 0 are deliberate, and each is a case where zero is the honest
+# answer: the two incumbent on-premises systems the firm already runs (`pos_system_2011`,
+# `accounting_package`, both at capex 0), the store spreadsheets, the back-office PC, and
+# the three subscribed services that start working when the invoice is signed.
+# TODO: calibrate -- the whole band. 1.7's harness moves it.
+
 - key: pos_system_2011
   roles_filled: [pos_app, transaction_store]
   serves: [store_operations]
   deployment_modes:
     on_prem: {capex: 0, opex: 3100, lead_time_rounds: 0}   # 0.3 s5.6 / components.html: $3,100 per round
     cloud: {capex: 8000, opex: 4200, lead_time_rounds: 1}
-    saas: {capex: 0, opex: 6100, lead_time_rounds: 0, bypasses_platform: true}
+    saas: {capex: 0, opex: 6100, lead_time_rounds: 2, bypasses_platform: true}
   sizing: {driver: transactions, base: {compute: 1, storage_gb: 300}, per_unit: {compute: 0.2, storage_gb: 25, per: 10000}}
   availability: 0.96
   service_life_rounds: 4
@@ -25,8 +59,8 @@
   serves: [order_fulfilment, store_operations]
   deployment_modes:
     on_prem: {capex: 98000, opex: 2400, lead_time_rounds: 1}   # 0.3 s5.6 / components.html: $2,400 per round
-    cloud: {capex: 24000, opex: 8800, lead_time_rounds: 0}
-    saas: {capex: 0, opex: 11800, lead_time_rounds: 0, bypasses_platform: true}
+    cloud: {capex: 24000, opex: 8800, lead_time_rounds: 1}
+    saas: {capex: 0, opex: 11800, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: orders, base: {compute: 2, storage_gb: 600}, per_unit: {compute: 0.5, storage_gb: 100, per: 10000}}
   availability: 0.98
   service_life_rounds: 6
@@ -47,8 +81,8 @@
   serves: [order_fulfilment]
   deployment_modes:
     on_prem: {capex: 86000, opex: 1900, lead_time_rounds: 2}
-    cloud: {capex: 12000, opex: 7400, lead_time_rounds: 0}
-    saas: {capex: 0, opex: 9100, lead_time_rounds: 0, bypasses_platform: true}
+    cloud: {capex: 12000, opex: 7400, lead_time_rounds: 2}
+    saas: {capex: 0, opex: 9100, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: sku_count, base: {compute: 2, storage_gb: 1000}, per_unit: {compute: 0.8, storage_gb: 500, per: 10000}}
   availability: 0.99
   service_life_rounds: 6
@@ -69,8 +103,8 @@
   serves: [financial_reporting]
   deployment_modes:
     on_prem: {capex: 0, opex: 900, lead_time_rounds: 0}   # 0.3 s5.6 / components.html: $900 per round
-    cloud: {capex: 6000, opex: 3000, lead_time_rounds: 0}
-    saas: {capex: 0, opex: 4500, lead_time_rounds: 0, bypasses_platform: true}
+    cloud: {capex: 6000, opex: 3000, lead_time_rounds: 1}
+    saas: {capex: 0, opex: 4500, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: reporting_periods, base: {compute: 1, storage_gb: 200}, per_unit: {compute: 0.1, storage_gb: 20, per: 1000}}
   availability: 0.98
   service_life_rounds: 6
@@ -117,8 +151,8 @@
   roles_filled: [security_monitoring]
   serves: [firm_infrastructure]
   deployment_modes:
-    on_prem: {capex: 40000, opex: 2500, lead_time_rounds: 0}
-    cloud: {capex: 10000, opex: 6000, lead_time_rounds: 0}
+    on_prem: {capex: 40000, opex: 2500, lead_time_rounds: 1}
+    cloud: {capex: 10000, opex: 6000, lead_time_rounds: 1}
     saas: {capex: 0, opex: 8000, lead_time_rounds: 0, bypasses_platform: true}
   sizing: {driver: sites, base: {compute: 1, storage_gb: 20}, per_unit: {compute: 0.1, storage_gb: 2, per: 1}}
   availability: 0.99
@@ -140,8 +174,8 @@
   serves: [customer_insight, service]
   deployment_modes:
     on_prem: {capex: 32000, opex: 2100, lead_time_rounds: 1}
-    cloud: {capex: 6000, opex: 5600, lead_time_rounds: 0}
-    saas: {capex: 0, opex: 7300, lead_time_rounds: 0, bypasses_platform: true}
+    cloud: {capex: 6000, opex: 5600, lead_time_rounds: 1}
+    saas: {capex: 0, opex: 7300, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: customer_records, base: {compute: 1, storage_gb: 400}, per_unit: {compute: 0.2, storage_gb: 80, per: 10000}}
   availability: 0.97
   service_life_rounds: 5
@@ -162,8 +196,8 @@
   serves: [customer_insight, financial_reporting]
   deployment_modes:
     on_prem: {capex: 45000, opex: 3000, lead_time_rounds: 1}
-    cloud: {capex: 9000, opex: 6800, lead_time_rounds: 0}
-    saas: {capex: 0, opex: 8500, lead_time_rounds: 0, bypasses_platform: true}
+    cloud: {capex: 9000, opex: 6800, lead_time_rounds: 1}
+    saas: {capex: 0, opex: 8500, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: records, base: {compute: 2, storage_gb: 800}, per_unit: {compute: 0.4, storage_gb: 200, per: 10000}}
   availability: 0.97
   service_life_rounds: 5
@@ -185,7 +219,7 @@
   deployment_modes:
     on_prem: {capex: 52000, opex: 3200, lead_time_rounds: 2}
     cloud: {capex: 12000, opex: 7200, lead_time_rounds: 1}
-    saas: {capex: 0, opex: 9600, lead_time_rounds: 0, bypasses_platform: true}
+    saas: {capex: 0, opex: 9600, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: visits, base: {compute: 2, storage_gb: 250}, per_unit: {compute: 0.3, storage_gb: 20, per: 10000}}
   availability: 0.98
   service_life_rounds: 5
@@ -206,7 +240,7 @@
   serves: [service]
   deployment_modes:
     on_prem: {capex: 18000, opex: 1400, lead_time_rounds: 1}
-    cloud: {capex: 5000, opex: 3600, lead_time_rounds: 0}
+    cloud: {capex: 5000, opex: 3600, lead_time_rounds: 1}
     saas: {capex: 0, opex: 4800, lead_time_rounds: 0, bypasses_platform: true}
   sizing: {driver: tickets, base: {compute: 1, storage_gb: 120}, per_unit: {compute: 0.1, storage_gb: 10, per: 1000}}
   availability: 0.97
@@ -244,8 +278,8 @@
   serves: [order_fulfilment, store_operations]
   deployment_modes:
     on_prem: {capex: 10000, opex: 600, lead_time_rounds: 1}
-    cloud: {capex: 3000, opex: 2400, lead_time_rounds: 0}
-    saas: {capex: 0, opex: 3200, lead_time_rounds: 0, bypasses_platform: true}
+    cloud: {capex: 3000, opex: 2400, lead_time_rounds: 1}
+    saas: {capex: 0, opex: 3200, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: orders, base: {compute: 1, storage_gb: 400}, per_unit: {compute: 0.3, storage_gb: 60, per: 10000}}
   availability: 0.99
   service_life_rounds: 6
@@ -308,8 +342,8 @@
   serves: [order_fulfilment, customer_insight]
   deployment_modes:
     on_prem: {capex: 12000, opex: 900, lead_time_rounds: 1}
-    cloud: {capex: 4000, opex: 3100, lead_time_rounds: 0}
-    saas: {capex: 0, opex: 4200, lead_time_rounds: 0, bypasses_platform: true}
+    cloud: {capex: 4000, opex: 3100, lead_time_rounds: 1}
+    saas: {capex: 0, opex: 4200, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: orders, base: {compute: 1, storage_gb: 500}, per_unit: {compute: 0.25, storage_gb: 90, per: 10000}}
   availability: 0.97
   service_life_rounds: 5
@@ -341,7 +375,7 @@
   deployment_modes:
     on_prem: {capex: 75000, opex: 5200, lead_time_rounds: 2}
     cloud: {capex: 20000, opex: 11500, lead_time_rounds: 1}
-    saas: {capex: 0, opex: 14000, lead_time_rounds: 0, bypasses_platform: true}
+    saas: {capex: 0, opex: 14000, lead_time_rounds: 2, bypasses_platform: true}
   sizing: {driver: orders, base: {compute: 3, storage_gb: 900}, per_unit: {compute: 0.6, storage_gb: 120, per: 10000}}
   availability: 0.98
   service_life_rounds: 6
