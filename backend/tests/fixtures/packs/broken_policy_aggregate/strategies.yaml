@@ -1,0 +1,22 @@
+- key: low_cost_care
+  headline_metric: cost_per_appointment
+  capability_weights:
+    appointment_booking: 0.90
+    clinical_records: 0.40
+  expected_concentration: 0.52
+  target_rgt_mix: {run: 0.50, grow: 0.35, transform: 0.15}
+  maintenance_floor_pct: 0.15
+  punishes: overprovisioning
+  reopen_cost: 40000
+  provenance: {source: AUTHORED, note: "fill the diary and keep the cost of filling it down"}
+- key: continuity_of_care
+  headline_metric: repeat_client_retention
+  capability_weights:
+    clinical_records: 0.65
+    appointment_booking: 0.35
+  expected_concentration: 0.55
+  target_rgt_mix: {run: 0.30, grow: 0.45, transform: 0.25}
+  maintenance_floor_pct: 0.12
+  punishes: fragmented_client_records
+  reopen_cost: 40000
+  provenance: {source: AUTHORED, note: "any practice can pick up any animal's history, so the record matters more than the diary"}

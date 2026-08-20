@@ -1,0 +1,12 @@
+# Placeholder-shaped policy preferences in the by_decision shape: six archetypes carry an
+# identical (ideal_posture, weight) tuple, which W01 must flag as seeding rather than
+# authored judgement -- and could not, before it traversed this shape (1.2-RA-002).
+defaults_by_archetype:
+  finance:          {weight: 0.9, by_decision: {data_retention: {ideal_posture: indefinite, weight: 0.5}}}
+  c_suite:          {weight: 0.8, by_decision: {data_retention: {ideal_posture: indefinite, weight: 0.5}}}
+  operations:       {weight: 0.7, by_decision: {data_retention: {ideal_posture: indefinite, weight: 0.5}}}
+  marketing:        {weight: 0.6, by_decision: {data_retention: {ideal_posture: indefinite, weight: 0.5}}}
+  it:               {weight: 0.6, by_decision: {data_retention: {ideal_posture: indefinite, weight: 0.5}}}
+  hr:               {weight: 0.5, by_decision: {data_retention: {ideal_posture: indefinite, weight: 0.5}}}
+overrides: []
+provenance: {source: HARVESTED, note: "uniform seeding, carried straight over -- the shape W01 exists to catch, in the by_decision schema"}

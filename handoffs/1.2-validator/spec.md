@@ -1,9 +1,9 @@
 # 1.2 — Casepack Validator · Build Spec
 
 **Authored under** `SPEC_PROTOCOL.md` v1.1 · **Author:** Claude · **Date:** 2026-07-26
-**Spec version:** v1.3 · **Amended:** 2026-08-18 — `W08` added to the code list
-**Previously:** v1.2, 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
-**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E14` · `E20`–`E23` · `W01`–`W08` · `I3` · `I8`
+**Spec version:** v1.4 · **Amended:** 2026-08-21 — obligation-reference and policy-vocabulary codes added (`E15`–`E17` · `E24`–`E28`), W01 generalised to every preference shape
+**Previously:** v1.3, 2026-08-18 — `W08` added; v1.2, 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
+**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E17` · `E20`–`E28` · `W01`–`W08` · `I3` · `I8`
 **Phase:** 1 · **Depends on:** **1.1 as approved** · **Blocks:** 1.3, 6.1
 
 > An unvalidated pack does not fail loudly — it runs and scores wrongly, and you find out
@@ -170,7 +170,22 @@ E13  a reference inside initial_state that resolves to nothing — a declared
                                                                         NEW v1.2
 E14  an authored figure in initial_state contradicting one derived from the
      same pack, beyond a stated tolerance                               NEW v1.2
+E15  a policy option value, or a non-null default, that is not a valid
+     snake_case machine key (an empty string included)                  NEW v1.4
+E16  a policy options list that names the same value twice               NEW v1.4
+E17  a policy default that is not one of its declared options — the precise
+     form of the model-load failure that used to collapse to E00        NEW v1.4
 ```
+
+> **`E15`–`E17` close finding `1.2-RA-003`.** `PolicyOption.options` is a plain `list[str]`,
+> so the model never checked its shape — empty, non-snake or duplicated option keys loaded
+> silently. And the one policy rule the model *does* enforce (`default` ∈ `options`) raised a
+> `CasepackLoadError` that reached the instructor as a single opaque `E00`, hiding every other
+> finding in the pack. `E15`/`E16` are the validator's only line on malformed vocabularies;
+> `E17` runs on **raw YAML before the load** (like `E03`/`E04`), so a bad default is reported
+> precisely and **co-reports** with the other raw-stage checks instead of collapsing. A
+> model-load failure whose cause is a policy default no longer suppresses an independent
+> `E03`/`E04`/`E10`/`E11`/`E15`/`E16`.
 
 > **`E13` and `E14` close the hole `1.2-014` found.** `initial_state` is 14 fields deep and
 > **not one check reads any of it.** The auditor demonstrated a pack that names a strategy
@@ -195,7 +210,23 @@ E20  a capability with no watch rule CARRYING AT LEAST ONE THRESHOLD — it can
 E21  an event whose preconditions can never all be true simultaneously
 E22  a strategy whose highest-weighted capability has no catalog path to full coverage
 E23  a management question requiring an entity/level no catalog item can produce
+E24  an obligation reading a policy switch the pack does not define        NEW v1.4
+E25  an obligation protecting an entity the pack does not define           NEW v1.4
+E26  an obligation whose permissive_value is not a declared option of its
+     policy — it would watch for a switch position that cannot occur       NEW v1.4
+E27  an obligation cleared_by referencing an unknown action type           NEW v1.4
+E28  an obligation arming an event the pack does not define                NEW v1.4
 ```
+
+> **`E24`–`E28` close finding `1.2-RA-001`.** `obligation_rules.yaml` is loaded
+> (`loader.py:27,89`) but no check read it, so a nonexistent entity, policy, permissive
+> value, action or armed event reached the event and scoring engines while
+> `validate_casepack` stayed green. An obligation reuses the signal machinery entirely
+> (1.5 decision 7), so a dangling reference is the same class of defect `E05`/`E06`/`E09`
+> already catch for watch rules and events — in the one shipped section that had no checks.
+> `E26` is the coherence half `CONTRACTS.md`'s `PolicyOption.options` / `permissive_value`
+> entry calls for: the permissive value must name a declared option, checked only when the
+> policy resolves and declares options.
 
 E20 is the one most likely to be hit by a real author and least likely to be noticed
 without it.
@@ -232,11 +263,15 @@ showed identical `ideal_value 85.00` and identical weights across all six stakeh
 placeholder seeding indistinguishable from authored judgement.
 
 ```
-W01  ≥6 preference rows share an identical (ideal_value, weight) tuple
+W01  ≥6 preference rows share an identical (ideal, weight) tuple
      → "looks like placeholder seeding, not authored judgement"
      N BOUND TO 6 in v1.2 — the smallest value that fires on the six-stakeholder
      business_process_mapping case in design/01 §4 that §8 step 3 requires it to
      catch. Recorded so it is known that five identical rows pass.
+     GENERALISED v1.4 — the ideal is whichever of `ideal_value` (legacy
+     catalog/platform/training overrides), `ideal_posture` (policies) or
+     `ideal_tier` (services) a row carries, found by walking every domain by its
+     semantic fields rather than by one legacy shape (finding 1.2-RA-002).
 W02  a capability no strategy weights above 0.05 — content nobody will engage
 W03  an event with no strategy_affinity — it will fire regardless of declaration
 W04  a catalog item reachable from no capability — dead content
@@ -516,6 +551,26 @@ This is consistent with `GOVERNANCE §5`: *"No casepack reaches a section until
 ---
 
 ## 10. Changelog
+
+**v1.4 — 2026-08-21, post-audit.** Amended against
+`handoffs/rework/1.2-validator-audit-2026-08-21.md`, which returned **PASSING SUITE,
+INCOMPLETE CONTRACT COVERAGE** — the 29-row matrix passed and Riverside was clean, but three
+shipped domains were outside the validator's reach. All three findings are closed in this
+build (spec + code + fixtures + catalogue + matrix together, `GOVERNANCE §8`).
+
+| Change | Why |
+|---|---|
+| Header code list `E00`–`E14` → `E00`–`E17`, `E20`–`E23` → `E20`–`E28`; version v1.3 → v1.4 | Eight codes added; `GOVERNANCE §8` binds the bump and the enumerated list together (the omission `1.2-033` was filed for) |
+| §5.1 gains `E15`–`E17` (policy value vocabulary) | `1.2-RA-003`: malformed/duplicate/non-snake option vocabularies were unchecked, and a default-outside-options error collapsed the whole pack into an opaque `E00`. `E17` runs on raw YAML so it co-reports instead of hiding independent errors |
+| §5.2 gains `E24`–`E28` (obligation references) | `1.2-RA-001`: `obligation_rules.yaml` loaded but nothing validated its entity/policy/permissive-value/action/event references; a dangling reference reached the event and scoring engines while the validator stayed green |
+| §5.3 `W01` generalised from `ideal_value` to any of `ideal_value`/`ideal_posture`/`ideal_tier` | `1.2-RA-002`: W01 read only the legacy `defaults_by_archetype`+`ideal_value` shape and was blind to `preferences/policies.yaml` and `preferences/services.yaml`, which nest ideals under `by_decision`. It now walks every domain by semantic fields |
+| Eleven fixtures added (nine broken, one paired-valid, one by-decision warn) | §8 step 5 — a code with no fixture is untested; `broken_policy_aggregate` demonstrates E17+E03 co-reporting; `warn_W01_by_decision` demonstrates the generalised traversal |
+
+**No invariant changed and no guard moved** (`R2`). `I1` reads the header code-list line and
+holds it against `catalogue()`; the header and §5.1–§5.3 were updated together so I1 stays
+set-equal. `I5` (text/JSON parity) is unaffected — the new findings flow through the one
+producer both renderers consume. **R1:** no build cycle is open against v1.3; this lands on
+the branch the rework is built on, and this DoD names what changed.
 
 **v1.3 — 2026-08-18.** Closes `1.2-033`. The versioned code list gained `W08` during the
 second rework and the version was not bumped, so the spec pointed at a code list it did not

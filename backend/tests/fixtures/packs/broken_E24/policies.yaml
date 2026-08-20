@@ -1,0 +1,12 @@
+- key: client_record_retention
+  category: data_governance
+  cost: 4000
+  effects: {privacy_risk: -0.2, staff_load: 0.05}
+  options: [indefinite, standard_period, minimal]   # ordinal: permissive (index 0) -> strict
+  default: indefinite
+  provenance: {source: AUTHORED, note: "how long a household's contact and clinical history is kept after the last visit"}
+- key: access_review
+  category: identity
+  cost: 6000
+  effects: {privacy_risk: -0.1, recovery_confidence: 0.1}
+  provenance: {source: AUTHORED, note: "locums keep their logins long after the placement ends"}

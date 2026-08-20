@@ -1,0 +1,17 @@
+services:
+  - key: practice_network
+    roles_filled: [client_access, network_path]
+    placement_options:
+      on_prem: {capex: 30000, opex: 900, lead_time_rounds: 1}
+      cloud: {capex: 8000, opex: 3100, lead_time_rounds: 0}
+      saas: {capex: 0, opex: 4400, lead_time_rounds: 0, bypasses_platform: true}
+    capacity_pct: 55
+    staff_load: 0.7
+    provenance: {source: AUTHORED, note: "one shared link and access layer across four practices and the out-of-hours clinic"}
+support_tiers:
+  - {key: basic, cost: 9000, fte_equivalent: 0.3, provenance: {source: AUTHORED, note: "business-hours cover only"}}
+  - {key: standard, cost: 22000, fte_equivalent: 0.8, provenance: {source: AUTHORED, note: "covers the out-of-hours clinic"}}
+integration_tiers:
+  - {key: basic, cost: 14000, provenance: {source: AUTHORED, note: "one nightly file between booking and records"}}
+  - {key: advanced, cost: 38000, provenance: {source: AUTHORED, note: "live client lookup from the consulting room"}}
+starting_staff_fte: 1.0

@@ -64,6 +64,27 @@ MATRIX: dict[str, tuple[set[str], set[str], int]] = {
     "broken_E12": ({"E12"}, {"E20"}, 1),
     "broken_E13": ({"E13"}, set(), 1),
     "broken_E14": ({"E14"}, set(), 1),
+    # ---- 1.2-RA-003: policy value vocabulary ---------------------------------------
+    "broken_E15": ({"E15"}, set(), 1),
+    "broken_E16": ({"E16"}, set(), 1),
+    # broken_E17's default is outside its options, which makes models.py refuse the pack.
+    # E00 is forbidden here: the whole point of E17 is that this no longer collapses into
+    # the opaque unreadable-pack path (finding 1.2-RA-003).
+    "broken_E17": ({"E17"}, {"E00"}, 1),
+    # Aggregate diagnostics: a bad policy default AND an independent weight error. Both must
+    # surface -- one invalid default must not hide E03 behind a single E00 (1.2-RA-003).
+    "broken_policy_aggregate": ({"E17", "E03"}, {"E00"}, 1),
+    # ---- 1.2-RA-001: obligation references -----------------------------------------
+    "broken_E24": ({"E24"}, set(), 1),
+    "broken_E25": ({"E25"}, set(), 1),
+    "broken_E26": ({"E26"}, set(), 1),
+    "broken_E27": ({"E27"}, set(), 1),
+    "broken_E28": ({"E28"}, set(), 1),
+    # The paired valid half for the policy-vocab and obligation fixtures: a pack whose policy
+    # declares options and whose obligation resolves against every one of them, clean.
+    "ok_obligations_valid": (set(), {ANY}, 0),
+    # ---- 1.2-RA-002: W01 sees the by_decision preference shape ----------------------
+    "warn_W01_by_decision": ({"W01"}, set(), 0),
     "broken_E20": ({"E20"}, set(), 1),
     "broken_E20_mute": ({"E20", "E12"}, set(), 1),
     "broken_E21": ({"E21"}, {"E12", "E20"}, 1),
