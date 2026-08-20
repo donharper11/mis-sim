@@ -130,7 +130,7 @@ mgmt(c) = geomean(governance, strategic_alignment, portfolio_discipline,
 | Sub-factor | Computation |
 |---|---|
 | `governance` | owner and sponsor slots filled for this capability ÷ 2 |
-| `strategic_alignment` | dot product of spend-by-capability with declared `capability_weights` |
+| `strategic_alignment` | cosine similarity of spend-by-capability with declared `capability_weights` — a bounded [0,1] value fit for the geometric mean. *(Corrected 2026-08-21 from "dot product" per audit finding `1.4-001`: the build chose cosine similarity, which is the right input for a geomean and reproduces the pin; the spec wording was wrong, the artifact is right. R5: spec amendment, no artifact repair.)* |
 | `portfolio_discipline` | geomean(concentration vs `expected_concentration`, RGT mix vs target, maintenance ratio vs floor) |
 | `signal_responsiveness` | signals acted on before firing ÷ **actionable** signals (1.5 supplies the ledger; affordability filter per `findings/0.2` lineage) |
 | `follow_through` | 1 − (abandoned + deployed-but-never-trained) ÷ initiated |

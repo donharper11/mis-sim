@@ -131,6 +131,28 @@ and the content half of `B6` (all six policies declare `options` and `default`).
 
 ---
 
+## G. From the 1.4 scoring-engine audit — 2026-08-21
+
+Verdict PASS WITH FINDINGS, mergeable (`findings/1.4-2026-08-21-audit.md`); merged to `main`
+at `b5f53cd`. No Blocking or Functional findings. Pin reproduced independently. The
+policy-distance deferral is already owned by **F4** above — the deferred
+`management.policy_switch_alignment` hook builds against the ordinal contract once the 1.1
+policy-order rework merges.
+
+| # | Item | Owner |
+|---|---|---|
+| G1 | **Spec §5.3 said "dot product"; engine uses cosine similarity** (the correct bounded [0,1] input for the geomean, reproduces the pin). Artifact right, spec wrong — **spec wording corrected in this commit** per R5. | **Closed** |
+| G2 | **`design/02 §A` "data currency/freshness" was folded into component `currency`** without being called out as a deferral in the DoD factor map. Data-freshness as a distinct factor is not yet captured | **1.4 follow-up** |
+| G3 | Pre-flight row 4 quotes a fixed-figures string (`0.75 · Org 0.51 · Mgmt 0.65`) that the 0.3 v3 respec **deleted** from the mockup; the arithmetic target is intact in the 1.4 spec but the pre-flight check points at a dead file. Repoint it | **1.4 spec** |
+| G4 | Spec §5.2 references "adoption formula in §5.6"; **§5.6 has no such formula** and the schema has no adoption params. Build consumed adoption as a persisted input; the dynamic formula is deferred | **1.6 round-runner** |
+| G5 | The demo CLI (`print`/`json`/dynamic import) lives inside `app/engine`; scoring functions are pure and I2 passes, but relocating the CLI would make "engine does no I/O" true by construction | **1.4 follow-up** |
+
+**Closed by this build:** `1.4` scoring engine — Tech × Org × Mgmt computed from the Riverside
+R3 seed (0.750 / 0.507 / 0.648 / realised 0.246, throttle org), invariants I1–I8, decomposition
+record per capability. Unblocks 1.5, 1.6, 1.7 and all of Phase 3.
+
+---
+
 ## Standing rule
 
 > **A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is
