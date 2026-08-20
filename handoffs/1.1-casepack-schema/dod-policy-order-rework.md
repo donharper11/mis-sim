@@ -328,6 +328,12 @@ The full unified diff was reviewed line by line before commit; `git diff --check
 
 ## 12. Commit
 
-Implementation + this DoD committed to `build/1.1-policy-order-rework`. Final commit SHA:
-recorded in the branch log (`git log -1 --format=%H` on the branch). Worktree left clean.
-Nothing pushed — the branch awaits independent audit before any merge.
+Implementation + this DoD committed to `build/1.1-policy-order-rework`.
+
+- Implementation commit: `e2492d0c4644d60a3bf6382de2f210869584ef7e`
+  ("1.1 policy-order rework: PolicyOption.options is ordinal") — the four reconciled files
+  and `check_policy_options.py`, with the first copy of this DoD.
+- This SHA-recording line is a small follow-up commit on top (the branch tip; see
+  `git log -1` on the branch).
+
+Worktree left clean. Nothing pushed — the branch awaits independent audit before any merge.
