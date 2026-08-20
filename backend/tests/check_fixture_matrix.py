@@ -64,6 +64,33 @@ MATRIX: dict[str, tuple[set[str], set[str], int]] = {
     "broken_E12": ({"E12"}, {"E20"}, 1),
     "broken_E13": ({"E13"}, set(), 1),
     "broken_E14": ({"E14"}, set(), 1),
+    # ---- 1.2-RA-003: policy value vocabulary ---------------------------------------
+    "broken_E15": ({"E15"}, set(), 1),
+    # E15's default variant: a malformed DEFAULT (not an option). Same code, but it must
+    # locate the `default` field, not `options` -- finding 1.2-VR-002, asserted below.
+    "broken_E15_default": ({"E15"}, set(), 1),
+    "broken_E16": ({"E16"}, set(), 1),
+    # broken_E17's default is outside its options, which makes models.py refuse the pack.
+    # E00 is forbidden here: the whole point of E17 is that this no longer collapses into
+    # the opaque unreadable-pack path (finding 1.2-RA-003).
+    "broken_E17": ({"E17"}, {"E00"}, 1),
+    # Aggregate diagnostics: a bad policy default AND an independent weight error. Both must
+    # surface -- one invalid default must not hide E03 behind a single E00 (1.2-RA-003).
+    "broken_policy_aggregate": ({"E17", "E03"}, {"E00"}, 1),
+    # ---- 1.2-RA-001: obligation references -----------------------------------------
+    "broken_E24": ({"E24"}, set(), 1),
+    "broken_E25": ({"E25"}, set(), 1),
+    "broken_E26": ({"E26"}, set(), 1),
+    # E26 when the referenced policy declares NO options -- permissive_value names nothing
+    # (finding 1.2-VR-001). Must fire, not pass clean.
+    "broken_E26_no_options": ({"E26"}, set(), 1),
+    "broken_E27": ({"E27"}, set(), 1),
+    "broken_E28": ({"E28"}, set(), 1),
+    # The paired valid half for the policy-vocab and obligation fixtures: a pack whose policy
+    # declares options and whose obligation resolves against every one of them, clean.
+    "ok_obligations_valid": (set(), {ANY}, 0),
+    # ---- 1.2-RA-002: W01 sees the by_decision preference shape ----------------------
+    "warn_W01_by_decision": ({"W01"}, set(), 0),
     "broken_E20": ({"E20"}, set(), 1),
     "broken_E20_mute": ({"E20", "E12"}, set(), 1),
     "broken_E21": ({"E21"}, {"E12", "E20"}, 1),
@@ -218,6 +245,32 @@ def check_i5(targets: list[Path]) -> list[str]:
 # ---------------------------------------------------------------------------------------
 
 
+# fixture -> (code, the suffix its finding's `field` must end with). Finding 1.2-VR-002: a
+# finding must locate the field an author should edit, so the code alone is not enough -- a
+# malformed default reported against `options` sends the author to the wrong place.
+FIELD_LOCATORS: list[tuple[str, str, str]] = [
+    ("broken_E15", "E15", ".options"),
+    ("broken_E15_default", "E15", ".default"),
+    ("broken_E26", "E26", ".permissive_value"),
+    ("broken_E26_no_options", "E26", ".permissive_value"),
+]
+
+
+def check_field_locators() -> list[str]:
+    problems: list[str] = []
+    for name, code, suffix in FIELD_LOCATORS:
+        proc = run_cli("--json", str(PACKS / name))
+        findings = json.loads(proc.stdout) if proc.stdout.strip() else []
+        hits = [item for item in findings if item["code"] == code]
+        ok = bool(hits) and all(str(item["field"]).endswith(suffix) for item in hits)
+        print(f"FIELD  {name:<26} {code} field endswith '{suffix}'   {'PASS' if ok else 'FAIL'}")
+        if not ok:
+            problems.append(
+                f"{name}: {code} field {[item['field'] for item in hits]} does not end with {suffix!r}"
+            )
+    return problems
+
+
 def check_matrix() -> tuple[list[str], set[str], set[str]]:
     problems: list[str] = []
     covered: set[str] = set()
@@ -248,6 +301,8 @@ def check_matrix() -> tuple[list[str], set[str], set[str]]:
 
 def main() -> int:
     problems, covered, _ = check_matrix()
+    print()
+    problems += check_field_locators()
     print()
     problems += check_i1()
     print()

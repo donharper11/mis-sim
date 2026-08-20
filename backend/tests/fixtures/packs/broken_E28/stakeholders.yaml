@@ -1,0 +1,24 @@
+- key: practice_owner
+  archetype: c_suite
+  display_name_key: stakeholder_practice_owner
+  role_key: role_practice_ownership
+  stakeholder_type: internal
+  provenance: {source: AUTHORED, note: "the founding vet who still consults two days a week"}
+- key: practice_finance
+  archetype: finance
+  display_name_key: stakeholder_practice_finance
+  role_key: role_finance_office
+  stakeholder_type: internal
+  provenance: {source: AUTHORED, note: "part-time bookkeeper who closes the month on spreadsheets"}
+- key: clinical_team
+  archetype: operations
+  display_name_key: stakeholder_clinical_team
+  role_key: role_clinical_operations
+  stakeholder_type: internal
+  provenance: {source: AUTHORED, note: "the vets and nurses whose day the records system changes"}
+- key: pet_owner
+  archetype: customer
+  display_name_key: stakeholder_pet_owner
+  role_key: role_client_household
+  stakeholder_type: external
+  provenance: {source: AUTHORED, note: "the household that notices when the recall letter never arrives"}

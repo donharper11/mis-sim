@@ -179,6 +179,29 @@ codes:
     message: "The opening position states {field_name} as {authored}, but {derivation} {derived}. The same number is authored in two places and they disagree."
     fix: "Fix: in pack.yaml, correct {field_name} to {derived}, or correct the figures it is derived from. Better, derive it rather than authoring it twice."
 
+  # ---- policy value vocabulary (spec 5.1) -----------------------------------------
+  # Added for finding 1.2-RA-003. E15/E16 catch malformed option vocabularies the model does
+  # not check at all; E17 is the precise form of a default-outside-options error that used to
+  # collapse the whole pack into an opaque E00.
+
+  E15:
+    severity: ERROR
+    subject: "Policy {policy}"
+    message: "Lists an option '{value}' that is not a valid machine key. A switch's options must be lower snake case so the ordering can be indexed."
+    fix: "Fix: in policies.yaml, rename '{value}' to lower snake case, or remove it from '{policy}'."
+
+  E16:
+    severity: ERROR
+    subject: "Policy {policy}"
+    message: "Lists the option '{value}' more than once, so the switch has two positions with the same name and the second is unreachable."
+    fix: "Fix: in policies.yaml, delete the repeated '{value}' from '{policy}' options."
+
+  E17:
+    severity: ERROR
+    subject: "Policy {policy}"
+    message: "Starts on default '{default}', which is not one of its options {options}. A team would begin the game on a switch position the switch cannot hold."
+    fix: "Fix: in policies.yaml, set '{policy}' default to one of {options}, or add '{default}' to its options."
+
   # ---- coherence (spec 5.2) --------------------------------------------------------
 
   E20:
@@ -216,6 +239,41 @@ codes:
     message: "Needs {entity} information at '{level}' detail, and nothing this company can buy produces it."
     fix: "Fix: add {entity} at '{level}' or finer to owns_entities on an item in catalog.yaml or a service in platform.yaml, or lower the requirement in questions.yaml."
 
+  # ---- obligation references (spec 5.2) -------------------------------------------
+  # Added for finding 1.2-RA-001. obligation_rules.yaml loaded but nothing checked that its
+  # references resolve. An obligation reuses the signal machinery (1.5 decision 7), so these
+  # are the same class as E05/E06/E09 for the file that had no checks.
+
+  E24:
+    severity: ERROR
+    subject: "Obligation {obligation}"
+    message: "Reads the policy switch '{policy}', which this company does not have."
+    fix: "Fix: in obligation_rules.yaml, point '{obligation}' at a policy that exists in policies.yaml, or add that policy."
+
+  E25:
+    severity: ERROR
+    subject: "Obligation {obligation}"
+    message: "Protects the entity '{entity}', which this company does not have."
+    fix: "Fix: in obligation_rules.yaml, name an entity that exists in entities.yaml, or add that entity."
+
+  E26:
+    severity: ERROR
+    subject: "Obligation {obligation}"
+    message: "Says the permissive position is '{value}', which is not one of policy '{policy}' options {options}. It would watch for a switch position that cannot occur, so it can never open."
+    fix: "Fix: in obligation_rules.yaml, set permissive_value to one of {options}, or add '{value}' to the options of '{policy}' in policies.yaml."
+
+  E27:
+    severity: ERROR
+    subject: "Obligation {obligation}"
+    message: "Says it is cleared by '{action}', which is not something a team can actually do."
+    fix: "Fix: in obligation_rules.yaml, put one of these in cleared_by, or remove '{action}': {known}."
+
+  E28:
+    severity: ERROR
+    subject: "Obligation {obligation}"
+    message: "Arms the event '{event}', which this company does not have, so ignoring the obligation would arm nothing."
+    fix: "Fix: in obligation_rules.yaml, name an event that exists in events.yaml, or remove '{event}' from arms."
+
   # ---- inherited invariants from 1.1 section 6, named as codes by spec v1.2 section 5.1
 
   I3:
@@ -235,8 +293,8 @@ codes:
   W01:
     severity: WARN
     subject: "{domain} preferences"
-    message: "{count} rows carry the same ideal value {ideal_value} and the same weight {weight}, which looks like placeholder seeding rather than authored judgement."
-    fix: "Fix: vary ideal_value and weight per stakeholder in {file}, or state in provenance that the uniformity is deliberate."
+    message: "{count} rows carry the same ideal {ideal} and the same weight {weight}, which looks like placeholder seeding rather than authored judgement."
+    fix: "Fix: vary the ideal and weight per stakeholder in {file}, or state in provenance that the uniformity is deliberate."
 
   W02:
     severity: WARN
@@ -292,3 +350,17 @@ variants:
     subject: "Pack identity {key}"
     message: "{count} packs in this directory all call themselves '{key}': {paths}. A section asking for '{key}' could be given any of them."
     fix: "Fix: give each pack its own pack_key in its pack.yaml — the key is the pack's permanent identity, so change the newer one, never the one already loaded anywhere."
+
+  # E15 when the malformed value is the DEFAULT rather than an option. Finding 1.2-VR-002 --
+  # the field locator and fix must name `default`, or an author edits the wrong field.
+  E15_default:
+    subject: "Policy {policy}"
+    message: "Starts on a default '{value}' that is not a valid machine key. A switch's default must be a lower snake case key that names one of its options."
+    fix: "Fix: in policies.yaml, set the default of '{policy}' to a lower snake case option key it declares."
+
+  # E26 when the referenced policy declares NO options at all. Finding 1.2-VR-001 -- the
+  # permissive value then names nothing, which is the dangling reference E26 exists to catch.
+  E26_no_options:
+    subject: "Obligation {obligation}"
+    message: "Says the permissive position is '{value}', but policy '{policy}' declares no options at all, so there is no switch position for it to name and the obligation can never open."
+    fix: "Fix: in policies.yaml, give '{policy}' an options list that includes '{value}', or remove the obligation from obligation_rules.yaml."

@@ -551,7 +551,9 @@ actively choose the exposure. Both are valid packs. Which one you author is a st
 about the company, and it should be one you made on purpose.
 
 `permissive_value` should name a member of the policy's `options`; otherwise it points at a
-state the switch cannot be in. The validator does not yet check this — author it correctly.
+state the switch cannot be in. The validator checks this (`E26`) when the policy resolves and
+declares options, alongside the other obligation references — `entity` (`E25`), `policy`
+(`E24`), `cleared_by` actions (`E27`) and armed `events` (`E28`).
 
 ## `questions.yaml`
 

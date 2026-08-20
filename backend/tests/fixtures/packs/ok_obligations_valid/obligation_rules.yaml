@@ -1,0 +1,12 @@
+# One obligation whose every reference resolves: entity `client` exists, policy
+# `client_record_retention` exists and declares `indefinite` among its options, the clearing
+# actions are real action types, and `duplicate_client_records` is a real event.
+- key: client_pii_retention
+  entity: client
+  condition: policy_permits
+  policy: client_record_retention
+  permissive_value: indefinite
+  severity: critical
+  cleared_by: [add_policy, retire_component]
+  arms: [duplicate_client_records]
+  provenance: {source: AUTHORED, note: "keeping client history forever is what the obligation objects to"}

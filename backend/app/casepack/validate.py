@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
@@ -394,6 +395,123 @@ def _demand_finding(key: str, label: str, given: int, rounds: int, source: PackS
         given=given,
         rounds=rounds,
     )
+
+
+def _show(value: Any) -> str:
+    """A readable rendering of an option value for a finding message -- empty and
+    non-string values would otherwise vanish into the copy."""
+    if isinstance(value, str):
+        return value if value else "(empty)"
+    return repr(value)
+
+
+def check_policy_vocab(raw: dict[str, Any], source: PackSource) -> list[Finding]:
+    """E15..E17 -- a policy's value vocabulary is malformed, checked on RAW YAML.
+
+    Runs before the pydantic load (like check_weights_raw / check_demand_raw), and for the
+    same reason: a policy whose `default` is not among its `options` makes models.py refuse
+    to build the whole pack (`PolicyOption.default_is_a_declared_option`). That refusal was
+    reaching the instructor as a single opaque E00 that hid every other finding in the pack
+    (finding 1.2-RA-003). Reported here as precise codes, these co-report with the other
+    raw-stage checks (E03, E04, E10, E11, E15, E16) instead of collapsing into E00.
+
+    E15/E16 are not model-enforced at all -- `options` is a plain `list[str]` -- so they are
+    the validator's only line on empty, non-snake, or duplicated option vocabularies.
+    """
+    findings: list[Finding] = []
+    for row in _as_list(raw.get("policies")):
+        if not isinstance(row, dict):
+            continue
+        key = row.get("key")
+        if not isinstance(key, str):
+            continue
+        options = row.get("options")
+        options = options if isinstance(options, list) else []
+        default = row.get("default")
+        key_line = source.key_line("policies.yaml", key)
+
+        # E15 -- an option value that is not a valid snake_case key (an empty string fails
+        # the same rule). Options must be machine keys the ordering in CONTRACTS.md
+        # `PolicyOption.options` can index.
+        for opt in options:
+            if not (isinstance(opt, str) and base_checks.SNAKE_RE.fullmatch(opt)):
+                findings.append(
+                    make_finding(
+                        "E15",
+                        "policies.yaml",
+                        f"{key}.options",
+                        line=key_line,
+                        policy=key,
+                        value=_show(opt),
+                        file="policies.yaml",
+                    )
+                )
+        # E15, default variant -- a malformed default is reported against `default`, not
+        # `options`, with a default-specific message and fix (finding 1.2-VR-002). Lumping it
+        # into the options list pointed the author at the wrong field.
+        default_malformed = default is not None and not (
+            isinstance(default, str) and base_checks.SNAKE_RE.fullmatch(default)
+        )
+        if default_malformed:
+            findings.append(
+                make_finding(
+                    "E15",
+                    "policies.yaml",
+                    f"{key}.default",
+                    line=source.field_line("policies.yaml", key, "default"),
+                    variant="E15_default",
+                    policy=key,
+                    value=_show(default),
+                    file="policies.yaml",
+                )
+            )
+
+        # E16 -- the same value listed twice in one options vocabulary
+        seen: set[str] = set()
+        duplicated: list[str] = []
+        for opt in options:
+            if isinstance(opt, str):
+                if opt in seen and opt not in duplicated:
+                    duplicated.append(opt)
+                seen.add(opt)
+        for dup in duplicated:
+            findings.append(
+                make_finding(
+                    "E16",
+                    "policies.yaml",
+                    f"{key}.options",
+                    line=key_line,
+                    policy=key,
+                    value=dup,
+                    file="policies.yaml",
+                )
+            )
+
+        # E17 -- a WELL-FORMED default outside its own options. Mirrors the models.py load
+        # failure (options non-empty, default not None, default not a member), so it reaches
+        # the instructor as E17 rather than the opaque E00 the failure used to collapse to. A
+        # malformed default is E15's default variant above, not this -- the snake guard keeps
+        # the two from both firing on one default (finding 1.2-VR-002).
+        string_options = [opt for opt in options if isinstance(opt, str)]
+        if (
+            string_options
+            and isinstance(default, str)
+            and base_checks.SNAKE_RE.fullmatch(default)
+            and default not in string_options
+        ):
+            findings.append(
+                make_finding(
+                    "E17",
+                    "policies.yaml",
+                    f"{key}.default",
+                    line=source.field_line("policies.yaml", key, "default"),
+                    policy=key,
+                    default=_show(default),
+                    options=", ".join(string_options),
+                    file="policies.yaml",
+                )
+            )
+    return findings
 
 
 # --------------------------------------------------------------------------------------
@@ -903,6 +1021,98 @@ def check_questions(lens: Lens) -> list[Finding]:
 
 
 # --------------------------------------------------------------------------------------
+# typed stage -- obligation references (E24..E28)
+#
+# Added for finding 1.2-RA-001. obligation_rules.yaml loads (loader.py:27,89) but nothing
+# validated it, so a nonexistent entity, policy, permissive value, action or armed event
+# could reach the event and scoring engines while validate_casepack stayed green. Obligations
+# reuse the signal machinery (1.5 decision 7), so a dangling reference is the same class of
+# defect E05/E06/E09 already catch for watch rules and events -- just in the file that had no
+# checks at all.
+#
+# obligation_rules.yaml is OPTIONAL: a pack without it loads clean and pack.obligation_rules
+# is the empty list, so this loop simply does not run (finding 1.1-r2-001).
+# --------------------------------------------------------------------------------------
+
+
+def check_obligation_references(lens: Lens) -> list[Finding]:
+    """E24..E28 -- an obligation names something the pack does not define."""
+    findings: list[Finding] = []
+    pack = lens.pack
+    entity_keys = {entity.key for entity in pack.entities}
+    policies = {policy.key: policy for policy in pack.policies}
+    event_keys = {event.key for event in pack.events}
+    relative = "obligation_rules.yaml"
+    for rule in pack.obligation_rules:
+        line = lens.source.key_line(relative, rule.key)
+        policy = policies.get(rule.policy)
+
+        # E24 -- the policy switch it reads
+        if policy is None:
+            findings.append(
+                make_finding(
+                    "E24", relative, f"{rule.key}.policy", line=line,
+                    obligation=rule.key, policy=rule.policy, file=relative,
+                )
+            )
+
+        # E25 -- the entity it protects
+        if rule.entity not in entity_keys:
+            findings.append(
+                make_finding(
+                    "E25", relative, f"{rule.key}.entity", line=line,
+                    obligation=rule.key, entity=rule.entity, file=relative,
+                )
+            )
+
+        # E26 -- permissive_value must name a DECLARED option of that policy (CONTRACTS.md
+        # PolicyOption.options / obligation_rules.permissive_value). Checked whenever the
+        # policy resolves: a policy that declares NO options gives permissive_value no
+        # vocabulary to name, which is the dangling reference E26 exists to catch, not a
+        # reason to stay silent (finding 1.2-VR-001). Two shapes, one code:
+        if policy is not None:
+            if not policy.options:
+                findings.append(
+                    make_finding(
+                        "E26", relative, f"{rule.key}.permissive_value", line=line,
+                        variant="E26_no_options",
+                        obligation=rule.key, value=rule.permissive_value, policy=rule.policy,
+                        file=relative,
+                    )
+                )
+            elif rule.permissive_value not in policy.options:
+                findings.append(
+                    make_finding(
+                        "E26", relative, f"{rule.key}.permissive_value", line=line,
+                        obligation=rule.key, value=rule.permissive_value, policy=rule.policy,
+                        options=", ".join(policy.options), file=relative,
+                    )
+                )
+
+        # E27 -- the actions that clear it, against the same ACTION_TYPES set as E05
+        for action in rule.cleared_by:
+            if action not in base_checks.ACTION_TYPES:
+                findings.append(
+                    make_finding(
+                        "E27", relative, f"{rule.key}.cleared_by.{action}", line=line,
+                        obligation=rule.key, action=action,
+                        known=", ".join(sorted(base_checks.ACTION_TYPES)), file=relative,
+                    )
+                )
+
+        # E28 -- the events it arms while it stays open
+        for event in rule.arms:
+            if event not in event_keys:
+                findings.append(
+                    make_finding(
+                        "E28", relative, f"{rule.key}.arms.{event}", line=line,
+                        obligation=rule.key, event=event, file=relative,
+                    )
+                )
+    return findings
+
+
+# --------------------------------------------------------------------------------------
 # typed stage -- initial_state (E13, E14)
 #
 # Added v1.2 for finding 1.2-014: initial_state is fourteen fields deep and, before this,
@@ -1049,40 +1259,68 @@ def check_initial_state_figures(lens: Lens) -> list[Finding]:
 # --------------------------------------------------------------------------------------
 
 
+#: The fields that name a preference's ideal position, across every supported preference
+#: shape: `ideal_value` (legacy numeric -- catalog/platform/training overrides),
+#: `ideal_posture` (policies -- an ordinal option key) and `ideal_tier` (services -- a
+#: support/integration tier). W01 counts identical (ideal, weight) rows regardless of which
+#: of these carries the ideal, so it sees placeholder seeding in every preference domain
+#: rather than only the one legacy shape it read before (finding 1.2-RA-002).
+_PREFERENCE_IDEAL_FIELDS = ("ideal_value", "ideal_posture", "ideal_tier")
+
+
+def _preference_rows(node: Any) -> Iterable[tuple[str, Any, Any]]:
+    """Every preference row anywhere in a domain file, found by its semantic fields.
+
+    A row is any mapping that names an ideal position -- `ideal_value`, `ideal_posture` or
+    `ideal_tier`. Its weight is the `weight` in that SAME mapping (the per-decision weight in
+    the `by_decision` shape, the per-row weight in the legacy `overrides` shape), never the
+    archetype-level aggregate weight one level up: that mapping carries no ideal field and so
+    is not itself a row. Yields (ideal_field, ideal, weight).
+    """
+    if isinstance(node, dict):
+        for field in _PREFERENCE_IDEAL_FIELDS:
+            if field in node:
+                yield field, node[field], node.get("weight")
+                break
+        for child in node.values():
+            yield from _preference_rows(child)
+    elif isinstance(node, list):
+        for child in node:
+            yield from _preference_rows(child)
+
+
 def check_placeholder_preferences(lens: Lens, raw: dict[str, Any]) -> list[Finding]:
-    """W01 -- rows sharing one ideal_value and one weight look seeded, not authored."""
+    """W01 -- rows sharing one ideal and one weight look seeded, not authored.
+
+    Rewritten for finding 1.2-RA-002. The previous check read only `defaults_by_archetype`
+    rows carrying `ideal_value`, so it was blind to `preferences/policies.yaml` and
+    `preferences/services.yaml`, which nest ideals under `by_decision` as `ideal_posture` /
+    `ideal_tier`. It now walks every domain by the ideal fields themselves, so the same
+    placeholder-seeding shape is caught in all five preference domains, not one.
+    """
     findings: list[Finding] = []
     domains = raw.get("preferences")
     if not isinstance(domains, dict):
         return findings
     for domain in sorted(domains):
         body = domains[domain]
-        if not isinstance(body, dict):
-            continue
-        rows: list[dict[str, Any]] = []
-        defaults = body.get("defaults_by_archetype")
-        if isinstance(defaults, dict):
-            rows.extend(row for row in defaults.values() if isinstance(row, dict))
-        rows.extend(row for row in _as_list(body.get("overrides")) if isinstance(row, dict))
-        groups: dict[tuple[Any, Any], int] = {}
-        for row in rows:
-            if "ideal_value" not in row:
-                continue
-            signature = (row.get("ideal_value"), row.get("weight"))
+        groups: dict[tuple[str, Any, Any], int] = {}
+        for field, ideal, weight in _preference_rows(body):
+            signature = (field, ideal, weight)
             groups[signature] = groups.get(signature, 0) + 1
         relative = f"preferences/{domain}.yaml"
-        for (ideal_value, weight), count in sorted(groups.items(), key=lambda pair: str(pair[0])):
+        for (field, ideal, weight), count in sorted(groups.items(), key=lambda pair: str(pair[0])):
             if count < W01_MIN_IDENTICAL_ROWS:
                 continue
             findings.append(
                 make_finding(
                     "W01",
                     relative,
-                    "overrides.ideal_value",
-                    line=lens.source.find(relative, r"^overrides\s*:"),
+                    f"{domain}.{field}",
+                    line=lens.source.find(relative, rf"\b{field}\s*:"),
                     count=count,
                     domain=domain.replace("_", " ").title(),
-                    ideal_value=ideal_value,
+                    ideal=ideal,
                     weight=weight,
                     file=relative,
                 )
@@ -1256,6 +1494,7 @@ def validate(pack: Casepack, source: PackSource, raw: dict[str, Any]) -> list[Fi
     findings += check_impossible_events(lens)
     findings += check_strategy_reachability(lens)
     findings += check_questions(lens)
+    findings += check_obligation_references(lens)
     findings += check_placeholder_preferences(lens, raw)
     findings += check_unweighted_capabilities(lens)
     findings += check_untargeted_events(lens)
@@ -1335,6 +1574,11 @@ def validate_pack_dir(pack_dir: str | Path) -> Report:
     raw, findings = read_raw(root)
     findings += check_duplicate_keys(raw, source)
     findings += check_schema_version(raw, source)
+    # Raw-stage policy vocabulary (E15..E17). Runs BEFORE the load so that a policy whose
+    # default is outside its options -- which makes models.py refuse the pack -- is reported
+    # as a precise code that co-reports with the other raw checks below, rather than being
+    # collapsed into the opaque E00 the load failure used to produce (finding 1.2-RA-003).
+    findings += check_policy_vocab(raw, source)
 
     pack: Casepack | None = None
     try:
