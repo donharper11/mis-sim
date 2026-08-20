@@ -430,28 +430,38 @@ def check_policy_vocab(raw: dict[str, Any], source: PackSource) -> list[Finding]
         default = row.get("default")
         key_line = source.key_line("policies.yaml", key)
 
-        # E15 -- an option value, or a non-null default, that is not a valid snake_case key
-        # (an empty string fails the same rule). Options must be machine keys the ordering
-        # in CONTRACTS.md `PolicyOption.options` can index; a default that names no legal key
-        # cannot be one of them.
-        malformed: list[Any] = [
-            opt
-            for opt in options
-            if not (isinstance(opt, str) and base_checks.SNAKE_RE.fullmatch(opt))
-        ]
-        if default is not None and not (
+        # E15 -- an option value that is not a valid snake_case key (an empty string fails
+        # the same rule). Options must be machine keys the ordering in CONTRACTS.md
+        # `PolicyOption.options` can index.
+        for opt in options:
+            if not (isinstance(opt, str) and base_checks.SNAKE_RE.fullmatch(opt)):
+                findings.append(
+                    make_finding(
+                        "E15",
+                        "policies.yaml",
+                        f"{key}.options",
+                        line=key_line,
+                        policy=key,
+                        value=_show(opt),
+                        file="policies.yaml",
+                    )
+                )
+        # E15, default variant -- a malformed default is reported against `default`, not
+        # `options`, with a default-specific message and fix (finding 1.2-VR-002). Lumping it
+        # into the options list pointed the author at the wrong field.
+        default_malformed = default is not None and not (
             isinstance(default, str) and base_checks.SNAKE_RE.fullmatch(default)
-        ):
-            malformed.append(default)
-        for bad in malformed:
+        )
+        if default_malformed:
             findings.append(
                 make_finding(
                     "E15",
                     "policies.yaml",
-                    f"{key}.options",
-                    line=key_line,
+                    f"{key}.default",
+                    line=source.field_line("policies.yaml", key, "default"),
+                    variant="E15_default",
                     policy=key,
-                    value=_show(bad),
+                    value=_show(default),
                     file="policies.yaml",
                 )
             )
@@ -477,12 +487,18 @@ def check_policy_vocab(raw: dict[str, Any], source: PackSource) -> list[Finding]
                 )
             )
 
-        # E17 -- a default outside its own options. Mirrors models.py exactly (options
-        # non-empty, default not None, default not a member), so the precise finding fires on
-        # exactly the packs the model would reject -- and reaches the instructor as E17, not
-        # as the opaque E00 the load failure used to collapse to.
+        # E17 -- a WELL-FORMED default outside its own options. Mirrors the models.py load
+        # failure (options non-empty, default not None, default not a member), so it reaches
+        # the instructor as E17 rather than the opaque E00 the failure used to collapse to. A
+        # malformed default is E15's default variant above, not this -- the snake guard keeps
+        # the two from both firing on one default (finding 1.2-VR-002).
         string_options = [opt for opt in options if isinstance(opt, str)]
-        if string_options and isinstance(default, str) and default not in string_options:
+        if (
+            string_options
+            and isinstance(default, str)
+            and base_checks.SNAKE_RE.fullmatch(default)
+            and default not in string_options
+        ):
             findings.append(
                 make_finding(
                     "E17",
@@ -1050,17 +1066,28 @@ def check_obligation_references(lens: Lens) -> list[Finding]:
             )
 
         # E26 -- permissive_value must name a DECLARED option of that policy (CONTRACTS.md
-        # PolicyOption.options / obligation_rules.permissive_value). Only checkable when the
-        # policy resolves and declares options; a legacy policy with no options has no
-        # vocabulary to check against, so this stays silent rather than guessing.
-        if policy is not None and policy.options and rule.permissive_value not in policy.options:
-            findings.append(
-                make_finding(
-                    "E26", relative, f"{rule.key}.permissive_value", line=line,
-                    obligation=rule.key, value=rule.permissive_value, policy=rule.policy,
-                    options=", ".join(policy.options), file=relative,
+        # PolicyOption.options / obligation_rules.permissive_value). Checked whenever the
+        # policy resolves: a policy that declares NO options gives permissive_value no
+        # vocabulary to name, which is the dangling reference E26 exists to catch, not a
+        # reason to stay silent (finding 1.2-VR-001). Two shapes, one code:
+        if policy is not None:
+            if not policy.options:
+                findings.append(
+                    make_finding(
+                        "E26", relative, f"{rule.key}.permissive_value", line=line,
+                        variant="E26_no_options",
+                        obligation=rule.key, value=rule.permissive_value, policy=rule.policy,
+                        file=relative,
+                    )
                 )
-            )
+            elif rule.permissive_value not in policy.options:
+                findings.append(
+                    make_finding(
+                        "E26", relative, f"{rule.key}.permissive_value", line=line,
+                        obligation=rule.key, value=rule.permissive_value, policy=rule.policy,
+                        options=", ".join(policy.options), file=relative,
+                    )
+                )
 
         # E27 -- the actions that clear it, against the same ACTION_TYPES set as E05
         for action in rule.cleared_by:

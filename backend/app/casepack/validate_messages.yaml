@@ -350,3 +350,17 @@ variants:
     subject: "Pack identity {key}"
     message: "{count} packs in this directory all call themselves '{key}': {paths}. A section asking for '{key}' could be given any of them."
     fix: "Fix: give each pack its own pack_key in its pack.yaml — the key is the pack's permanent identity, so change the newer one, never the one already loaded anywhere."
+
+  # E15 when the malformed value is the DEFAULT rather than an option. Finding 1.2-VR-002 --
+  # the field locator and fix must name `default`, or an author edits the wrong field.
+  E15_default:
+    subject: "Policy {policy}"
+    message: "Starts on a default '{value}' that is not a valid machine key. A switch's default must be a lower snake case key that names one of its options."
+    fix: "Fix: in policies.yaml, set the default of '{policy}' to a lower snake case option key it declares."
+
+  # E26 when the referenced policy declares NO options at all. Finding 1.2-VR-001 -- the
+  # permissive value then names nothing, which is the dangling reference E26 exists to catch.
+  E26_no_options:
+    subject: "Obligation {obligation}"
+    message: "Says the permissive position is '{value}', but policy '{policy}' declares no options at all, so there is no switch position for it to name and the obligation can never open."
+    fix: "Fix: in policies.yaml, give '{policy}' an options list that includes '{value}', or remove the obligation from obligation_rules.yaml."

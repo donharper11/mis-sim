@@ -566,6 +566,16 @@ build (spec + code + fixtures + catalogue + matrix together, `GOVERNANCE §8`).
 | §5.3 `W01` generalised from `ideal_value` to any of `ideal_value`/`ideal_posture`/`ideal_tier` | `1.2-RA-002`: W01 read only the legacy `defaults_by_archetype`+`ideal_value` shape and was blind to `preferences/policies.yaml` and `preferences/services.yaml`, which nest ideals under `by_decision`. It now walks every domain by semantic fields |
 | Eleven fixtures added (nine broken, one paired-valid, one by-decision warn) | §8 step 5 — a code with no fixture is untested; `broken_policy_aggregate` demonstrates E17+E03 co-reporting; `warn_W01_by_decision` demonstrates the generalised traversal |
 
+**Post-audit corrections** (`findings/1.2-validator-rework-2026-08-21-audit.md`, PASS WITH
+FINDINGS, both mechanical): `1.2-VR-001` — `E26` now also fires when an obligation's policy
+declares **no** options at all (its `permissive_value` then names nothing), via the
+`E26_no_options` catalogue variant; `1.2-VR-002` — a malformed **default** is reported against
+the `default` field with a default-specific message (`E15_default` variant), not lumped into
+`options`. Both are catalogue variants, not new codes, so the code list and `I1` are
+unchanged. Two fixtures added (`broken_E26_no_options`, `broken_E15_default`) and a
+field-locator assertion (`check_field_locators`) now guards that a finding names the field an
+author must edit, not only the code.
+
 **No invariant changed and no guard moved** (`R2`). `I1` reads the header code-list line and
 holds it against `catalogue()`; the header and §5.1–§5.3 were updated together so I1 stays
 set-equal. `I5` (text/JSON parity) is unaffected — the new findings flow through the one

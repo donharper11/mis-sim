@@ -186,5 +186,57 @@ All copy lives in `validate_messages.yaml`; the `.py` files name no displayed En
 
 Implementation + fixtures + this DoD committed to `build/1.2-validator-rework`. The scaffold
 that generated the fixtures is kept under the session scratchpad (`build_fixtures.py`), not in
-the repo. Final commit SHA recorded in the branch log. Worktree left clean; nothing pushed —
-awaits independent re-audit before merge.
+the repo. Worktree left clean; nothing pushed — awaits independent re-audit before merge.
+
+---
+
+## 9. Audit closeout — findings `1.2-VR-001` / `1.2-VR-002`
+
+Independent audit (`findings/1.2-validator-rework-2026-08-21-audit.md`) returned **PASS WITH
+FINDINGS**, two mechanical corrections, same-builder authorised. Both reproduced against the
+audited tip `b7f0420` and fixed.
+
+### `1.2-VR-001` — E26 skipped a policy with no options
+`check_obligation_references` only emitted `E26` when `policy.options` was non-empty, so an
+obligation whose referenced policy declares **no** options validated clean — the
+`permissive_value` pointed at no declared state, the exact dangling reference E26 exists to
+prevent. Fixed: E26 now fires whenever the policy resolves — a no-options policy uses the
+`E26_no_options` variant ("policy declares no options at all…"); a non-empty options list uses
+the existing not-a-member message. Backward-compatible: a policy with no options and **no**
+obligation referencing it is untouched (the loop only runs over declared obligations).
+
+### `1.2-VR-002` — E15 reported a malformed default as an option, wrong field
+`check_policy_vocab` appended malformed options and a malformed default to one list and always
+emitted `field: <policy>.options` with the option message. A `default: 42` therefore read
+"Lists an option '42' … remove it from options", sending an author to the wrong field. Fixed:
+options and default are checked separately; a malformed default emits the `E15_default`
+variant against `field: <policy>.default` with a default-specific message and fix. `E17` is
+now guarded to a **well-formed** default not among options, so the two never both fire on one
+default.
+
+### Reproduced on the audited tip, fixed at the new tip
+```
+                        b7f0420 (audited)                     new tip
+broken_E26_no_options   exit 0, clean (E26 skipped)        →  E26 (no_options variant)
+broken_E15_default      E15, field ...options (WRONG)      →  E15, field ...default
+```
+
+### New guards
+- Fixtures `broken_E26_no_options` and `broken_E15_default` added to the matrix (both raise
+  their code, exit 1).
+- `check_field_locators()` added to `check_fixture_matrix.py`: asserts the JSON `field` of
+  `broken_E15` ends `.options`, `broken_E15_default` ends `.default`, and both E26 fixtures
+  end `.permissive_value` — VR-002's "assert the rendered field, not only the code".
+
+### Post-fix verification (new tip)
+```
+check_fixture_matrix.py → EXIT=0   (42 fixtures; field-locators all PASS; I1 37/37 set-equal;
+                                     I5 text==json in single-pack and directory mode)
+Riverside               → 0 errors · 0 warnings · exit 0
+compileall              → ok
+```
+Files changed by this closeout: `backend/app/casepack/validate.py`,
+`backend/app/casepack/validate_messages.yaml`, `backend/tests/check_fixture_matrix.py`,
+`handoffs/1.2-validator/spec.md`, and two new fixture packs. No new code; two catalogue
+variants; the code list and `I1` are unchanged. Branch returned clean for a short independent
+re-audit; still nothing pushed or merged.
