@@ -391,11 +391,21 @@ because it is their revenue, and that is recorded plainly.
 
 **The FTE figures this view rests on are authored estimates, not harvested** (finding
 `1.3-RA-001`; §7). `maintenance_support_levels` carries cost only, so 0.6 / 1.4 / 2.4 are
-authored and marked `TODO: calibrate` at their values in `platform.yaml`, owner 1.7. The
-*shape* of `it`'s view — premium tier exceeds the starting pool — holds across any plausible
-calibration (premium is the top tier by construction), so the preference is not invalidated;
-what a calibration would move is the exact margin, which is why the numbers are marked and
-the conclusion is stated as a direction rather than a precise gap.
+authored and marked `TODO: calibrate` at their values in `platform.yaml`, owner 1.7. Three
+statements about the view are kept apart deliberately, because two survive calibration and
+one does not (finding `1.3-HR-001`):
+
+- `it`'s `ideal_tier` is `premium` because **design/07 §3.6 states IT prefers `premium`** —
+  a design fact, not one derived from the FTE numbers. Re-calibrating the FTE estimates does
+  not move it; only a separate revision of the design contract would.
+- **`premium` is the highest declared support tier** — an ordering, `basic < standard <
+  premium`, that holds by construction whatever the FTE values become.
+- the specific claim that premium's FTE **exceeds** the 2.0 starting pool rests **entirely on
+  the current authored estimate** (2.4 > 2.0). "Highest tier" is an ordering and does not put
+  a lower bound above 2.0 on the calibrated value: a future evidence-based FTE could keep
+  `basic < standard < premium` while placing premium at or below 2.0. So calibration may move
+  both the margin **and whether that threshold is crossed at all**, and the "2.4 against a 2.0
+  pool" comparison is provisional, not an invariant.
 
 ### 10.4 `lead_time_rounds` — the band, and why 54 zeroes was a defect
 

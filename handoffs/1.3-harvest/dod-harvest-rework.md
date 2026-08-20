@@ -229,6 +229,44 @@ scorer reads `capability_weights`, and the deferred `policy_switch_alignment` ho
 `NotImplementedError` by design. 1.4's own tests pass here. A full 1.4 verdict needs an
 independent auditor with fresh context.
 
+## 10. Re-audit closeout — finding `1.3-HR-001`
+
+Independent re-audit (`findings/1.3-harvest-rework-2026-08-21-audit.md`): **RA-002 closed**;
+**RA-001 substantively fixed** but one prose correction required. The calibration prose
+claimed premium exceeds the 2.0 pool under "any plausible calibration" because premium is the
+top tier — conflating an *ordering* (`basic < standard < premium`) with a *threshold*
+(2.4 > 2.0). "Top tier" does not put a lower bound above 2.0 on the calibrated value.
+
+**Two-location prose correction** (no FTE value, preference, weight, scorer, validator, or
+test changed):
+- `PROVENANCE.md §10.3` and `preferences/services.yaml` intro now separate three statements:
+  (1) `ideal_tier: premium` is a **design/07 §3.6 fact**, unmoved by FTE calibration;
+  (2) premium is the **highest declared tier** — an ordering that holds by construction;
+  (3) premium's FTE **exceeding 2.0 is the current authored estimate only** (2.4 > 2.0), and
+  calibration may move the margin **and whether the threshold is crossed at all** — a future
+  FTE could keep the ordering while placing premium at or below 2.0. The comparison is
+  labelled provisional.
+
+All five facts the audit required to be preserved are stated; neither passage now implies
+"top tier ⇒ > 2.0".
+
+**Verification after the correction (branch tip):**
+```
+grep "any plausible calibration | exceeds ... under | top tier by construction, so"  → none (overclaim removed)
+diff since prior commit: only PROVENANCE.md + preferences/services.yaml
+pytest                    → 13 passed
+check_fixture_matrix.py   → exit 0
+validate riverside text   → 0 errors / 0 warnings, exit 0
+validate riverside --json → 0 findings (parity intact)
+harvest_readback.py       → 43/43 matched
+FTE values                → basic 0.6 · standard 1.4 · premium 2.4 (unchanged)
+real YAML TODO markers    → 33 (unchanged)
+git diff --check          → clean
+```
+
 ## 12. Commit
-Implementation + this DoD committed to `build/1.3-harvest-rework`. Final commit SHA recorded in
-the branch log. Worktree left clean; nothing pushed — awaits independent re-audit before merge.
+Implementation + this DoD committed to `build/1.3-harvest-rework`.
+- Initial rework commit: `3a1b9cdce500c0df536c492f1de377e9a314f86d`.
+- `1.3-HR-001` prose correction: this commit (branch tip; see `git log -1`).
+
+Worktree left clean; nothing pushed — awaits a short independent re-audit before merge.
