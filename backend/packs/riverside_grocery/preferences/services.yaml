@@ -42,6 +42,13 @@
 # and the load that tier does not absorb is load the two existing IT staff carry. That is
 # the G1 pool made visible, which is exactly what design/07 section 3.6 asks for.
 #
+# Those FTE figures (0.6 / 1.4 / 2.4) are AUTHORED estimates, not harvested -- mis_lite's
+# maintenance_support_levels has no FTE column -- and are marked for 1.7 calibration at their
+# values in platform.yaml (finding 1.3-RA-001, PROVENANCE.md sections 7 and 10.3). `it`'s
+# ideal_tier stays `premium` regardless: premium is the top tier by construction, so it
+# exceeds the 2.0 starting pool under any plausible calibration. What calibration would move
+# is the size of the margin, not the direction of the view.
+#
 # Six archetypes hold a view, exactly the six design/07 section 3.6 names: operations,
 # employees, it, finance, c_suite, vendor. The other eight have no rows. `customer` is the
 # closest call -- service tier reaches the shop floor eventually -- but it reaches them

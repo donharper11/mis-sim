@@ -46,7 +46,8 @@ exit 0.
 | `capabilities[]`, `entities[]`, `questions[]` | — | — | unchanged | — | authored by 1.1; 1.3 changed none of them |
 
 **Totals:** 2,456 rows extracted · 26 tables in the transform map · 9 discarded (§5) ·
-30 `TODO: calibrate` markers (§7).
+33 `TODO: calibrate` markers (§7). *(30 at 1.3 follow-up; +3 for the support-tier FTE
+estimates, added by the 1.3 harvest rework — finding `1.3-RA-001`.)*
 
 ---
 
@@ -211,7 +212,7 @@ distinct) show authored variation.
 
 ---
 
-## 7. Every `TODO: calibrate` — 30 markers
+## 7. Every `TODO: calibrate` — 33 markers
 
 `GOVERNANCE §4.9` rule 5: estimates are allowed; unmarked estimates are not. Every value
 below is authored judgement that 1.7's harness is expected to move.
@@ -222,10 +223,15 @@ below is authored judgement that 1.7's harness is expected to move.
 | `events.yaml` | 7 | scorecard deltas and option costs on all seven non-pinned cards. `revenue_loss` on the six harvested cards is **not** a TODO — those are `impact_cost` / `fine_amount` carried exactly |
 | `policies.yaml` | 6 | every effect vector; `data_egress` cost 12000; `data_access` cost 9000 inherited from 1.1; `staff_monitoring` cost and effects entirely |
 | `catalog.yaml` | 5 | `store_back_office_pc` capex; the cloud/saas ladders on the three new items; `erp_suite` compute multipliers, opex, lead times; **and the whole lead-time band (§10)** |
-| `platform.yaml` | 4 | cloud and saas figures on `failover_cluster`, `threat_detection`, `end_user_email`, `data_platform` |
+| `platform.yaml` (placement) | 4 | cloud and saas figures on `failover_cluster`, `threat_detection`, `end_user_email`, `data_platform` |
+| `platform.yaml` (`support_tiers[].fte_equivalent`) | 3 | **Added by the 1.3 harvest rework — finding `1.3-RA-001`.** The FTE figures on `basic` (0.6), `standard` (1.4) and `premium` (2.4). `maintenance_support_levels` carries `cost_value` only — no FTE, staffing or hours column — so all three are authored estimates, not harvested. Load-bearing: `preferences/services.yaml`'s `it` view turns on premium's 2.4 against the 2.0 pool. Costs stay harvested and are **not** TODO. Owner 1.7 |
 | `preferences/platform.yaml` | 1 | the `weight` column throughout — how much each archetype's view counts. mis_lite weighted every stakeholder the same |
 | `preferences/policies.yaml` | 1 | both `weight` columns throughout — the archetype-level weight and the per-switch weight. Which switch matters most to whom is authored judgement. The `ideal_posture` values are **not** marked: each is either stated in design/07 §3.5 or read off an effect vector or an obligation rule already in the pack, and every one is cited in the file |
-| `preferences/services.yaml` | 1 | both `weight` columns, on the same footing. The `ideal_tier` values are not marked — each is stated in design/07 §3.6 or read off a figure in `platform.yaml` |
+| `preferences/services.yaml` | 1 | both `weight` columns, on the same footing. The `ideal_tier` values are not marked — each is stated in design/07 §3.6 or read off a figure in `platform.yaml`. Note: the `platform.yaml` FTE figures the `it` view reads off are themselves authored estimates now marked above; the tier *choice* (`premium`) is design-stated and stays unmarked |
+
+Total 33 = 30 at the 1.3 follow-up plus the three support-tier FTE estimates the harvest
+rework marked. The numeric FTE values were **not changed** — only their provenance was made
+value-specific and their calibration status made explicit.
 
 **Nothing pinned by 0.3 §5.6 or the 0.4 mockups carries a TODO.** All 43 pinned figures
 match — `backend/scripts/harvest_readback.py`.
@@ -382,6 +388,14 @@ capacity argument rather than a comfort one: `premium` support carries 2.4 FTE a
 `starting_staff_fte` of 2.0, so the load the tier does not absorb is load the two existing
 IT staff carry. That is G1's staffing pool made visible. `vendor` prefers the higher tier
 because it is their revenue, and that is recorded plainly.
+
+**The FTE figures this view rests on are authored estimates, not harvested** (finding
+`1.3-RA-001`; §7). `maintenance_support_levels` carries cost only, so 0.6 / 1.4 / 2.4 are
+authored and marked `TODO: calibrate` at their values in `platform.yaml`, owner 1.7. The
+*shape* of `it`'s view — premium tier exceeds the starting pool — holds across any plausible
+calibration (premium is the top tier by construction), so the preference is not invalidated;
+what a calibration would move is the exact margin, which is why the numbers are marked and
+the conclusion is stated as a direction rather than a precise gap.
 
 ### 10.4 `lead_time_rounds` — the band, and why 54 zeroes was a defect
 
