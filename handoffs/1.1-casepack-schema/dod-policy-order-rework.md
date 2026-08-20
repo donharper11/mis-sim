@@ -418,3 +418,27 @@ Files changed by this closeout: `backend/app/casepack/models.py`, `CONTRACTS.md`
 `backend/tests/check_policy_options.py` (and this DoD). No new engine file; `PROVENANCE.md`
 and `docs` worked examples untouched by the closeout. Branch returned clean for a short
 independent re-audit; still nothing pushed or merged.
+
+### 13a. Added pytest regression guard (peer-contributed, independently verified)
+
+`backend/tests/test_policy_options_ordinal_contract.py` — a pytest module contributed by
+the 1.4 coordinator session (their user's request) to pin the F1/F2 (RA-001/RA-002)
+documentation correction in the pytest form that will run alongside 1.4's
+`test_engine_scoring.py` once the branches merge. Two tests: `PolicyOption` source declares
+ordinal and carries no superseded "carries no meaning" / "do not infer strictness" phrase;
+`CONTRACTS.md` has a `PolicyOption.options` entry declaring "ordered, ordinal".
+
+Not trusted on assertion — **re-verified red-on-base / green-at-tip myself** (`SPEC_PROTOCOL
+§2.1`, and the re-builder rule to treat prior claims as claims to verify):
+
+```
+detached worktree @ 174e980, this file copied in, `python3 -m pytest`:  2 failed · EXIT=1
+branch tip:                                                             2 passed · EXIT=0
+```
+
+It overlaps `check_policy_options.py` §6 (same intent, standalone-script form that runs on
+this pre-1.4 base today); both are kept — the script is the current-branch convention, the
+pytest module is the merged-suite convention. Behaviour-neutral; no engine or scoring code.
+The guard is anchored to the exact tokens `ordinal` / `least constrained` / `index 0` and
+the literal `PolicyOption.options`; a future reword of either heading must keep those tokens
+or update the test.
