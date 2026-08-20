@@ -433,10 +433,21 @@ class PolicyOption(StrictModel):
     cost: int = Field(ge=0)
     effects: dict[SnakeKey, float | int | str]
     #: The states this switch can be in -- the policy's value vocabulary, e.g.
-    #: `[minimal, standard, indefinite]` for `data_retention`. Without it an
-    #: obligation's `permissive_value` is a string pointing at nothing (`1.3-012`,
-    #: and the box in 1.5 spec 5.4). Ordering is an authoring convention and
-    #: carries no meaning: do not infer strictness from position.
+    #: `[indefinite, standard_period, minimal]` for `data_retention`. Without it
+    #: an obligation's `permissive_value` is a string pointing at nothing
+    #: (`1.3-012`, and the box in 1.5 spec 5.4).
+    #:
+    #: ORDER IS MEANINGFUL and ORDINAL. Index 0 is the least constrained / most
+    #: permissive state; each higher index is progressively more restrictive, and
+    #: the ordinal distance between two indexes is a real quantity that may be
+    #: consumed downstream. Alignment scoring reads that distance between a team's
+    #: choice and a stakeholder's ideal, so overshooting an ideal costs less than
+    #: ignoring it -- an unordered list could only ever match exactly. Ruled in
+    #: design/07 section 3.5b (2026-08-18); canonical entry `PolicyOption.options`
+    #: in CONTRACTS.md. On `staff_monitoring` "more constrained" means the firm
+    #: watches its own people more, so its permissive index-0 end is the
+    #: low-surveillance end (`untracked`) -- design/07 section 3.5a. That is the
+    #: same ordering applied to a switch that constrains people, not an exception.
     #:
     #: Optional, and empty by default. A policy that declares no options is the
     #: legacy shape and loads exactly as it did before this field existed.

@@ -334,10 +334,12 @@ the privacy layer was inert. Each switch now declares three states and a default
 named all six permissive values; what is new is the middle and restrictive states and the
 six `default` declarations.
 
-**Order carries no meaning.** `models.py` is explicit — *"do not infer strictness from
-position"*. The lists read permissive-to-restrictive only for a human, and on
-`staff_monitoring` that reading would be actively wrong: its permissive end is the
-low-surveillance end.
+**Order is meaningful and ordinal** — least constrained at index 0, most constrained last
+(`models.py`, `CONTRACTS.md` `PolicyOption.options`, design/07 §3.5b). All six lists above
+are authored that way, so alignment against a stakeholder's ideal is a distance, not an
+exact match. On `staff_monitoring` the ordinal "more constrained" end means the firm
+watches its own people more, so its permissive index-0 end is the low-surveillance end
+(`untracked`) — design/07 §3.5a.
 
 **Hand-verified**, because no validator check exists (it is 1.2's next packet): all six
 `permissive_value`s in `obligation_rules.yaml` name a member of their policy's `options`,
