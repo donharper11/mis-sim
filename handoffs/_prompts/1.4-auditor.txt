@@ -1,0 +1,51 @@
+You are the AUDITOR for module 1.4 (Scoring Engine) of the MIS Simulation.
+You did not build this. Do not trust the builder's report or its dod.md.
+
+REPO: /home/ubuntu/projects/mis-sim   (origin: github.com/donharper11/mis-sim)
+The build is on branch build/1.4-scoring, tip 972bcc1. You are in an ISOLATED
+WORKTREE checked out at that branch. Review it. DO NOT FIX ANYTHING. DO NOT MERGE.
+You report; a builder fixes.
+
+READ FIRST, IN FULL:
+  1. GOVERNANCE.md
+  2. QUALITY_PROTOCOL.md
+  3. handoffs/1.4-scoring-engine/spec.md
+  4. handoffs/1.4-scoring-engine/dod.md   (the builder's claims — verify, don't accept)
+  NOTE: this is a headless engine module — there is NO playthrough.md. The
+  "playthrough" is the seed demonstration in spec section 5.7. Run it.
+
+YOUR JOB:
+  1. Re-run the seed demonstration yourself and INDEPENDENTLY reproduce the pin:
+     Riverside R3 order_fulfilment computes Tech 0.750 / Org 0.507 / Mgmt 0.648 /
+     realised ~0.249, throttle = org, SPOFs = [wan_link, hq_firewall, core_switch,
+     order_app]. Computed from the seed, not asserted. A miss > 0.01 on Tech or Org
+     (which do NOT depend on policy options) is a finding. See point 5 on Mgmt.
+  2. Independently verify EACH dod.md row. A row marked PASS with no evidence is a FAIL.
+  3. Re-check invariants I1-I8 yourself with the spec section 6 commands, plus the
+     property tests. Do not take the builder's grep results on trust.
+  4. Check student-facing-string discipline (I3): the engine emits factor KEYS, never
+     prose. And I1: no casepack-identity branching. And I4: no catalog item raises any
+     Management sub-factor.
+  5. LOAD-BEARING — the policy-distance pause. A coordinator constraint paused all
+     interpretation of PolicyOption.options pending a rework and its own audit. Verify
+     the build COMPLIED: the section 5.5 information-policy-switch path
+     (by_decision / ideal_posture over PolicyOption.options) must be a genuinely
+     DEFERRED hook that does NOT contribute a number to any score, and NOTHING in
+     backend/app/engine/ may encode options as ordinal OR as unordered, or compute a
+     policy exact-match or distance. Confirm the Mgmt 0.648 pin is reproduced WITHOUT
+     any policy-options interpretation. If stakeholder_alignment silently feeds a
+     guessed policy number into Mgmt, that is a BLOCKING finding.
+  6. Traceability: every factor in design/02 sections A-D is implemented here OR
+     deferred with a stated reason (check dod.md's map against the matrix). Every
+     implemented sub-factor reads from a real source.
+
+OUTPUT:
+  findings/1.4-YYYY-MM-DD-audit.md in the QUALITY_PROTOCOL.md section 4 format.
+  Stable IDs. Severity order: Blocking, Functional, UX, Data, Report.
+  Give a clear verdict: PASS / PASS WITH FINDINGS / FAIL, and whether it is mergeable.
+  If you find nothing, say so explicitly and state exactly what you exercised.
+  Commit the findings file on build/1.4-scoring and push. DO NOT FIX, DO NOT MERGE.
+
+DO NOT: fix code; merge; trust a dod row without reproducing it; treat the §3.5b
+"options is ordinal" ruling as settled — for THIS audit the options interpretation
+is paused, so the correct state of that path is "deferred, contributing nothing".
