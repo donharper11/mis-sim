@@ -81,8 +81,10 @@ e.g. `data_retention: [indefinite, standard_period, minimal]`
 
 **Order is meaningful.** **Index 0 is the least constrained / most permissive** state; each
 higher index is **progressively more restrictive**. The ordinal *distance* between two
-indexes is a real quantity and may be consumed downstream — alignment scoring measures the
-distance between a team's chosen index and a stakeholder's ideal index.
+indexes is a real quantity and may be consumed downstream — alignment scoring **will**
+measure the distance between a team's chosen index and a stakeholder's ideal index once the
+deferred policy-switch dimension is built (see Consumers). The contract is settled now; the
+scorer does not read it yet.
 
 **NOT** an unordered set, and **NOT** strict-first. Listing the permissive value anywhere
 but index 0 contradicts this contract. `staff_monitoring` runs the **same** direction as
@@ -123,9 +125,11 @@ and a team must actively choose the exposure. Both are valid, deliberate authori
 **Producers:** `backend/app/casepack/models.py` (`PolicyOption`); pack `policies.yaml`
 (`backend/packs/riverside_grocery/policies.yaml` authors all six switches permissive-first).
 
-**Consumers:** the loader (order-preserving); the alignment scorer (**1.4**, reads ordinal
-distance); the validator's `permissive_value`-in-`options` check (**1.2**, pending); the
-Security screen (**4.3**, renders switch positions in order).
+**Consumers:** the loader (order-preserving, live today); the alignment scorer (**1.4**,
+*will* read ordinal distance — the policy-switch dimension is currently **deferred**:
+`backend/app/engine/management.py` `policy_switch_alignment` raises `NotImplementedError`
+and reads no policy value); the validator's `permissive_value`-in-`options` check (**1.2**,
+pending); the Security screen (**4.3**, will render switch positions in order).
 
 **Why it matters:** without an order a stakeholder's ideal can only be matched exactly, so a
 team stricter than asked would score identically to one that ignored the ask — not a

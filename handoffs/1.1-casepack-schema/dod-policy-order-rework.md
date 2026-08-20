@@ -337,3 +337,84 @@ Implementation + this DoD committed to `build/1.1-policy-order-rework`.
   `git log -1` on the branch).
 
 Worktree left clean. Nothing pushed — the branch awaits independent audit before any merge.
+
+---
+
+## 13. Audit closeout — findings `1.1-PR-001` / `1.1-PR-002`
+
+Independent audit (`findings/1.1-policy-order-rework-2026-08-21-audit.md`) returned **PASS
+WITH FINDINGS**, two mechanical corrections, same-builder authorised. Both fixed on this
+branch (no engine code added; scope unchanged).
+
+### `1.1-PR-001` — over-claimed that the 1.4 scorer reads policy distance today
+
+The docstring and contract used present tense ("Alignment scoring **reads** that distance";
+consumer row "the alignment scorer (1.4, **reads** ordinal distance)"), but the 1.4
+policy-switch dimension is deferred. **Verified the deferral directly** (evidence discipline,
+`SPEC_PROTOCOL §2.1`) against current `main`:
+
+```
+$ git show main:backend/app/engine/management.py | sed -n '165,187p'
+def policy_switch_alignment(*_args, **_kwargs) -> float:
+    """DEFERRED HOOK ... PAUSED by the coordinator mid-build (2026-08-21) ...
+    it is not called by the scoring path, and if it is called it raises
+    rather than contribute a number. ... it does not read `PolicyOption.options` at all."""
+    raise NotImplementedError("policy-switch alignment ... is paused pending rework and re-audit ...")
+```
+
+Corrected to prospective language on both surfaces:
+- `models.py`: "Alignment scoring **WILL** read that distance ... once the deferred
+  policy-switch dimension is implemented (1.4; today it raises NotImplementedError and reads
+  no policy value)".
+- `CONTRACTS.md`: canonical paragraph now says the scorer **will** measure the distance and
+  "the scorer does not read it yet"; the Consumers row marks the alignment scorer
+  **deferred** and cites `management.py` `policy_switch_alignment` → `NotImplementedError`.
+
+No scoring code was added. The ordinal *contract* remains settled; only its *implementation
+status* was corrected from "reads" to "will read".
+
+### `1.1-PR-002` — the nine checks also passed on the pre-rework base
+
+The nine behavioral checks prove pack order and loader behavior, which were already correct
+at `174e980`, so they could not regress either repaired surface. Added **four static
+contract-surface checks** (§6 of the test) that read `models.py`, `CONTRACTS.md`, and
+`docs/casepack-schema.md` as text and assert each **declares the ordinal rule** and **carries
+no "order is meaningless" statement**, plus one guarding against the `1.1-PR-001`
+present-tense over-claim. The nine behavioral checks are preserved.
+
+**Demonstrated red-on-base / green-at-tip** (the auditor's method: apply only the branch's
+test file to a detached `174e980` worktree, run unchanged):
+
+```
+# detached worktree at 174e980, branch's check_policy_options.py copied in, run unchanged:
+FAIL  models.py declares options ORDINAL and carries no 'order is meaningless' statement
+        surviving meaningless phrase(s): ['carries no meaning', 'authoring convention and', 'do not infer strictness']
+FAIL  CONTRACTS.md has a PolicyOption.options entry declaring the ordinal ordering
+FAIL  docs/casepack-schema.md declares options ordinal and carries no 'order is meaningless' statement
+        surviving meaningless phrase(s): ['authoring convention, not semantics', 'nothing reads position']
+FAIL  model/contract describe the 1.4 policy-distance consumer as PROSPECTIVE, not current
+4 FAILED · EXIT=1        (the nine behavioral checks PASS here, as the auditor observed)
+
+# at the corrected branch tip:
+all 13 policy-option contract checks pass · EXIT=0
+```
+
+The same test file is now RED on `174e980` and GREEN at the tip — it can no longer pass
+blind to the two surfaces this packet repairs.
+
+### Post-fix verification (branch tip)
+
+```
+check_policy_options.py     → EXIT=0  (13/13, up from 9)
+check_fixture_matrix.py     → EXIT=0  (29/29 unchanged)
+validate_casepack riverside → EXIT=0  (0 errors · 0 warnings)
+compileall backend/app/casepack → compileall_ok
+I1 pack-identity grep       → zero hits
+consistency grep (code/contract/docs/pack) → no meaningless-order statement
+git diff --check            → clean
+```
+
+Files changed by this closeout: `backend/app/casepack/models.py`, `CONTRACTS.md`,
+`backend/tests/check_policy_options.py` (and this DoD). No new engine file; `PROVENANCE.md`
+and `docs` worked examples untouched by the closeout. Branch returned clean for a short
+independent re-audit; still nothing pushed or merged.

@@ -181,6 +181,71 @@ check(
     roundtrip_ok,
 )
 
+# --- 6. STATIC contract-surface checks (the regression guards) --------------------------
+# The nine behavioral checks above pass on the PRE-rework base too, because the pack order
+# and loader were already correct there -- they cannot regress the two things this packet
+# repairs (finding `1.1-PR-002`). These checks read the authoritative documentation surfaces
+# as text and assert they DECLARE the ordinal rule and do NOT declare order meaningless.
+# They are RED on `174e980` (models.py said "carries no meaning"; CONTRACTS.md had no entry;
+# docs said "authoring convention, not semantics") and GREEN at the corrected tip.
+
+MODELS_SRC = (REPO / "backend" / "app" / "casepack" / "models.py").read_text()
+CONTRACTS_SRC = (REPO / "CONTRACTS.md").read_text()
+DOCS_SRC = (REPO / "docs" / "casepack-schema.md").read_text()
+
+# Phrases that assert order is meaningless -- none may survive on any authoritative surface.
+MEANINGLESS = [
+    "carries no meaning",
+    "authoring convention, not semantics",
+    "authoring convention and",       # models.py's "Ordering is an authoring convention and\ncarries no meaning"
+    "do not infer strictness",
+    "nothing reads position",
+]
+
+# models.py: the PolicyOption.options docstring must affirm ordinal and forbid meaningless.
+models_forbidden = [p for p in MEANINGLESS if p.lower() in MODELS_SRC.lower()]
+check(
+    "models.py declares options ORDINAL and carries no 'order is meaningless' statement",
+    ("ordinal" in MODELS_SRC.lower())
+    and ("least constrained" in MODELS_SRC.lower())
+    and not models_forbidden,
+    f"surviving meaningless phrase(s): {models_forbidden}" if models_forbidden else "ordinal affirmed, no meaningless phrase",
+)
+
+# CONTRACTS.md: the cross-cutting entry must exist and declare the ordinal rule.
+check(
+    "CONTRACTS.md has a PolicyOption.options entry declaring the ordinal ordering",
+    ("PolicyOption.options" in CONTRACTS_SRC)
+    and ("ordinal" in CONTRACTS_SRC.lower())
+    and ("least constrained / most permissive" in CONTRACTS_SRC.lower())
+    and not any(p in CONTRACTS_SRC.lower() for p in ("carries no meaning", "authoring convention, not semantics")),
+    "entry present, ordinal, index-0-permissive",
+)
+
+# docs/casepack-schema.md: authoring guide must affirm ordinal and drop the old convention line.
+docs_forbidden = [p for p in MEANINGLESS if p.lower() in DOCS_SRC.lower()]
+check(
+    "docs/casepack-schema.md declares options ordinal and carries no 'order is meaningless' statement",
+    ("ordinal" in DOCS_SRC.lower())
+    and not docs_forbidden,
+    f"surviving meaningless phrase(s): {docs_forbidden}" if docs_forbidden else "ordinal affirmed, no meaningless phrase",
+)
+
+# The contract must NOT overstate 1.4: it may not claim the scorer READS policy distance
+# today (finding `1.1-PR-001`). The deferred hook raises rather than read.
+present_tense_overclaim = (
+    "reads ordinal\ndistance" in CONTRACTS_SRC.lower()
+    or "reads ordinal distance" in CONTRACTS_SRC.lower()
+    or "alignment scoring reads that distance" in MODELS_SRC.lower()
+    or "alignment scoring measures the\ndistance" in CONTRACTS_SRC.lower()
+)
+check(
+    "model/contract describe the 1.4 policy-distance consumer as PROSPECTIVE, not current",
+    not present_tense_overclaim
+    and ("notimplementederror" in CONTRACTS_SRC.lower() or "deferred" in CONTRACTS_SRC.lower()),
+    "no present-tense 'reads distance' overclaim; deferral stated",
+)
+
 # --- summary ----------------------------------------------------------------------------
 failed = [name for ok, name in results if not ok]
 print()

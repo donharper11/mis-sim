@@ -440,9 +440,11 @@ class PolicyOption(StrictModel):
     #: ORDER IS MEANINGFUL and ORDINAL. Index 0 is the least constrained / most
     #: permissive state; each higher index is progressively more restrictive, and
     #: the ordinal distance between two indexes is a real quantity that may be
-    #: consumed downstream. Alignment scoring reads that distance between a team's
-    #: choice and a stakeholder's ideal, so overshooting an ideal costs less than
-    #: ignoring it -- an unordered list could only ever match exactly. Ruled in
+    #: consumed downstream. Alignment scoring WILL read that distance between a
+    #: team's choice and a stakeholder's ideal once the deferred policy-switch
+    #: dimension is implemented (1.4; today it raises NotImplementedError and
+    #: reads no policy value) -- so that overshooting an ideal costs less than
+    #: ignoring it, where an unordered list could only ever match exactly. Ruled in
     #: design/07 section 3.5b (2026-08-18); canonical entry `PolicyOption.options`
     #: in CONTRACTS.md. On `staff_monitoring` "more constrained" means the firm
     #: watches its own people more, so its permissive index-0 end is the
