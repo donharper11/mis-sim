@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-07-27 (design-token two-tier contract; status badge scale added — finding `0.3-013`).
+**Last updated:** 2026-08-21 (`PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -70,6 +70,71 @@ e.g. `["daily_store_total", "order_header", "order_line", "individual_transactio
 
 **Never** call this "grain" in student-facing text. Business language: *"you can see
 daily store totals — not individual baskets."*
+
+---
+
+## `PolicyOption.options` / `PolicyOption.default` — PROSPECTIVE
+
+**Canonical (`options`):** an **ordered, ordinal** list of snake_case state keys — a policy
+switch's value vocabulary.
+e.g. `data_retention: [indefinite, standard_period, minimal]`
+
+**Order is meaningful.** **Index 0 is the least constrained / most permissive** state; each
+higher index is **progressively more restrictive**. The ordinal *distance* between two
+indexes is a real quantity and may be consumed downstream — alignment scoring **will**
+measure the distance between a team's chosen index and a stakeholder's ideal index once the
+deferred policy-switch dimension is built (see Consumers). The contract is settled now; the
+scorer does not read it yet.
+
+**NOT** an unordered set, and **NOT** strict-first. Listing the permissive value anywhere
+but index 0 contradicts this contract. `staff_monitoring` runs the **same** direction as
+every other switch: its index-0 permissive end is `untracked` (low surveillance), and "more
+constrained" means the firm watches its own people more (`design/07 §3.5a`). That is the
+ordering applied to a switch that constrains people rather than data — not an exception.
+
+**`default`:** the single state a team holds by **not deciding** — where the pack starts a
+team. When `options` is non-empty, `default` **must** be a member of it — enforced at the
+model (`PolicyOption.default_is_a_declared_option`; a pack whose `default` is outside its
+own `options` fails to load). `default` may sit at **any** index, not only 0: a pack may
+legitimately start a team already compliant.
+
+**`default` is NOT `obligation_rules.permissive_value`.** Frequently the same string, but
+distinct concepts in distinct files:
+
+| | Lives in | Means |
+|---|---|---|
+| `default` | `policies.yaml` | **where a team starts** — the position held by not deciding |
+| `permissive_value` | `obligation_rules.yaml` | **what obliges** — the position that leaves an obligation open |
+
+When `default == permissive_value` the pack **starts permissive** (the obligation is open
+from round 1 until a team moves the switch). When they differ the pack **starts compliant**
+and a team must actively choose the exposure. Both are valid, deliberate authoring choices.
+`permissive_value` should name a member of the policy's `options`.
+
+**Invalid / ambiguous shapes:**
+- `default` set but not a member of a non-empty `options` → **rejected at load** (model
+  validator).
+- `options` present but **not ordered permissive-first** → loads, but is a **content
+  defect**: alignment distance is then measured on the wrong axis. Not yet caught by the
+  validator — author permissive-first.
+- `permissive_value` naming a state absent from that policy's `options` → points at nothing;
+  validator check deferred to **1.2**.
+- Both fields omitted → the **legacy shape**; the policy loads exactly as before either
+  field existed (every pre-1.3 pack).
+
+**Producers:** `backend/app/casepack/models.py` (`PolicyOption`); pack `policies.yaml`
+(`backend/packs/riverside_grocery/policies.yaml` authors all six switches permissive-first).
+
+**Consumers:** the loader (order-preserving, live today); the alignment scorer (**1.4**,
+*will* read ordinal distance — the policy-switch dimension is currently **deferred**:
+`backend/app/engine/management.py` `policy_switch_alignment` raises `NotImplementedError`
+and reads no policy value); the validator's `permissive_value`-in-`options` check (**1.2**,
+pending); the Security screen (**4.3**, will render switch positions in order).
+
+**Why it matters:** without an order a stakeholder's ideal can only be matched exactly, so a
+team stricter than asked would score identically to one that ignored the ask — not a
+defensible model of preference (`design/07 §3.5b`, ruled 2026-08-18). Its only sibling
+per-pack vocabulary, `entity.level_of_detail`, is ordinal for the same reason.
 
 ---
 

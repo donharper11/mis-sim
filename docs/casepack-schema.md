@@ -454,8 +454,8 @@ contradictions.
 | `category` | snake string | yes | Policy group |
 | `cost` | integer | yes | Non-negative |
 | `effects` | map | yes | Authored effect vector |
-| `options` | snake string list | no | The states this switch can be in. Defaults to empty |
-| `default` | snake string | no | The state a team holds by not deciding. Defaults to unset |
+| `options` | snake string list | no | The states this switch can be in, **ordered ordinal — permissive (index 0) → strict**. Defaults to empty |
+| `default` | snake string | no | The state a team holds by not deciding; must be one of `options` when `options` is non-empty. Defaults to unset |
 | `provenance` | object | yes | Source tag and rationale |
 
 Worked example:
@@ -477,16 +477,26 @@ A policy is a **switch**, and a switch has positions. `options` enumerates them,
   category: data_governance
   cost: 9000
   effects: {privacy_risk: -0.25, staff_load: 0.05}
-  options: [minimal, standard, indefinite]
+  options: [indefinite, standard_period, minimal]
   default: indefinite
   provenance:
     source: AUTHORED
     note: how long customer contact and purchase history is kept
 ```
 
-**Ordering is an authoring convention, not semantics.** Listing `minimal` first does not
-make it the strict end. Nothing reads position, and nothing should be authored on the
-assumption that it does.
+**Order is meaningful and ordinal.** Index 0 is the least constrained / most permissive
+state; each later entry is progressively more restrictive. `[indefinite, standard_period,
+minimal]` therefore runs permissive → strict, and all six of Riverside's switches are
+authored that way. Alignment scoring reads the ordinal *distance* between a team's choice
+and a stakeholder's ideal, so being stricter than asked costs less than ignoring the ask
+— an unordered list could only ever match exactly. Author the permissive value first. The
+canonical rule lives in `CONTRACTS.md` (`PolicyOption.options`); it was ruled in
+design/07 §3.5b.
+
+`staff_monitoring` runs the same direction as the rest: its permissive index-0 end is
+`untracked` (low surveillance), and "more constrained" means the firm watches its own
+people more — not that it handles data more tightly. That is the ordering applied to a
+switch that constrains people rather than data, not an exception to it (design/07 §3.5a).
 
 **`default` is what makes the ethics layer cost something to ignore.** A team that never
 opens the Security screen still holds a policy position — the one you authored here. If the
@@ -500,7 +510,7 @@ oversight.
 that names a `default` outside its own `options` will not load.
 
 ```yaml
-options: [minimal, standard, indefinite]
+options: [indefinite, standard_period, minimal]
 default: forever          # rejected -- 'forever' is not one of the declared options
 ```
 
@@ -523,7 +533,7 @@ Read together, the pair is what tells the engine whether a team has moved:
 ```yaml
 # policies.yaml
 - key: data_retention
-  options: [minimal, standard, indefinite]
+  options: [indefinite, standard_period, minimal]   # ordinal: permissive (index 0) → strict
   default: indefinite            # this company keeps everything, until someone changes it
 
 # obligation_rules.yaml
@@ -536,9 +546,9 @@ Read together, the pair is what tells the engine whether a team has moved:
 
 Here they coincide, so the pack starts permissive: the obligation is open from round 1 and
 stays open until a team moves the switch. Author them apart and the pack starts compliant —
-`default: standard` against `permissive_value: indefinite` means a team has to actively
-choose the exposure. Both are valid packs. Which one you author is a statement about the
-company, and it should be one you made on purpose.
+`default: standard_period` against `permissive_value: indefinite` means a team has to
+actively choose the exposure. Both are valid packs. Which one you author is a statement
+about the company, and it should be one you made on purpose.
 
 `permissive_value` should name a member of the policy's `options`; otherwise it points at a
 state the switch cannot be in. The validator does not yet check this — author it correctly.
