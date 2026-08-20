@@ -34,10 +34,12 @@
 # and five is a menu; the middle position is where most real firms sit, and a student who
 # picks it should be able to see that it satisfies some stakeholders and not others.
 #
-# ORDER CARRIES NO MEANING. models.py is explicit -- "do not infer strictness from
-# position". The lists below happen to run permissive-to-restrictive for readability, and
-# nothing may read them that way. On `staff_monitoring` that ordering would be actively
-# wrong: its permissive end is the low-surveillance end.
+# `options` IS ORDINAL: least constrained at index 0, most constrained last, per
+# design/07 section 3.5b (ruled 2026-08-18). All six lists below are authored that way, so
+# alignment against a stakeholder's ideal is a distance, not an exact match. On
+# `staff_monitoring` the ordinal "more constrained" end means the firm watches its OWN
+# people more, not that it handles data more tightly -- its permissive end is the
+# low-surveillance end. That is design/07 section 3.5a's point, stated here in the pack.
 #
 # `default` is the permissive value on all six, and the reason is stated per switch below
 # rather than assumed. In every case it is the state the case is actually in today, which

@@ -42,11 +42,11 @@
 #    are per switch.
 #
 # 2. `ideal_posture` NAMES AN OPTION VALUE, not the abstract word `strict` or `permissive`.
-#    The schema is explicit that option order carries no meaning -- "do not infer
-#    strictness from position" (models.py, PolicyOption.options) -- so an abstract posture
-#    would require a strictness ordering the schema refuses to supply. Naming the option
-#    directly makes alignment computable without one. It also removes a real ambiguity:
-#    see the note on `staff_monitoring` below.
+#    `options` is ordinal -- least constrained at index 0, per design/07 section 3.5b -- so
+#    position does carry strictness, and alignment against an ideal is a distance along that
+#    order. Naming the option value directly is still exact, and it removes a real
+#    ambiguity: see the note on `staff_monitoring` below, where the ordinal "more
+#    constrained" end tightens on the firm's own people rather than on its data handling.
 #
 # An archetype holding no view on a switch simply has no row for it. That is information,
 # not an omission -- `employees` hold exactly one view here, and that is the point.

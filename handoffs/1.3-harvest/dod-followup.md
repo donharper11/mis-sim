@@ -241,6 +241,14 @@ position"*. The lists read permissive-to-restrictive for a human only, and on
 `staff_monitoring` that reading would be actively wrong: its permissive end is the
 *low*-surveillance end.
 
+> **SUPERSEDED 2026-08-19 (audit `1.3-f-001`).** `design/07 §3.5b` was ruled after this
+> build: `options` **is ordinal**, least constrained at index 0. The lists were already
+> authored that way, so no values change — but "order carries no meaning" is no longer
+> true. On `staff_monitoring` the ordinal *more-constrained* end means the firm watches its
+> own people more (`§3.5a`), which is why its permissive end is still the low-surveillance
+> end. The pack comments in `policies.yaml` and `preferences/policies.yaml` were corrected;
+> this report is left as-written with this note.
+
 ---
 
 ## 5. Hand-verification — no machine check exists
@@ -538,6 +546,12 @@ Pack total: **27 → 30**.
    1.4:** with no declared ordering, alignment against these ideals is an exact match, not
    a distance. If partial credit is wanted, the ordering has to be declared somewhere first,
    and that is a schema question, not a content one.
+
+   > **SUPERSEDED 2026-08-19 (audit `1.3-f-001`).** `design/07 §3.5b` now declares the
+   > ordering: `options` is ordinal, least constrained at index 0. So the "Consequence for
+   > 1.4" above is reversed — **alignment is a distance along that order, not an exact
+   > match**, and partial credit is available without a schema change. Naming the option
+   > value stays exact and unambiguous; nothing in the data changes.
 
 3. **`ideal_tier` in `services.yaml`** rather than reusing `ideal_posture`, because the pack
    calls them tiers.
