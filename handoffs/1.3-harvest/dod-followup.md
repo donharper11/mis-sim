@@ -549,8 +549,10 @@ Pack total: **27 → 30**.
 
    > **SUPERSEDED 2026-08-19 (audit `1.3-f-001`).** `design/07 §3.5b` now declares the
    > ordering: `options` is ordinal, least constrained at index 0. So the "Consequence for
-   > 1.4" above is reversed — **alignment is a distance along that order, not an exact
-   > match**, and partial credit is available without a schema change. Naming the option
+   > 1.4" above is reversed — **alignment WILL be a distance along that order, not an exact
+   > match**, and partial credit becomes available without a schema change once 1.4's
+   > policy-switch dimension is built (it is deferred today —
+   > `management.policy_switch_alignment` raises NotImplementedError). Naming the option
    > value stays exact and unambiguous; nothing in the data changes.
 
 3. **`ideal_tier` in `services.yaml`** rather than reusing `ideal_posture`, because the pack
