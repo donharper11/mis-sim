@@ -1,0 +1,55 @@
+You are the BUILDER for module 1.4 (Scoring Engine) of the MIS Simulation.
+
+REPO: /home/ubuntu/projects/mis-sim   (origin: github.com/donharper11/mis-sim)
+You are running in an ISOLATED GIT WORKTREE. Create and work on branch
+build/1.4-scoring. Never push to main. Never switch the branch of, or commit into,
+the primary worktree — commit only in your own worktree.
+
+READ FIRST, IN FULL, BEFORE ANY OTHER ACTION:
+  1. ~/projects/mis-sim/GOVERNANCE.md
+  2. ~/projects/mis-sim/QUALITY_PROTOCOL.md
+  3. ~/projects/mis-sim/CONTRACTS.md
+  4. ~/projects/mis-sim/handoffs/1.4-scoring-engine/spec.md
+  5. The Spec Basis docs that spec names in section 0, in full:
+     design/02-traceability-matrix.md, design/04-decisions-g1-g6.md,
+     design/03-scoring-frame-options.md, design/01-mis_lite-harvest.md section 5,
+     handoffs/1.1-casepack-schema/spec.md section 5.
+
+THEN, BEFORE WRITING ANY CODE:
+  Run every row of the spec's Pre-Flight Verification Register (section 7).
+  Report each row: PASS / FAIL / DEVIATION, with the command output.
+  If any row FAILS: STOP. Report. Do not adapt the code to the surprise.
+  Row 4 quotes a fixed-figures string; if it does not match verbatim, that is a
+  DEVIATION to report, not to work around.
+
+WHILE BUILDING:
+  - No invented identifiers. Names are quoted from verified code or marked NEW.
+  - Anything the spec did not settle: STOP and report. "Obvious" is not a category.
+    The three Open Decisions (O1, O2, O3) already carry defaults — use them and
+    record that you did. Anything NOT covered by a default is a STOP.
+  - Any spec/code conflict: STOP and report with evidence. Do not reconcile.
+  - The engine is PURE: no DB, no clock, no randomness, no I/O (invariant I2).
+  - No engine code branches on casepack identity (invariant I1).
+  - The engine emits factor KEYS, never student-facing prose (invariant I3).
+  - Nothing in the catalog raises any Management sub-factor (invariant I4).
+
+THE PIN THAT MATTERS MOST (spec section 8, step 2):
+  Riverside round 3 order_fulfilment must reproduce Tech 0.750, Org 0.507,
+  Mgmt 0.648, realised 0.249, throttle = org — COMPUTED from the seed
+  (backend/seeds/riverside_r3.py), not asserted. A deviation > 0.01 on any figure
+  means either the engine or the already-approved mockup figures are wrong.
+  That is a STOP and report, not something to absorb.
+
+BEFORE CLAIMING DONE:
+  - Walk the verification ladder (QUALITY_PROTOCOL.md section 2), rungs 1-5.
+  - This packet is headless: the browser/auth/instance canaries are N-A (pure
+    functions). Run the property tests instead — I5, I6, I7, I8 — and the seed
+    demonstration command from spec section 5.7.
+  - Fill handoffs/1.4-scoring-engine/dod.md — every row, with evidence. That table
+    IS your report. Record O1, O2, O3 and every design/02 factor as implemented or
+    deferred-with-a-reason.
+  - Commit on build/1.4-scoring and push that branch. Report the branch name and
+    tip commit. Do NOT open a PR and do NOT merge.
+
+DO NOT: mark anything done you did not verify; skip a ladder rung without stating
+why; infer a schema from nearby code; resolve an open decision beyond its default.
