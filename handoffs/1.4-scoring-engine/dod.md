@@ -284,7 +284,7 @@ narrative in `handoffs/1.4-scoring-engine/closeout.md`.
 | C4 — alignment in [0,1] | PASS | `test_c4_alignment_in_unit_interval`, n=2..10 exhaustive |
 | C5 — order consumed, not string equality | PASS | `test_c5_reversing_option_order_changes_the_score` |
 | C6 — active default counts as managed | PASS | `test_c6_active_default_counts_as_managed` |
-| C7 — no silent invalid input | PASS | six negative tests, all raise `ValueError` |
+| C7 — no silent invalid input | PASS | negative tests all raise `ValueError` (five §5.3 cases + CR-002 non-empty policy overrides) |
 | C8 — existing six Mgmt inputs unchanged | PASS | seed mgmt sub-factors: the six pre-existing values byte-identical; only two keys added |
 | C9 — no casepack identity branch | PASS | `git ls-files backend/app/engine | xargs grep -niE "riverside|grocer|pack_key *=="` → zero |
 | C10 / I2 — engine pure | PASS | no `open(`/`Path(`/`read_text`/clock/random in `backend/app/engine/` (one docstring mentions "yaml") |
@@ -301,3 +301,23 @@ narrative in `handoffs/1.4-scoring-engine/closeout.md`.
 
 **Computed pins:** Tech `0.750008` · Org `0.507003` · Mgmt `0.656778` · realised `0.249744`
 · throttle `org` · firm_score `0.254585`. Not tuned (decision 11).
+
+---
+
+## Closeout re-audit corrections — CR-001, CR-002 (2026-08-21)
+
+Appended, not rewritten. Re-audit `findings/1.4-closeout-2026-08-21-codex-reaudit.md`:
+arithmetic/pins/behaviour sound; blocked only on two input-contract cases resolved without
+decision authority. Spec owner froze both; applied on this branch. No formula, aggregation,
+seed, or pin changed — all frozen values re-verified identical.
+
+| Finding | Sev | Disposition |
+|---|---|---|
+| 1.4-CR-001 | Contract | **Resolved.** Archetype absence is **exclusion, never a raise** — one rule now in code, tests, closeout-spec (decisions 3/4/9), CONTRACTS, closeout §9. The decision-9 unknown-archetype raise was removed. Archetype-vocabulary owner verified to already exist: validator **E08** (`check_archetypes` / `ARCHETYPES`, fixture `broken_E08`). New test `test_absent_archetype_row_is_excluded_without_weight`. |
+| 1.4-CR-002 | Contract | **Resolved.** Policy-domain `overrides` unsupported; `policy_switch_alignment` **raises** on a non-empty `preferences["policies"].overrides` before scoring (no parse/guess/partial/silent-ignore). Named future owner: OPEN-REGISTER *policy-preference overrides*. Tests `test_negative_nonempty_policy_overrides_raise`, `test_empty_policy_overrides_preserve_the_verified_score`. |
+
+**Re-verification:** full pytest **35 passed** (policy-dimension 18→21); validator text 0/0 +
+JSON `[]`; fixture matrix 42/42; policy-option checks 13/13; harvest read-back 43/43; raw-fit
+2/2; seed demo + scorer; `git diff --check` clean. Frozen values unchanged: Tech 0.750008,
+Org 0.507003, Mgmt 0.656778, realised 0.249744, policy_alignment 0.4676, policy_discipline 1.0;
+six existing Management sub-factors byte-identical.

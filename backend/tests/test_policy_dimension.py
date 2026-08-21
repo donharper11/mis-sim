@@ -263,3 +263,60 @@ def test_negative_preference_names_unknown_policy():
     bad = pack.model_copy(update={"preferences": {**pack.preferences, "policies": new_pref}})
     with pytest.raises(ValueError, match="unknown policy"):
         policy_switch_alignment(bad, _with(state, _decisions()))
+
+
+# =====================================================================
+# CR-001 — an archetype with no policy-preference row is EXCLUDED, not raised
+# =====================================================================
+
+def test_absent_archetype_row_is_excluded_without_weight():
+    # A stakeholder whose archetype has no policy-preference row must be excluded from the
+    # denominator entirely: no neutral row, no weight, no raise, score unchanged --
+    # regardless of why the row is absent (closeout decision 3 / CR-001).
+    from app.casepack.models import Provenance, Stakeholder
+
+    pack, state = _seed()
+    base_val, base_ev = policy_switch_alignment(pack, _with(state, _decisions()))
+
+    # Off-vocabulary archetype: the scorer excludes it (it does NOT raise). Such a pack
+    # would itself be rejected upstream by validator E08 (check_archetypes); here we prove
+    # the scorer's own behaviour — exclude, do not classify, do not raise.
+    ghost = Stakeholder(
+        key="ghost_stakeholder",
+        archetype="nonexistent_archetype",
+        display_name_key="stakeholder_finance",   # any existing label key; not scored
+        role_key="role_finance_department",
+        stakeholder_type="external",
+        provenance=Provenance(source="AUTHORED", note="CR-001 exclusion test"),
+    )
+    pack2 = pack.model_copy(update={"stakeholders": list(pack.stakeholders) + [ghost]})
+    val, ev = policy_switch_alignment(pack2, _with(state, _decisions()))
+
+    assert val == base_val, (val, base_val)                       # score unchanged
+    assert ev["total_weight"] == base_ev["total_weight"]          # no denominator weight added
+    assert ev["preferences"] == base_ev["preferences"]            # no neutral row added
+    assert not any(r["stakeholder"] == "ghost_stakeholder" for r in ev["rows"])
+
+
+# =====================================================================
+# CR-002 — policy-domain overrides are unsupported: non-empty raises
+# =====================================================================
+
+def test_negative_nonempty_policy_overrides_raise():
+    # A non-empty policies-domain overrides list must raise BEFORE a score is returned,
+    # naming the policies domain and the undefined shape/precedence (CR-002).
+    pack, state = _seed()
+    pref = pack.preferences["policies"]
+    bad_pref = pref.model_copy(update={"overrides": [{"archetype": "finance", "by_decision": {}}]})
+    bad = pack.model_copy(update={"preferences": {**pack.preferences, "policies": bad_pref}})
+    with pytest.raises(ValueError, match=r"overrides"):
+        policy_switch_alignment(bad, _with(state, _decisions()))
+
+
+def test_empty_policy_overrides_preserve_the_verified_score():
+    # The verified Riverside pack declares `overrides: []`; scoring is unaffected and the
+    # pinned policy_alignment 0.4676 stands (CR-002 positive path).
+    pack, state = _seed()
+    assert pack.preferences["policies"].overrides == []
+    val, _ = policy_switch_alignment(pack, _with(state, _decisions()))
+    assert abs(val - 0.4676) <= 1e-6

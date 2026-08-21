@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-08-21 (`TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
+**Last updated:** 2026-08-21 (1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -167,7 +167,23 @@ it performs no I/O (invariant I2).
 
 **Invalid / raises (`ValueError`, closeout decision 9):** a duplicate runtime decision for
 one policy; an unknown `policy`; a `selected` outside the policy's `options`; a missing
-default needed by the null path; a preference `ideal_posture` outside a policy's options.
+default needed by the null path; a preference `ideal_posture` outside a policy's options;
+and a **non-empty `preferences["policies"].overrides`** list (see below).
+
+**Archetype presence (CR-001):** a stakeholder whose archetype has a policy-preference row
+is scored; one with no row is **excluded** from the alignment denominator — no neutral row,
+no weight — and this is **not** an error. The scorer does not classify absence as "known" vs
+"unknown"; stakeholder-archetype vocabulary is validated upstream by **E08**
+(`check_archetypes` against `checks.py ARCHETYPES`), so an off-vocabulary archetype cannot
+reach a validated pack.
+
+**Policy overrides (CR-002) — NOT consumed, unsupported.** `PreferenceDefaults.overrides`
+exists on the `policies` domain but has no defined shape or precedence contract. The scorer
+**raises** on a non-empty list rather than parsing, guessing, partially applying, or silently
+ignoring it. Empty (`[]`) is the only supported state. Defining the typed override shape,
+targeting, precedence, duplicate/conflict handling, validator coverage and scorer
+consumption is a named future owner — `findings/OPEN-REGISTER.md` item *policy-preference
+overrides*.
 
 ---
 

@@ -262,14 +262,37 @@ def policy_switch_alignment(
     formula, and aggregate as a weighted arithmetic mean where
     `effective_weight = archetype.weight * by_decision[policy].weight` (decision 3).
 
-    Stakeholders whose archetype has no policy row, and policies no stakeholder holds
-    a view on, are absent from numerator and denominator -- not neutral rows. Total
-    weight zero -> alignment 1.0 with `preferences: 0`. A preference naming an unknown
-    policy or an ideal outside that policy's options raises (decision 9).
+    Archetype rule (closeout decision 3, CR-001): a stakeholder whose archetype has a
+    policy-preference row is scored; one with no row is EXCLUDED from numerator and
+    denominator entirely -- no neutral row, no weight -- regardless of why the row is
+    absent. The scorer does NOT classify absence as "known" vs "unknown": the casepack
+    MODEL exposes no archetype registry, and it does not need one, because validator E08
+    (`check_archetypes`, canonical set `checks.py ARCHETYPES`, fixture `broken_E08`)
+    rejects any stakeholder whose archetype is off-vocabulary before a pack can be scored
+    (validator gate, GOVERNANCE section 5). So the scorer never raises on an archetype.
+
+    Overrides (CR-002): policy-domain `overrides` are unsupported until their shape and
+    precedence are defined -- a non-empty list raises rather than being parsed, guessed,
+    partially applied, or silently ignored.
+
+    Total weight zero -> alignment 1.0 with `preferences: 0`. A preference naming an
+    unknown policy or an ideal outside that policy's options raises (decision 9).
     """
     resolved = _resolve_policy_decisions(pack, state)
     by_key = {p.key: p for p in pack.policies}
     pref_domain = pack.preferences.get("policies")
+
+    # CR-002: policy overrides have no defined domain schema/precedence yet. Fail loudly
+    # on a non-empty list rather than scoring as if it were absent (the silent path
+    # decision 4 prohibited). Named future owner: OPEN-REGISTER "policy-preference overrides".
+    if pref_domain is not None and pref_domain.overrides:
+        raise ValueError(
+            "preferences['policies'].overrides is non-empty, but the policy-domain "
+            "override shape and precedence contract are not yet defined (1.4 closeout "
+            "CR-002). The scorer refuses to parse, guess, partially apply, or silently "
+            "ignore policy overrides -- define the typed shape, targeting, and precedence "
+            "first (OPEN-REGISTER: policy-preference overrides)."
+        )
 
     numerator = 0.0
     total_weight = 0.0
@@ -279,7 +302,9 @@ def policy_switch_alignment(
         for sh in pack.stakeholders:
             arow = pref_domain.defaults_by_archetype.get(sh.archetype)
             if not arow:
-                continue  # archetype holds no policy view -> excluded (decision 3)
+                # Excluded: no policy view for this archetype (decision 3 / CR-001). Never
+                # a neutral row, never a raise -- E08 guarantees the archetype is canonical.
+                continue
             arch_weight = float(arow.get("weight", 0.0))
             by_decision = arow.get("by_decision", {}) or {}
             for policy_key, pref in by_decision.items():

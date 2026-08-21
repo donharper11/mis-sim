@@ -167,8 +167,13 @@ policy_decisions: tuple[PolicyDecisionState, ...] = ()
 ```
 
 A pack policy absent from `policy_decisions` resolves to its authored `default` with
-`actively_decided=False` (the null path). Duplicate, unknown, out-of-options, or
-missing-default inputs raise `ValueError` — never a guess (decision 9).
+`actively_decided=False` (the null path). Duplicate decisions, unknown **policy** keys,
+out-of-options selections, missing defaults, ideals outside a policy's options, or a
+non-empty `preferences["policies"].overrides` list raise `ValueError` — never a guess
+(decision 9 / CR-002). An archetype with **no** policy-preference row is **excluded**, not
+raised (CR-001): the scorer does not classify absence, and validator E08 owns archetype
+vocabulary upstream. Policy-domain overrides are **not** consumed and are unsupported until
+their shape/precedence are defined (register: *policy-preference overrides*).
 
 **`policy_alignment`** — for each actual stakeholder, resolve its archetype's
 `by_decision` policy preferences; score each with the asymmetric ordinal formula on

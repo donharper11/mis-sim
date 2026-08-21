@@ -159,11 +159,28 @@ evidence. The UI later maps them through casepack/platform labels.
    absent from numerator and denominator, not neutral rows. If total weight is zero,
    `policy_alignment = 1.0` and evidence says `preferences: 0`.
 
+   **One rule for archetype presence (CR-001):** a present archetype preference row is
+   scored; an absent one is excluded — *regardless of why it is absent*. The scorer does not
+   classify absence as "known" vs "unknown", because the casepack **model** exposes no
+   archetype registry to classify against; it does not need to, because validator E08 owns
+   archetype-vocabulary validity upstream (see decision 9). Exclusion adds no weight and no
+   neutral row.
+
 4. **One archetype default is applied once per actual stakeholder.** Do not score the
-   archetype table directly; the pack's stakeholder population is the roster. Overrides,
-   if the loader exposes them for this domain, replace the corresponding archetype decision
-   row rather than adding a duplicate. If current models cannot express that verified rule,
-   STOP rather than inventing a second preference resolver.
+   archetype table directly; the pack's stakeholder population is the roster. An archetype
+   with a policy-preference row is scored once; an archetype with no row is **excluded**,
+   not raised (see decision 3 / decision 9, CR-001).
+
+   **Policy-domain `overrides` are UNSUPPORTED for this closeout (CR-002).**
+   `PreferenceDefaults.overrides` is exposed as `list[dict[str, Any]]` but no policy-domain
+   override *shape* or *precedence* contract is defined. A non-empty
+   `preferences["policies"].overrides` therefore raises `ValueError` before a score is
+   returned — the scorer does not parse, guess, partially apply, or silently ignore it.
+   Empty (`overrides: []`, as Riverside declares) is the supported path and scores normally.
+   Defining the typed override shape, stakeholder/archetype targeting, replacement
+   precedence, duplicate/conflict handling, validator coverage, and scorer consumption is a
+   **named future owner** — `OPEN-REGISTER.md` item *policy-preference overrides*. Until then
+   override support is **not implemented and not complete**.
 
 5. **Policy choice is explicit immutable runtime state.** Add NEW frozen dataclass:
 
@@ -214,9 +231,16 @@ evidence. The UI later maps them through casepack/platform labels.
 
 9. **Invalid score input fails loudly.** Duplicate runtime decisions for one policy,
    unknown policy keys, selected values outside declared options, missing defaults needed
-   by the null path, unknown stakeholder archetypes, or preference ideals outside policy
-   options raise `ValueError` before a score is returned. Never clamp, skip or guess around a
-   broken scoring contract.
+   by the null path, preference ideals outside policy options, or a **non-empty
+   policies-domain `overrides` list** (decision 4) raise `ValueError` before a score is
+   returned. Never clamp, skip or guess around a broken scoring contract.
+
+   **An absent archetype preference row is NOT in this list** (corrected — CR-001). It is an
+   *exclusion*, per decision 3 — the scorer does not raise merely because an archetype has
+   no policy view. Stakeholder-archetype *vocabulary* validity is owned upstream by validator
+   **E08** (`check_archetypes`, canonical set `checks.py ARCHETYPES`, fixture `broken_E08`),
+   which the validator gate runs before any pack is scored (`GOVERNANCE.md §5`); the scorer
+   therefore never sees an off-vocabulary archetype and does not re-validate one.
 
 10. **Riverside R3 seed represents an attentive team, not an ignored screen.** Add exactly
     one `PolicyDecisionState` for each of Riverside's six policies, with

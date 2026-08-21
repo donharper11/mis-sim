@@ -134,12 +134,24 @@ Per decision 4 ("STOP rather than invent"), I implemented the exclusion behaviou
 and did **not** invent a registry to raise on. The other five negative cases in §5.3 all
 raise as specified.
 
+> **RESOLVED 2026-08-21 (re-audit finding 1.4-CR-001, spec-owner decision — see §9).** The
+> exclusion rule is now the frozen contract: the raise requirement was removed from decision
+> 9. A subsequent verification found the archetype-vocabulary owner already exists — validator
+> **E08** — so the tension fully dissolves. This D3 text is retained as history; the current
+> rule is §9.
+
 **D4 — `overrides` for the policies domain not consumed.** `PreferenceDefaults.overrides` is
 `list[dict[str, Any]]` with no per-domain schema; Riverside's is `[]`. Decision 4 forbids
 inventing a second resolver, so the resolver reads `defaults_by_archetype` only. A non-empty
 policies-domain overrides list is not silently ignored *and* not guessed — it simply has no
 verified shape yet; when one is defined it returns as a follow-up. No behaviour change for
 any current pack.
+
+> **CORRECTED 2026-08-21 (re-audit finding 1.4-CR-002, spec-owner decision — see §9).** This
+> disclosure was wrong on one point: the build **did** silently ignore a non-empty policies
+> overrides list (the resolver never inspected `overrides`). The scorer now **raises** on a
+> non-empty `preferences["policies"].overrides` before returning a score. This D4 text is
+> retained as history; the current rule is §9.
 
 **Deferred (named, not silent):**
 - **Data currency/freshness (G2):** capture/storage → 3.4 Platform, production → 1.6,
@@ -196,3 +208,64 @@ ordinal-contract guards green).
 A builder does not declare audit approval. These corrections are cosmetic (docs + one guard
 assertion re-point); the merge decision, and whether the re-point warrants a confirming
 re-audit, rest with the coordinator/user.
+
+---
+
+## 9. Contract corrections — CR-001, CR-002 (2026-08-21)
+
+A second independent re-audit (`findings/1.4-closeout-2026-08-21-codex-reaudit.md`) confirmed
+the arithmetic, seed pins and Riverside behaviour but blocked merge because two **input
+contracts** (D3, D4) had been resolved without decision authority. The spec owner then froze
+both. Applied here (no arithmetic, formula, aggregation, seed, or pin changed):
+
+### 1.4-CR-001 — archetype absence is exclusion, never a raise
+
+**One rule, now stated identically in code, tests, closeout-spec (decisions 3/4/9), CONTRACTS
+and this doc:** a present archetype policy-preference row is scored; an absent row is
+**excluded** from the alignment denominator — no neutral row, no weight — *regardless of why*.
+The scorer does **not** classify absence as "known" vs "unknown"; the casepack **model** has no
+archetype registry to classify against.
+
+The contradictory decision-9 requirement to raise on an "unknown archetype" was **removed**.
+
+**Verified upstream owner (not a claim — checked):** stakeholder-archetype vocabulary is
+already validated by **E08** `check_archetypes` (`backend/app/casepack/validate.py:794`) against
+the canonical 14-archetype set `ARCHETYPES` (`backend/app/casepack/checks.py:31`, whose own
+comment reads *"1.4 and 1.5 will want it"*), fixture-tested by `broken_E08`
+(`tests/check_fixture_matrix.py:60`, expects exactly one E08 error). The validator gate
+(`GOVERNANCE.md §5`) runs before any pack is scored, so an off-vocabulary archetype cannot
+reach the scorer. Archetype-vocabulary validation is therefore **already assigned** (E08) — no
+new register item is needed for it.
+
+**Regression test:** `test_absent_archetype_row_is_excluded_without_weight` — adds a stakeholder
+with an off-vocabulary archetype and proves the score, `total_weight`, and evidence-row count
+are all identical to baseline (excluded, no neutral row, no raise).
+
+### 1.4-CR-002 — policy-domain overrides unsupported; non-empty raises
+
+`preferences["policies"].overrides` has no defined shape or precedence contract.
+`policy_switch_alignment` now **raises `ValueError` before returning a score** when that list
+is non-empty, naming the policies domain and the undefined shape/precedence — it does not
+parse, guess, partially apply, or silently ignore it (`management.py`, the CR-002 guard).
+Empty (`[]`, as Riverside declares) scores normally; the verified `policy_alignment 0.4676`
+stands.
+
+**Named future owner:** `findings/OPEN-REGISTER.md` item **policy-preference overrides** —
+typed shape, stakeholder/archetype targeting, replacement precedence, duplicate/conflict
+handling, validator coverage, scorer consumption. Override support is **not implemented and
+not complete**.
+
+**Tests:** `test_negative_nonempty_policy_overrides_raise` (non-empty → raises);
+`test_empty_policy_overrides_preserve_the_verified_score` (empty → 0.4676 unchanged).
+
+### Verification of this correction
+
+Full backend `pytest` **35 passed** (18→21 policy-dimension tests); validator text `0/0` and
+JSON `[]`; `check_fixture_matrix.py` 42/42; `check_policy_options.py` 13/13; harvest read-back
+43/43; `test_raw_fit_isolation.py` 2/2; seed demo + scorer CLI; `git diff --check` clean.
+Exact frozen values all hold: Tech `0.750008`, Org `0.507003`, Mgmt `0.656778`, realised
+`0.249744`, `policy_alignment 0.4676`, `policy_discipline 1.0`; the six existing Management
+sub-factors are byte-identical. No passage in code, tests, closeout-spec, CONTRACTS, DoD,
+this doc, or the register now says an absent archetype row must raise, that unknown archetypes
+are distinguishable from uninterested ones by the scorer, that policy overrides are consumed,
+or that a non-empty overrides list may be ignored.

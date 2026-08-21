@@ -153,6 +153,20 @@ record per capability. Unblocks 1.5, 1.6, 1.7 and all of Phase 3.
 
 ---
 
+## H. From the 1.4 closeout re-audit — 2026-08-21
+
+Codex re-audit (`findings/1.4-closeout-2026-08-21-codex-reaudit.md`): the 1.4 policy
+arithmetic and pins passed; two **input-contract** cases (D3/D4) had been resolved without
+decision authority. Spec owner froze both; applied on `build/1.4-closeout`.
+
+| # | Item | Owner |
+|---|---|---|
+| CR-001 | **Archetype absence is exclusion, not a raise.** The decision-9 unknown-archetype raise was removed; one rule now across code/tests/closeout-spec/CONTRACTS/closeout. Archetype-vocabulary validity is **already owned** by validator **E08** (`check_archetypes`, `checks.py ARCHETYPES`, fixture `broken_E08`) — no new item needed | ✅ **CLOSED** — 1.4 closeout |
+| CR-002 | **Policy-domain `overrides` unsupported; non-empty raises.** `policy_switch_alignment` raises before scoring on a non-empty `preferences["policies"].overrides`; not parsed/guessed/partial/ignored | ✅ **CLOSED** (fail-loud) — 1.4 closeout |
+| **policy-preference overrides** | **NEW future contract.** Define the typed policy-override **shape**, stakeholder/archetype **targeting**, replacement **precedence**, duplicate/conflict handling, **validator** coverage, and **scorer** consumption. Until then non-empty policy overrides raise; override support is **not implemented**. Named owner for the future work below | **future — 1.4 follow-up / a Phase-4 policy packet (unassigned to a numbered packet yet)** |
+
+---
+
 ## Standing rule
 
 > **A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is
