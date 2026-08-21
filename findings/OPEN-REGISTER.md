@@ -48,7 +48,7 @@ anything. Each names the packet that closes it.
 | B10 | `1.3-001` / CG-6 | **1.1 next / 1.6** | ⚠️ **STILL OPEN — re-verified 2026-08-21**, `models.py:58` and `models.py:99`. Origin `1.3-2026-08-18` (3 days). Bites 1.6, not 1.5. **Closing check:** `grep -c "capital_remaining" backend/app/casepack/models.py` → 1 |
 | B11 | `1.3-004` | **1.3 follow-up** | ⚠️ **STILL OPEN — 2026-08-21:** `config_tiers` present at `catalog.yaml:55,77,99`; the derivation claim is a content judgement and was **not** re-derived by this sweep. Origin `1.3-2026-08-18` (3 days) |
 | B12 | `1.3-005` | **1.7 calibration** | 🟡 **MOSTLY FIXED — verified 2026-08-21.** Now **10 of 42**, not 54 of 75. Residual is calibration content, not a missing path |
-| B13 | `1.3-008` | **0.4 or 1.3** | ⚠️ **STILL OPEN — re-verified 2026-08-21:** `catalog.yaml` `count: 140`; `components.html` still shows 62. Origin `1.3-2026-08-18` (3 days). Mockup-side only; no engine path reads it |
+| B13 | `1.3-008` | **1.3 content — RAISED 2026-08-21** | 🔴 **STILL OPEN, AND IT IS A SCORING INPUT.** `catalog.yaml` says `count: 140`; `components.html` says 62. `people_affected` is the **denominator of the Organisational-Readiness training sub-factor** — `organisation.py:63`, `training = trained_count / people_affected` — and Org is one of the three multiplicative factors. An earlier line in this row called it mockup-only; that was wrong and is corrected here. If 62 is the true headcount, every training score for that component is out by 2.26x. **Closing check:** one authored value, cited to its harvest source, with `components.html` agreeing |
 | B14 | 16 mockups at `$44,000` | **0.4 rework / superseded by Phase 3** | ⚠️ **STILL OPEN — re-verified 2026-08-21:** 16 mockup files carry `44,000`, 2 carry `46,000`. Origin `0.3-2026-07-27` — **the only open item older than 25 days.** Static mockups Phase 3 rebuilds; no engine or scoring path reads them |
 | B15 | `1.3-011` / row 5 | **any future harvest** | 🔵 **OPEN BY DESIGN — 2026-08-21.** Deliberate: there is no second harvest scheduled, and nothing downstream consumes the placeholder rows. Origin `1.3-2026-08-18` |
 | B16 | 27 `TODO: calibrate` | **1.7** | 🔵 **OPEN BY DESIGN — re-verified 2026-08-21: now 38**, not 27. Permitted under `§4.9`; thresholds cannot be calibrated before 1.7 has an engine to calibrate against. Not a defect and not backtracking |
@@ -200,9 +200,12 @@ the tree**, not read from this file:
                          9 genuinely open  (B5 B7 B10 B11 B13 B14 B15 B16 B17)
 ```
 
-Of the nine, **three touch code** (`B5` `B7` `B10`), five are content or mockup polish, and
-one (`B16`) is a permitted `§4.9` deferral. **None blocks 1.5**: Riverside validates 0/0 and
-1.5 pre-flight rows 7, 9 and 10 are what `B9` just closed.
+Of the nine: **`B13` touches a live scoring input** (the Org training denominator — see its row;
+an earlier draft of this sweep mis-rated it as mockup-only). Three touch validator or schema code
+(`B5` `B7` `B10`), four are content (`B11` `B14` `B15` `B17`), and one (`B16`) is a permitted
+`§4.9` deferral. **None blocks 1.5**: Riverside validates 0/0 and 1.5 pre-flight rows 7, 9 and 10
+are what `B9` just closed. `B13` and `B10` are the two with real forward cost — `B13` on any
+scored playthrough, `B10` on 1.6.
 
 **Age at sweep:** seven of the nine originate in `1.3-2026-08-18` — three days. `B5` is
 4–7 days (`1.2-2026-08-14`, `1.1-rework-2-2026-08-17`). Only `B14` is genuinely old
