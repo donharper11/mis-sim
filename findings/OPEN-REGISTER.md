@@ -107,7 +107,7 @@ register and the design agree.
 | # | Item | Owner |
 |---|---|---|
 | E1 | `preferences/policies.yaml` does not exist — the six switches are invisible to stakeholders, to scoring, **and to the persona layer** | **1.3 follow-up** |
-| E2 | *information-policy discipline* has no Mgmt sub-factor — a team that never opens the screen is not neutral, it is unmanaged | **1.4 spec** |
+| E2 | *information-policy discipline* has no Mgmt sub-factor — a team that never opens the screen is not neutral, it is unmanaged | ✅ **CLOSED — 1.4 closeout (2026-08-21).** `policy_discipline` is now a Mgmt sub-factor; ignoring the screen floors it at 0.25, a decided switch lifts it. `management.policy_discipline`, tests in `test_policy_dimension.py` |
 | E3 | `preferences/services.yaml` does not exist — support-tier decisions draw no human reaction | **1.3 follow-up** |
 | E4 | Governance has no consequence path — an unowned capability with an open critical signal should arm an event | **1.5** |
 | E5 | `it.ideal_staff_load` is filed under `catalog` preferences; under G1 staffing is its own class | **4.5** |
@@ -121,7 +121,7 @@ register and the design agree.
 | F1 | **`models.py`'s `options` docstring says order carries no meaning.** `design/07 §3.5b` now rules it **ordinal**, permissive at index 0. Schema and design contradict each other until this is corrected | **1.1 next** |
 | F2 | **`CONTRACTS.md` has no `PolicyOption.options` entry**, and its only sibling vocabulary (`entity.level_of_detail`) declares itself ordinal. Same as `B21`, now with a ruling behind it | **CONTRACTS** |
 | F3 | **`W01` is blind to two of five preference domains.** The placeholder-seeding heuristic only inspects rows carrying an `ideal_value` key at the top level of `defaults_by_archetype`; the two new files nest under `by_decision` and use `ideal_posture` / `ideal_tier`. Nothing was dodged — the variation table substitutes — but the check no longer covers what it claims to | **1.2 next** |
-| F4 | **Alignment is exact-match until `options` ordinality is consumed.** A team stricter than a stakeholder asked scores the same as one that ignored them. `3.5b` rules the fix; 1.4 must implement distance rather than equality | **1.4 spec** |
+| F4 | **Alignment is exact-match until `options` ordinality is consumed.** A team stricter than a stakeholder asked scores the same as one that ignored them. `3.5b` rules the fix; 1.4 must implement distance rather than equality | ✅ **CLOSED — 1.4 closeout (2026-08-21).** `policy_alignment` consumes the ordinal distance with the asymmetric formula (stricter costs half a permissive miss of the same size). `management.policy_switch_alignment`; C2/C5 in `test_policy_dimension.py` prove asymmetry and that order (not string equality) drives the score |
 | F5 | `lead_time_rounds` now has 51 of 75 at exactly 1 round, so the sharpest follow-through failures rest on only 7 two-round options | **1.7 calibration** |
 | F6 | `it` has a pack-grounded interest in `data_access` and `access_logging` via their `staff_load` terms, but `design/07 §3.5` does not list it, so it was flagged rather than authored | **author / 1.3** |
 
@@ -142,7 +142,7 @@ policy-order rework merges.
 | # | Item | Owner |
 |---|---|---|
 | G1 | **Spec §5.3 said "dot product"; engine uses cosine similarity** (the correct bounded [0,1] input for the geomean, reproduces the pin). Artifact right, spec wrong — **spec wording corrected in this commit** per R5. | **Closed** |
-| G2 | **`design/02 §A` "data currency/freshness" was folded into component `currency`** without being called out as a deferral in the DoD factor map. Data-freshness as a distinct factor is not yet captured | **1.4 follow-up** |
+| G2 | **`design/02 §A` "data currency/freshness" was folded into component `currency`** without being called out as a deferral in the DoD factor map. Data-freshness as a distinct factor is not yet captured | ⏸ **DEFERRED (named) — 1.4 closeout (2026-08-21), decision 12.** `design/02` now marks the row deferred: capture/storage → **3.4 Platform**, round-to-round production → **1.6**, scoring consumption → a **future 1.4 follow-up** once both exist. Component EOL `currency` stays a distinct factor and is not relabelled. Not implemented in this packet by design |
 | G3 | Pre-flight row 4 quotes a fixed-figures string (`0.75 · Org 0.51 · Mgmt 0.65`) that the 0.3 v3 respec **deleted** from the mockup; the arithmetic target is intact in the 1.4 spec but the pre-flight check points at a dead file. Repoint it | **1.4 spec** |
 | G4 | Spec §5.2 references "adoption formula in §5.6"; **§5.6 has no such formula** and the schema has no adoption params. Build consumed adoption as a persisted input; the dynamic formula is deferred | **1.6 round-runner** |
 | G5 | The demo CLI (`print`/`json`/dynamic import) lives inside `app/engine`; scoring functions are pure and I2 passes, but relocating the CLI would make "engine does no I/O" true by construction | **1.4 follow-up** |

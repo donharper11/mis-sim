@@ -143,6 +143,27 @@ class StakeholderDecisionAlignment:
 
 
 @dataclass(frozen=True)
+class PolicyDecisionState:
+    """One information-policy switch as the team currently holds it (1.4 closeout).
+
+    `policy` is a `PolicyOption.key`; `selected` is one of that policy's declared
+    `options` (a machine key, never prose). `actively_decided` records whether the
+    team committed a choice this round -- including deliberately RETAINING the
+    authored default, which is a managed decision and distinct from never opening
+    the screen.
+
+    This is scorer input only. The runtime table that PRODUCES it round to round is
+    1.6/2.x's, and that table carries `instance_id`; the pure scorer receives an
+    immutable snapshot and performs no I/O (invariant I2). Interface FROZEN by the
+    1.4 closeout packet; producer/consumer contract in `CONTRACTS.md`.
+    """
+
+    policy: str
+    selected: str
+    actively_decided: bool
+
+
+@dataclass(frozen=True)
 class TeamState:
     round: int
     declared_strategy: str
@@ -155,6 +176,12 @@ class TeamState:
     signals: tuple[SignalState, ...]
     decisions: tuple[DecisionState, ...]
     stakeholder_alignments: tuple[StakeholderDecisionAlignment, ...] = ()
+    #: The team's current information-policy switch selections. Empty means no
+    #: switch was touched: every pack policy resolves to its authored `default`
+    #: with `actively_decided=False` (1.4 closeout decision 6), which keeps the
+    #: null path deterministic and backward-compatible with existing callers while
+    #: still charging the information-policy discipline factor.
+    policy_decisions: tuple[PolicyDecisionState, ...] = ()
 
     # -- convenience indexes, all pure ------------------------------------------
     def node(self, key: str) -> ArchNode | None:

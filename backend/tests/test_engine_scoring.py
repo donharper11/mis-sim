@@ -30,11 +30,25 @@ def test_pin_riverside_r3_order_fulfilment():
     pack, state = _pack_state()
     result = score_team(pack, state)
     of = next(c for c in result.capabilities if c.capability == "order_fulfilment")
-    assert abs(of.terms["tech"] - 0.750) <= TOL, of.terms
-    assert abs(of.terms["org"] - 0.507) <= TOL, of.terms
-    assert abs(of.terms["mgmt"] - 0.648) <= TOL, of.terms
-    assert abs(of.realised - 0.249) <= TOL, of.realised
+    # Tech and Org are unchanged by the 1.4 closeout (invariant C1): exact to 1e-6.
+    assert abs(of.terms["tech"] - 0.750008) <= 1e-6, of.terms
+    assert abs(of.terms["org"] - 0.507003) <= 1e-6, of.terms
+    # Mgmt and realised are the NEW computed pins after two real Management inputs
+    # (policy_alignment, policy_discipline) were added by the closeout. The prior
+    # 0.648006 / 0.246408 are historical baselines, not targets (decision 10/11).
+    assert abs(of.terms["mgmt"] - 0.656778) <= 1e-6, of.terms
+    assert abs(of.realised - 0.249744) <= 1e-6, of.realised
     assert of.throttle == "org", of.throttle
+
+
+def test_pin_riverside_r3_is_an_attentive_team():
+    # The seed team actively decided all six switches (closeout decision 10): full
+    # discipline, and policy_alignment is whatever the frozen formula computes.
+    pack, state = _pack_state()
+    result = score_team(pack, state)
+    of = next(c for c in result.capabilities if c.capability == "order_fulfilment")
+    assert of.sub_factors["mgmt"]["policy_discipline"] == 1.0, of.sub_factors["mgmt"]
+    assert abs(of.sub_factors["mgmt"]["policy_alignment"] - 0.4676) <= 1e-6
 
 
 def test_pin_spofs_match_spec_example():

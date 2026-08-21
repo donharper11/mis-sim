@@ -33,6 +33,7 @@ from app.engine.state import (
     DeploymentState,
     GovernanceState,
     OrgUnitState,
+    PolicyDecisionState,
     SignalState,
     StaffPool,
     StakeholderDecisionAlignment,
@@ -213,13 +214,31 @@ def _decisions() -> tuple[DecisionState, ...]:
     )
 
 
+def _policy_decisions() -> tuple[PolicyDecisionState, ...]:
+    # An ATTENTIVE team (1.4 closeout decision 10): it opened the information-policy
+    # screen and made an explicit call on all six switches, so policy_discipline is
+    # 1.0 -- not an ignored screen. Each `selected` is the switch's existing authored
+    # `default` (the permissive index-0 end); this preserves pack content and invents
+    # no new team choice. Retaining the default IS a managed decision, so
+    # `actively_decided=True`. Because every switch sits at the permissive end,
+    # policy_alignment is whatever the frozen asymmetric formula computes against the
+    # stakeholders who wanted stricter -- it is not tuned.
+    return (
+        PolicyDecisionState("data_collection", "everything_by_default", actively_decided=True),
+        PolicyDecisionState("data_retention", "indefinite", actively_decided=True),
+        PolicyDecisionState("data_access", "open_to_all_staff", actively_decided=True),
+        PolicyDecisionState("access_logging", "unlogged", actively_decided=True),
+        PolicyDecisionState("data_egress", "unrestricted", actively_decided=True),
+        PolicyDecisionState("staff_monitoring", "untracked", actively_decided=True),
+    )
+
+
 def _stakeholder_alignments() -> tuple[StakeholderDecisionAlignment, ...]:
     # These are ROLLOUT-alignment scalars only (how well the capabilities a
     # stakeholder cares about are actually delivered). They deliberately EXCLUDE the
-    # information-policy-switch dimension of spec 5.5, which is a deferred hook
-    # (management.policy_switch_alignment) paused pending the design/07 3.5b rework.
-    # The Management pin is therefore reproduced WITHOUT any policy-options
-    # interpretation.
+    # information-policy-switch dimension of spec 5.5, which the 1.4 closeout now
+    # scores separately and firm-wide (management.policy_switch_alignment /
+    # policy_discipline over the `policy_decisions` above). This scalar is unchanged.
     return (
         # Operations cares about the order chain and store operations. Their alignment
         # is low: the order system is near capacity and only a third of staff are
@@ -250,4 +269,5 @@ def build_team_state() -> TeamState:
         signals=_signals(),
         decisions=_decisions(),
         stakeholder_alignments=_stakeholder_alignments(),
+        policy_decisions=_policy_decisions(),
     )
