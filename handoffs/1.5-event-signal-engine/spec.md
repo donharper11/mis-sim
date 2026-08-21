@@ -1,8 +1,8 @@
 # 1.5 — Event & Signal Engine · Build Spec
 
-**Authored under** `SPEC_PROTOCOL.md` v1.1 · **Author:** Claude · **Date:** 2026-07-26
-**Spec version:** v1.1 · **Revised:** 2026-08-15, against merged 1.1 and the 1.2 audit
-**Phase:** 1 · **Depends on:** **1.1 (three schema additions, §10) · 1.3 (the deck) · 1.4**
+**Authored under** `SPEC_PROTOCOL.md` v1.2 · **Author:** Claude/Codex · **Date:** 2026-07-26
+**Spec version:** v1.2 · **Revised:** 2026-08-21, against `main` after the 1.4 closeout
+**Phase:** 1 · **Depends on:** **1.1/1.2 readiness closeout (§10) · 1.3 (the deck) · 1.4**
 **Blocks:** 1.6, 1.7, 3.2, 4.3
 
 > **Signals are the game telling you what is coming. Events are the bill.**
@@ -66,7 +66,8 @@ privacy obligations (§D); *consumes* Tech capacity/reliability from 1.4.
 7. **Privacy obligations reuse the signal machinery entirely** (`design/04`) — no parallel
    system. **Confirmed by the user 2026-08-15** against carving them into a separate packet:
    ethics is not a subsystem, and a deferred ethics layer is the one most likely to be cut
-   before pilot. The cost is accepted — see §10, this packet is **gated on 1.1**.
+   before pilot. The required 1.1/1.2/1.3 content is now live; §10 names the final narrow
+   readiness closeout.
 8. **A watch rule declares its `metric_kind`: `threshold` or `presence`.** Ruled by the user
    2026-08-15, resolving the question 1.2's decision 7 deferred here. See §5.1a.
 9. **Deck coverage is measured per strategy, not per round.** Ruled by the user 2026-08-15.
@@ -82,15 +83,34 @@ privacy obligations (§D); *consumes* Tech capacity/reliability from 1.4.
 
 ---
 
-## 4. Open decisions
+## 4. Build decisions — closed for dispatch
 
-| # | Question | Criteria | Reporting |
-|---|---|---|---|
-| **O1** | "Actionable" for the responsiveness denominator: exclude signals whose only fix was never affordable? | **Default: exclude if no clearing action was affordable at any point while open.** Forgiving first; tighten after 1.7 shows the distribution. (Argument for counting them: unaffordability is often self-inflicted by earlier overspending) | Record |
-| **O2** | Can two events fire on the same capability in one round? | **Default: yes, but cap at 2 per capability per round** and log suppressions. Uncapped cascades produce unteachable rounds | Record |
-| **O3** | Does clearing a signal after an event has fired still earn partial responsiveness credit? | **Default: no credit, but record it** — it feeds follow-through instead | Record |
-| **O4** | `N` for the per-strategy draw check (§5.2a) | **Default: 6, one per round.** Riverside fails on 3 of 4 strategies at this value, which is `CG-2` made visible. Lower it only if 1.7 shows the deck is unauthorable at 6 | Record |
-| **O5** | Can a presence signal be cleared in the same round it is raised? | **Default: yes.** A presence condition removed within the round is genuinely resolved, and `lead_time = 0` is a legitimate, maximally responsive value. Threshold signals inherit the same rule | Record |
+The five former open decisions are settled for the first implementation. Calibration may
+change a threshold later through a new spec; the 1.5 builder has no decision authority here.
+
+| # | Frozen decision |
+|---|---|
+| **O1** | A signal is actionable only if at least one clearing action was affordable at some point while it was open. Persist `cheapest_fix_when_raised`; exclude never-affordable signals from the responsiveness denominator. |
+| **O2** | At most two events may fire for one capability in one round. Later satisfiable events are suppressed deterministically in authored deck order and recorded. |
+| **O3** | Clearing after `fire_round` earns no responsiveness credit. Record the clearing for follow-through and the causal trace. |
+| **O4** | `W08` uses the pack's authored round count: `N = pack.metadata.rounds`, not a global six. Riverside remains six; shorter and longer packs are judged against their own duration. |
+| **O5** | A signal may be raised and cleared in the same round. Its `lead_time` is `0`, which is maximally responsive. |
+
+Additional closeout rulings:
+
+- Empty `strategy_affinity` is a legal explicitly-global card and counts as a draw for every
+  strategy. `W03` remains a review warning, not a contradiction or prohibition; Riverside
+  deliberately uses no empty affinities.
+- `firm_infrastructure` having one presence-shaped rule is accepted content for Riverside.
+  The engine remains general: a cleared signal may open a new ledger episode if its condition
+  later becomes true again; signal history is not overwritten.
+- The v1 metric vocabulary required by Riverside is closed to
+  `capacity_utilisation`, `rollout_without_support`, `missing_identity_access`,
+  `availability_shortfall`, and `data_coverage_gap`. All five functions must exist before
+  the deck is considered executable. Unknown metric keys raise; they never evaluate false.
+- The two missing precondition fields are frozen as `placement` and `other_policy`.
+  `policy_contradiction` compares `policy` with `other_policy`; `placement_count` reads
+  `placement` and `count`.
 
 ---
 
@@ -179,10 +199,10 @@ for each event in deck:
            fire → outcomes → blast radius → scorecard deltas
 ```
 
-**Precondition types and the fields each needs.** The closed set stands; **what changes in
-v1.1 is that six of the eleven types had no schema fields to carry their parameters**, and
-would have been unbuildable. `EventPrecondition` today carries only
-`type · signal · severity · capability · ratio`.
+**Precondition types and the fields each needs.** The closed set stands. As of the v1.2
+authoring baseline, `EventPrecondition` carries `type · signal · severity · capability ·
+ratio · node · entity · policy · round · count`. The readiness closeout adds the last two
+frozen fields, `placement` and `other_policy`, before the 1.5 implementation starts.
 
 | Type | Needs | Expressible today? |
 |---|---|---|
@@ -191,21 +211,21 @@ would have been unbuildable. `EventPrecondition` today carries only
 | `adoption_below` | `capability`, `ratio` | ✅ |
 | `staffing_over` | `ratio` | ✅ |
 | `debt_above` | `ratio` | ✅ |
-| `node_is_spof` | a **node** key | ❌ no `node` field |
-| `entity_unowned` | an **entity** key | ❌ no `entity` field |
-| `placement_count` | a placement + an integer | ❌ neither field |
-| `policy_contradiction` | two **policy** keys | ❌ no `policy` field |
+| `node_is_spof` | `node` | ✅ |
+| `entity_unowned` | `entity` | ✅ |
+| `placement_count` | `placement`, `count` | ⏳ readiness closeout |
+| `policy_contradiction` | `policy`, `other_policy` | ⏳ readiness closeout |
 | `sponsor_unassigned` | `capability` | ⚠️ works, but overloads `capability` |
-| `round_equals` | an **integer round** | ❌ `ratio` is a float and would be a lie |
+| `round_equals` | `round` | ✅ |
 
-**Five build cleanly, six do not.** `1.2-016` item 3 is the precedent: a spec that describes
-a check the schema cannot express produces either a silent proxy or a stopped builder. The
-fields in §10 are what make the remaining six real. **A builder must not improvise them into
-`ratio`.**
+The two readiness fields are a hard pre-flight gate. The validator also checks the closed
+type vocabulary and each type's exact required/forbidden field set, so a typo or malformed
+condition fails before the engine sees it. **A builder must not improvise missing values
+into `ratio`.**
 
 ### 5.2a Deck coverage *(new v1.1 — §3 decision 9)*
 
-`CG-2` is *"3 event cards for 6 rounds × 4 strategies — strategies that draw nothing."*
+`CG-2` was *"3 event cards for 6 rounds × 4 strategies — strategies that draw nothing."*
 1.2's `W05` was rewritten to deck **depth** (`len(events) < rounds`) because `Event` carries
 no round field, and depth cannot see CG-2's real shape: a six-card deck all affine to one
 strategy passes it.
@@ -215,20 +235,21 @@ strategy passes it.
 ```
 for each strategy S:
     draws(S) = events whose strategy_affinity includes S, or is empty
-    assert len(draws(S)) >= N                                     # N = 6, O4
+    assert len(draws(S)) >= pack.metadata.rounds                  # O4
 ```
 
-Riverside today, computed from `events.yaml`:
+Riverside at the v1.2 baseline has 13 cards and at least six draws for every strategy;
+`W08` passes. Empty affinities remain legal but Riverside uses none, so `W03` also passes.
 
 ```
-cost_leadership              3     ← every card
-customer_supplier_intimacy   2
-differentiation              1
-focus_strategy               1
+cost_leadership              >= 6
+customer_supplier_intimacy   >= 6
+differentiation              >= 6
+focus_strategy               >= 6
 ```
 
-At `N = 6` all four fail, and three fail badly. That is `CG-2` made visible for the first
-time, and it is 1.3's to close.
+That closes CG-2 for Riverside. The threshold is derived from each pack's own authored
+duration rather than fixed globally.
 
 **This check belongs to 1.2, not to 1.5** — it is a pack-authoring check, and 1.2 is the
 validator. 1.5 specifies it because 1.5 owns the question; **1.2 implements it as `W08`**
@@ -261,60 +282,35 @@ edge exists. No authored branching.
 are held under permissive policy. Ignored obligations arm events (regulator letter, subject
 access request, employee snooping) exactly as capacity signals arm outages.
 
-**`obligation_rules.yaml` does not exist.** It is `CG-5`, and it is not a section 1.1's
-schema defines — which is why 1.2 cannot report its absence and the whole Ch 4 ethics layer
-is currently inert. By decision 7 it stays here rather than being carved out, so **this
-packet is gated on 1.1 adding the section** (§10). The shape 1.5 requires:
+**This path is live content and validated at the v1.2 baseline.** Riverside authors six
+rules in `obligation_rules.yaml`; the loader exposes the section, `PolicyOption.options`
+provides the ordinal policy vocabulary, and validator `E24`–`E28` check every referenced
+policy, entity, value, action and event. The engine consumes this shape:
 
 ```yaml
-obligation_rules:
-  - key: customer_pii_retention
-    entity: customer                    # an entity the pack defines
-    condition: policy_permits           # policy key + the permissive value
-    policy: data_retention
-    permissive_value: indefinite
-    severity: critical                  # obligations are presence-shaped (decision 10)
-    cleared_by: [add_policy, retire_component]
-    arms: [regulator_letter]            # event keys this obligation can arm
-    provenance: {...}
+- key: customer_pii_retention
+  entity: customer                    # an entity the pack defines
+  condition: policy_permits           # policy key + the permissive value
+  policy: data_retention
+  permissive_value: indefinite
+  severity: critical                  # obligations are presence-shaped (decision 10)
+  cleared_by: [add_policy, retire_component]
+  arms: [regulator_letter]            # event keys this obligation can arm
+  provenance: {...}
 ```
 
 An obligation is **presence-shaped by construction** — the condition holds or it does not —
 so it uses the presence path of §5.1a with no further machinery. That is decision 7 paying
 for itself: the ethics layer costs one schema section and zero new engine paths.
 
-> ### ⛔ `permissive_value` has no referent. This shape does not work yet. *(added 2026-08-18, `1.3-012`)*
+> ### Closed prerequisite history — `permissive_value` now resolves
 >
-> The shape above reads `policy` + `permissive_value`. **`PolicyOption` has no value field
-> at all** — verified: `key · category · cost · effects · provenance`, and nothing else. A
-> policy switch has no notion of the states it can be in, so `permissive_value: indefinite`
-> is a string pointing at nothing.
+> The earlier v1.1 baseline had no policy-state vocabulary. That gate is now closed:
+> `PolicyOption.options` is ordinal and permissive-first, `default` is the untouched state,
+> and `ObligationRule.permissive_value` must resolve into the named policy's options.
 >
-> **This is a defect in this spec, not in 1.3's authoring.** 1.3 authored exactly the shape
-> §5.4 specified, its hand-check found the problem, and the audit confirmed it is worse than
-> reported: **no keying of policies fixes it**, because the missing thing is the vocabulary
-> itself. Same class as §5.2's six unexpressible precondition types — a shape specified
-> against a schema that cannot hold it.
->
-> **What the ethics layer actually needs**, stated so 1.1 can build it and 1.5 can consume it:
->
-> ```
-> a policy must declare the STATES it can be in        options: [minimal, standard, indefinite]
-> a policy must declare which state is the DEFAULT     default: indefinite
->   — the position a team holds by not deciding, which is what makes ignoring the
->     ethics layer cost something rather than being an opt-in
-> an obligation then names the state that OBLIGES      permissive_value: indefinite
->   — and it now resolves, because the policy enumerates it
-> ```
->
-> Without `options`, three things are impossible: the validator cannot check that
-> `permissive_value` names a real state (`1.2-037`'s sibling), the Security screen (4.3)
-> cannot render the switch's positions, and **the engine cannot tell whether a team has
-> moved off the permissive default** — which is the entire mechanism by which an ignored
-> obligation arms an event.
->
-> **Filed to 1.1 as §10 item 5.** Until it lands, `obligation_rules.yaml` is authored
-> correctly and inert — the same status `CG-5` had before, one layer further in.
+> The canonical semantics live in `CONTRACTS.md`; 1.5 consumes them and does not redefine
+> policy ordering.
 
 ---
 
@@ -365,25 +361,20 @@ Two paths from one seed is the demonstration — the same event card, opposite o
 | # | Claim | Tag | Check | Expected |
 |---|---|---|---|---|
 | 1 | 1.4 merged; graph analysis available | `[V]` | `grep -n "def serving_path\|def articulation" backend/app/engine/graph.py` | both present |
-| 2 | Riverside has watch rules and a deck **sized for six rounds** | `[V]` | `grep -c "^- key:" backend/packs/riverside_grocery/watch_rules.yaml backend/packs/riverside_grocery/events.yaml` | `≥7` and `≥6`. **If events < 6, STOP — 1.3 has not closed CG-2** |
+| 2 | Riverside has watch rules and a deck sized for its six rounds | `[V]` | `grep -c "^- key:" backend/packs/riverside_grocery/watch_rules.yaml backend/packs/riverside_grocery/events.yaml` | `8` and `13` |
 | 3 | `ord_cap_01` exists with the 0.3 semantics | `[V]` | `grep -A5 "key: ord_cap_01" backend/packs/riverside_grocery/watch_rules.yaml` | `warn_above: 0.80`, `critical_above: 0.95` |
 | 4 | The action-type set from 1.2's E05 exists | `[V]` | `grep -n "^ACTION_TYPES" backend/app/casepack/checks.py` | present, line 12 |
 | 5 | **`WatchRule.metric_kind` exists** (§10 item 1) | `[V]` | `grep -n "metric_kind" backend/app/casepack/models.py` | present. **Absent → STOP, 1.1 has not run** |
 | 6 | **`obligation_rules` is a schema section** (§10 item 2) | `[V]` | `grep -n "obligation_rules\|class ObligationRule" backend/app/casepack/models.py` | present. **Absent → STOP** |
-| 7 | **The six precondition fields exist** (§10 item 3) | `[V]` | `grep -nE "node:\|entity:\|policy:\|round:" backend/app/casepack/models.py` | all four present on `EventPrecondition` |
-| 8 | Riverside validates with **no `E12`, no `E20`, no `E21`** | `[A]` | `validate_casepack backend/packs/riverside_grocery \| grep -E "E12\|E20\|E21"` | no matches. **Any match → STOP, 1.3 has not closed CG-1** |
+| 7 | All twelve precondition fields exist, including the two closeout fields | `[V]` | `sed -n '/class EventPrecondition/,/class EventOutcome/p' backend/app/casepack/models.py` | includes `placement` and `other_policy` as well as the ten existing fields; either absent → STOP |
+| 8 | Riverside validates clean | `[V]` | `cd backend && PYTHONPATH=. bin/validate_casepack packs/riverside_grocery` | `0 errors · 0 warnings · exit 0` |
+| 9 | W08 derives its threshold from pack duration | `[V]` | `grep -n "metadata.rounds" backend/app/casepack/validate.py` | W08 comparison uses the loaded pack's round count; no `W08_MIN_DRAWS` constant |
+| 10 | Closed precondition vocabulary and shapes are validated | `[V]` | `rg -n "PRECONDITION_TYPES|check_precondition" backend/app/casepack backend/tests` | canonical 11-type set, per-type field checks, positive and negative tests |
+| 11 | The five Riverside metric functions are an explicit engine contract | `[V]` | `rg -n "capacity_utilisation|rollout_without_support|missing_identity_access|availability_shortfall|data_coverage_gap" backend/app/engine backend/tests` | each implemented and tested; unknown metric raises |
 
-> **Rows 2, 3, 5, 6, 7, 8 are new or corrected in v1.1**, and every one of them would have
-> failed a builder dispatched against v1.0.
->
-> - **Row 2** demanded `≥20` events. Riverside has **three**. A guaranteed FAIL.
-> - **Row 3** grepped `ORD-CAP-01`; the pack authors `ord_cap_01`. A guaranteed FAIL on case.
-> - **Row 5 (old row 4)** grepped `class ActionType|ACTION_TYPES` — the same near-miss that
->   cost 1.2 a spurious pre-flight FAIL. It is now pinned to the real name and line.
-> - **Old row 5** expected `no E20 error` on Riverside. Riverside emits **six**, plus two
->   `E12`. The row is now row 8 and says plainly what it means: **1.5 cannot start until 1.3
->   has closed CG-1.** That is a real gate, not a formality — an engine built against a pack
->   whose signals cannot fire is an engine whose central mechanism is never exercised.
+Rows 7–10 are hard prerequisite gates. Row 11 is intentionally a builder-owned gate: the
+five metric functions are the first engine deliverable, and the remaining deck/event steps
+must not proceed until their focused tests pass.
 
 ---
 
@@ -411,10 +402,10 @@ Two paths from one seed is the demonstration — the same event card, opposite o
 
 | Item | Status | Evidence |
 |---|---|---|
-| Pre-flight rows 1–8 | | |
+| Pre-flight rows 1–11 | | |
 | Steps 1–5 verified | | |
 | I1–I8 | | |
-| O1–O5 recorded | | |
+| O1–O5 implemented exactly as frozen | | |
 | Ledger carries both timestamps 1.4 needs | | |
 | `cheapest_fix_when_raised` populated | | |
 | **Both `metric_kind` paths write an identical ledger shape** | | |
@@ -424,66 +415,35 @@ Two paths from one seed is the demonstration — the same event card, opposite o
 
 ---
 
-## 10. What this packet hands to others
+## 10. Readiness gate and closed handoffs
 
-**None of these are 1.5's to build.** Each is named here because 1.5's decisions created it,
-and a decision whose consequences land in another packet is not settled until that packet
-knows. *(`SPEC_PROTOCOL §4.2` — a claim about blast radius is verified, not asserted.)*
+Historical 1.1, 1.2 and 1.3 handoffs are closed on the v1.2 baseline: `metric_kind` is
+live, presence reachability is validated, Riverside has 8 rules and 13 events,
+`obligation_rules` has six validated rows, policy options are ordinal and live, and the
+pack validates at 0 errors / 0 warnings.
 
-### To 1.1 — three schema additions, all gating this packet
+One prerequisite packet remains, specified exhaustively in `readiness-spec.md`:
 
-| # | Addition | Driven by |
+| Owner | Required before 1.5 implementation | Gate |
 |---|---|---|
-| 1 | **`WatchRule.metric_kind`**: `Literal["threshold","presence"]`, required. Plus the constraint decision 7 asked for: a `threshold` rule must carry at least one of `warn_above` / `critical_above`; a `presence` rule must carry **neither** | §3 decision 8 |
-| 2 | **`obligation_rules`** as a schema section, in the §5.4 shape | §3 decision 7, `CG-5` |
-| 3 | **`EventPrecondition` gains `node`, `entity`, `policy`, `round`** (and an integer count for `placement_count`), so the six unexpressible precondition types of §5.2 become real | §5.2 |
-| 3a | **Still outstanding after 1.1 rework-2** *(added 2026-08-17)*: `placement_count` needs a **`placement` key as well as `count`** — only `count` was added, and `extra="forbid"` rejects the other half, so the type remains unexpressible (`1.1-r2-002`). `policy_contradiction` needs a **second policy key** — §5.2 says two, §10 item 3 specified one, one was added (`1.1 rework-2 R3`). **Three of six types are still not expressible**, so §8 build step 3 would hit a wall | `1.1-r2-002` |
-| 4 | `WatchRule.key` is `str`, not `SnakeKey`, where every sibling key is constrained. Cosmetic, but it is the one key in the schema that could be authored in any case | observed 2026-08-15 |
-| 5 | **`PolicyOption` gains `options: list[SnakeKey]` and `default: SnakeKey`** — the states a switch can be in, and the one a team holds by not deciding. **Highest priority of the five.** Without it `permissive_value` has no referent, the validator cannot check it, 4.3 cannot render the switch, and the engine cannot tell whether a team has moved off the permissive default — which is the whole mechanism of the ethics layer. See the box in §5.4 | `1.3-012` |
+| 1.1 schema | Add `EventPrecondition.placement` and `.other_policy` | pre-flight row 7 |
+| 1.2 validator | Closed 11-type vocabulary with exact per-type field validation | pre-flight row 10 |
+| 1.2 validator | Derive W08 from `pack.metadata.rounds`; preserve empty-affinity semantics and W03 | pre-flight row 9 |
 
-### To 1.2 — the validator, after 1.1 lands
-
-| # | Change | Why |
-|---|---|---|
-| 1 | **`E12` must exempt `metric_kind: presence`** | A presence rule legitimately carries no thresholds. As built, `E12` fires on exactly the rules decision 8 makes legal |
-| 2 | **`E20`'s predicate becomes** *"no watch rule that can raise a signal"* — a `threshold` rule with a threshold, **or** any `presence` rule | Otherwise a correctly-authored presence rule still reads as mute |
-| 3 | **`W08` — the per-strategy draw check** of §5.2a, at `N = 6` (O4) | `CG-2` is invisible to `W05`'s deck-depth proxy |
-| 4 | A `presence` rule carrying a threshold, or a `threshold` rule carrying none, is an ERROR — the schema constraint of item 1 above, mirrored in the validator | Defence in depth. **Note the split made in 1.1's rework-2:** the model rejects only the presence-plus-threshold shape, because rejecting a thresholdless threshold-rule at load makes Riverside unloadable and collapses twenty findings into one `E00`. The other half stays `E12`'s |
-| 5 | **`Lens.owned` must union `pack.platform.services`**, as `filled_roles` already does | *(added 2026-08-17, from 1.1 rework-2 `R2`)* `validate.py:437-443` builds `owned` from `pack.catalog` alone, so `PlatformService.owns_entities` is **inert** — `E02` and `E23` cannot see it. Until this lands, no pack can satisfy an entity requirement through a platform service, and `E02 ×1` on Riverside is uncloseable by authoring. This blocks 1.3's `I6` |
-
-| 6 | **`_raisable` (`validate.py:727-736`) must consult `metric_kind`** | *(added 2026-08-17, from `1.1-r2-006`)* It decides whether a severity is reachable purely from thresholds, so it is the third place that must learn about presence rules — and it was missing from this list, which made the note below false as originally written |
-
-> **Consequence for Riverside — corrected 2026-08-17.** The original note here said `E12 ×2`,
-> `E20 6→5` and `E21 ×2` resolve *"once 1.1 ships `metric_kind` and 1.3 declares the kind"*,
-> and named 1.1 as the only gate. **That was wrong, and the rework audit proved it by
-> experiment:** a scratch Riverside with `presence` declared on both rules validates
-> **byte-identically** to the untouched pack. Verified independently — `validate.py` **never
-> reads `metric_kind`**; `E12`, `E20` and `_raisable` all decide from thresholds alone.
->
-> The correct sequence is **three packets, not two**:
->
-> ```
-> 1.1 rework-2   the field exists                 ✅ built
-> 1.2 rework     E12 exempts · E20 widens · _raisable consults it   ← REQUIRED, not built
-> 1.3            declares the kind on every rule
-> ```
->
-> Until the middle step lands, declaring `presence` is **inert** — it changes no validator
-> output at all. Three of the 1.2 audit's findings still close on this ruling, but they close
-> at **1.2's rework**, not at 1.1's.
-
-### To 1.3 — the harvest
-
-| Item | Note |
-|---|---|
-| `CG-1` closure now also means **declaring `metric_kind` on every rule** | A rule with neither a threshold nor a presence declaration is illegal under both packets |
-| `CG-2` closure is measured by `W08` at `N = 6`, **per strategy** | Riverside is at 3 / 2 / 1 / 1. Depth alone will not close it |
-| `CG-5` — author `obligation_rules.yaml` once 1.1 has the section | The Ch 4 ethics layer is inert until this exists |
-| The deck must give **every** strategy a reason to draw | `differentiation` and `focus_strategy` have one card each |
+This prerequisite is deliberately separate from the engine build and requires its own
+independent audit. After it merges, all 1.5 pre-flight rows must pass before engine code is
+written.
 
 ---
 
 ## 11. Changelog
+
+**v1.2 — 2026-08-21.** Reconciled against merged 1.1–1.4 and the Phase-1 open
+register. No 1.5 build cycle was open. O1–O5 are frozen; W08 is pack-duration-relative;
+empty affinity, signal recurrence, the five metric functions, and the last two
+precondition field names are settled. Historical gates are replaced by executable
+pre-flight rows 7–11 and the bounded `readiness-spec.md`. I1–I8 retain their numbers and
+meanings; no invariant was dropped.
 
 **v1.1 — 2026-08-15.** Revised by the author against merged 1.1, the 1.2 audit, and three
 user rulings. No build cycle is open and no builder has been dispatched, so `R1` does not

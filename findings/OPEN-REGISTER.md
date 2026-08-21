@@ -39,7 +39,7 @@ anything. Each names the packet that closes it.
 | B6 | `1.3-012` follow-through | **1.3 content, then 1.2** | `PolicyOption.options` now exists (1.1 rework-3). Riverside must declare them; then the validator checks `permissive_value` against them |
 | B7 | `E00` mis-mapping | **1.2 next** | A semantic failure reports *"Unreadable pack — restore or repair"* for a file that parsed fine. `GOVERNANCE §4.10` |
 | B8 | `harvested_raw_fit` proximity | **1.2 next** | It ships inside `strategies.yaml`, one field from the weights it must never become, with nothing behind `CONTRACTS`' "do not mix the two" |
-| B9 | `1.1-r2-002` · `1.1-r2-007` | **1.1 next** | `placement_count` needs `placement` as well as `count`; `policy_contradiction` needs a second policy key. **Three of six precondition types remain unexpressible, and 1.5's pre-flight passes anyway** |
+| B9 | `1.1-r2-002` · `1.1-r2-007` | **1.5 readiness closeout** | Field names are now frozen as `placement` and `other_policy`; implementation and per-type validator coverage are specified in `handoffs/1.5-event-signal-engine/readiness-spec.md`. Still blocks the 1.5 engine until built and audited |
 | B10 | `1.3-001` / CG-6 | **1.1 next** | Both `capital_remaining` fields are schema-required, so the second home cannot be eliminated by authoring |
 | B11 | `1.3-004` | **1.3 follow-up** | `erp_suite.config_tiers` claims a derivation no grouping reproduces |
 | B12 | `1.3-005` | **1.3 follow-up / 1.6** | 54 of 75 placements carry `lead_time_rounds: 0`, so CG-3's *abandoned mid-flight* is undefined for 72% of the ladder |
@@ -58,10 +58,10 @@ anything. Each names the packet that closes it.
 
 | # | Question | Consequence of not deciding |
 |---|---|---|
-| C1 | `1.5` **O4** — should `W08`'s `N` track `pack.rounds` rather than being flat at 6? The audit recommends yes and showed it costs nothing on Riverside | A 4-round pack is held to a 6-card bar. Affects every future casepack, not Riverside |
-| C2 | `1.2-035` · `1.1-r2-012` — **`W08` and `W03` pull in opposite directions.** The empty-affinity card that `1.5 §5.2a` sanctions as giving every strategy a draw is the same card `W03` warns about | An authoring trap with no right answer. It is a **design** conflict between two of my own specs, not a bug |
-| C3 | `1.3-015` — `firm_infrastructure`'s only watch rule is presence-shaped, making it a one-shot signal | May be correct by design or may be a content gap. I do not know which |
-| C4 | `1.3-016` — every card fires from one `signal_open` precondition, and five metric functions must exist for the deck to work at all | Names a hard dependency 1.5 inherits. Needs confirming as intended |
+| C1 | `1.5` **O4** — W08 threshold | ✅ **CLOSED — 1.5 spec v1.2.** Use `pack.metadata.rounds`; Riverside remains six, while shorter/longer packs use their authored duration |
+| C2 | `1.2-035` · `1.1-r2-012` — empty affinity and W03 | ✅ **CLOSED — 1.5 spec v1.2.** Empty means explicitly global and counts for every strategy; W03 remains a review warning. Riverside uses no empty affinities |
+| C3 | `1.3-015` — `firm_infrastructure` one presence rule | ✅ **CLOSED — accepted Riverside content.** The general engine permits a later recurrence as a new ledger episode; it does not overwrite history |
+| C4 | `1.3-016` — five metric functions | ✅ **CLOSED — 1.5 spec v1.2.** All five named Riverside metrics are mandatory engine functions; unknown metric keys raise rather than silently evaluating false |
 
 ## D. Reported to the user late or not at all — the honest part
 
