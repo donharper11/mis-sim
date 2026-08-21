@@ -1,0 +1,91 @@
+You are the FRESH AUDITOR for the consolidated catch-up rework.
+
+REPO:           /home/ubuntu/projects/mis-sim
+EXACT CANDIDATE: 8cb507fe9232e5913928b144f871a54466c93c5b   on build/catch-up-rework
+BASE:           main @ 3ae0b6dd703eae6ced4c918a55de54c106d5c69a
+
+You did not build this branch and you did not author its scope. The scope file and the
+builder's dispatch prompt were BOTH written by the previous auditor, who is therefore in the
+author role for this packet and cannot audit it. Do not inherit or accept any prior
+conclusion. Audit the candidate independently.
+
+Read in full before anything else:
+  GOVERNANCE.md · QUALITY_PROTOCOL.md · SPEC_PROTOCOL.md · CONTRACTS.md
+  handoffs/rework/catch-up-2026-08-21.md        (the scope)
+  handoffs/_prompts/catch-up-rework-builder.txt (what was dispatched)
+  handoffs/rework/dod-catch-up.md               (the builder's report)
+  findings/OPEN-REGISTER.md                     (sections B, I and J)
+  findings/1.5-readiness-2026-08-21-audit.md    (where B7 and the B13 re-rating originate)
+
+FIRST VERIFY: local and remote both resolve to the candidate SHA · the merge base is the
+intended base · you are in an isolated worktree · no uncommitted or unrelated files are in
+the diff · origin/main has not moved.
+
+AUDIT THE COMPLETE DIFF, not the builder's report. 57 files changed. Independently verify:
+
+  B13  catalog.yaml pos_system_2011.people_affected is 62, and 62 is CORRECT -- not merely
+       consistent. people_affected is the denominator of the Org training sub-factor
+       (engine/organisation.py:63). Confirm the 1.4 Org pin (0.507003) is unmoved AND
+       confirm WHY: the builder claims the scorer reads runtime DeploymentState, not the
+       catalog. Test that claim, do not accept it. Check nothing else consumed 140.
+       The builder queried mis_lite and reports NO headcount column exists in any of 79
+       tables. Re-query it. If unreachable, say so -- do not accept the pasted output as
+       proof of external state (SPEC_PROTOCOL 2.1).
+
+  B7   placement: hybrid must now return a targeted code naming events.yaml and the field,
+       not a bare E00. The fix ships as an "E29_vocab" VARIANT, explicitly so that I1 stays
+       set-equal. SCRUTINISE THAT. Is the variant mechanism legitimate, or does it dodge the
+       versioned code-list contract by shipping a new diagnostic under an existing code? I1
+       passing is not the question; whether I1 still MEANS anything is.
+       Check the `severity` field collapse is covered too, and probe other Literal/enum
+       fields for the same E00 collapse the fix did not reach.
+
+  B5   Label placeholders went 0 -> 9 and seven of eight codes now resolve subjects through
+       lens.label(...). E07's `misc` catch-all was NARROWED. A narrowed catch-all can let
+       previously-caught errors escape -- prove it does not. The eighth code, E21, is carried
+       as DEVIATION R1: verify the stated reason (labels.events maps body_key to in-world
+       prose, so there is no event NAME to route) is true, not a convenience.
+
+  B11  The builder claims finding 1.3-004 is WRONG and the derivation reproduces on the
+       source's module_level column (1.0000 / 1.5705 / 2.5801). Re-derive it yourself. A
+       builder overturning a prior audit finding is exactly the claim that needs independent
+       proof. Confirm no numeric value changed.
+
+  B17  34 extracted / 34 disposed. Verify the denominator: are there really only 34 tables
+       in the 1.3 spec section 5.1 transform map?
+
+  B10  ReviewState.capital_remaining removed and 44 in-repo packs migrated in one commit.
+       This is the largest blast radius in the packet. Verify: grep count is 1; no value
+       changed in any migrated pack; no loader, seed, scorer or fixture path silently reads
+       the removed field; every migrated pack still validates.
+
+  OUT OF SCOPE -- confirm they were NOT built: B14, B15, B16.
+
+ALSO VERIFY:
+  - backend/app/engine/ and backend/seeds/ are byte-identical to the base.
+  - No casepack-identity branching introduced.
+  - Riverside 0 errors / 0 warnings, text and JSON.
+  - 43/43 fixture matrix (or a justified higher count) · I1 set equality · I5 text/JSON
+    parity in BOTH modes · full pytest · every tests/check_*.py.
+  - ruff on changed files · git diff --check clean over the whole branch.
+  - The branch merges cleanly into current main.
+  - REGISTER RECONCILIATION IS HONEST. Section B now shows 14 closed and 0 open. Re-run
+    every closing check yourself. A row marked CLOSED whose check you cannot reproduce is a
+    Blocking finding -- unverified reconciliation is the exact failure this packet exists to
+    fix (commit dad0989 fixed five items and updated no rows).
+  - Sections I and J: J2 and J3 are new items the builder raised. Confirm each has an owner.
+
+Treat every builder-reported figure as a claim to reproduce. Add adversarial probes wherever
+the shipped tests could pass despite an incorrect implementation -- mutate the implementation
+and confirm a shipped check fails.
+
+Record findings with stable IDs in: findings/catch-up-rework-2026-08-21-audit.md
+Severity per QUALITY_PROTOCOL section 4: Blocking > Functional > UX > Data > Report.
+
+ONE FINAL VERDICT: PASS (mergeable) · PASS WITH FINDINGS (state explicitly whether mergeable)
+· FAIL (not mergeable). If PASS, approve only the exact candidate SHA. If the branch moves
+during the audit, STOP and report that the reviewed candidate is no longer the tip.
+
+Do not fix code or documentation. DO NOT MERGE -- the dispatcher merges on a PASS verdict.
+Commit your findings to build/catch-up-rework, push, and verify the remote SHA matches your
+local tip with git ls-remote, not the push exit code.
