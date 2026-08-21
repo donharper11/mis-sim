@@ -219,13 +219,17 @@ Every capability, every round, emits a structure naming **which factor throttled
 
 ```python
 { "capability": "order_fulfilment",
-  "realised": 0.249,
-  "terms": {"tech": 0.750, "org": 0.507, "mgmt": 0.648},
+  "realised": 0.249744,
+  "terms": {"tech": 0.750008, "org": 0.507003, "mgmt": 0.656778},
   "throttle": "org",
-  "sub_factors": {"org": {"training": 0.35, "process_fit": 0.50, ...}},
+  "sub_factors": {"org": {"training": 0.35, "process_fit": 0.50, ...},
+                  "mgmt": {..., "policy_alignment": 0.4676, "policy_discipline": 1.0}},
   "evidence": {"training": {"trained": 49, "affected": 140}},
   "spofs": ["wan_link", "hq_firewall", "core_switch", "order_app"] }
 ```
+
+*(Figures are the 2026-08-21 closeout pins; `mgmt` includes the two new sub-factors. The
+pre-closeout illustration read `mgmt 0.648` / `realised 0.249` — audit finding `1.4C-R03`.)*
 
 This is what the debrief renders and what makes the score defensible. A number without its
 decomposition is not a deliverable.

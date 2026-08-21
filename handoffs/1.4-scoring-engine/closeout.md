@@ -25,7 +25,7 @@
 
 | File | Change |
 |---|---|
-| `backend/tests/test_policy_dimension.py` | NEW — 24 focused tests (formula C2–C4, aggregation/null/discipline, C5/C6/C11/C12, six negative cases) |
+| `backend/tests/test_policy_dimension.py` | NEW — 18 focused tests (formula C2–C4, aggregation/null/discipline, C5/C6/C11/C12, six negative cases) |
 | `backend/tests/test_engine_scoring.py` | Pin test updated to the new computed Mgmt/realised (exact 1e-6); added an attentive-team assertion |
 
 **Living documents:**
@@ -124,8 +124,8 @@ list; flagged here rather than made silently.
 consumer, so the intent is outdated. It still **passes mechanically**: the phrase it forbids
 ("reads ordinal distance", etc.) is absent, and the keyword "deferred" it requires still
 holds true of the `PolicyDecisionState` **producer** (1.6/2.x) and the 1.2 validator check.
-I did **not** modify this merged guard (out of §5.5 scope). **Recommend** the auditor or a
-fast follow-up re-point this one check to assert "consumer live, producer deferred."
+At build time I did not modify this merged guard (out of §5.5 scope) and flagged it. The
+independent audit recorded it as **finding 1.4C-R01**; it has since been re-pointed — see §8.
 
 **D3 — "unknown stakeholder archetype" raise (decision 9) not enforced.** Decision 9 lists
 it as a `ValueError`, but decision 3 and the §5.3 table make an archetype with no policy row
@@ -176,3 +176,23 @@ per-capability scalar, which deliberately excludes policy switches (now scored s
 Branch `build/1.4-closeout`, tip recorded at commit time. Independent audit required before
 merge; the verification script for the auditor is `closeout-spec.md` §10. A builder does not
 declare audit approval.
+
+---
+
+## 8. Post-audit finding dispositions (2026-08-21)
+
+Independent audit `findings/1.4-closeout-2026-08-21-audit.md`: **PASS WITH FINDINGS,
+mergeable** — no Blocking, no Functional. All three findings (Report/Data) applied by the
+same builder as mechanical corrections; no engine logic changed, so the verified behaviour
+and all pins are unchanged (full suite re-run **32 passed**, validator 0/0, both
+ordinal-contract guards green).
+
+| Finding | Sev | Disposition |
+|---|---|---|
+| 1.4C-R01 | Report | **Fixed.** `check_policy_options.py` §6 re-pointed to assert the consumer is **LIVE** (closeout landed), producer deferred — no longer the stale "PROSPECTIVE" claim. CONTRACTS canonical block updated (`scorer does not read it yet` → reads it, live; PROSPECTIVE tag dropped from that heading). |
+| 1.4C-R02 | Report | **Fixed.** Test count corrected 24 → **18** in `closeout.md §1` and `dod.md`. |
+| 1.4C-R03 | Data | **Fixed.** `spec.md §5.6` illustrative decomposition updated to the closeout pins (`mgmt 0.656778`, `realised 0.249744`) with the two new sub-factors shown and a note. |
+
+A builder does not declare audit approval. These corrections are cosmetic (docs + one guard
+assertion re-point); the merge decision, and whether the re-point warrants a confirming
+re-audit, rest with the coordinator/user.

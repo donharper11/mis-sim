@@ -274,7 +274,7 @@ narrative in `handoffs/1.4-scoring-engine/closeout.md`.
 | Item | Status | Evidence |
 |---|---|---|
 | Pre-flight rows 1–10 | PASS | All 10 reported before code; base `34238f4`; validator 0/0; deferred hook had no call site; no prior policy state; 9 seed tests green |
-| Step 1 — state contract + resolver + null/negative + C2–C7 | PASS | `PolicyDecisionState` + `TeamState.policy_decisions`; `_resolve_policy_decisions`, `_asymmetric_alignment`; `tests/test_policy_dimension.py` (24 tests) |
+| Step 1 — state contract + resolver + null/negative + C2–C7 | PASS | `PolicyDecisionState` + `TeamState.policy_decisions`; `_resolve_policy_decisions`, `_asymmetric_alignment`; `tests/test_policy_dimension.py` (18 tests) |
 | Step 2 — two Management factors + evidence (C1/C8/C11/C12) | PASS | `FirmManagement.policy_alignment/policy_discipline`; folded into geomean; per-capability evidence gains exactly two keys; C8 hand-verified (six inputs byte-identical) |
 | Step 3 — six seed decisions + computed pins | PASS | attentive seed, all six `actively_decided=True` at authored defaults; `policy_discipline=1.0`, `policy_alignment=0.4676` computed |
 | Step 4 — documents + full regression | PASS | spec/dod/design-02/register/CONTRACTS updated; full pytest 32 passed; validator text+JSON clean; fixture matrix; raw-fit guard |

@@ -73,7 +73,7 @@ daily store totals — not individual baskets."*
 
 ---
 
-## `PolicyOption.options` / `PolicyOption.default` — PROSPECTIVE
+## `PolicyOption.options` / `PolicyOption.default`
 
 **Canonical (`options`):** an **ordered, ordinal** list of snake_case state keys — a policy
 switch's value vocabulary.
@@ -81,10 +81,10 @@ e.g. `data_retention: [indefinite, standard_period, minimal]`
 
 **Order is meaningful.** **Index 0 is the least constrained / most permissive** state; each
 higher index is **progressively more restrictive**. The ordinal *distance* between two
-indexes is a real quantity and may be consumed downstream — alignment scoring **will**
-measure the distance between a team's chosen index and a stakeholder's ideal index once the
-deferred policy-switch dimension is built (see Consumers). The contract is settled now; the
-scorer does not read it yet.
+indexes is a real quantity consumed downstream — the alignment scorer measures the distance
+between a team's chosen index and a stakeholder's ideal index (see Consumers). As of the
+2026-08-21 1.4 closeout the scorer reads it (live); the `PolicyDecisionState` runtime
+snapshot it reads is a separate entry below.
 
 **NOT** an unordered set, and **NOT** strict-first. Listing the permissive value anywhere
 but index 0 contradicts this contract. `staff_monitoring` runs the **same** direction as

@@ -231,19 +231,25 @@ check(
     f"surviving meaningless phrase(s): {docs_forbidden}" if docs_forbidden else "ordinal affirmed, no meaningless phrase",
 )
 
-# The contract must NOT overstate 1.4: it may not claim the scorer READS policy distance
-# today (finding `1.1-PR-001`). The deferred hook raises rather than read.
-present_tense_overclaim = (
-    "reads ordinal\ndistance" in CONTRACTS_SRC.lower()
-    or "reads ordinal distance" in CONTRACTS_SRC.lower()
-    or "alignment scoring reads that distance" in MODELS_SRC.lower()
-    or "alignment scoring measures the\ndistance" in CONTRACTS_SRC.lower()
+# The 1.4 policy-distance CONSUMER landed in the 2026-08-21 closeout (audit finding
+# `1.4C-R01` re-pointed this check). The contract must now describe it as live and must NOT
+# carry the stale pre-closeout denial (finding `1.1-PR-001` was the inverse: overclaiming
+# while deferred). The PolicyDecisionState PRODUCER (1.6/2.x) remains deferred.
+stale_consumer_denial = (
+    "does not read it yet" in CONTRACTS_SRC.lower()
+    or "today it raises notimplementederror" in MODELS_SRC.lower()
+    or "reads no policy value" in MODELS_SRC.lower()
+)
+consumer_named_live = (
+    "policy_switch_alignment" in CONTRACTS_SRC.lower()
+    and "live" in CONTRACTS_SRC.lower()
 )
 check(
-    "model/contract describe the 1.4 policy-distance consumer as PROSPECTIVE, not current",
-    not present_tense_overclaim
-    and ("notimplementederror" in CONTRACTS_SRC.lower() or "deferred" in CONTRACTS_SRC.lower()),
-    "no present-tense 'reads distance' overclaim; deferral stated",
+    "model/contract describe the 1.4 policy-distance consumer as LIVE (closeout landed), producer deferred",
+    consumer_named_live
+    and not stale_consumer_denial
+    and ("deferred" in CONTRACTS_SRC.lower()),  # PolicyDecisionState producer 1.6/2.x
+    "consumer named live; no stale 'does not read yet'; producer deferral stated",
 )
 
 # --- summary ----------------------------------------------------------------------------
