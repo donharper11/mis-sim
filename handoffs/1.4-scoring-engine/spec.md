@@ -3,6 +3,12 @@
 **Authored under** `SPEC_PROTOCOL.md` v1.1 · **Author:** Claude · **Date:** 2026-07-26
 **Phase:** 1 · **Depends on:** 1.1, 1.3 · **Blocks:** 1.5, 1.6, 1.7, all of Phase 3
 
+> **Living update — 2026-08-21 (1.4 closeout).** The deliberately paused
+> information-policy path is now built, per `handoffs/1.4-scoring-engine/closeout-spec.md`.
+> Management gained two firm-wide sub-factors (`policy_alignment`, `policy_discipline`);
+> the seed's Mgmt/realised pins were recomputed (§5.7 changelog). Tech and Org are
+> unchanged. See §5.3, §5.7 and the Changelog at the foot of this file.
+
 > `Realised Value = Technology × Organisation × Management`, per capability.
 > Multiplication, not addition. Every term computed from a click or a timestamp —
 > **nothing here is LLM-judged** (`GOVERNANCE.md §4.7`).
@@ -124,8 +130,12 @@ not a fourth term.
 
 ```
 mgmt(c) = geomean(governance, strategic_alignment, portfolio_discipline,
-                  signal_responsiveness, follow_through, stakeholder_alignment)
+                  signal_responsiveness, follow_through, stakeholder_alignment,
+                  policy_alignment, policy_discipline)
 ```
+
+*(The last two sub-factors were added by the 2026-08-21 closeout; the six before them
+are unchanged. Frozen formulas and the runtime state contract are in §5.3a.)*
 
 | Sub-factor | Computation |
 |---|---|
@@ -134,9 +144,53 @@ mgmt(c) = geomean(governance, strategic_alignment, portfolio_discipline,
 | `portfolio_discipline` | geomean(concentration vs `expected_concentration`, RGT mix vs target, maintenance ratio vs floor) |
 | `signal_responsiveness` | signals acted on before firing ÷ **actionable** signals (1.5 supplies the ledger; affordability filter per `findings/0.2` lineage) |
 | `follow_through` | 1 − (abandoned + deployed-but-never-trained) ÷ initiated |
-| `stakeholder_alignment` | per §5.5 |
+| `stakeholder_alignment` | per §5.5 (capability-rollout dimension only; unchanged by the closeout) |
+| `policy_alignment` | firm-wide; team's policy-switch choices vs stakeholder ideals as an asymmetric ordinal distance over `PolicyOption.options` — §5.3a |
+| `policy_discipline` | firm-wide; `0.25 + 0.75 · (actively-decided switches ÷ switches with options)` — §5.3a |
 
 **Nothing in the catalog raises any of these.** Invariant I4.
+
+### 5.3a Information-policy sub-factors *(added 2026-08-21, closeout)*
+
+Both are **firm-wide**, computed once, applied identically to every capability. Full
+authority is `closeout-spec.md` §3 (decisions 2–7) and §5; the frozen shape:
+
+**Runtime state** — a new immutable input on `TeamState`:
+
+```python
+@dataclass(frozen=True)
+class PolicyDecisionState:
+    policy: str          # a PolicyOption.key
+    selected: str        # one of that policy's ordinal options
+    actively_decided: bool
+policy_decisions: tuple[PolicyDecisionState, ...] = ()
+```
+
+A pack policy absent from `policy_decisions` resolves to its authored `default` with
+`actively_decided=False` (the null path). Duplicate decisions, unknown **policy** keys,
+out-of-options selections, missing defaults, ideals outside a policy's options, or a
+non-empty `preferences["policies"].overrides` list raise `ValueError` — never a guess
+(decision 9 / CR-002). An archetype with **no** policy-preference row is **excluded**, not
+raised (CR-001): the scorer does not classify absence, and validator E08 owns archetype
+vocabulary upstream. Policy-domain overrides are **not** consumed and are unsupported until
+their shape/precedence are defined (register: *policy-preference overrides*).
+
+**`policy_alignment`** — for each actual stakeholder, resolve its archetype's
+`by_decision` policy preferences; score each with the asymmetric ordinal formula on
+option indexes (`span = n-1`):
+
+```
+t == i → 1.0 ; t < i (too permissive) → 1 − (i−t)/span ; t > i (stricter) → 1 − 0.5·(t−i)/span
+```
+
+so overshooting an ideal costs half what ignoring it does. Aggregate as a weighted
+arithmetic mean, `effective_weight = archetype.weight × by_decision[policy].weight`;
+archetypes with no policy row and policies no stakeholder cares about are absent, not
+neutral. Zero total weight → `1.0` with `preferences: 0`.
+
+**`policy_discipline`** — `1.0` if no policy declares options, else
+`POLICY_DISCIPLINE_FLOOR + (1 − FLOOR)·|decided|/|eligible|`, `FLOOR = 0.25`. Retaining
+the default *actively* counts as decided; never opening the screen does not.
 
 ### 5.4 Realised value and roll-up
 
@@ -170,13 +224,17 @@ Every capability, every round, emits a structure naming **which factor throttled
 
 ```python
 { "capability": "order_fulfilment",
-  "realised": 0.249,
-  "terms": {"tech": 0.750, "org": 0.507, "mgmt": 0.648},
+  "realised": 0.249744,
+  "terms": {"tech": 0.750008, "org": 0.507003, "mgmt": 0.656778},
   "throttle": "org",
-  "sub_factors": {"org": {"training": 0.35, "process_fit": 0.50, ...}},
+  "sub_factors": {"org": {"training": 0.35, "process_fit": 0.50, ...},
+                  "mgmt": {..., "policy_alignment": 0.4676, "policy_discipline": 1.0}},
   "evidence": {"training": {"trained": 49, "affected": 140}},
   "spofs": ["wan_link", "hq_firewall", "core_switch", "order_app"] }
 ```
+
+*(Figures are the 2026-08-21 closeout pins; `mgmt` includes the two new sub-factors. The
+pre-closeout illustration read `mgmt 0.648` / `realised 0.249` — audit finding `1.4C-R03`.)*
 
 This is what the debrief renders and what makes the score defensible. A number without its
 decomposition is not a deliverable.
@@ -187,12 +245,20 @@ decomposition is not a deliverable.
 
 ```
 seed        backend/seeds/riverside_r3.py — the architecture that PRODUCES Tech 0.75
-              nodes, edges, deployments, org state, platform pools, governance
+              nodes, edges, deployments, org state, platform pools, governance,
+              and (closeout) six actively-decided information-policy switches
 command     python -m app.seed.demo --scenario riverside_r3
 demonstrate python -m app.engine.score riverside_r3
-              → Tech 0.750 · Org 0.507 · Mgmt 0.648 · realised 0.249
+              → Tech 0.750008 · Org 0.507003 · Mgmt 0.656778 · realised 0.249744
               → throttle: org
 ```
+
+> **Pin history.** Before the 2026-08-21 closeout the seed produced Mgmt **0.648006**,
+> realised **0.246408** — those are historical baselines, correct for a Management term
+> that was then missing two real inputs. Adding `policy_alignment` (0.4676, computed) and
+> `policy_discipline` (1.0, the attentive seed) recomputed Mgmt to **0.656778** and
+> realised to **0.249744**. Tech and Org are byte-identical (invariant C1). These figures
+> were **computed and then recorded**, never tuned to a target (decision 11).
 
 **Computed from the seed, not asserted alongside it.** If the seeded architecture does not
 produce those figures, either the seed or the engine is wrong — **STOP and report**. That
@@ -257,5 +323,21 @@ already-approved mockups either agree or expose a contradiction.
 | O1, O2, O3 recorded | | |
 | Every factor in `design/02` §A–D implemented or deferred with a reason | | |
 | Decomposition record emitted for every capability | | |
-| **Seed** — `riverside_r3` seeded; scorer COMPUTES 0.750/0.507/0.648/0.249 from it | | |
+| **Seed** — `riverside_r3` seeded; scorer COMPUTES 0.750008/0.507003/0.656778/0.249744 from it *(closeout pins; pre-closeout 0.750/0.507/0.648/0.249)* | | |
 | Browser / auth / instance canaries | | **N-A** — pure functions, headless |
+
+---
+
+## Changelog
+
+- **2026-08-21 — 1.4 closeout** (`closeout-spec.md`; branch `build/1.4-closeout`;
+  DoD `dod.md` §closeout). Built the deferred information-policy path:
+  `PolicyDecisionState` + `TeamState.policy_decisions`; firm-wide `policy_alignment`
+  (asymmetric ordinal distance over `PolicyOption.options`) and `policy_discipline`;
+  both folded into the Management geomean (§5.3, §5.3a). Seed gained six actively-decided
+  switches; Mgmt/realised pins recomputed to 0.656778 / 0.249744 (Tech/Org unchanged).
+  Closed register **F4** and **E2**; **G2** (data currency/freshness) marked an explicit
+  deferral to 3.4 + 1.6 in `design/02`. Corrected the `strategic_alignment` parenthetical
+  in `design/02` from "dot product" to "cosine similarity" (finding `1.4-001`/G1).
+- **2026-08-21 — finding `1.4-001`.** `strategic_alignment` wording corrected here from
+  "dot product" to "cosine similarity" (artifact was right; spec wording was wrong).

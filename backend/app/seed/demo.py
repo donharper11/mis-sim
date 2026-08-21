@@ -54,6 +54,8 @@ def _describe(name: str, pack: Casepack, state: TeamState) -> str:
         f"· decisions {len(state.decisions)}",
         f"staff pool {state.staff.staff_fte} fte carrying {state.staff.load_fte} load",
         f"stakeholder alignments {len(state.stakeholder_alignments)}",
+        f"policy decisions {len(state.policy_decisions)} "
+        f"({sum(1 for p in state.policy_decisions if p.actively_decided)} actively decided)",
     ]
     return "\n".join(lines)
 

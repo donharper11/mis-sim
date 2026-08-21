@@ -1,12 +1,21 @@
 """Management Quality -- computed from the pattern of decisions (spec 5.3).
 
 mgmt(c) = geomean(governance, strategic_alignment, portfolio_discipline,
-                  signal_responsiveness, follow_through, stakeholder_alignment)
+                  signal_responsiveness, follow_through, stakeholder_alignment,
+                  policy_alignment, policy_discipline)
 
 Nothing in the catalog raises any of these (invariant I4). Tech is bought, Org is
 funded, this term is earned. O3 hybrid default: governance and stakeholder
 alignment are per capability; strategic alignment, portfolio discipline, signal
-responsiveness and follow-through are firm-wide and apply identically to each.
+responsiveness, follow-through, and (added by the 1.4 closeout) policy alignment
+and policy discipline are firm-wide and apply identically to each.
+
+The 1.4 closeout added the last two sub-factors, closing the deliberately paused
+information-policy path (register F4/E2): `policy_alignment` scores the team's
+information-policy switch choices against stakeholder ideals as an asymmetric
+ordinal distance over `PolicyOption.options` (design/07 3.5b), and
+`policy_discipline` charges a team for leaving switches undecided. The existing six
+inputs and their formulas are unchanged.
 """
 
 from __future__ import annotations
@@ -19,15 +28,27 @@ from app.casepack.models import Casepack, Strategy
 from app.engine.mathx import clamp, geomean
 from app.engine.state import TeamState
 
+#: Information-policy discipline floor (1.4 closeout decision 7). A team that never
+#: opens the policy screen still scores this rather than zeroing the whole Management
+#: term and hiding every other lesson. Hard-coded v1 calibration constant; 1.7's
+#: harness owns revisiting it.
+POLICY_DISCIPLINE_FLOOR = 0.25
+
 
 @dataclass
 class FirmManagement:
-    """The four firm-wide sub-factors, computed once per round."""
+    """The firm-wide sub-factors, computed once per round.
+
+    `policy_alignment` and `policy_discipline` are NEW frozen fields added by the
+    1.4 closeout; the four above them are unchanged.
+    """
 
     strategic_alignment: float
     portfolio_discipline: float
     signal_responsiveness: float
     follow_through: float
+    policy_alignment: float
+    policy_discipline: float
     evidence: dict[str, Any] = field(default_factory=dict)
 
 
@@ -141,16 +162,22 @@ def firm_management(pack: Casepack, state: TeamState) -> FirmManagement:
     pd, pd_ev = _portfolio_discipline(pack, state)
     sr, sr_ev = _signal_responsiveness(state)
     ft, ft_ev = _follow_through(state)
+    pa, pa_ev = policy_switch_alignment(pack, state)
+    pdis, pdis_ev = policy_discipline(pack, state)
     return FirmManagement(
         strategic_alignment=round(sa, 6),
         portfolio_discipline=round(pd, 6),
         signal_responsiveness=round(sr, 6),
         follow_through=round(ft, 6),
+        policy_alignment=round(pa, 6),
+        policy_discipline=round(pdis, 6),
         evidence={
             "strategic_alignment": sa_ev,
             "portfolio_discipline": pd_ev,
             "signal_responsiveness": sr_ev,
             "follow_through": ft_ev,
+            "policy_alignment": pa_ev,
+            "policy_discipline": pdis_ev,
         },
     )
 
@@ -162,35 +189,215 @@ def _governance(state: TeamState, cap_key: str) -> float:
     return (int(g.owner_assigned) + int(g.sponsor_assigned)) / 2.0
 
 
-def policy_switch_alignment(*_args: Any, **_kwargs: Any) -> float:
-    """DEFERRED HOOK -- the information-policy-switch dimension of stakeholder
-    alignment (spec 5.5, the by_decision / ideal_posture path over
-    `PolicyOption.options`).
+def _resolve_policy_decisions(
+    pack: Casepack, state: TeamState
+) -> dict[str, tuple[str | None, bool]]:
+    """Resolve each pack policy to `(selected_value, actively_decided)`.
 
-    PAUSED by the coordinator mid-build (2026-08-21): whether alignment against a
-    policy's `ideal_posture` is an exact match or a distance along the options
-    ordering -- and whether `PolicyOption.options` is ordinal or unordered -- is
-    being reworked and independently re-audited. The design/07 section 3.5b
-    "options is ordinal / distance" ruling is UNSETTLED and must NOT be encoded
-    here. This hook exists so the policy path is a visible hole, never a silent
-    guess: it is not called by the scoring path, and if it is called it raises
-    rather than contribute a number.
-
-    `_stakeholder_alignment` below scores only the capability-rollout dimension of
-    section 5.5 (alignment x realised value in the capabilities a stakeholder cares
-    about); it does not read `PolicyOption.options` at all.
+    Runtime `policy_decisions` win; any pack policy absent from them resolves to its
+    authored `default` with `actively_decided=False` (closeout decision 6). Every
+    broken scoring input raises before a score is returned (decision 9): a duplicate
+    runtime decision, an unknown policy key, a selected value outside a policy's
+    declared options, or a policy that needs a default for the null path and has none.
     """
-    raise NotImplementedError(
-        "policy-switch alignment (spec 5.5 ideal_posture over PolicyOption.options) "
-        "is paused pending rework and re-audit; do not encode an interpretation here"
-    )
+    by_key = {p.key: p for p in pack.policies}
+    resolved: dict[str, tuple[str | None, bool]] = {}
+    seen: set[str] = set()
+
+    for d in state.policy_decisions:
+        if d.policy in seen:
+            raise ValueError(f"duplicate runtime policy decision for {d.policy!r}")
+        seen.add(d.policy)
+        pol = by_key.get(d.policy)
+        if pol is None:
+            raise ValueError(f"policy decision references unknown policy {d.policy!r}")
+        if pol.options and d.selected not in pol.options:
+            raise ValueError(
+                f"policy {d.policy!r} selected {d.selected!r} is not one of its "
+                f"options {list(pol.options)}"
+            )
+        resolved[d.policy] = (d.selected, bool(d.actively_decided))
+
+    for pol in pack.policies:
+        if pol.key in resolved:
+            continue
+        if pol.options and pol.default is None:
+            raise ValueError(
+                f"policy {pol.key!r} declares options but has no default for the null "
+                f"path (an untouched switch cannot resolve)"
+            )
+        resolved[pol.key] = (pol.default, False)
+
+    return resolved
+
+
+def _asymmetric_alignment(
+    team_index: int, ideal_index: int, span: int
+) -> tuple[float, str]:
+    """The frozen ordinal formula (closeout decision 2). `span = n - 1`.
+
+    `t == i` -> 1.0; `t < i` (more permissive than asked) pays the full normalized
+    distance; `t > i` (stricter than asked) pays half. Overshooting an ideal always
+    costs less than ignoring it by the same number of ordinal steps.
+    """
+    if team_index == ideal_index:
+        return 1.0, "match"
+    if span <= 0:
+        # A single-option switch cannot express a distance; a mismatch is impossible
+        # but is scored as a full miss rather than silently passing.
+        return 0.0, ("too_permissive" if team_index < ideal_index else "stricter")
+    if team_index < ideal_index:
+        return clamp(1.0 - (ideal_index - team_index) / span), "too_permissive"
+    return clamp(1.0 - 0.5 * (team_index - ideal_index) / span), "stricter"
+
+
+def policy_switch_alignment(
+    pack: Casepack, state: TeamState
+) -> tuple[float, dict[str, Any]]:
+    """Firm-wide information-policy preference alignment (spec 5.5 policy path).
+
+    For every actual stakeholder in `pack.stakeholders`, resolve its archetype's
+    policy-preference row; for every `by_decision` preference, score the team's
+    chosen option against the stakeholder's ideal with the frozen asymmetric ordinal
+    formula, and aggregate as a weighted arithmetic mean where
+    `effective_weight = archetype.weight * by_decision[policy].weight` (decision 3).
+
+    Archetype rule (closeout decision 3, CR-001): a stakeholder whose archetype has a
+    policy-preference row is scored; one with no row is EXCLUDED from numerator and
+    denominator entirely -- no neutral row, no weight -- regardless of why the row is
+    absent. The scorer does NOT classify absence as "known" vs "unknown": the casepack
+    MODEL exposes no archetype registry, and it does not need one, because validator E08
+    (`check_archetypes`, canonical set `checks.py ARCHETYPES`, fixture `broken_E08`)
+    rejects any stakeholder whose archetype is off-vocabulary before a pack can be scored
+    (validator gate, GOVERNANCE section 5). So the scorer never raises on an archetype.
+
+    Overrides (CR-002): policy-domain `overrides` are unsupported until their shape and
+    precedence are defined -- a non-empty list raises rather than being parsed, guessed,
+    partially applied, or silently ignored.
+
+    Total weight zero -> alignment 1.0 with `preferences: 0`. A preference naming an
+    unknown policy or an ideal outside that policy's options raises (decision 9).
+    """
+    resolved = _resolve_policy_decisions(pack, state)
+    by_key = {p.key: p for p in pack.policies}
+    pref_domain = pack.preferences.get("policies")
+
+    # CR-002: policy overrides have no defined domain schema/precedence yet. Fail loudly
+    # on a non-empty list rather than scoring as if it were absent (the silent path
+    # decision 4 prohibited). Named future owner: OPEN-REGISTER "policy-preference overrides".
+    if pref_domain is not None and pref_domain.overrides:
+        raise ValueError(
+            "preferences['policies'].overrides is non-empty, but the policy-domain "
+            "override shape and precedence contract are not yet defined (1.4 closeout "
+            "CR-002). The scorer refuses to parse, guess, partially apply, or silently "
+            "ignore policy overrides -- define the typed shape, targeting, and precedence "
+            "first (OPEN-REGISTER: policy-preference overrides)."
+        )
+
+    numerator = 0.0
+    total_weight = 0.0
+    rows: list[dict[str, Any]] = []
+
+    if pref_domain is not None:
+        for sh in pack.stakeholders:
+            arow = pref_domain.defaults_by_archetype.get(sh.archetype)
+            if not arow:
+                # Excluded: no policy view for this archetype (decision 3 / CR-001). Never
+                # a neutral row, never a raise -- E08 guarantees the archetype is canonical.
+                continue
+            arch_weight = float(arow.get("weight", 0.0))
+            by_decision = arow.get("by_decision", {}) or {}
+            for policy_key, pref in by_decision.items():
+                pol = by_key.get(policy_key)
+                if pol is None:
+                    raise ValueError(
+                        f"stakeholder {sh.key!r} preference names unknown policy "
+                        f"{policy_key!r}"
+                    )
+                options = list(pol.options)
+                ideal = pref["ideal_posture"]
+                if ideal not in options:
+                    raise ValueError(
+                        f"stakeholder {sh.key!r} ideal_posture {ideal!r} for policy "
+                        f"{policy_key!r} is not one of its options {options}"
+                    )
+                selected, _active = resolved[policy_key]
+                if selected not in options:
+                    raise ValueError(
+                        f"team selection {selected!r} for policy {policy_key!r} is not "
+                        f"one of its options {options}"
+                    )
+                team_index = options.index(selected)
+                ideal_index = options.index(ideal)
+                alignment, direction = _asymmetric_alignment(
+                    team_index, ideal_index, len(options) - 1
+                )
+                weight = arch_weight * float(pref.get("weight", 0.0))
+                numerator += alignment * weight
+                total_weight += weight
+                rows.append({
+                    "stakeholder": sh.key,
+                    "archetype": sh.archetype,
+                    "policy": policy_key,
+                    "selected": selected,
+                    "ideal": ideal,
+                    "team_index": team_index,
+                    "ideal_index": ideal_index,
+                    "direction": direction,
+                    "alignment": round(alignment, 6),
+                    "weight": round(weight, 6),
+                })
+
+    if total_weight == 0.0:
+        return 1.0, {"preferences": 0, "total_weight": 0.0, "alignment": 1.0, "rows": []}
+
+    value = numerator / total_weight
+    return round(value, 6), {
+        "preferences": len(rows),
+        "total_weight": round(total_weight, 6),
+        "alignment": round(value, 6),
+        "rows": rows,
+    }
+
+
+def policy_discipline(
+    pack: Casepack, state: TeamState
+) -> tuple[float, dict[str, Any]]:
+    """Firm-wide active information-policy discipline (closeout decision 7).
+
+    Eligible policies `P` = pack policies with non-empty options; decided `D` = those
+    actively decided in runtime state. `discipline = FLOOR + (1 - FLOOR) * |D|/|P|`,
+    or 1.0 when there are no eligible policies. The floor keeps ignoring the screen
+    costly without zeroing the whole Management term.
+    """
+    resolved = _resolve_policy_decisions(pack, state)
+    eligible = [p.key for p in pack.policies if p.options]
+    if not eligible:
+        return 1.0, {
+            "eligible": 0, "actively_decided": 0,
+            "floor": POLICY_DISCIPLINE_FLOOR, "ratio": 1.0, "undecided": [],
+        }
+    decided = [k for k in eligible if resolved[k][1]]
+    undecided = [k for k in eligible if not resolved[k][1]]
+    ratio = len(decided) / len(eligible)
+    value = POLICY_DISCIPLINE_FLOOR + (1.0 - POLICY_DISCIPLINE_FLOOR) * ratio
+    return round(value, 6), {
+        "eligible": len(eligible),
+        "actively_decided": len(decided),
+        "floor": POLICY_DISCIPLINE_FLOOR,
+        "ratio": round(ratio, 6),
+        "undecided": undecided,
+    }
 
 
 def _stakeholder_alignment(state: TeamState, cap_key: str) -> tuple[float, dict[str, Any]]:
-    # Capability-rollout dimension only. The information-policy-switch dimension is
-    # the deferred `policy_switch_alignment` hook above and is deliberately NOT
-    # folded in -- the consumed `StakeholderDecisionAlignment.alignment` scalar is a
-    # rollout-alignment input, not a policy-options computation.
+    # Capability-rollout dimension only, and UNCHANGED by the 1.4 closeout (decision
+    # 1, invariant C8): the consumed `StakeholderDecisionAlignment.alignment` scalar
+    # is a rollout-alignment input, not a policy-options computation. The
+    # information-policy-switch dimension is now scored separately and firm-wide by
+    # `policy_switch_alignment`; the `policy_switch_dimension: deferred` marker below
+    # stays byte-identical and still reads true of THIS per-capability scalar, which
+    # deliberately excludes policy switches.
     caring = [sa for sa in state.stakeholder_alignments if cap_key in sa.cares_about]
     if not caring:
         return 1.0, {"stakeholders": [], "policy_switch_dimension": "deferred"}
@@ -214,7 +421,17 @@ def management(
         "signal_responsiveness": firm.signal_responsiveness,
         "follow_through": firm.follow_through,
         "stakeholder_alignment": round(stakeholder, 6),
+        "policy_alignment": firm.policy_alignment,
+        "policy_discipline": firm.policy_discipline,
     }
     value = geomean(list(sub_factors.values()))
-    evidence: dict[str, Any] = {"stakeholder_alignment": stake_ev}
+    # Firm-wide policy factors are computed once (firm_management) and applied
+    # identically to every capability; their evidence rides along unchanged per
+    # capability. Existing per-capability `stakeholder_alignment` evidence is
+    # byte-identical (invariant C8); the two policy keys are the only additions.
+    evidence: dict[str, Any] = {
+        "stakeholder_alignment": stake_ev,
+        "policy_alignment": firm.evidence.get("policy_alignment", {}),
+        "policy_discipline": firm.evidence.get("policy_discipline", {}),
+    }
     return MgmtResult(value=round(value, 6), sub_factors=sub_factors, evidence=evidence)

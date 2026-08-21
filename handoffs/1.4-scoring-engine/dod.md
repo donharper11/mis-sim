@@ -261,3 +261,63 @@ No changes to any 1.1/1.3 file; no new runtime dependency; `CONTRACTS.md` unchan
   the architecture to the target, which is exactly what spec §5.7 asks ("the
   architecture that PRODUCES Tech 0.75"). 1.7's calibration harness is where these move.
 ```
+
+---
+
+# Closeout — information-policy dimension (2026-08-21)
+
+Appended, not rewritten. The audit evidence above is the original 1.4 core; this section
+records the follow-up built under `closeout-spec.md` on branch `build/1.4-closeout` (cut
+from `main` at `34238f4`; the original `build/1.4-scoring` is stale, behind `main`). Full
+narrative in `handoffs/1.4-scoring-engine/closeout.md`.
+
+| Item | Status | Evidence |
+|---|---|---|
+| Pre-flight rows 1–10 | PASS | All 10 reported before code; base `34238f4`; validator 0/0; deferred hook had no call site; no prior policy state; 9 seed tests green |
+| Step 1 — state contract + resolver + null/negative + C2–C7 | PASS | `PolicyDecisionState` + `TeamState.policy_decisions`; `_resolve_policy_decisions`, `_asymmetric_alignment`; `tests/test_policy_dimension.py` (18 tests) |
+| Step 2 — two Management factors + evidence (C1/C8/C11/C12) | PASS | `FirmManagement.policy_alignment/policy_discipline`; folded into geomean; per-capability evidence gains exactly two keys; C8 hand-verified (six inputs byte-identical) |
+| Step 3 — six seed decisions + computed pins | PASS | attentive seed, all six `actively_decided=True` at authored defaults; `policy_discipline=1.0`, `policy_alignment=0.4676` computed |
+| Step 4 — documents + full regression | PASS | spec/dod/design-02/register/CONTRACTS updated; full pytest 32 passed; validator text+JSON clean; fixture matrix; raw-fit guard |
+| C1 — Tech/Org unchanged | PASS | Tech `0.750008`, Org `0.507003` to 1e-6 (`test_engine_scoring.py`) |
+| C2 — permissive penalised more than strict | PASS | `test_c2_equal_distance_penalizes_permissive_more`, n=2..6 |
+| C3 — exact match = 1 | PASS | `test_c3_exact_match_is_one` |
+| C4 — alignment in [0,1] | PASS | `test_c4_alignment_in_unit_interval`, n=2..10 exhaustive |
+| C5 — order consumed, not string equality | PASS | `test_c5_reversing_option_order_changes_the_score` |
+| C6 — active default counts as managed | PASS | `test_c6_active_default_counts_as_managed` |
+| C7 — no silent invalid input | PASS | negative tests all raise `ValueError` (five §5.3 cases + CR-002 non-empty policy overrides) |
+| C8 — existing six Mgmt inputs unchanged | PASS | seed mgmt sub-factors: the six pre-existing values byte-identical; only two keys added |
+| C9 — no casepack identity branch | PASS | `git ls-files backend/app/engine | xargs grep -niE "riverside|grocer|pack_key *=="` → zero |
+| C10 / I2 — engine pure | PASS | no `open(`/`Path(`/`read_text`/clock/random in `backend/app/engine/` (one docstring mentions "yaml") |
+| C11 — scores come from pack + state | PASS | `test_c11_*` mutate one selection and one preference ideal independently |
+| C12 — ignoring policy not neutral | PASS | `test_empty_runtime_tuple_*`: discipline 0.25, Mgmt lower |
+| C13 — raw-fit guard green | PASS | `tests/test_raw_fit_isolation.py` 2 passed |
+| New Mgmt/realised pins recorded | PASS | Mgmt `0.656778`, realised `0.249744`, firm_score `0.254585` (spec §5.7) |
+| Decomposition carries both policy factors | PASS | all 7 capabilities: `sub_factors.mgmt.{policy_alignment,policy_discipline}` + Mgmt evidence |
+| Register F4, E2 closed; G2 deferred | PASS | `findings/OPEN-REGISTER.md` |
+| main + unrelated worktrees/files untouched | PASS | see closeout.md §confirmations |
+| Nothing pushed/merged/deployed/migrated | PASS | branch committed locally only; auditor gate pending |
+| Ladder rungs 3(auth/instance)/4/5 | N-A | pure headless scorer; no DB/session/UI |
+| Independent audit | PENDING | required before merge; builder does not declare approval |
+
+**Computed pins:** Tech `0.750008` · Org `0.507003` · Mgmt `0.656778` · realised `0.249744`
+· throttle `org` · firm_score `0.254585`. Not tuned (decision 11).
+
+---
+
+## Closeout re-audit corrections — CR-001, CR-002 (2026-08-21)
+
+Appended, not rewritten. Re-audit `findings/1.4-closeout-2026-08-21-codex-reaudit.md`:
+arithmetic/pins/behaviour sound; blocked only on two input-contract cases resolved without
+decision authority. Spec owner froze both; applied on this branch. No formula, aggregation,
+seed, or pin changed — all frozen values re-verified identical.
+
+| Finding | Sev | Disposition |
+|---|---|---|
+| 1.4-CR-001 | Contract | **Resolved.** Archetype absence is **exclusion, never a raise** — one rule now in code, tests, closeout-spec (decisions 3/4/9), CONTRACTS, closeout §9. The decision-9 unknown-archetype raise was removed. Archetype-vocabulary owner verified to already exist: validator **E08** (`check_archetypes` / `ARCHETYPES`, fixture `broken_E08`). New test `test_absent_archetype_row_is_excluded_without_weight`. |
+| 1.4-CR-002 | Contract | **Resolved.** Policy-domain `overrides` unsupported; `policy_switch_alignment` **raises** on a non-empty `preferences["policies"].overrides` before scoring (no parse/guess/partial/silent-ignore). Named future owner: OPEN-REGISTER *policy-preference overrides*. Tests `test_negative_nonempty_policy_overrides_raise`, `test_empty_policy_overrides_preserve_the_verified_score`. |
+
+**Re-verification:** full pytest **35 passed** (policy-dimension 18→21); validator text 0/0 +
+JSON `[]`; fixture matrix 42/42; policy-option checks 13/13; harvest read-back 43/43; raw-fit
+2/2; seed demo + scorer; `git diff --check` clean. Frozen values unchanged: Tech 0.750008,
+Org 0.507003, Mgmt 0.656778, realised 0.249744, policy_alignment 0.4676, policy_discipline 1.0;
+six existing Management sub-factors byte-identical.

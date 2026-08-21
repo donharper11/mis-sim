@@ -30,7 +30,7 @@ All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-r
 | Single points of failure | *(none — computed)* | `round_result.spof_list` | — (graph-derived, zero authoring) | 🔵 |
 | Data adequacy — integration | Purchase wizard › integrations to build; canvas edges | `arch_edge`, `integration_line` | catalog `must_be_fed_by`, `must_feed` | ✅ |
 | Data adequacy — inconsistency | *(none — detected)* | computed from `entity_ownership` | — | 🔵 |
-| Data currency / freshness | Platform › data platform setting | `platform_service.settings` | catalog option costs | ✅ |
+| Data currency / freshness | **deferred** — capture/storage → 3.4 Platform; round-to-round production → 1.6; scoring consumption → a future 1.4 follow-up once both exist | *(no producer yet; `platform_service.settings` is not implemented — 1.4 closeout §Verified facts)* | catalog option costs | ⚠️ **deferred — see register G2 / 1.4 closeout decision 12.** Not folded into `Component currency (EOL)`, which is a distinct EOL factor. |
 | Component currency (EOL) | Standing decision › Lifecycle (patch/upgrade/retire) | `deployment.installed_round`, `.retired_round` | catalog `service_life` | ✅ |
 
 ---
@@ -55,7 +55,7 @@ All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-r
 | Factor | Captured by (UI) | Persisted in | Authored in casepack | Status |
 |---|---|---|---|---|
 | Governance coverage | Governance › owner + sponsor dropdowns per capability | `capability_assignment` | `capability[]` list only | ✅ |
-| Strategic alignment | *(none — dot product)* | `decision_line.capability_id` × `strategy_weight` | `strategy.capability_weights[]` | 🔵 |
+| Strategic alignment | *(none — cosine similarity)* | `decision_line.capability_id` × `strategy_weight` | `strategy.capability_weights[]` | 🔵 |
 | Portfolio concentration | *(none — Herfindahl over spend)* | `decision_line` | `strategy.expected_concentration` | 🔵 |
 | Run/Grow/Transform mix | *(none — from catalog tags)* | `decision_line` + catalog `rgt_tag` | `strategy.target_rgt_mix` | 🔵 |
 | Maintenance floor | *(none — ratio)* | `decision_line` category | casepack `maintenance_floor_pct` | 🔵 |
@@ -64,6 +64,8 @@ All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-r
 | Deployed-but-never-trained | *(none — cross-check)* | `deployment` × `deployment_org_state` | — | 🔵 |
 | Decision rationale consistency | Challenges › Fund/Defer/Reject + rationale tag | `inbox_response.rationale_tag` | `event.option[].tags` | ✅ |
 | Rationale quality (±10% modifier) | Challenges › free-text box | `inbox_response.note` | rubric prompt | ⚠️ **see G2** |
+| Policy alignment | Security/Policy › the six information-policy switches | `policy_decision.selected` (runtime; producer 1.6/2.x) | `policies[].options` (ordinal) + `preferences/policies.yaml` archetype ideals | ✅ *(scored 2026-08-21, 1.4 closeout §5.3a)* |
+| Policy discipline (active decisions) | Security/Policy › committing each switch | `policy_decision.actively_decided` (runtime; producer 1.6/2.x) | `policies[]` with options; floor `0.25` | ✅ *(scored 2026-08-21, 1.4 closeout decision 7)* |
 
 ---
 

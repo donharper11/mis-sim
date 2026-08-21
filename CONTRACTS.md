@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-08-21 (`PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
+**Last updated:** 2026-08-21 (1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -73,7 +73,7 @@ daily store totals — not individual baskets."*
 
 ---
 
-## `PolicyOption.options` / `PolicyOption.default` — PROSPECTIVE
+## `PolicyOption.options` / `PolicyOption.default`
 
 **Canonical (`options`):** an **ordered, ordinal** list of snake_case state keys — a policy
 switch's value vocabulary.
@@ -81,10 +81,10 @@ e.g. `data_retention: [indefinite, standard_period, minimal]`
 
 **Order is meaningful.** **Index 0 is the least constrained / most permissive** state; each
 higher index is **progressively more restrictive**. The ordinal *distance* between two
-indexes is a real quantity and may be consumed downstream — alignment scoring **will**
-measure the distance between a team's chosen index and a stakeholder's ideal index once the
-deferred policy-switch dimension is built (see Consumers). The contract is settled now; the
-scorer does not read it yet.
+indexes is a real quantity consumed downstream — the alignment scorer measures the distance
+between a team's chosen index and a stakeholder's ideal index (see Consumers). As of the
+2026-08-21 1.4 closeout the scorer reads it (live); the `PolicyDecisionState` runtime
+snapshot it reads is a separate entry below.
 
 **NOT** an unordered set, and **NOT** strict-first. Listing the permissive value anywhere
 but index 0 contradicts this contract. `staff_monitoring` runs the **same** direction as
@@ -126,15 +126,64 @@ and a team must actively choose the exposure. Both are valid, deliberate authori
 (`backend/packs/riverside_grocery/policies.yaml` authors all six switches permissive-first).
 
 **Consumers:** the loader (order-preserving, live today); the alignment scorer (**1.4**,
-*will* read ordinal distance — the policy-switch dimension is currently **deferred**:
-`backend/app/engine/management.py` `policy_switch_alignment` raises `NotImplementedError`
-and reads no policy value); the validator's `permissive_value`-in-`options` check (**1.2**,
-pending); the Security screen (**4.3**, will render switch positions in order).
+**live** as of the 2026-08-21 closeout — `backend/app/engine/management.py`
+`policy_switch_alignment` consumes the ordinal distance between a team's chosen index and a
+stakeholder's ideal index via the asymmetric formula in the 1.4 closeout §5.3a; see
+`PolicyDecisionState` below for the runtime snapshot it reads); the validator's
+`permissive_value`-in-`options` check (**1.2**, pending); the Security screen (**4.3**, will
+render switch positions in order).
 
 **Why it matters:** without an order a stakeholder's ideal can only be matched exactly, so a
 team stricter than asked would score identically to one that ignored the ask — not a
 defensible model of preference (`design/07 §3.5b`, ruled 2026-08-18). Its only sibling
 per-pack vocabulary, `entity.level_of_detail`, is ordinal for the same reason.
+
+---
+
+## `TeamState.policy_decisions[]` (`PolicyDecisionState`)
+
+Added by the **1.4 closeout** (2026-08-21). The immutable snapshot of the team's
+information-policy switch selections that the scorer reads.
+
+**Canonical:** a tuple of `PolicyDecisionState(policy, selected, actively_decided)`.
+`policy` is a `PolicyOption.key`; `selected` is one of that policy's ordinal `options`
+(a machine key, never prose); `actively_decided` is whether the team committed a choice
+this round — including deliberately **retaining** the authored `default`, which is a
+managed decision and is distinct from never opening the screen.
+
+**Null path:** a pack policy absent from the tuple resolves to its `default` with
+`actively_decided=False`. A policy with options but no default cannot resolve and raises.
+
+**NOT** a place to encode strictness — strictness is `options` ordinality. **NOT** neutral
+when empty: an untouched switch floors `policy_discipline` at `0.25` (closeout decision 7).
+
+**Producer:** a runtime table owned by **1.6 / 2.x** — **deferred, not yet built**; when it
+lands it carries `instance_id` like every runtime table. Until then the seed builder
+(`backend/seeds/riverside_r3.py`) constructs the snapshot in pure Python.
+
+**Consumer:** the **1.4** scorer — `management.policy_switch_alignment` and
+`management.policy_discipline` (live as of the closeout). The scorer receives the snapshot;
+it performs no I/O (invariant I2).
+
+**Invalid / raises (`ValueError`, closeout decision 9):** a duplicate runtime decision for
+one policy; an unknown `policy`; a `selected` outside the policy's `options`; a missing
+default needed by the null path; a preference `ideal_posture` outside a policy's options;
+and a **non-empty `preferences["policies"].overrides`** list (see below).
+
+**Archetype presence (CR-001):** a stakeholder whose archetype has a policy-preference row
+is scored; one with no row is **excluded** from the alignment denominator — no neutral row,
+no weight — and this is **not** an error. The scorer does not classify absence as "known" vs
+"unknown"; stakeholder-archetype vocabulary is validated upstream by **E08**
+(`check_archetypes` against `checks.py ARCHETYPES`), so an off-vocabulary archetype cannot
+reach a validated pack.
+
+**Policy overrides (CR-002) — NOT consumed, unsupported.** `PreferenceDefaults.overrides`
+exists on the `policies` domain but has no defined shape or precedence contract. The scorer
+**raises** on a non-empty list rather than parsing, guessing, partially applying, or silently
+ignoring it. Empty (`[]`) is the only supported state. Defining the typed override shape,
+targeting, precedence, duplicate/conflict handling, validator coverage and scorer
+consumption is a named future owner — `findings/OPEN-REGISTER.md` item *policy-preference
+overrides*.
 
 ---
 
