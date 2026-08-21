@@ -11,6 +11,11 @@ the failure exactly: *unapplied deltas are letters nobody opened.*
 **Rule from here: no finding is "carried" without a row in this file naming its owner.** A
 finding with no owner is either fixed now or explicitly closed with a reason.
 
+**Last swept: 2026-08-21.** Every section-B row was re-tested against the working tree by the
+1.5 readiness audit (section I), after the 1.2 validator rework was found to have fixed five of
+them without updating a single row. Seven were already fixed; nine are genuinely open; none
+blocks 1.5. **A row that has never been re-tested is not a status — it is a claim.**
+
 ---
 
 ## A. Fix now — no packet required
@@ -34,34 +39,34 @@ anything. Each names the packet that closes it.
 | B1 | `1.2-030` `1.2-031` — closed | *(done)* | Fixed in the 1.2 rework-2 copy follow-up |
 | B2 | `1.1-r2-001` — closed | *(done)* | Fixed by 1.2 rework-2 item 3.6 |
 | B3 | `1.1-r2-006` — closed | *(done)* | Fixed by 1.2 rework-2 item 3.3 |
-| B4 | `1.2-037` · `1.1-r2-005` | **1.2 next** | `obligation_rules` is entirely unvalidated; 1.3's `I11` has no executable check. A validator change |
-| B5 | `1.1-r2-003` · `1.1-r2-004` · `1.2-024` | **1.2 next** | The four `Labels` sections are consulted by no message, and they silently widened `E07`'s `misc` catch-all |
-| B6 | `1.3-012` follow-through | **1.3 content, then 1.2** | `PolicyOption.options` now exists (1.1 rework-3). Riverside must declare them; then the validator checks `permissive_value` against them |
-| B7 | `E00` mis-mapping | **1.2 next** | A semantic failure reports *"Unreadable pack — restore or repair"* for a file that parsed fine. `GOVERNANCE §4.10` |
-| B8 | `harvested_raw_fit` proximity | **1.2 next** | It ships inside `strategies.yaml`, one field from the weights it must never become, with nothing behind `CONTRACTS`' "do not mix the two" |
-| B9 | `1.1-r2-002` · `1.1-r2-007` | **1.1 next** | `placement_count` needs `placement` as well as `count`; `policy_contradiction` needs a second policy key. **Three of six precondition types remain unexpressible, and 1.5's pre-flight passes anyway** |
-| B10 | `1.3-001` / CG-6 | **1.1 next** | Both `capital_remaining` fields are schema-required, so the second home cannot be eliminated by authoring |
-| B11 | `1.3-004` | **1.3 follow-up** | `erp_suite.config_tiers` claims a derivation no grouping reproduces |
-| B12 | `1.3-005` | **1.3 follow-up / 1.6** | 54 of 75 placements carry `lead_time_rounds: 0`, so CG-3's *abandoned mid-flight* is undefined for 72% of the ladder |
-| B13 | `1.3-008` | **0.4 or 1.3** | `pos_system_2011.people_affected` is 140; `components.html` pins 62 |
-| B14 | 16 mockups at `$44,000` | **0.4 rework** | Derivation says `46000`; `review.html` contradicts itself inside one file. Recommended, never authorised |
-| B15 | `1.3-011` / row 5 | **any future harvest** | 630 mapping rows are placeholder-seeded; four tables have one distinct tuple repeated |
-| B16 | 27 `TODO: calibrate` | **1.7** | Permitted under `§4.9`. `1.3-014` names the five watch-rule thresholds the gate actually turns on |
-| B17 | `1.3-009` | **1.3 follow-up** | Six extracted tables named in §5.1's transform map have no `PROVENANCE.md` disposition. Content judgement, belongs to whoever authors the pack |
-| B18 | **`1.1-r3-002`** | **1.2 next** | **One bad value hides every other error.** A `default` outside its own `options` collapses the entire report to a single `E00 "Unreadable pack"` — proved on `broken_E05`, where a real `E05` and two `W08`s vanished. An author with one typo loses all their other diagnostics. Upgrades `B7`, which had only the wording |
-| B19 | `1.1-r3-003` | **1.2 next** | `options: ["Indefinite", "NOT snake!", "9lives"]` validates clean. `SnakeKey` is a bare alias and `I3` cannot reach these fields, so machine keys students never see are unconstrained |
-| B20 | `1.1-r3-006` | **1.2 or docs** | `options: [on, off]` is parsed by YAML as booleans and rejected as "restore or repair policies.yaml". A pack author writing the most natural two-state switch gets a misleading error |
-| B21 | `1.1-r3-005` | **`CONTRACTS.md`** | `PolicyOption.options` has no CONTRACTS entry, and its only sibling per-pack vocabulary (`entity.level_of_detail`) declares itself **ordinal** — the opposite rule. 1.5 and 4.3 both need to know which |
-| B22 | `1.1-r3-007` | **1.2 next** | Duplicate and empty-string members of `options` are accepted |
+| B4 | `1.2-037` · `1.1-r2-005` | *(done)* | ✅ **CLOSED — verified 2026-08-21** by the 1.5 readiness audit sweep. `obligation_rules` is validated: `E24`–`E28` are all in `catalogue()`. Fixed by the 1.2 validator rework (`dad0989`), which did not update this row |
+| B5 | `1.1-r2-003` · `1.1-r2-004` · `1.2-024` | **1.2 next** | ⚠️ **STILL OPEN — re-verified 2026-08-21:** zero label-section placeholders appear in `validate_messages.yaml`. Origin `1.2-2026-08-14` (7 days). **Closing check:** grep the catalogue for the four section placeholders; expect non-zero |
+| B6 | `1.3-012` follow-through | *(done)* | ✅ **CLOSED — verified 2026-08-21.** Riverside declares `options` on all six switches and `E26` checks `permissive_value` against them |
+| B7 | `E00` mis-mapping | **1.2 next** | ⚠️ **STILL OPEN — re-verified 2026-08-21.** Narrowed by the 1.2 rework (`E15`/`E17` now catch the policy cases that used to collapse), but the class survives: `placement: hybrid` on an event precondition still returns a bare `E00 "This pack could not be read"`. Origin `1.2-rework-2026-08-15`. **Closing check:** author an out-of-vocabulary `placement`; expect a targeted code, not `E00` |
+| B8 | `harvested_raw_fit` proximity | *(mitigated)* | 🟡 **MITIGATED — verified 2026-08-21.** The field still ships in `strategies.yaml`, but `backend/tests/test_raw_fit_isolation.py` now guards the mixing `CONTRACTS` prohibits. Relocation remains optional, not a defect |
+| B9 | `1.1-r2-002` · `1.1-r2-007` | *(done, pending merge)* | ✅ **BUILT AND AUDITED 2026-08-21.** `placement` and `other_policy`, the closed eleven-type vocabulary and exact per-type `E29` validation are on `build/1.5-readiness` at `1f060b4`. Independent audit `findings/1.5-readiness-2026-08-21-audit.md` — **PASS WITH FINDINGS, mergeable**. Closes on merge |
+| B10 | `1.3-001` / CG-6 | **1.1 next / 1.6** | ⚠️ **STILL OPEN — re-verified 2026-08-21**, `models.py:58` and `models.py:99`. Origin `1.3-2026-08-18` (3 days). Bites 1.6, not 1.5. **Closing check:** `grep -c "capital_remaining" backend/app/casepack/models.py` → 1 |
+| B11 | `1.3-004` | **1.3 follow-up** | ⚠️ **STILL OPEN — 2026-08-21:** `config_tiers` present at `catalog.yaml:55,77,99`; the derivation claim is a content judgement and was **not** re-derived by this sweep. Origin `1.3-2026-08-18` (3 days) |
+| B12 | `1.3-005` | **1.7 calibration** | 🟡 **MOSTLY FIXED — verified 2026-08-21.** Now **10 of 42**, not 54 of 75. Residual is calibration content, not a missing path |
+| B13 | `1.3-008` | **1.3 content — RAISED 2026-08-21** | 🔴 **STILL OPEN, AND IT IS A SCORING INPUT.** `catalog.yaml` says `count: 140`; `components.html` says 62. `people_affected` is the **denominator of the Organisational-Readiness training sub-factor** — `organisation.py:63`, `training = trained_count / people_affected` — and Org is one of the three multiplicative factors. An earlier line in this row called it mockup-only; that was wrong and is corrected here. If 62 is the true headcount, every training score for that component is out by 2.26x. **Closing check:** one authored value, cited to its harvest source, with `components.html` agreeing |
+| B14 | 16 mockups at `$44,000` | **0.4 rework / superseded by Phase 3** | ⚠️ **STILL OPEN — re-verified 2026-08-21:** 16 mockup files carry `44,000`, 2 carry `46,000`. Origin `0.3-2026-07-27` — **the only open item older than 25 days.** Static mockups Phase 3 rebuilds; no engine or scoring path reads them |
+| B15 | `1.3-011` / row 5 | **any future harvest** | 🔵 **OPEN BY DESIGN — 2026-08-21.** Deliberate: there is no second harvest scheduled, and nothing downstream consumes the placeholder rows. Origin `1.3-2026-08-18` |
+| B16 | 27 `TODO: calibrate` | **1.7** | 🔵 **OPEN BY DESIGN — re-verified 2026-08-21: now 38**, not 27. Permitted under `§4.9`; thresholds cannot be calibrated before 1.7 has an engine to calibrate against. Not a defect and not backtracking |
+| B17 | `1.3-009` | **1.3 follow-up** | ⚠️ **STILL OPEN — 2026-08-21.** Six tables still lack a `PROVENANCE.md` disposition. Content judgement, not a code path. Origin `1.3-2026-08-18` (3 days) |
+| B18 | **`1.1-r3-002`** | *(done)* | ✅ **CLOSED — verified 2026-08-21.** A `default` outside its own `options` now raises a targeted `E17`, not an `E00` collapse. Fixed by the 1.2 validator rework (`dad0989`), which did not update this row |
+| B19 | `1.1-r3-003` | *(done)* | ✅ **CLOSED — verified 2026-08-21.** That exact input now raises `E15` + `E26` |
+| B20 | `1.1-r3-006` | *(done)* | ✅ **CLOSED — verified 2026-08-21.** `options: [on, off]` now raises `E15`, a real diagnostic, not the "restore or repair" collapse |
+| B21 | `1.1-r3-005` | *(done)* | ✅ **CLOSED — verified 2026-08-21.** `CONTRACTS.md` carries a full `PolicyOption.options` / `.default` entry declaring the ordinal, permissive-first contract |
+| B22 | `1.1-r3-007` | *(done)* | ✅ **CLOSED — verified 2026-08-21.** Duplicates raise `E16`; empty-string members raise `E15` |
 
 ## C. Needs a ruling from the user — cannot be fixed by anyone until decided
 
 | # | Question | Consequence of not deciding |
 |---|---|---|
-| C1 | `1.5` **O4** — should `W08`'s `N` track `pack.rounds` rather than being flat at 6? The audit recommends yes and showed it costs nothing on Riverside | A 4-round pack is held to a 6-card bar. Affects every future casepack, not Riverside |
-| C2 | `1.2-035` · `1.1-r2-012` — **`W08` and `W03` pull in opposite directions.** The empty-affinity card that `1.5 §5.2a` sanctions as giving every strategy a draw is the same card `W03` warns about | An authoring trap with no right answer. It is a **design** conflict between two of my own specs, not a bug |
-| C3 | `1.3-015` — `firm_infrastructure`'s only watch rule is presence-shaped, making it a one-shot signal | May be correct by design or may be a content gap. I do not know which |
-| C4 | `1.3-016` — every card fires from one `signal_open` precondition, and five metric functions must exist for the deck to work at all | Names a hard dependency 1.5 inherits. Needs confirming as intended |
+| C1 | `1.5` **O4** — W08 threshold | ✅ **CLOSED — 1.5 spec v1.2.** Use `pack.metadata.rounds`; Riverside remains six, while shorter/longer packs use their authored duration |
+| C2 | `1.2-035` · `1.1-r2-012` — empty affinity and W03 | ✅ **CLOSED — 1.5 spec v1.2.** Empty means explicitly global and counts for every strategy; W03 remains a review warning. Riverside uses no empty affinities |
+| C3 | `1.3-015` — `firm_infrastructure` one presence rule | ✅ **CLOSED — accepted Riverside content.** The general engine permits a later recurrence as a new ledger episode; it does not overwrite history |
+| C4 | `1.3-016` — five metric functions | ✅ **CLOSED — 1.5 spec v1.2.** All five named Riverside metrics are mandatory engine functions; unknown metric keys raise rather than silently evaluating false |
 
 ## D. Reported to the user late or not at all — the honest part
 
@@ -164,6 +169,67 @@ decision authority. Spec owner froze both; applied on `build/1.4-closeout`.
 | CR-001 | **Archetype absence is exclusion, not a raise.** The decision-9 unknown-archetype raise was removed; one rule now across code/tests/closeout-spec/CONTRACTS/closeout. Archetype-vocabulary validity is **already owned** by validator **E08** (`check_archetypes`, `checks.py ARCHETYPES`, fixture `broken_E08`) — no new item needed | ✅ **CLOSED** — 1.4 closeout |
 | CR-002 | **Policy-domain `overrides` unsupported; non-empty raises.** `policy_switch_alignment` raises before scoring on a non-empty `preferences["policies"].overrides`; not parsed/guessed/partial/ignored | ✅ **CLOSED** (fail-loud) — 1.4 closeout |
 | **policy-preference overrides** | **NEW future contract.** Define the typed policy-override **shape**, stakeholder/archetype **targeting**, replacement **precedence**, duplicate/conflict handling, **validator** coverage, and **scorer** consumption. Until then non-empty policy overrides raise; override support is **not implemented**. Named owner for the future work below | **future — 1.4 follow-up / a Phase-4 policy packet (unassigned to a numbered packet yet)** |
+
+---
+
+---
+
+## I. From the 1.5 readiness audit — 2026-08-21
+
+Verdict **PASS WITH FINDINGS, mergeable** (`findings/1.5-readiness-2026-08-21-audit.md`),
+candidate `1f060b4489cde1cfb86de12be5b4b55f69ed9a99`. No Blocking and no Functional findings.
+
+| # | Item | Disposition | Closing check |
+|---|---|---|---|
+| `1.5-RC-001` | `E29` renders *"it type 'staffing_over' is missing ratio"* — the only ungrammatical message in the catalogue — and its `fix` lists eleven type names but never the fields the declared type requires | **FIX NOW** | a missing-field `E29` fix line names that type's required fields, and the message parses as English |
+| `1.5-RC-002` | The placement vocabulary has a second home: `models.py:361` re-declares as a bare `Literal` the three values `Placement(StrEnum)` already defines at `models.py:20`. Behaviour identical. The `Literal` form was **frozen by `readiness-spec.md:14-15`**, so this needs a ruling, not a fix | **RULING REQUIRED** | `grep -c 'Literal\["on_prem"' backend/app/casepack/models.py` → `0` |
+| `1.5-RC-003` | `broken_E29` covers the unknown-type branch only; `E29`'s missing-required and foreign-field branches — 22 of the 33 frozen behaviours — reach the validator through no fixture | **FIX NEXT → 1.2** | matrix contains `broken_E29_missing` and `broken_E29_foreign`, both PASS |
+| `1.5-RC-004` | `pytest` collects no `check_*.py`, and there is no CI, `Makefile` or `pytest.ini`. Five of six injected mutations passed both `pytest -q` and the fixture matrix, caught only by a script someone must run by path | **WATCH → FIX** | one command runs pytest + every `check_*.py` + the matrix, non-zero if any fails |
+| `1.5-RC-005` | `git diff --check cedd61f 1f060b4` exits 2 on two Markdown hard line-breaks in `readiness-spec.md`, introduced by the author's commit `1fe81c9` | **FIX NOW** | `git diff --check` over the full mergeable range exits 0 |
+
+### Register sweep — 2026-08-21
+
+Prompted by the discovery that the 1.2 validator rework (`dad0989`, 201 files) fixed five
+section-B items and updated none of their rows. **Every section-B row was re-tested against
+the tree**, not read from this file:
+
+```
+19 rows listed open  ->  7 already FIXED   (B4 B6 B18 B19 B20 B21 B22)
+                         2 mitigated / mostly fixed (B8 B12)
+                         1 closing on merge (B9)
+                         9 genuinely open  (B5 B7 B10 B11 B13 B14 B15 B16 B17)
+```
+
+Of the nine: **`B13` touches a live scoring input** (the Org training denominator — see its row;
+an earlier draft of this sweep mis-rated it as mockup-only). Three touch validator or schema code
+(`B5` `B7` `B10`), four are content (`B11` `B14` `B15` `B17`), and one (`B16`) is a permitted
+`§4.9` deferral. **None blocks 1.5**: Riverside validates 0/0 and 1.5 pre-flight rows 7, 9 and 10
+are what `B9` just closed. `B13` and `B10` are the two with real forward cost — `B13` on any
+scored playthrough, `B10` on 1.6.
+
+**Age at sweep:** seven of the nine originate in `1.3-2026-08-18` — three days. `B5` is
+4–7 days (`1.2-2026-08-14`, `1.1-rework-2-2026-08-17`). Only `B14` is genuinely old
+(`0.3-2026-07-27`, 25 days) and it is static-mockup content Phase 3 rebuilds. The project
+merged 1.1 rework-2, 1.2 rework-2, 1.3, 1.1 rework-3, 1.4 and the 1.5 readiness gate inside
+that same window, so the open set is a working queue, not accumulated debt.
+
+### Standing-rule amendment proposed by this audit
+
+The failure this sweep found is not that findings were carried. It is that **"owned" was
+never re-tested.** An owner fired, did the work, and no step asked whether the row was still
+true. Proposed, pending the user's ruling:
+
+1. **Every finding ships its closing check** — executable, and run at filing time to show it
+   currently fails. A finding whose closing check cannot be written is a question (`SPEC_PROTOCOL §2.2`),
+   not a finding.
+2. **Four dispositions, no fifth:** `FIX NOW` · `FIX NEXT` (names a packet that exists, and the
+   closing check is copied into that packet's DoD table) · `ACCEPT` (reason stated, never
+   revisited) · `WATCH` (correct today, guard thinner than the contract — the check becomes a
+   permanent test).
+3. **Every DoD table ends with a Register Reconciliation row.** Before merge, run the closing
+   check for every register item naming this packet; update this file **in the same commit**.
+   That is the step `dad0989` skipped.
+4. **The auditor re-runs the register's closing checks**, not only the packet's own DoD.
 
 ---
 

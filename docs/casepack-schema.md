@@ -319,8 +319,9 @@ Feeds event deck, inbox, response decisions, rationale tags, and outcome trace.
 ### Preconditions
 
 An event fires when every one of its preconditions is true. Each precondition names a
-`type`, and each type reads only the fields it needs — every field below is optional, and
-you author the ones your `type` calls for.
+`type`, and each type reads only the fields it needs. Every field below is optional in the
+union model, but the validator requires the exact shape for the selected type: missing
+fields, unknown types, and fields belonging to another type are `E29` errors.
 
 | Field | Type | Read by |
 |---|---|---|
@@ -332,8 +333,26 @@ you author the ones your `type` calls for.
 | `node` | snake string | `node_is_spof` |
 | `entity` | snake string | `entity_unowned` |
 | `policy` | snake string | `policy_contradiction` |
+| `other_policy` | snake string | `policy_contradiction` — the second policy key |
+| `placement` | enum | `placement_count` — `on_prem`, `cloud`, or `saas` |
 | `round` | integer | `round_equals` — a whole round number, never a ratio |
 | `count` | integer | `placement_count` |
+
+Exact shapes:
+
+| Type | Required fields |
+|---|---|
+| `signal_open` | `signal`, `severity` |
+| `demand_exceeds_capacity` | `capability`, `ratio` |
+| `adoption_below` | `capability`, `ratio` |
+| `staffing_over` | `ratio` |
+| `debt_above` | `ratio` |
+| `node_is_spof` | `node` |
+| `entity_unowned` | `entity` |
+| `placement_count` | `placement`, `count` |
+| `policy_contradiction` | `policy`, `other_policy` |
+| `sponsor_unassigned` | `capability` |
+| `round_equals` | `round` |
 
 `round` is an integer because a round is a whole number. Do not express it as `ratio`, and
 do not press any other parameter into `ratio` either: a precondition that says

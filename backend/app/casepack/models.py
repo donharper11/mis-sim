@@ -358,6 +358,8 @@ class EventPrecondition(StrictModel):
     node: SnakeKey | None = None
     entity: SnakeKey | None = None
     policy: SnakeKey | None = None
+    placement: Literal["on_prem", "cloud", "saas"] | None = None
+    other_policy: SnakeKey | None = None
     round: int | None = Field(default=None, gt=0)
     count: int | None = Field(default=None, ge=0)
 

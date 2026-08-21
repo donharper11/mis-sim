@@ -274,6 +274,12 @@ codes:
     message: "Arms the event '{event}', which this company does not have, so ignoring the obligation would arm nothing."
     fix: "Fix: in obligation_rules.yaml, name an event that exists in events.yaml, or remove '{event}' from arms."
 
+  E29:
+    severity: ERROR
+    subject: "Event {event}, precondition {number}"
+    message: "Has an invalid condition shape: it {problem}."
+    fix: "Fix: use one known precondition type and author only every field that type requires. Known types: {known}."
+
   # ---- inherited invariants from 1.1 section 6, named as codes by spec v1.2 section 5.1
 
   I3:

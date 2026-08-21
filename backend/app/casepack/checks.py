@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 
 from app.casepack.models import Casepack
 
@@ -21,6 +21,40 @@ ACTION_TYPES = {
     "add_service_tier",
     "add_policy",
 }
+
+#: The complete event-precondition vocabulary and the exact authored fields each shape
+#: accepts. 1.5's event engine consumes this contract, so the validator and engine must
+#: import it rather than maintain parallel lists.
+PRECONDITION_FIELDS: dict[str, frozenset[str]] = {
+    "signal_open": frozenset({"signal", "severity"}),
+    "demand_exceeds_capacity": frozenset({"capability", "ratio"}),
+    "adoption_below": frozenset({"capability", "ratio"}),
+    "staffing_over": frozenset({"ratio"}),
+    "debt_above": frozenset({"ratio"}),
+    "node_is_spof": frozenset({"node"}),
+    "entity_unowned": frozenset({"entity"}),
+    "placement_count": frozenset({"placement", "count"}),
+    "policy_contradiction": frozenset({"policy", "other_policy"}),
+    "sponsor_unassigned": frozenset({"capability"}),
+    "round_equals": frozenset({"round"}),
+}
+PRECONDITION_TYPES = frozenset(PRECONDITION_FIELDS)
+
+
+def check_precondition_shape(
+    type_name: str,
+    authored_fields: set[str],
+    values: Mapping[str, object],
+) -> tuple[bool, frozenset[str], frozenset[str]]:
+    """Return (known type, missing fields, extra fields) for one authored condition."""
+    required = PRECONDITION_FIELDS.get(type_name)
+    if required is None:
+        return False, frozenset(), frozenset(authored_fields - {"type"})
+    authored = authored_fields - {"type"}
+    missing = frozenset(
+        field for field in required if field not in authored or values.get(field) is None
+    )
+    return True, missing, frozenset(authored - required)
 
 #: The 14 platform stakeholder archetypes. Schema vocabulary, not validator-local state --
 #: 1.4 and 1.5 will want it, which is why it lives here beside ACTION_TYPES rather than in
