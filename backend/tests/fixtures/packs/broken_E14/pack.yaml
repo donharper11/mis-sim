@@ -78,7 +78,6 @@ initial_state:
       - {area: challenges, changes: 1 response, capital: 0, run_rate_effect: 0}
     capital_committed: 98000
     capital_available: 150000
-    capital_remaining: 52000
     run_rate_after: 23900
     run_rate_before: 21400
     warnings:
@@ -88,7 +87,8 @@ initial_state:
     note: >-
       Authored for module 1.2 as a coherent minimum pack. Capital figures are internally
       derived rather than authored twice: review line capital sums to capital_committed
-      (30000 + 56000 + 12000 = 98000), capital_available - capital_committed equals both
-      review.capital_remaining and budget.capital_remaining (150000 - 98000 = 52000), and
+      (30000 + 56000 + 12000 = 98000), capital_available - capital_committed equals
+      budget.capital_remaining, the one authored home for that fact (150000 - 98000 = 52000),
+      and
       run_rate_before plus the run_rate_effect column equals run_rate_after
       (21400 + 2500 = 23900).

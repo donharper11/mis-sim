@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -11,9 +13,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.casepack.checks import (  # noqa: E402
     PRECONDITION_FIELDS,
     PRECONDITION_TYPES,
+    PRECONDITION_VOCABULARIES,
     check_precondition_shape,
 )
 from app.casepack.models import EventPrecondition  # noqa: E402
+from app.casepack.validate import validate_pack_dir  # noqa: E402
+
+MINIMAL = Path(__file__).resolve().parent / "fixtures/packs/minimal_valid"
 
 
 VALID = {
@@ -116,6 +122,57 @@ require(
         "other_policy": "access",
     },
     "policy and other_policy survive together",
+)
+
+
+# -- B7: an out-of-vocabulary precondition value is a targeted code, never E00 -------------
+#
+# `placement` and `severity` are Literal fields, so models.py refuses the whole pack before
+# any check can look at it. That refusal used to reach the instructor as a bare
+# E00 "This pack could not be read" naming no field, for an events.yaml that parsed
+# perfectly (GOVERNANCE 4.10). Both directions are asserted here: the targeted code IS
+# raised, and E00 is NOT.
+
+require(
+    set(PRECONDITION_VOCABULARIES) == {"placement", "severity"},
+    "closed precondition vocabularies are placement and severity",
+)
+
+
+def validate_with(replacement: str) -> list:
+    """Validate minimal_valid with its first precondition swapped for `replacement`."""
+    original = "- {type: signal_open, signal: book_cap_01, severity: critical}"
+    with tempfile.TemporaryDirectory() as tmp:
+        pack = Path(tmp) / "pack"
+        shutil.copytree(MINIMAL, pack)
+        events = pack / "events.yaml"
+        text = events.read_text(encoding="utf-8")
+        assert original in text, "minimal_valid's first precondition moved"
+        events.write_text(text.replace(original, replacement, 1), encoding="utf-8")
+        return validate_pack_dir(pack).findings
+
+
+for label, replacement, field_name, bad_value in (
+    ("placement", "- {type: placement_count, placement: hybrid, count: 2}", "placement", "hybrid"),
+    ("severity", "- {type: signal_open, signal: book_cap_01, severity: urgent}", "severity", "urgent"),
+):
+    found = validate_with(replacement)
+    codes = {item.code for item in found}
+    require("E00" not in codes, f"out-of-vocabulary {label} does not collapse to E00")
+    require(codes == {"E29"}, f"out-of-vocabulary {label} raises E29 and nothing else")
+    targeted = [item for item in found if item.code == "E29"]
+    require(
+        len(targeted) == 1
+        and targeted[0].file == "events.yaml"
+        and targeted[0].field.endswith(f".{field_name}")
+        and bad_value in targeted[0].message
+        and field_name in targeted[0].fix,
+        f"E29 names events.yaml, the {label} field, and the offending value",
+    )
+
+require(
+    {item.code for item in validate_pack_dir(MINIMAL).findings} == set(),
+    "minimal_valid still validates clean with the raw vocabulary check in place",
 )
 
 if failures:

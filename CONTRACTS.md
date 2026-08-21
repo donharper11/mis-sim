@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-08-21 (1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
+**Last updated:** 2026-08-21 (catch-up rework: `capital_remaining` entry added — one home, `budget`, with `review`'s second home eliminated as a schema change, finding `1.3-001` / CG-6; earlier 2026-08-21: 1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -184,6 +184,41 @@ ignoring it. Empty (`[]`) is the only supported state. Defining the typed overri
 targeting, precedence, duplicate/conflict handling, validator coverage and scorer
 consumption is a named future owner — `findings/OPEN-REGISTER.md` item *policy-preference
 overrides*.
+
+---
+
+## `capital_remaining`
+
+**One home, and it is `initial_state.budget.capital_remaining`.**
+
+**Canonical:** `integer`, `>= 0`, on `RoundBudgetState` (`backend/app/casepack/models.py`).
+It is the round's remaining capital, and it is the figure the capital strip at the top of
+every screen displays.
+
+**Derivation — the value is not free.** `capital_available - capital_committed`, both read
+from `initial_state.review`. The validator's `E14` enforces it with **zero tolerance**: an
+authored figure that contradicts the derivation is an error, not a rounding note.
+
+**NOT** a field on `ReviewState`. It was one until the catch-up rework of 2026-08-21, and
+that was one fact with two schema-required homes derived from the identical expression —
+`SPEC_PROTOCOL §3`, *"never introduce a second home for the same state … prefer elimination
+over reconciliation"*. A pack that still authors `review.capital_remaining` now **fails to
+load** (`StrictModel` forbids extra keys), which is the intended migration signal: delete
+the line, the value has not changed.
+
+**A review block that needs the figure computes it** from the two fields it already
+carries — `capital_available - capital_committed` — as `app/casepack/seed.py` and
+`scripts/harvest_readback.py` do.
+
+**Producers:** pack `pack.yaml` `initial_state.budget`.
+**Consumers:** `E14` (`validate.py` `_derivations`), the seed reporter
+(`app/casepack/seed.py`), the `I7` read-back (`scripts/harvest_readback.py`). No engine or
+scoring path reads it.
+
+**Standing conflict, declared not resolved:** the derived round-3 figure is `46000`;
+**16 of the 18 Phase 0 mockups display `$44,000`** and two display both. `harvest_readback.py`
+prints this as a *declared conflict* rather than reconciling it. Register item `B14`, ruled
+**ACCEPT — superseded**: Phase 3 rebuilds those mockups and no engine path reads them.
 
 ---
 
