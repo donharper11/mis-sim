@@ -1,0 +1,75 @@
+You are the RE-BUILDER for the consolidated catch-up rework.
+
+REPO:   /home/ubuntu/projects/mis-sim
+BASE:   main @ caece533a8e20ec461dc049d3365a50c1492e3ee
+BRANCH: build/catch-up-rework   (create from that exact base, work in your own worktree)
+SCOPE:  handoffs/rework/catch-up-2026-08-21.md
+
+Before writing anything, read in full:
+  GOVERNANCE.md · QUALITY_PROTOCOL.md · SPEC_PROTOCOL.md · CONTRACTS.md
+  handoffs/rework/catch-up-2026-08-21.md
+  findings/OPEN-REGISTER.md   (section B as swept 2026-08-21, and section I)
+
+This packet exists because six audit findings were recorded with an owner and never
+dispatched, and two were dispatched and survived unclosed. You are closing that gap.
+You are NOT extending scope: build exactly the six items in §1 of the scope file.
+
+BUILD — in this order, priority first:
+
+  B13  pos_system_2011.people_affected: catalog.yaml says 140, mockups/components.html
+       says 62. people_affected is the DENOMINATOR of the Org training sub-factor
+       (backend/app/engine/organisation.py:63), so this sits under a live scoring input.
+       Establish the harvested truth from mis_lite (192.168.50.38, db mis_lite, user
+       donwh). Author ONE value, cite its source in PROVENANCE.md, make components.html
+       agree. Then RE-DERIVE the 1.4 Org pin and report whether it moved.
+       *** If the database is unreachable, STOP and report the blocker. Do NOT pick a
+       number. GOVERNANCE §4.1: state the blocker, never fill the gap. ***
+
+  B7   E00 still swallows a parseable pack. Proof: an event precondition authored
+       `placement: hybrid` returns a bare E00 "This pack could not be read" with no field
+       location, for a file that parsed fine. GOVERNANCE §4.10.
+
+  B5   The four Labels sections are consulted by no message: zero label-section
+       placeholders appear in validate_messages.yaml, and they silently widened E07's
+       misc catch-all.
+
+  B11  erp_suite.config_tiers (catalog.yaml:55,77,99) claims a derivation no grouping
+       reproduces. Either show the derivation or mark the multipliers as authored
+       estimates under GOVERNANCE §4.9 rule 5.
+
+  B17  Six extracted tables named in 1.3 spec §5.1's transform map have no PROVENANCE.md
+       disposition.
+
+  B10  capital_remaining has two schema-required homes (models.py:58 and models.py:99).
+       This is a 1.1 SCHEMA change. The 1.3 follow-up attempted CG-6 and was correctly
+       blocked. If removing the second home breaks a loader, seed or scorer contract,
+       STOP and report rather than resolving it yourself.
+
+DO NOT BUILD — these are ruled ACCEPT/DEFER in §2 of the scope file. Do not touch them:
+  B14 (16 mockups at $44,000)  ·  B15 (630 placeholder mapping rows)  ·  B16 (38 TODO: calibrate)
+
+HARD CONSTRAINTS:
+  - Every item ships its CLOSING CHECK from the scope file, run and pasted.
+  - No engine or scoring LOGIC changes except where B13's re-derivation reports a moved pin.
+    A moved pin is REPORTED, not silently re-pinned.
+  - No casepack-identity branching. No new required casepack fields.
+  - Riverside must still validate 0 errors / 0 warnings, text and JSON.
+  - 43/43 fixture matrix, I1 set equality, I5 text/JSON parity, full pytest, and every
+    tests/check_*.py must pass.
+  - ruff clean on changed files; git diff --check clean over the whole branch.
+  - Stop and report on any spec/code conflict. Never resolve one on your own authority
+    (GOVERNANCE §7).
+
+DELIVERABLES:
+  1. handoffs/rework/dod-catch-up.md — the DoD table, filled with evidence per
+     SPEC_PROTOCOL §6. This is your session report.
+  2. A REGISTER RECONCILIATION row at the end of that DoD (OPEN-REGISTER.md section I,
+     amendment 3): for every register item naming this packet, run its closing check and
+     record CLOSED or STILL OPEN. Update findings/OPEN-REGISTER.md IN THE SAME COMMIT.
+     This is the step dad0989 skipped and the reason this packet exists.
+  3. Commit to build/catch-up-rework, push, and verify the remote SHA matches your local
+     tip with `git ls-remote` — not the push exit code (QUALITY_PROTOCOL §1).
+
+Do NOT merge to main. Do NOT audit your own work — an independent auditor with fresh
+context reviews this branch before it merges (GOVERNANCE §6.1, Builder ≠ Auditor).
+Report your final SHA when done.
