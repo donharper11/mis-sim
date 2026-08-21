@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""Focused readiness checks for EventPrecondition and its closed validator shapes."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from app.casepack.checks import (  # noqa: E402
+    PRECONDITION_FIELDS,
+    PRECONDITION_TYPES,
+    check_precondition_shape,
+)
+from app.casepack.models import EventPrecondition  # noqa: E402
+
+
+VALID = {
+    "signal_open": {"signal": "ord_cap_01", "severity": "critical"},
+    "demand_exceeds_capacity": {"capability": "order_fulfilment", "ratio": 1.1},
+    "adoption_below": {"capability": "order_fulfilment", "ratio": 0.5},
+    "staffing_over": {"ratio": 1.2},
+    "debt_above": {"ratio": 0.8},
+    "node_is_spof": {"node": "kelso_road_link"},
+    "entity_unowned": {"entity": "customer"},
+    "placement_count": {"placement": "cloud", "count": 2},
+    "policy_contradiction": {"policy": "data_retention", "other_policy": "data_access"},
+    "sponsor_unassigned": {"capability": "order_fulfilment"},
+    "round_equals": {"round": 4},
+}
+
+failures: list[str] = []
+
+
+def require(ok: bool, label: str) -> None:
+    print(f"{'PASS' if ok else 'FAIL'}  {label}")
+    if not ok:
+        failures.append(label)
+
+
+require(
+    PRECONDITION_TYPES == frozenset(VALID),
+    "canonical set contains exactly eleven types",
+)
+
+for type_name, fields in VALID.items():
+    payload = {"type": type_name, **fields}
+    condition = EventPrecondition.model_validate(payload)
+    dumped = condition.model_dump(exclude_none=True)
+    require(dumped == payload, f"{type_name}: model load and round-trip")
+    known, missing, extra = check_precondition_shape(
+        condition.type, set(condition.model_fields_set), condition.model_dump()
+    )
+    require(known and not missing and not extra, f"{type_name}: valid exact shape")
+
+    missing_field = sorted(PRECONDITION_FIELDS[type_name])[0]
+    missing_payload = {
+        key: value for key, value in payload.items() if key != missing_field
+    }
+    missing_condition = EventPrecondition.model_validate(missing_payload)
+    known, missing, extra = check_precondition_shape(
+        missing_condition.type,
+        set(missing_condition.model_fields_set),
+        missing_condition.model_dump(),
+    )
+    require(
+        known and missing == frozenset({missing_field}) and not extra,
+        f"{type_name}: missing {missing_field} rejected",
+    )
+
+    foreign_field = next(
+        field
+        for field in sorted(
+            set(EventPrecondition.model_fields) - {"type"} - set(fields)
+        )
+        if field not in PRECONDITION_FIELDS[type_name]
+    )
+    foreign_value = next(
+        values[foreign_field] for values in VALID.values() if foreign_field in values
+    )
+    extra_payload = {**payload, foreign_field: foreign_value}
+    extra_condition = EventPrecondition.model_validate(extra_payload)
+    known, missing, extra = check_precondition_shape(
+        extra_condition.type,
+        set(extra_condition.model_fields_set),
+        extra_condition.model_dump(),
+    )
+    require(
+        known and not missing and extra == frozenset({foreign_field}),
+        f"{type_name}: foreign field {foreign_field} rejected",
+    )
+
+unknown = EventPrecondition.model_validate({"type": "not_a_precondition"})
+known, missing, extra = check_precondition_shape(
+    unknown.type, set(unknown.model_fields_set), unknown.model_dump()
+)
+require(not known and not missing, "unknown precondition type rejected")
+
+both = EventPrecondition.model_validate(
+    {"type": "placement_count", "placement": "saas", "count": 3}
+)
+require(
+    both.model_dump(exclude_none=True)
+    == {"type": "placement_count", "placement": "saas", "count": 3},
+    "placement and count survive together",
+)
+policies = EventPrecondition.model_validate(
+    {"type": "policy_contradiction", "policy": "retention", "other_policy": "access"}
+)
+require(
+    policies.model_dump(exclude_none=True)
+    == {
+        "type": "policy_contradiction",
+        "policy": "retention",
+        "other_policy": "access",
+    },
+    "policy and other_policy survive together",
+)
+
+if failures:
+    print(f"\n{len(failures)} focused precondition checks failed")
+    raise SystemExit(1)
+print("\nAll focused precondition checks passed")

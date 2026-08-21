@@ -38,12 +38,6 @@ W01_MIN_IDENTICAL_ROWS = 6
 #: W02 threshold, taken verbatim from spec 5.3 ("no strategy weights above 0.05").
 W02_MIN_WEIGHT = 0.05
 
-#: W08 threshold -- 1.5 spec section 5.2a, at N = 6 as ruled by its open decision O4
-#: ("6, one per round"; the packs it was ruled against play six rounds). It is a flat
-#: constant, NOT a function of pack.rounds: O4 fixes the number, and naming a pack here to
-#: derive it would breach invariant I4 as surely as branching on one would.
-W08_MIN_DRAWS = 6
-
 _SECTION_FILE = {
     "metadata": "pack.yaml",
     "strategies": "strategies.yaml",
@@ -736,6 +730,36 @@ def check_event_references(lens: Lens) -> list[Finding]:
     return findings
 
 
+def check_precondition_shapes(lens: Lens) -> list[Finding]:
+    """E29 -- every event precondition has one known, exact field shape."""
+    findings: list[Finding] = []
+    known = ", ".join(sorted(base_checks.PRECONDITION_TYPES))
+    for event in lens.pack.events:
+        for index, condition in enumerate(event.preconditions):
+            known_type, missing_fields, extra_fields = base_checks.check_precondition_shape(
+                condition.type, set(condition.model_fields_set), condition.model_dump()
+            )
+            if not known_type:
+                problem = f"uses unknown type '{condition.type}'"
+            else:
+                missing = sorted(missing_fields)
+                extra = sorted(extra_fields)
+                if not missing and not extra:
+                    continue
+                parts: list[str] = []
+                if missing:
+                    parts.append(f"is missing {', '.join(missing)}")
+                if extra:
+                    parts.append(f"also carries {', '.join(extra)}")
+                problem = f"type '{condition.type}' " + " and ".join(parts)
+            findings.append(make_finding(
+                "E29", "events.yaml", f"{event.key}.preconditions.{index}",
+                line=lens.source.field_line("events.yaml", event.key, "preconditions"),
+                event=event.key, number=index + 1, problem=problem, known=known,
+            ))
+    return findings
+
+
 def _label_references(lens: Lens) -> list[tuple[str, str, str, str]]:
     """(section, key, file, field) for every label the pack expects to display."""
     references: list[tuple[str, str, str, str]] = []
@@ -1402,7 +1426,7 @@ def check_deck_depth(lens: Lens) -> list[Finding]:
 def check_strategy_draws(lens: Lens) -> list[Finding]:
     """W08 -- a strategy too few cards in the deck can ever be dealt to.
 
-    1.5 spec section 5.2a, at N = 6 (its O4), and 1.5 section 10's to-1.2 item 3. W05's
+    1.5 spec section 5.2a, at N = pack.metadata.rounds (its O4). W05's
     deck-DEPTH proxy cannot see this: a six-card deck all affine to one strategy passes it,
     and that is CG-2's actual shape -- "strategies that draw nothing".
 
@@ -1416,13 +1440,14 @@ def check_strategy_draws(lens: Lens) -> list[Finding]:
     fails.
     """
     findings: list[Finding] = []
+    minimum = lens.pack.metadata.rounds
     for strategy in lens.pack.strategies:
         draws = [
             event
             for event in lens.pack.events
             if not event.strategy_affinity or strategy.key in event.strategy_affinity
         ]
-        if len(draws) >= W08_MIN_DRAWS:
+        if len(draws) >= minimum:
             continue
         findings.append(
             make_finding(
@@ -1433,7 +1458,7 @@ def check_strategy_draws(lens: Lens) -> list[Finding]:
                 strategy=lens.label("strategies", strategy.key),
                 strategy_key=strategy.key,
                 count=len(draws),
-                minimum=W08_MIN_DRAWS,
+                minimum=minimum,
             )
         )
     return findings
@@ -1484,6 +1509,7 @@ def validate(pack: Casepack, source: PackSource, raw: dict[str, Any]) -> list[Fi
     findings += check_inherited(lens)
     findings += check_entity_detail(lens)
     findings += check_event_references(lens)
+    findings += check_precondition_shapes(lens)
     findings += check_labels(lens)
     findings += check_archetypes(lens)
     findings += check_data_flows(lens)

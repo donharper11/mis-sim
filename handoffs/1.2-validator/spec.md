@@ -1,9 +1,9 @@
 # 1.2 — Casepack Validator · Build Spec
 
 **Authored under** `SPEC_PROTOCOL.md` v1.1 · **Author:** Claude · **Date:** 2026-07-26
-**Spec version:** v1.4 · **Amended:** 2026-08-21 — obligation-reference and policy-vocabulary codes added (`E15`–`E17` · `E24`–`E28`), W01 generalised to every preference shape
-**Previously:** v1.3, 2026-08-18 — `W08` added; v1.2, 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
-**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E17` · `E20`–`E28` · `W01`–`W08` · `I3` · `I8`
+**Spec version:** v1.5 · **Amended:** 2026-08-21 — readiness closeout adds exact precondition-shape code `E29` and pack-relative W08
+**Previously:** v1.4, 2026-08-21 — obligation and policy coverage; v1.3, 2026-08-18 — `W08` added; v1.2, 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
+**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E17` · `E20`–`E29` · `W01`–`W08` · `I3` · `I8`
 **Phase:** 1 · **Depends on:** **1.1 as approved** · **Blocks:** 1.3, 6.1
 
 > An unvalidated pack does not fail loudly — it runs and scores wrongly, and you find out
@@ -216,6 +216,8 @@ E26  an obligation whose permissive_value is not a declared option of its
      policy — it would watch for a switch position that cannot occur       NEW v1.4
 E27  an obligation cleared_by referencing an unknown action type           NEW v1.4
 E28  an obligation arming an event the pack does not define                NEW v1.4
+E29  an event precondition with an unknown type, a missing required field,
+     or a field belonging to another type                               NEW v1.5
 ```
 
 > **`E24`–`E28` close finding `1.2-RA-001`.** `obligation_rules.yaml` is loaded
@@ -278,8 +280,8 @@ W04  a catalog item reachable from no capability — dead content
 W05  the deck holds fewer event cards than the pack has rounds     REWRITTEN v1.2
 W06  every training option has coverage 1.0 — the tier choice is not a choice
 W07  no accepted-risk / no decoy in true_cost_categories — TCO forecast is trivially winnable
-W08  a strategy fewer than 6 event cards can be dealt to — the per-strategy draw check
-     of 1.5 §5.2a at its O4 default of N = 6                              NEW rework-2
+W08  a strategy fewer than `pack.metadata.rounds` event cards can be dealt to —
+     the per-strategy draw check of 1.5 §5.2a and O4                    UPDATED v1.5
 ```
 
 > **`W05` rewritten to what the schema can express** (`1.2-016` item 3). v1.1 wrote *"the
@@ -551,6 +553,8 @@ This is consistent with `GOVERNANCE §5`: *"No casepack reaches a section until
 ---
 
 ## 10. Changelog
+
+**v1.5 — 2026-08-21, 1.5 readiness closeout.** Adds `E29` for the closed eleven-type precondition vocabulary and exact per-type fields, including the frozen `placement` and `other_policy` shapes. W08 now derives its minimum from `pack.metadata.rounds`; empty affinity still counts for every strategy and still raises W03. The fixture matrix, focused shape/round tests, catalogue and schema guide change together. I1/I5 keep their numbers and guards; no invariant moved or was dropped.
 
 **v1.4 — 2026-08-21, post-audit.** Amended against
 `handoffs/rework/1.2-validator-audit-2026-08-21.md`, which returned **PASSING SUITE,

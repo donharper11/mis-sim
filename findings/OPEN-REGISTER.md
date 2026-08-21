@@ -39,7 +39,7 @@ anything. Each names the packet that closes it.
 | B6 | `1.3-012` follow-through | **1.3 content, then 1.2** | `PolicyOption.options` now exists (1.1 rework-3). Riverside must declare them; then the validator checks `permissive_value` against them |
 | B7 | `E00` mis-mapping | **1.2 next** | A semantic failure reports *"Unreadable pack — restore or repair"* for a file that parsed fine. `GOVERNANCE §4.10` |
 | B8 | `harvested_raw_fit` proximity | **1.2 next** | It ships inside `strategies.yaml`, one field from the weights it must never become, with nothing behind `CONTRACTS`' "do not mix the two" |
-| B9 | `1.1-r2-002` · `1.1-r2-007` | **1.5 readiness closeout** | Field names are now frozen as `placement` and `other_policy`; implementation and per-type validator coverage are specified in `handoffs/1.5-event-signal-engine/readiness-spec.md`. Still blocks the 1.5 engine until built and audited |
+| B9 | `1.1-r2-002` · `1.1-r2-007` | **BUILT 2026-08-21 — audit required** | `placement` and `other_policy`, closed eleven-type vocabulary, exact per-type E29 validation, and focused coverage are on `build/1.5-readiness`. Still blocks 1.5 until independent audit and merge |
 | B10 | `1.3-001` / CG-6 | **1.1 next** | Both `capital_remaining` fields are schema-required, so the second home cannot be eliminated by authoring |
 | B11 | `1.3-004` | **1.3 follow-up** | `erp_suite.config_tiers` claims a derivation no grouping reproduces |
 | B12 | `1.3-005` | **1.3 follow-up / 1.6** | 54 of 75 placements carry `lead_time_rounds: 0`, so CG-3's *abandoned mid-flight* is undefined for 72% of the ladder |

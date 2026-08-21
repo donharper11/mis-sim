@@ -86,6 +86,7 @@ MATRIX: dict[str, tuple[set[str], set[str], int]] = {
     "broken_E26_no_options": ({"E26"}, set(), 1),
     "broken_E27": ({"E27"}, set(), 1),
     "broken_E28": ({"E28"}, set(), 1),
+    "broken_E29": ({"E29"}, set(), 1),
     # The paired valid half for the policy-vocab and obligation fixtures: a pack whose policy
     # declares options and whose obligation resolves against every one of them, clean.
     "ok_obligations_valid": (set(), {ANY}, 0),
