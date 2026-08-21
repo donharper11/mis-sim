@@ -97,7 +97,7 @@ codes:
     # service a legal holder of an entity. The message was a statement of fact that stopped
     # being true, and the fix pointed away from the file the remedy often lives in. Phrased
     # to match E01 above, which has carried the two-place wording for roles all along.
-    message: "Needs {entity} information at '{level}' detail, and nothing in the catalog or the shared platform can hold it."
+    message: "Needs {entity_name} information at '{level}' detail, and nothing in the catalog or the shared platform can hold it."
     fix: "Fix: add {entity} at '{level}' or finer to owns_entities on an item in catalog.yaml or a service in platform.yaml, or lower min_level_of_detail in capabilities.yaml."
 
   E03:
@@ -114,7 +114,7 @@ codes:
 
   E05:
     severity: ERROR
-    subject: "Watch rule {rule}"
+    subject: "Watch rule {rule_name}"
     message: "Says it is cleared by '{action}', which is not something a team can actually do."
     fix: "Fix: put one of these in cleared_by in watch_rules.yaml, or remove '{action}': {known}."
 
@@ -140,7 +140,7 @@ codes:
 
   E09:
     severity: ERROR
-    subject: "Catalog item {item}"
+    subject: "Catalog item {item_name}"
     message: "Declares that information flows to or from '{capability}', which this company does not have."
     fix: "Fix: name a capability that exists in capabilities.yaml, or remove the flow from catalog.yaml."
 
@@ -158,7 +158,7 @@ codes:
 
   E12:
     severity: ERROR
-    subject: "Watch rule {rule}"
+    subject: "Watch rule {rule_name}"
     # Rework-2 item 3.1 gave this shape a second legal remedy and the fix did not say so.
     # E12 now fires only on `threshold` rules, and for a metric that is a condition rather
     # than a level -- which is both of the rules CG-1 turns on -- declaring the kind is the
@@ -232,11 +232,11 @@ codes:
 
   E23:
     severity: ERROR
-    subject: "Question {question}"
+    subject: "Question {question_name}"
     # Finding 1.2-031, the fix half. The message is DELIBERATELY unchanged: it speaks of
     # everything this company can buy, which after item 3.4 includes the shared platform, so
     # it did not stop being true the way E02's did. See dod-rework-2.md section 11.
-    message: "Needs {entity} information at '{level}' detail, and nothing this company can buy produces it."
+    message: "Needs {entity_name} information at '{level}' detail, and nothing this company can buy produces it."
     fix: "Fix: add {entity} at '{level}' or finer to owns_entities on an item in catalog.yaml or a service in platform.yaml, or lower the requirement in questions.yaml."
 
   # ---- obligation references (spec 5.2) -------------------------------------------
@@ -316,7 +316,7 @@ codes:
 
   W04:
     severity: WARN
-    subject: "Catalog item {item}"
+    subject: "Catalog item {item_name}"
     message: "Fills no role any capability asks for, so buying it can never help anyone."
     fix: "Fix: add its roles to a capability's required_roles in capabilities.yaml, or remove the item from catalog.yaml."
 
@@ -328,13 +328,13 @@ codes:
 
   W06:
     severity: WARN
-    subject: "Catalog item {item}"
+    subject: "Catalog item {item_name}"
     message: "Reaches everybody with every training option, so choosing between them is not a decision."
     fix: "Fix: give the cheaper training options a lower coverage in catalog.yaml so the choice has a consequence."
 
   W07:
     severity: WARN
-    subject: "Catalog item {item}"
+    subject: "Catalog item {item_name}"
     message: "Has no costs a team could wrongly leave out, so its cost forecast is trivially winnable."
     fix: "Fix: add decoy_cost_categories in catalog.yaml, or move a genuinely optional cost out of true_cost_categories."
 
@@ -363,6 +363,15 @@ variants:
     subject: "Policy {policy}"
     message: "Starts on a default '{value}' that is not a valid machine key. A switch's default must be a lower snake case key that names one of its options."
     fix: "Fix: in policies.yaml, set the default of '{policy}' to a lower snake case option key it declares."
+
+  # E29 when a precondition field carries a value outside its closed vocabulary. Finding
+  # B7 -- `placement: hybrid` is rejected by models.py before any check runs, so the whole
+  # pack collapsed into a bare E00 that named no field and told the author to "restore or
+  # repair" a file that had parsed perfectly (GOVERNANCE 4.10).
+  E29_vocab:
+    subject: "Event {event}, precondition {number}"
+    message: "Sets {field_name} to '{value}'. A precondition's {field_name} can only be {allowed}."
+    fix: "Fix: in events.yaml, set {field_name} on precondition {number} of '{event}' to one of {allowed}."
 
   # E26 when the referenced policy declares NO options at all. Finding 1.2-VR-001 -- the
   # permissive value then names nothing, which is the dangling reference E26 exists to catch.

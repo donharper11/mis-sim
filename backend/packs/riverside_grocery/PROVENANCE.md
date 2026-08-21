@@ -8,8 +8,9 @@ returns zero.
 **Extraction:** `PGPASSWORD=… python3 backend/scripts/harvest_mis_lite.py --from mis_lite
 --to riverside_grocery` → `backend/harvest/mis_lite/*.json` (34 tables, 2,456 rows) and
 `_manifest.json`.
-**Read-back:** `python3 backend/scripts/harvest_readback.py` → 43 pinned figures matched,
-exit 0.
+**Read-back:** `python3 backend/scripts/harvest_readback.py` → 47 pinned figures matched,
+exit 0. *(43 until the catch-up rework of 2026-08-21 pinned the whole of `components.html`'s
+Users column — see §11.)*
 
 > In two years nobody will remember why 24 rows vanished. That is what this file is for.
 
@@ -43,11 +44,14 @@ exit 0.
 | `policies[].options`, `.default` | — | — | 6 × 3 states + 6 defaults | authored | 1.3 follow-up. The permissive value of each switch was already named by `obligation_rules.yaml`, so half the vocabulary was authored before this packet; the middle and restrictive states and the six defaults are new. §10 |
 | `lead_time_rounds` | `mis_initiatives_master.duration_in_rounds` | 12 | 37 rows re-authored | judged | 1.3 follow-up. 54 of 75 placement options completed in zero rounds. The band is anchored on the source's 12 durations (range 1–5, **no initiative shorter than one round**); the placement gradient is authored. §10 |
 | `watch_rules[]` | — | — | 8 | authored / pinned | CG-1. 3 pinned from 0.4, 5 authored |
+| `catalog[].people_affected` | — | — | 18 | authored / pinned | **NO mis_lite source.** The source database has no headcount column at all — see §11. Every count is pinned to the Phase 0 case narrative (`handoffs/0.3-mockup-pilot/spec.md` §5.5–5.6) or authored from the org-unit sizes it states |
 | `capabilities[]`, `entities[]`, `questions[]` | — | — | unchanged | — | authored by 1.1; 1.3 changed none of them |
 
-**Totals:** 2,456 rows extracted · 26 tables in the transform map · 9 discarded (§5) ·
-33 `TODO: calibrate` markers (§7). *(30 at 1.3 follow-up; +3 for the support-tier FTE
-estimates, added by the 1.3 harvest rework — finding `1.3-RA-001`.)*
+**Totals:** 2,456 rows extracted · **all 34 extracted tables carry a disposition** — in
+the transform map above, in §5's discards and deferrals, or in §5a ·
+34 `TODO: calibrate` markers (§7). *(30 at 1.3 follow-up; +3 for the support-tier FTE
+estimates, added by the 1.3 harvest rework — finding `1.3-RA-001`; +1 for the non-ERP
+config-tier multipliers, added by the catch-up rework — finding `1.3-004` / `B11`.)*
 
 ---
 
@@ -66,6 +70,43 @@ Four buildable rows became new catalog items:
 | `store_back_office_pc` | — | — | 0.3 §5.6 lists it; mis_lite's nearest row (1, High-Performance Server, 20000) is a data-centre server, so the figure was **not** carried across |
 | `nosql_database` | 4, NoSQL Database | 12000 | before 1.3, every role in the pack had exactly one filler, so no decision had an alternative |
 | `erp_suite` | 9 + `erp_modules_master` | 30000 + 44571 | the one place the 21 module rows become pack content |
+
+### 2a. `erp_modules_master` → `erp_suite.config_tiers` — the derivation, run
+
+Finding `1.3-004` reported that *"the stated arithmetic does not reproduce under any
+grouping"* and proposed `1.00 / 2.42 / 3.21` instead. **The stated arithmetic does
+reproduce, exactly.** The grouping is the source's own `module_level` column — not a
+reconstruction from families — and it is mechanical:
+
+```
+$ python3 - <<'EOF'
+import json, statistics
+from collections import defaultdict
+rows = json.load(open('backend/harvest/mis_lite/erp_modules_master.json'))
+g = defaultdict(list)
+for r in rows: g[r['module_level']].append(r['cost_value'])
+base = statistics.mean(g['Basic'])
+for level in ('Basic', 'Mid', 'Advanced'):
+    m = statistics.mean(g[level])
+    print(f'{level:<9} n={len(g[level]):>2}  mean={m:>9.2f}  multiplier={m/base:.4f}')
+EOF
+Basic     n= 7  mean= 44571.43  multiplier=1.0000
+Mid       n= 4  mean= 70000.00  multiplier=1.5705
+Advanced  n=10  mean=115000.00  multiplier=2.5801
+```
+
+`1.00 / 1.57 / 2.58` is those three multipliers rounded to two places, and `44571` is the
+same Basic mean the `on_prem` capex carries (`30000` suite licence `+ 44571`, rounded to
+`75000`). The audit's `R2` reading took *"the seven Basic-level module rows"* to mean seven
+**families** sampled at min/mid/max; the note means the seven rows whose `module_level` is
+literally `Basic`. Both readings give `44571` for Basic, which is why the coincidence held
+long enough to be reported — they diverge only on Mid and Advanced, where `n` is 4 and 10,
+not 7 and 7.
+
+**Disposition: the derivation stands and is shown here, so the capex multipliers are
+harvested, not estimates.** The `compute_multiplier` column, the opex and the lead times on
+the same item remain authored and keep their `TODO: calibrate` — `erp_modules_master`
+carries `cost_value` and nothing else.
 
 **Why the ERP modules, e-commerce features and MIS initiatives are not 42 catalog rows.**
 In mis_lite they are *levels within one decision* — a team sets an adoption level per
@@ -202,6 +243,54 @@ distinct) show authored variation.
 
 ---
 
+## 5a. The tables §5.1 mapped and neither §1 nor §5 accounted for
+
+Finding `1.3-009`. Six were extracted, all six are named in 1.3 spec §5.1's transform map,
+and none had a row anywhere in this file, so `_manifest.json`'s 34 tables did not reconcile
+against §1's 26 plus §5's discards. Each row below is the disposition, written against the
+extracted JSON rather than against the spec's intent for it. Two further tables the audit
+found *recorded in prose but not tabulated* are given rows underneath, so the reconciliation
+is now line by line and mechanically checkable:
+
+```
+$ python3 - <<'EOF'
+import json, pathlib
+manifest = json.load(open('backend/harvest/mis_lite/_manifest.json'))
+prov = pathlib.Path('backend/packs/riverside_grocery/PROVENANCE.md').read_text()
+tables = sorted(manifest['rows_per_table'])
+missing = [t for t in tables if t not in prov]
+print(f"{len(tables)} extracted · {len(tables) - len(missing)} disposed · missing: {missing}")
+EOF
+34 extracted · 34 disposed · missing: []
+```
+
+| Table | Rows | Disposition |
+|---|---|---|
+| `deployment_types` | 3 | **Structure carried, figures not.** The three rows are On-Premise / Cloud / Hybrid at `cost_value` 300000 / 200000 / 250000 — a firm-level slider priced for the whole estate. The new schema asks the same question per catalog item, as `deployment_modes.{on_prem,cloud,saas}`, so the *choice* survives and the *prices* cannot: an item-level capex is not a firm-level one. **Hybrid is dropped on contract** — `CONTRACTS.md` `placement`: *"hybrid is not a placement value … it is a derived condition"* |
+| `hardware_types` | 3 | **Not carried.** Standard Servers / High-Performance Compute Cluster / Edge Computing Nodes at 100000 / 300000 / 250000. `component_types_master` already holds the buildable server rows the catalog uses (§2), at item scale; these three are the same concepts at firm scale and would have been a second, contradictory price for the same box |
+| `network_types` | 3 | **Not carried.** Intranet / Extranet / IoT-Enabled Network at 75000 / 90000 / 200000. Network reach in the new schema is the architecture graph plus `platform.services`, not a purchased tier, and no pack figure derives from these rows |
+| `database_types` | 3 | **Not carried.** Relational DB / Hybrid Cloud DB / Big Data Solution at 100000 / 150000 / 200000. `order_db_cluster` and `nosql_database` come from `component_types_master` rows 3 and 4 (10000, 12000) — see §2 — and mixing the two scales would restate the same purchase at ten times the price |
+| `change_management_master` | 8 | **Not carried, and this one is a real gap, recorded as such.** Eight costed rollout options: Big Bang Rollout 10000 · Phased Rollout 8000 · Pilot Testing 6000 · Change Champions 4000 · Comprehensive Training 5000 · Ongoing Support Team 7000 · Knowledge Sharing Portal 3500 · Feedback Loops 2500. The pack expresses rollout as `training_options` + `process_option` per catalog item, which is a different shape, and none of the eight names appears in the pack. `preferences/training.yaml`'s provenance string (*"mis_lite change management tables reworked into training preferences"*, authored by 1.1) overstates what was done: five archetype `ideal_training_coverage` entries are not a rework of eight costed options. **Not silently discarded — owned by 1.7 calibration**, which is the packet that can price a rollout ladder against an engine |
+| `change_management_strategy_fit` | 20 | **Not carried**, for the same reason and with the same owner. Twenty `fit_multiplier` cells over 8 options × 4 strategies, the same asset class as `component_strategy_fit` (§4). They cannot be converted until the eight options they weight exist in the pack, so they stay in `backend/harvest/mis_lite/change_management_strategy_fit.json` |
+
+**Two more the audit noted as *"recorded in §2's prose, just not tabulated"* — now
+tabulated**, so `_manifest.json`'s 34 reconcile line by line rather than by reading an
+argument:
+
+| Table | Rows | Disposition |
+|---|---|---|
+| `ecommerce_features_master` | 9 | **Levels within one decision, not 9 catalog rows** — §2. Personalized Recommendations 15000 · Cart Abandonment Recovery 8000 · Multi-Language Support 5000 · One-Click Checkout 10000 · Mobile App Integration 12000 · and four more. The pack expresses the choice as `ecommerce_site.config_tiers` (`core` / `loyalty`), which is the same shape the ERP ladder takes. The individual feature costs are **not** carried: the tier multiplier is authored (§7) because these nine are a pick-list, not a ladder, and averaging a pick-list produces a figure the source does not support |
+| `business_processes_master` | 8 | **Not carried.** Order Fulfillment 5000 · Inventory Management 4000 · Procurement Workflow 3000 · Customer Returns 3500 · Supplier Collaboration 4500 and three more. Extracted for pre-flight row 5's audit of `business_process_mapping` (§5, 112 placeholder rows, discarded), and its own eight rows are mis_lite's *process* vocabulary. The new schema has no purchasable process: process change is `catalog[].process_option`, one per item, priced against that item. Not discarded on quality — discarded because the concept has no home |
+
+**Also unrecorded, and smaller — `security_incidents.probability`.** The three harvested
+incident rows carry `probability` 70.00 / 60.00 / 50.00 and the pack drops it. `events.yaml`
+explains dropping `round_id` and says nothing about this one. Dropped on the same ruling:
+1.5 spec §3 decision 2, *"events fire on preconditions, never on dice"* — a probability
+column encodes the source engine's central mechanism, and this engine does not have it.
+`impact_cost` is carried exactly; `probability` has no home and is not meant to acquire one.
+
+---
+
 ## 6. Open decisions — recorded
 
 | # | Question | Default | Taken? |
@@ -212,7 +301,7 @@ distinct) show authored variation.
 
 ---
 
-## 7. Every `TODO: calibrate` — 33 markers
+## 7. Every `TODO: calibrate` — 34 markers
 
 `GOVERNANCE §4.9` rule 5: estimates are allowed; unmarked estimates are not. Every value
 below is authored judgement that 1.7's harness is expected to move.
@@ -223,17 +312,19 @@ below is authored judgement that 1.7's harness is expected to move.
 | `events.yaml` | 7 | scorecard deltas and option costs on all seven non-pinned cards. `revenue_loss` on the six harvested cards is **not** a TODO — those are `impact_cost` / `fine_amount` carried exactly |
 | `policies.yaml` | 6 | every effect vector; `data_egress` cost 12000; `data_access` cost 9000 inherited from 1.1; `staff_monitoring` cost and effects entirely |
 | `catalog.yaml` | 5 | `store_back_office_pc` capex; the cloud/saas ladders on the three new items; `erp_suite` compute multipliers, opex, lead times; **and the whole lead-time band (§10)** |
+| `catalog.yaml` (`config_tiers`) | 1 | **Added by the catch-up rework — finding `1.3-004` / `B11`.** Every `config_tiers` multiplier on the file *except* `erp_suite`'s capex ladder, which is harvested and whose derivation is now shown in §2a. A second configuration tier is a richer build of the same item and its step up is authored judgement; mis_lite carries no per-item configuration ladder outside the ERP module rows. Owner 1.7 |
 | `platform.yaml` (placement) | 4 | cloud and saas figures on `failover_cluster`, `threat_detection`, `end_user_email`, `data_platform` |
 | `platform.yaml` (`support_tiers[].fte_equivalent`) | 3 | **Added by the 1.3 harvest rework — finding `1.3-RA-001`.** The FTE figures on `basic` (0.6), `standard` (1.4) and `premium` (2.4). `maintenance_support_levels` carries `cost_value` only — no FTE, staffing or hours column — so all three are authored estimates, not harvested. Load-bearing: `preferences/services.yaml`'s `it` view turns on premium's 2.4 against the 2.0 pool. Costs stay harvested and are **not** TODO. Owner 1.7 |
 | `preferences/platform.yaml` | 1 | the `weight` column throughout — how much each archetype's view counts. mis_lite weighted every stakeholder the same |
 | `preferences/policies.yaml` | 1 | both `weight` columns throughout — the archetype-level weight and the per-switch weight. Which switch matters most to whom is authored judgement. The `ideal_posture` values are **not** marked: each is either stated in design/07 §3.5 or read off an effect vector or an obligation rule already in the pack, and every one is cited in the file |
 | `preferences/services.yaml` | 1 | both `weight` columns, on the same footing. The `ideal_tier` values are not marked — each is stated in design/07 §3.6 or read off a figure in `platform.yaml`. Note: the `platform.yaml` FTE figures the `it` view reads off are themselves authored estimates now marked above; the tier *choice* (`premium`) is design-stated and stays unmarked |
 
-Total 33 = 30 at the 1.3 follow-up plus the three support-tier FTE estimates the harvest
-rework marked. The numeric FTE values were **not changed** — only their provenance was made
-value-specific and their calibration status made explicit.
+Total 34 = 30 at the 1.3 follow-up, plus the three support-tier FTE estimates the harvest
+rework marked, plus the `config_tiers` marker the catch-up rework added. **No numeric value
+was changed by either** — only the provenance was made value-specific and the calibration
+status made explicit.
 
-**Nothing pinned by 0.3 §5.6 or the 0.4 mockups carries a TODO.** All 43 pinned figures
+**Nothing pinned by 0.3 §5.6 or the 0.4 mockups carries a TODO.** All 47 pinned figures
 match — `backend/scripts/harvest_readback.py`.
 
 ---
@@ -468,3 +559,62 @@ One round now dominates the distribution (51 of 75). That is a fair reflection o
 whose catalogue is mostly departmental systems and shared services, but it means the
 sharpest follow-through failures rest on the 7 two-round options. 1.7's harness is expected
 to spread it.
+
+---
+
+## 11. The catch-up rework — `people_affected`, 2026-08-21
+
+Finding `1.3-008` / register `B13`. `catalog.yaml` authored
+`pos_system_2011.people_affected.count: 140`; `mockups/components.html` and
+`mockups/rollout.html` both showed **62**. `people_affected` is the denominator of the
+Organisational-Readiness training sub-factor (`backend/app/engine/organisation.py:63`,
+`training = trained_count / people_affected`), so this was a contradiction under a live
+scoring input, not a mockup nit.
+
+### The source was queried, and it has no answer
+
+```
+$ PGPASSWORD=… PGOPTIONS='-c default_transaction_read_only=on' \
+  psql -h 192.168.50.38 -U donwh -d mis_lite -tAc \
+  "select table_name||'.'||column_name from information_schema.columns
+   where table_schema = 'public'
+     and (column_name ilike '%user%' or column_name ilike '%people%'
+       or column_name ilike '%staff%' or column_name ilike '%head%'
+       or column_name ilike '%employee%' or column_name ilike '%count%'
+       or column_name ilike '%affected%') order by 1;"
+(0 rows)
+```
+
+**mis_lite carries no headcount, user-count or staffing column in any of its 79 tables.**
+`people_affected` therefore has no harvested source and never had one — which is why §1's
+transform map had no row for it until this rework added one. Every count in the pack is
+pinned to the Phase 0 case narrative or authored from the org-unit sizes that narrative
+states.
+
+### The authored value: 62
+
+| Source | Says | Read at |
+|---|---|---|
+| 0.3 mockup-pilot spec, COMPONENTS table | `POS System 2011 … Store ops  62` | `handoffs/0.3-mockup-pilot/spec.md:301` |
+| 0.3 mockup-pilot spec, ROLLOUT table | `POS System 2011  Store ops  62  100%` | `handoffs/0.3-mockup-pilot/spec.md:310` |
+| `mockups/components.html`, Users column | `62` | `mockups/components.html:17` |
+| `mockups/rollout.html`, People column | `62` | `mockups/rollout.html:13` |
+| 1.4 Riverside R3 seed, `dep_pos` | `people_affected=62, trained_count=62` | `backend/seeds/riverside_r3.py:159` |
+
+Five independent homes say 62; one — `catalog.yaml` — said 140. **`catalog.yaml` is the one
+that was corrected.** 140 is the size of the whole `store_operations` unit (`dashboard.html`,
+*"STORE OPERATIONS · 140 people"*), which is the right count for `order_mgmt_v42` and
+`store_spreadsheets` — both of which serve the entire unit and both of which already carry
+140 — and the wrong one for a point-of-sale system used by till operators. The 140 was
+inherited from 1.1, where the unit size was carried onto every `store_operations` row
+regardless of who actually uses the system.
+
+**The 1.4 Org pin did not move.** The scorer reads the runtime `DeploymentState`, not the
+catalog, and the seed already carried 62. `order_fulfilment`'s pinned Org of `0.507003` is
+computed from `dep_order_mgmt` (140 affected, 49 trained) and is untouched; `dep_pos` is the
+primary rollout of `store_operations`, a different capability. `backend/tests/test_engine_scoring.py`
+passes unchanged.
+
+**Guard added.** `harvest_readback.py` now pins the whole of `components.html`'s Users
+column, not two of its six rows — 43 pinned figures became 47. `1.3-008` was possible
+because four of the six were unpinned.

@@ -31,6 +31,14 @@
 # `accounting_package`, both at capex 0), the store spreadsheets, the back-office PC, and
 # the three subscribed services that start working when the invoice is signed.
 # TODO: calibrate -- the whole band. 1.7's harness moves it.
+#
+# CONFIG TIERS. `erp_suite`'s capex multipliers are HARVESTED -- the derivation from
+# `erp_modules_master`'s `module_level` column is shown, run, in PROVENANCE.md section 2a.
+# Every OTHER item's config_tiers multipliers on this file, capex and compute alike, are
+# authored judgement: a second tier is a richer configuration of the same item, and the
+# step up was set by what a richer configuration plausibly costs, not measured. mis_lite
+# has no per-item configuration ladder outside the ERP module rows.
+# TODO: calibrate -- every config_tiers multiplier except erp_suite's capex. Owner 1.7.
 
 - key: pos_system_2011
   roles_filled: [pos_app, transaction_store]
@@ -46,7 +54,7 @@
   owns_entities: [{entity: sale, level_of_detail: individual_transaction}, {entity: product, level_of_detail: sku}]
   must_be_fed_by: []
   must_feed: [{entity: product, to_capability: order_fulfilment}]
-  people_affected: {org_unit: store_operations, count: 140}
+  people_affected: {org_unit: store_operations, count: 62}   # 0.3 s5.6 / components.html: 62 users -- till operators, not the whole 140-person unit
   training_options: {none: {cost: 0, coverage: 0.0}, basic: {cost: 8000, coverage: 0.6}, full: {cost: 24000, coverage: 1.0}}
   process_option: {cost: 12000, label_key: redesign_checkout}
   rgt_tag: run

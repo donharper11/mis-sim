@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable, Mapping
+from typing import Literal, get_args, get_origin
 
-from app.casepack.models import Casepack
+from app.casepack.models import Casepack, EventPrecondition
 
 
 SNAKE_RE = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -55,6 +56,36 @@ def check_precondition_shape(
         field for field in required if field not in authored or values.get(field) is None
     )
     return True, missing, frozenset(authored - required)
+
+
+def _closed_vocabulary(field_name: str) -> tuple[str, ...]:
+    """The exact values `EventPrecondition.<field_name>` accepts, read off the model.
+
+    Read from the annotation rather than restated here on purpose. A closed vocabulary
+    copied into a second file is the defect `CONTRACTS.md` (`placement`) and finding
+    `1.5-RC-002` are both about, and this vocabulary exists so the validator can give
+    that field a diagnostic -- it must not become another home for the values.
+    """
+    annotation = EventPrecondition.model_fields[field_name].annotation
+    values: list[str] = []
+    for arg in get_args(annotation):
+        if get_origin(arg) is Literal:
+            values.extend(str(member) for member in get_args(arg))
+    if not values:
+        raise RuntimeError(f"EventPrecondition.{field_name} declares no closed vocabulary")
+    return tuple(values)
+
+
+#: Precondition fields whose value vocabulary is CLOSED at the model, so an out-of-vocabulary
+#: value makes `models.py` refuse the whole pack before any check can see it. Finding `B7`:
+#: that refusal reached the instructor as a bare `E00 "This pack could not be read"` against a
+#: file that parsed perfectly, which `GOVERNANCE 4.10` forbids. `validate.py`'s raw-stage
+#: `check_precondition_vocab_raw` reads this map and reports `E29` instead.
+PRECONDITION_VOCABULARIES: dict[str, tuple[str, ...]] = {
+    "placement": _closed_vocabulary("placement"),
+    "severity": _closed_vocabulary("severity"),
+}
+
 
 #: The 14 platform stakeholder archetypes. Schema vocabulary, not validator-local state --
 #: 1.4 and 1.5 will want it, which is why it lives here beside ACTION_TYPES rather than in

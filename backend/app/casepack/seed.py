@@ -47,7 +47,8 @@ def main(argv: list[str] | None = None) -> int:
         f"load {state.people.load_fte}; "
         f"over {state.people.overcommitted_pct}; "
         f"review_capital {state.review.capital_committed} of {state.review.capital_available}; "
-        f"remaining {state.review.capital_remaining}; "
+        # Derived, not authored -- the review block no longer carries this figure (CG-6).
+        f"remaining {state.review.capital_available - state.review.capital_committed}; "
         f"run_rate_after {state.review.run_rate_after}; "
         f"run_rate_before {state.review.run_rate_before}"
     )

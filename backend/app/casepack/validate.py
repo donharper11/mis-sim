@@ -508,6 +508,54 @@ def check_policy_vocab(raw: dict[str, Any], source: PackSource) -> list[Finding]
     return findings
 
 
+def check_precondition_vocab_raw(raw: dict[str, Any], source: PackSource) -> list[Finding]:
+    """E29, vocabulary variant -- a precondition field set outside its closed vocabulary.
+
+    Runs on RAW YAML, before the pydantic load, for exactly the reason `check_policy_vocab`
+    does. `placement` and `severity` are `Literal` fields on `EventPrecondition`, so an
+    out-of-vocabulary value makes `models.py` refuse the WHOLE pack, and that refusal
+    reached the instructor as a bare `E00 "This pack could not be read"` naming no field,
+    against an `events.yaml` that parsed perfectly and whose one wrong value the author
+    could not see (finding `B7`; `GOVERNANCE 4.10` -- users may not see our errors).
+
+    Reported as `E29` rather than a new code: `E29` is already *"every event precondition
+    has one known, exact field shape"*, a value outside a closed vocabulary is that same
+    defect, and inventing a code here would break `I1`'s set equality against the 1.2 spec.
+    The vocabularies are read off the model in `checks.PRECONDITION_VOCABULARIES` -- this
+    check must not become a second home for them.
+    """
+    findings: list[Finding] = []
+    for event in _as_list(raw.get("events")):
+        if not isinstance(event, dict):
+            continue
+        key = event.get("key")
+        if not isinstance(key, str):
+            continue
+        line = source.field_line("events.yaml", key, "preconditions")
+        for index, condition in enumerate(_as_list(event.get("preconditions"))):
+            if not isinstance(condition, dict):
+                continue
+            for field_name, allowed in base_checks.PRECONDITION_VOCABULARIES.items():
+                value = condition.get(field_name)
+                if value is None or value in allowed:
+                    continue
+                findings.append(
+                    make_finding(
+                        "E29",
+                        "events.yaml",
+                        f"{key}.preconditions.{index}.{field_name}",
+                        line=line,
+                        variant="E29_vocab",
+                        event=key,
+                        number=index + 1,
+                        field_name=field_name,
+                        value=_show(value),
+                        allowed=", ".join(allowed),
+                    )
+                )
+    return findings
+
+
 # --------------------------------------------------------------------------------------
 # typed stage helpers
 # --------------------------------------------------------------------------------------
@@ -660,6 +708,7 @@ def check_inherited(lens: Lens) -> list[Finding]:
                 "watch_rules.yaml",
                 f"{rule}.cleared_by.{action}",
                 line=lens.source.field_line("watch_rules.yaml", rule, "cleared_by"),
+                rule_name=lens.label("watch_rules", rule),
                 rule=rule,
                 action=action,
                 known=", ".join(sorted(base_checks.ACTION_TYPES)),
@@ -699,6 +748,7 @@ def check_entity_detail(lens: Lens) -> list[Finding]:
                             "capabilities.yaml", capability.key, "required_entities"
                         ),
                         capability=lens.label("capabilities", capability.key),
+                        entity_name=lens.label("entities", need.entity),
                         entity=need.entity,
                         level=need.min_level_of_detail,
                     )
@@ -790,16 +840,18 @@ def check_labels(lens: Lens) -> list[Finding]:
     """E07 -- a key that reaches a screen with no authored wording behind it."""
     findings: list[Finding] = []
     seen: set[tuple[str, str]] = set()
-    everywhere = {key for section in lens.labels.values() for key in section}
     for section, key, relative, field in _label_references(lens):
         if (section, key) in seen:
             continue
         seen.add((section, key))
-        # `misc` is the catch-all section, so accept the key anywhere in labels.yaml
-        found = key in lens.labels.get(section, {})
-        if not found and section == "misc":
-            found = key in everywhere
-        if found:
+        # A label is accepted in the section its reference names, and nowhere else.
+        #
+        # `misc` used to fall back to a union of EVERY section, which meant the fix line
+        # ("add '{key}' under misc in labels.yaml") named one of eight accepted answers,
+        # and every section 1.1 rework-2 added made it one of twelve (finding 1.1-r2-004).
+        # A check whose Fix: text is not the thing the check tests teaches the author the
+        # wrong file. Narrowed so the two agree: `misc` means `misc`.
+        if key in lens.labels.get(section, {}):
             continue
         findings.append(
             make_finding(
@@ -850,7 +902,7 @@ def check_data_flows(lens: Lens) -> list[Finding]:
                             "catalog.yaml",
                             f"{item.key}.{name}.{capability}",
                             line=lens.source.field_line("catalog.yaml", item.key, name),
-                            item=item.key,
+                            item_name=lens.label("catalog", item.key),
                             capability=capability,
                         )
                     )
@@ -918,6 +970,7 @@ def check_thresholdless_rules(lens: Lens) -> list[Finding]:
             "watch_rules.yaml",
             rule.key,
             line=lens.source.key_line("watch_rules.yaml", rule.key),
+            rule_name=lens.label("watch_rules", rule.key),
             rule=rule.key,
             capability=lens.label("capabilities", rule.capability),
         )
@@ -979,6 +1032,12 @@ def check_impossible_events(lens: Lens) -> list[Finding]:
                     "events.yaml",
                     f"{event.key}.preconditions",
                     line=lens.source.field_line("events.yaml", event.key, "preconditions"),
+                    # E21 still leads with the machine key, deliberately. `labels.events` maps
+                    # an event's `body_key` to a paragraph of in-world prose, NOT its name
+                    # (docs/casepack-schema.md: "`events` is not a name map"), so routing this
+                    # subject through it would print a persona's message as a locator line.
+                    # There is nowhere to author an event NAME -- open item R1, a schema
+                    # change, reported by this packet rather than improvised here.
                     event=event.key,
                     reason=reason,
                 )
@@ -1036,7 +1095,8 @@ def check_questions(lens: Lens) -> list[Finding]:
                     "questions.yaml",
                     f"{question.key}.requires_entities.{need.entity}",
                     line=lens.source.key_line("questions.yaml", question.key),
-                    question=question.key,
+                    question_name=lens.label("questions", question.key),
+                    entity_name=lens.label("entities", need.entity),
                     entity=need.entity,
                     level=need.min_level_of_detail,
                 )
@@ -1215,12 +1275,10 @@ def _derivations(state: Any, metadata: Any) -> list[tuple[str, str, int, int]]:
     line_run_rate = sum(row.run_rate_effect for row in review.lines)
     rows: list[tuple[str, str, int, int]] = [
         ("review.capital_committed", "review_lines_capital", review.capital_committed, line_capital),
-        (
-            "review.capital_remaining",
-            "review_remaining",
-            review.capital_remaining,
-            review.capital_available - review.capital_committed,
-        ),
+        # `review.capital_remaining` used to be checked here as well. The field was removed by
+        # the catch-up rework (CG-6 / finding `1.3-001`): it was a second schema-required home
+        # for the fact the row below already checks, against the identical derivation. The
+        # invariant is unchanged -- one row now enforces what two used to enforce twice.
         (
             "review.run_rate_after",
             "review_run_rate",
@@ -1398,7 +1456,7 @@ def check_dead_catalog(lens: Lens) -> list[Finding]:
             "catalog.yaml",
             f"{item.key}.roles_filled",
             line=lens.source.key_line("catalog.yaml", item.key),
-            item=item.key,
+            item_name=lens.label("catalog", item.key),
         )
         for item in lens.pack.catalog
         if not (set(item.roles_filled) & lens.required_roles)
@@ -1472,7 +1530,7 @@ def check_training_choice(lens: Lens) -> list[Finding]:
             "catalog.yaml",
             f"{item.key}.training_options",
             line=lens.source.field_line("catalog.yaml", item.key, "training_options"),
-            item=item.key,
+            item_name=lens.label("catalog", item.key),
         )
         for item in lens.pack.catalog
         if item.training_options
@@ -1488,7 +1546,7 @@ def check_cost_decoys(lens: Lens) -> list[Finding]:
             "catalog.yaml",
             f"{item.key}.decoy_cost_categories",
             line=lens.source.field_line("catalog.yaml", item.key, "decoy_cost_categories"),
-            item=item.key,
+            item_name=lens.label("catalog", item.key),
         )
         for item in lens.pack.catalog
         if not item.decoy_cost_categories
@@ -1605,6 +1663,10 @@ def validate_pack_dir(pack_dir: str | Path) -> Report:
     # as a precise code that co-reports with the other raw checks below, rather than being
     # collapsed into the opaque E00 the load failure used to produce (finding 1.2-RA-003).
     findings += check_policy_vocab(raw, source)
+    # Raw-stage precondition vocabulary (E29, vocab variant). Same reason, same stage: a
+    # `placement` or `severity` outside its Literal makes models.py refuse the pack, and
+    # that refusal used to surface as a bare E00 against a file that parsed (finding B7).
+    findings += check_precondition_vocab_raw(raw, source)
 
     pack: Casepack | None = None
     try:

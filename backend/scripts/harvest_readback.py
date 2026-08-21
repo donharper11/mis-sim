@@ -76,6 +76,13 @@ def main() -> int:
         ("order_db_cluster opex", catalog["order_db_cluster"].deployment_modes["on_prem"].opex, 600, "components.html $600"),
         ("store_back_office_pc opex", catalog["store_back_office_pc"].deployment_modes["on_prem"].opex, 200, "components.html $200"),
         ("store_back_office_pc users", catalog["store_back_office_pc"].people_affected.count, 8, "components.html 8 users"),
+        # components.html "Users" column, in full. Finding 1.3-008 was possible because only
+        # two of the six rows were pinned; the whole column is pinned now so the pack and the
+        # mockup cannot drift apart again unnoticed.
+        ("order_mgmt_v42 users", catalog["order_mgmt_v42"].people_affected.count, 140, "components.html 140 users"),
+        ("pos_system_2011 users", catalog["pos_system_2011"].people_affected.count, 62, "components.html 62 users"),
+        ("accounting_package users", catalog["accounting_package"].people_affected.count, 8, "components.html 8 users"),
+        ("store_spreadsheets users", catalog["store_spreadsheets"].people_affected.count, 140, "components.html 140 users"),
         # the wizard, 0.3 s5.6
         ("centraline_im7 on_prem", [catalog["centraline_im7"].deployment_modes["on_prem"].capex,
                                     catalog["centraline_im7"].deployment_modes["on_prem"].opex,
@@ -107,8 +114,11 @@ def main() -> int:
          "CG-6: derived = capital_available - capital_committed = 220000 - 174000. "
          "16 mockups display $44,000; review.html and review-locked.html display both. "
          "Recommendation in handoffs/1.3-harvest/dod.md -- 0.4 rework, not a 1.3 choice."),
-        ("review.capital_remaining", state.review.capital_remaining, 46000, 46000,
-         "CG-6: same fact, second home. Agrees with the derivation and with review.html."),
+        ("review remaining (derived)",
+         state.review.capital_available - state.review.capital_committed, 46000, 46000,
+         "CG-6: the review block's second authored home for this fact was REMOVED by the "
+         "catch-up rework (models.py ReviewState). This row now recomputes it from the two "
+         "fields the block still carries, and it agrees with the derivation and review.html."),
     ]
 
     bad = 0

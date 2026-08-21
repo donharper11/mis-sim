@@ -74,6 +74,13 @@ loader reads real content.
 declared strategy, round budget, Balanced Scorecard, attention items, unit response
 chain, value-chain coverage, open signal counts, IT staff/load, and Review totals.
 
+> **The round's remaining capital has exactly one home:
+> `initial_state.budget.capital_remaining`.** The Review block authors
+> `capital_committed` and `capital_available` and does **not** author what is left over —
+> that is `capital_available - capital_committed`, which `E14` enforces against the budget
+> figure with zero tolerance. A pack that still authors `review.capital_remaining` fails to
+> load; delete the line, the value is unchanged. See `CONTRACTS.md` → `capital_remaining`.
+
 Worked example:
 
 ```yaml

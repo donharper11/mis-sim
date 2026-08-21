@@ -93,10 +93,18 @@ class ReviewLine(StrictModel):
 
 
 class ReviewState(StrictModel):
+    #: The round's remaining capital is NOT a field here, deliberately -- CG-6, finding
+    #: `1.3-001`. It was one fact with two schema-REQUIRED homes, this one and the round
+    #: budget's, and both were derived from the very same expression that this model already
+    #: holds both sides of: `capital_available - capital_committed`. `SPEC_PROTOCOL`
+    #: section 3 says prefer elimination over reconciliation, and 1.3 could not eliminate it
+    #: because doing so is a schema change 1.3's scope excluded. Removed here, so the round
+    #: budget above holds the single authored figure, the validator's `E14` still enforces it
+    #: against this derivation with zero tolerance, and a review block can no longer disagree
+    #: with itself.
     lines: list[ReviewLine]
     capital_committed: int = Field(ge=0)
     capital_available: int = Field(gt=0)
-    capital_remaining: int
     run_rate_after: int = Field(ge=0)
     run_rate_before: int = Field(ge=0)
     warnings: list[str]

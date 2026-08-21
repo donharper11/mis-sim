@@ -29,14 +29,13 @@ initial_state:
     # the round-3 blocks -- the two numbers were authored independently and one was stale.
     # E14 now enforces the derivation with zero tolerance.
     #
-    # THE SECOND HOME IS NOT ELIMINATED, and 1.3 could not eliminate it. SPEC_PROTOCOL
-    # section 3 says prefer elimination over reconciliation, and this line and
-    # `review.capital_remaining` below are still two homes for one fact. Both fields are
-    # REQUIRED by models.py (RoundBudgetState.capital_remaining, ReviewState.
-    # capital_remaining), so removing either makes the pack unloadable -- proven by
-    # experiment, pasted in handoffs/1.3-harvest/dod.md. Making them optional or derived is
-    # a schema change, which spec section 1 puts out of 1.3's scope. Reported, not
-    # improvised.
+    # THE SECOND HOME IS NOW ELIMINATED. 1.3 could not do it: both fields were REQUIRED by
+    # models.py, so removing either made the pack unloadable, and making one optional or
+    # derived is a schema change that spec section 1 put out of 1.3's scope. 1.3 reported it
+    # rather than improvising (finding 1.3-001 / CG-6). The catch-up rework of 2026-08-21
+    # made the schema change: the review block below no longer carries this figure, and this
+    # line is the round's single authored home for it. E14 still enforces it against
+    # capital_available - capital_committed with zero tolerance.
     capital_remaining: 46000
     capital_available: 220000
     run_rate: 58300
@@ -98,13 +97,12 @@ initial_state:
       - {area: governance, changes: 2 assignments, capital: 0, run_rate_effect: 0}
       - {area: challenges, changes: 2 responses, capital: 12000, run_rate_effect: 0}
     # Also derived: capital_committed is the sum of the seven area lines above
-    # (0 + 98000 + 34000 + 30000 + 0 + 0 + 12000), capital_available is
-    # budget.capex_per_round[round 3], and capital_remaining is the difference.
-    # See the CG-6 note on budget.capital_remaining -- same fact, second home, which the
-    # schema requires and 1.3 could not remove.
+    # (0 + 98000 + 34000 + 30000 + 0 + 0 + 12000), and capital_available is
+    # budget.capex_per_round[round 3]. What is left over is available minus committed, and
+    # this block no longer authors it -- see the CG-6 note on budget.capital_remaining above,
+    # which is now the only authored home for that figure.
     capital_committed: 174000
     capital_available: 220000
-    capital_remaining: 46000
     run_rate_after: 62200
     run_rate_before: 58300
     warnings:

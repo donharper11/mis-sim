@@ -16,6 +16,13 @@ finding with no owner is either fixed now or explicitly closed with a reason.
 them without updating a single row. Seven were already fixed; nine are genuinely open; none
 blocks 1.5. **A row that has never been re-tested is not a status — it is a claim.**
 
+**Last reconciled: 2026-08-21**, by the consolidated catch-up rework
+(`handoffs/rework/catch-up-2026-08-21.md`, branch `build/catch-up-rework`, DoD
+`handoffs/rework/dod-catch-up.md` §8). All **nine** rows the 2026-08-21 sweep left open were
+re-tested: six were built and are **CLOSED** with their closing check pasted (`B5` `B7` `B10`
+`B11` `B13` `B17`), and three were **ruled and not built** (`B14` `B15` `B16`). This is the
+first packet to run §I amendment 3 — the register updated in the same commit as the DoD.
+
 ---
 
 ## A. Fix now — no packet required
@@ -40,19 +47,19 @@ anything. Each names the packet that closes it.
 | B2 | `1.1-r2-001` — closed | *(done)* | Fixed by 1.2 rework-2 item 3.6 |
 | B3 | `1.1-r2-006` — closed | *(done)* | Fixed by 1.2 rework-2 item 3.3 |
 | B4 | `1.2-037` · `1.1-r2-005` | *(done)* | ✅ **CLOSED — verified 2026-08-21** by the 1.5 readiness audit sweep. `obligation_rules` is validated: `E24`–`E28` are all in `catalogue()`. Fixed by the 1.2 validator rework (`dad0989`), which did not update this row |
-| B5 | `1.1-r2-003` · `1.1-r2-004` · `1.2-024` | **1.2 next** | ⚠️ **STILL OPEN — re-verified 2026-08-21:** zero label-section placeholders appear in `validate_messages.yaml`. Origin `1.2-2026-08-14` (7 days). **Closing check:** grep the catalogue for the four section placeholders; expect non-zero |
+| B5 | `1.1-r2-003` · `1.1-r2-004` · `1.2-024` | *(done — catch-up rework)* | ✅ **CLOSED — 2026-08-21, catch-up rework `build/catch-up-rework`.** Closing check re-run: `grep -c -E "\{(entity_name\|item_name\|rule_name\|question_name)\}" backend/app/casepack/validate_messages.yaml` → **9**, was 0. Seven of the eight codes (`E05` `E09` `E12` `E23` `W04` `W06` `W07`, plus `E02`'s entity noun) now resolve their subject through `lens.label(...)` against `catalog` · `entities` · `watch_rules` · `questions`, and `E07`'s `misc` catch-all is narrowed so the fix line is the thing the check tests (`1.1-r2-004`). **Residue: `E21`** still leads with a machine key — `labels.events` holds body prose, not names, so there is nowhere to author an event NAME. Carried as **`R1`**, a schema change, below |
 | B6 | `1.3-012` follow-through | *(done)* | ✅ **CLOSED — verified 2026-08-21.** Riverside declares `options` on all six switches and `E26` checks `permissive_value` against them |
-| B7 | `E00` mis-mapping | **1.2 next** | ⚠️ **STILL OPEN — re-verified 2026-08-21.** Narrowed by the 1.2 rework (`E15`/`E17` now catch the policy cases that used to collapse), but the class survives: `placement: hybrid` on an event precondition still returns a bare `E00 "This pack could not be read"`. Origin `1.2-rework-2026-08-15`. **Closing check:** author an out-of-vocabulary `placement`; expect a targeted code, not `E00` |
+| B7 | `E00` mis-mapping | *(done — catch-up rework)* | ✅ **CLOSED — 2026-08-21, catch-up rework.** Closing check re-run: `placement: hybrid` on an event precondition now returns `E29` at `events.yaml:2`, `Field: saturday_overflow.preconditions.0.placement`, with a fix naming the three legal values — no `E00`. `severity`, the other closed vocabulary on `EventPrecondition`, collapsed identically and is covered by the same raw-stage check. Shipped as the `E29_vocab` **variant**, so `I1` stays set-equal (38 = 38). Regression guard, both directions, in `backend/tests/check_event_preconditions.py` |
 | B8 | `harvested_raw_fit` proximity | *(mitigated)* | 🟡 **MITIGATED — verified 2026-08-21.** The field still ships in `strategies.yaml`, but `backend/tests/test_raw_fit_isolation.py` now guards the mixing `CONTRACTS` prohibits. Relocation remains optional, not a defect |
 | B9 | `1.1-r2-002` · `1.1-r2-007` | *(done, pending merge)* | ✅ **BUILT AND AUDITED 2026-08-21.** `placement` and `other_policy`, the closed eleven-type vocabulary and exact per-type `E29` validation are on `build/1.5-readiness` at `1f060b4`. Independent audit `findings/1.5-readiness-2026-08-21-audit.md` — **PASS WITH FINDINGS, mergeable**. Closes on merge |
-| B10 | `1.3-001` / CG-6 | **1.1 next / 1.6** | ⚠️ **STILL OPEN — re-verified 2026-08-21**, `models.py:58` and `models.py:99`. Origin `1.3-2026-08-18` (3 days). Bites 1.6, not 1.5. **Closing check:** `grep -c "capital_remaining" backend/app/casepack/models.py` → 1 |
-| B11 | `1.3-004` | **1.3 follow-up** | ⚠️ **STILL OPEN — 2026-08-21:** `config_tiers` present at `catalog.yaml:55,77,99`; the derivation claim is a content judgement and was **not** re-derived by this sweep. Origin `1.3-2026-08-18` (3 days) |
+| B10 | `1.3-001` / CG-6 | *(done — catch-up rework)* | ✅ **CLOSED — 2026-08-21, catch-up rework.** Closing check re-run: `grep -c "capital_remaining" backend/app/casepack/models.py` → **1**. `ReviewState.capital_remaining` removed; the round budget holds the single authored home, and `E14` still enforces it against `capital_available - capital_committed` with zero tolerance. No engine or seed path reads the field; all 44 in-repo packs migrated in the same commit, no value changed. `CONTRACTS.md` gains a `capital_remaining` entry and `docs/casepack-schema.md` a migration note |
+| B11 | `1.3-004` | *(done — catch-up rework)* | ✅ **CLOSED — 2026-08-21, catch-up rework, and `1.3-004` was factually wrong.** The stated derivation reproduces **exactly** when the grouping is the source's own `module_level` column: Basic n=7 mean 44571.43 · Mid n=4 mean 70000 · Advanced n=10 mean 115000 → `1.0000 / 1.5705 / 2.5801`, which is the authored `1.00 / 1.57 / 2.58`. The audit's `R2` reading reconstructed *families* at min/mid/max; both readings give 44571 for Basic, which is why it survived review. Shown with its runnable script in `PROVENANCE.md` §2a. Closing check met both ways: `erp_suite`'s capex ladder carries a derivation, and **every other** `config_tiers` multiplier on the file now carries a `TODO: calibrate` (`catalog.yaml:41`, owner 1.7). **No numeric value changed** |
 | B12 | `1.3-005` | **1.7 calibration** | 🟡 **MOSTLY FIXED — verified 2026-08-21.** Now **10 of 42**, not 54 of 75. Residual is calibration content, not a missing path |
-| B13 | `1.3-008` | **1.3 content — RAISED 2026-08-21** | 🔴 **STILL OPEN, AND IT IS A SCORING INPUT.** `catalog.yaml` says `count: 140`; `components.html` says 62. `people_affected` is the **denominator of the Organisational-Readiness training sub-factor** — `organisation.py:63`, `training = trained_count / people_affected` — and Org is one of the three multiplicative factors. An earlier line in this row called it mockup-only; that was wrong and is corrected here. If 62 is the true headcount, every training score for that component is out by 2.26x. **Closing check:** one authored value, cited to its harvest source, with `components.html` agreeing |
-| B14 | 16 mockups at `$44,000` | **0.4 rework / superseded by Phase 3** | ⚠️ **STILL OPEN — re-verified 2026-08-21:** 16 mockup files carry `44,000`, 2 carry `46,000`. Origin `0.3-2026-07-27` — **the only open item older than 25 days.** Static mockups Phase 3 rebuilds; no engine or scoring path reads them |
-| B15 | `1.3-011` / row 5 | **any future harvest** | 🔵 **OPEN BY DESIGN — 2026-08-21.** Deliberate: there is no second harvest scheduled, and nothing downstream consumes the placeholder rows. Origin `1.3-2026-08-18` |
-| B16 | 27 `TODO: calibrate` | **1.7** | 🔵 **OPEN BY DESIGN — re-verified 2026-08-21: now 38**, not 27. Permitted under `§4.9`; thresholds cannot be calibrated before 1.7 has an engine to calibrate against. Not a defect and not backtracking |
-| B17 | `1.3-009` | **1.3 follow-up** | ⚠️ **STILL OPEN — 2026-08-21.** Six tables still lack a `PROVENANCE.md` disposition. Content judgement, not a code path. Origin `1.3-2026-08-18` (3 days) |
+| B13 | `1.3-008` | *(done — catch-up rework)* | ✅ **CLOSED — 2026-08-21, catch-up rework.** `mis_lite` was reachable and was **queried**: it carries no headcount, user-count or staffing column in any of its 79 tables, so `people_affected` has no harvested source and never had one (query and `(0 rows)` output in `PROVENANCE.md` §11). The authored value is **62**, which five independent homes already said — 0.3 spec `:301` and `:310`, `components.html:17`, `rollout.html:13`, and the 1.4 seed `riverside_r3.py:159`. `catalog.yaml` was the sole outlier at 140, the whole-unit size, and was corrected; the mockups were **not** edited. **The 1.4 Org pin did NOT move** — the scorer reads `DeploymentState`, the seed already carried 62, and the pin is for `order_fulfilment` (`dep_order_mgmt`, 140/49) not `store_operations`; `org == 0.507003` to `1e-6`, unchanged. Guard: `harvest_readback.py` now pins the whole Users column, 43 → **47** pinned figures |
+| B14 | 16 mockups at `$44,000` | *(accepted — superseded by Phase 3)* | 🔵 **ACCEPT — ruled 2026-08-21** by `handoffs/rework/catch-up-2026-08-21.md` §2 and **not built** by the catch-up rework. 16 mockup files carry `44,000`, 2 carry `46,000`; static Phase 0 mockups Phase 3 rebuilds, and no engine or scoring path reads them. The delta stays **declared**: `harvest_readback.py` prints it as a declared conflict on every run rather than reconciling it. Reason stated, not revisited (`§I` amendment 2, `ACCEPT`) |
+| B15 | `1.3-011` / row 5 | *(accepted — any future harvest)* | 🔵 **ACCEPT — ruled 2026-08-21** by the catch-up scope §2 and **not built**. No second harvest is scheduled and nothing downstream consumes the 630 placeholder rows; they stay recorded in `PROVENANCE.md` §5 with their distinct-value counts, so a future harvest inherits the evidence rather than the conclusion |
+| B16 | 27 `TODO: calibrate` | **1.7** | 🔵 **OPEN BY DESIGN — DEFER to 1.7**, re-affirmed by the catch-up scope §2 and **not built**. Permitted under `§4.9`; thresholds cannot be calibrated before 1.7 has an engine to calibrate against. **Count corrected 2026-08-21 (catch-up rework):** the *38* recorded here was a `grep` over the whole pack **directory**, which counts four prose mentions inside `PROVENANCE.md` itself. Marked values in pack **YAML** were **33**; they are **34** after `B11` added one covering the non-ERP `config_tiers` multipliers. `PROVENANCE.md` §7 tabulates all 34 by file |
+| B17 | `1.3-009` | *(done — catch-up rework)* | ✅ **CLOSED — 2026-08-21, catch-up rework.** Closing check re-run mechanically: `34 extracted · 34 disposed · missing: []`. `PROVENANCE.md` §5a gives the six a row each, plus the two the audit called *recorded in prose but not tabulated* (`ecommerce_features_master`, `business_processes_master`), plus the `security_incidents.probability` note. `change_management_master` (8 costed options) and `change_management_strategy_fit` (20 fit cells) are recorded as a **real gap with a named owner (1.7)**, not as a discard |
 | B18 | **`1.1-r3-002`** | *(done)* | ✅ **CLOSED — verified 2026-08-21.** A `default` outside its own `options` now raises a targeted `E17`, not an `E00` collapse. Fixed by the 1.2 validator rework (`dad0989`), which did not update this row |
 | B19 | `1.1-r3-003` | *(done)* | ✅ **CLOSED — verified 2026-08-21.** That exact input now raises `E15` + `E26` |
 | B20 | `1.1-r3-006` | *(done)* | ✅ **CLOSED — verified 2026-08-21.** `options: [on, off]` now raises `E15`, a real diagnostic, not the "restore or repair" collapse |
@@ -232,6 +239,36 @@ true. Proposed, pending the user's ruling:
 4. **The auditor re-runs the register's closing checks**, not only the packet's own DoD.
 
 ---
+
+## J. From the consolidated catch-up rework — 2026-08-21
+
+Branch `build/catch-up-rework`. DoD and evidence: `handoffs/rework/dod-catch-up.md`.
+Not audited by its builder (`GOVERNANCE §6.1`); an independent pass reviews the branch
+before it merges.
+
+**Why this packet existed:** six findings were recorded with an owner and never dispatched,
+and two were dispatched and survived unclosed. Root cause, from the scope file: *"a finding
+was recorded with an owner, and no step ever converted an owner into a dispatch."*
+
+### Register Reconciliation — every row naming this packet
+
+| # | Closing check | Result |
+|---|---|---|
+| `B5` | four label-section placeholders in the catalogue, non-zero | **CLOSED** — 9, was 0 |
+| `B7` | out-of-vocabulary `placement` → a targeted code, not `E00` | **CLOSED** — `E29`, file and field named |
+| `B10` | `grep -c "capital_remaining" backend/app/casepack/models.py` → 1 | **CLOSED** — 1, was 2 |
+| `B11` | each `config_tiers` multiplier carries a derivation or a `TODO: calibrate` | **CLOSED** — and `1.3-004` was wrong; the derivation does reproduce |
+| `B13` | one authored value cited to its source, `components.html` agreeing | **CLOSED** — 62. **Org pin did not move** |
+| `B17` | every table in the §5.1 transform map has a disposition line | **CLOSED** — `34 disposed · missing: []` |
+| `B14` `B15` `B16` | ruled in scope §2 | **ACCEPT / ACCEPT / DEFER-1.7.** Not built |
+
+### Raised by this packet
+
+| # | Item | Owner |
+|---|---|---|
+| **J1 — `R1`** | **There is nowhere in `labels.yaml` to author an event's NAME**, so `E21` still leads with a machine key while the other seven of `1.2-024`'s eight codes no longer do. `labels.events` maps `body_key` to a paragraph of in-world prose — `docs/casepack-schema.md` says so in a call-out — so routing `E21` through it would print a persona's message as a locator line. A schema change (a new section), not a validator fix; recorded at the call site in `validate.py` as well as here. **Closing check:** an `E21` finding on a pack that authors an event title leads with that title, and `docs/casepack-schema.md` no longer says there is nowhere to author one | **1.1 next** (`labels.yaml` schema) |
+| **J2** | **`preferences/training.yaml`'s provenance string overstates what was harvested.** It reads *"mis_lite change management tables reworked into training preferences"*; five archetype `ideal_training_coverage` entries are not a rework of `change_management_master`'s 8 costed rollout options plus `change_management_strategy_fit`'s 20 fit cells, none of which reached the pack. Recorded in `PROVENANCE.md` §5a with both tables' dispositions. **Closing check:** the provenance string names what it actually derives from, or the eight options are authored into the pack | **1.7 calibration** |
+| **J3** | **`1.3-004` is on record as a finding and is factually wrong**, and the finding file is not rewritten by this packet. `findings/1.3-2026-08-18-audit.md:220-250` asserts the `erp_suite` derivation *"does not reproduce under any grouping"*; it reproduces exactly on `erp_modules_master.module_level` (`PROVENANCE.md` §2a). The correction lives in `PROVENANCE.md`, beside the value, rather than being edited into a dated audit — `GOVERNANCE §8`: the disagreement is recorded in the living document. **Closing check:** none needed; noted so the next reader of that audit is not misled | *(recorded — no owner required)* |
 
 ## Standing rule
 
