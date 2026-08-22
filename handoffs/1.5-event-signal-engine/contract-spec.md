@@ -314,8 +314,10 @@ actually move the metric toward not-raising. `cleared_by` action keys carry no p
   (O1) — never counted as an un-acted miss for a fix that never existed.
 - **Worked example — the seed's three signals (all `was_actionable = True`, matching
   `riverside_r3.py:196-198`):** `ord_cap_01` cheapest fix = a deployment serving `order_fulfilment`
-  (a `saas` mode at `capex 0`, `catalog.yaml:71`) → `0`; `wh_rollout_01` cheapest effectful fix =
-  `add_training basic 12000` (the `none:0` option excluded) → `12000`; `sec_identity_01` cheapest fix
+  (a `saas` mode at `capex 0`, `catalog.yaml:71`) → `0`; `wh_rollout_01` cheapest effectful fix = the
+  **minimum across its `cleared_by` set** (`add_training`/`redesign_process`/`fund_response`) =
+  `redesign_process 3000` → `3000` (dearer than the `add_training basic 12000` this example first
+  named, and `none:0` is excluded as ineffective — corrected per audit 1.5-ENG-003); `sec_identity_01` cheapest fix
   = `central_sign_on saas capex 0` (`platform.yaml:103`) or `add_policy` → affordable. All ≤ the R2/R3
   remaining capital (`≥ 46000`, `pack.yaml:39`), so all three project `actionable = True`. *(The 1.5
   spec's illustrative `cheapest_fix_when_raised: 60000` at `1.5 spec.md:141` is **not reproduced** —

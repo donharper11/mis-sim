@@ -421,6 +421,27 @@ be audited before the 1.5 engine builder restarts pre-flight (`contract-spec §9
 
 ---
 
+## O. 1.5 Event & Signal Engine — built, audited, merged — 2026-08-22
+
+The engine (the Phase-1 event/signal model) is **built and merged**. Independent Heavy-tier audit
+(`findings/1.5-engine-2026-08-22.md`) verdict **PASS WITH FINDINGS** at build `059e7ff` — zero
+Blocking/Functional; the auditor planted 8 defects to prove the falsification checks are real, and
+recomputed the 1.4 pin byte-identical. Merged to `main` at `0f1444c` (`--no-ff`); the three findings
+were fixed/dispositioned in the follow-up commit.
+
+| # | Sev | Item | Disposition |
+|---|---|---|---|
+| `1.5-ENG-001` | Data | Engine files carried "Riverside" in **comments**, so the spec's `-niE` I1 grep reported 3 hits (no actual identity branching) | ✅ **FIXED** — comments made pack-agnostic ("the reference pack"); both the case-sensitive purity guard and the spec's `-niE` grep now read **0** over `backend/app/engine` |
+| `1.5-ENG-002` | Report | The contract-spec narrative "v1.0 rule drives the pin to 0.0" is loose — protection is actually via `test_cc4_projection_reproduces_seed_rows`, not the pin test | ⏸ **ACCEPTED** — narrative nuance; the protection is real and green. Not worth a spec edit |
+| `1.5-ENG-003` | Report | Contract-spec §5.5.4 worked example said `wh_rollout_01` fix = `12000`; the engine correctly computes `3000` (its `cleared_by` also includes `redesign_process`) | ✅ **FIXED** — the illustrative figure corrected to `3000` (min across the `cleared_by` set); the build was already right |
+
+**Closed by this build:** the five metric functions, the signal ledger + `SignalState` projection,
+all eleven precondition shapes, event attribution/O2/arms, blast radius + duration, and the outage
+schema (`CC-D3`/`CC-D4` landed as step 0). **Unblocks 1.6 (round-runner), 1.7, 3.2, 4.3.**
+`OS-D1` (numeric out-of-range → `E00`) remains open, owner **1.2**.
+
+---
+
 ## Standing rule
 
 > **A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is

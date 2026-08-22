@@ -2,7 +2,7 @@
 
 Each type is total: it returns a bool, or -- for the two inputs 1.6 has not yet supplied --
 raises `MissingRoundInputError` rather than silently reading FALSE. Boundary direction is
-frozen per type (strict `>`, strict `<`, `>=`, or `==` as the table specifies). Riverside uses
+frozen per type (strict `>`, strict `<`, `>=`, or `==` as the table specifies). The reference pack uses
 only `signal_open`; the other ten are exercised by synthetic fixtures.
 """
 

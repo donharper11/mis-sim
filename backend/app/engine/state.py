@@ -45,7 +45,7 @@ class ArchNode:
     #: Runtime placement of the deployed item behind this node, one of on_prem/cloud/saas
     #: (never the derived `hybrid`, CONTRACTS.md placement). The `placement_count`
     #: precondition reads it; it is a 1.6 round-evolution field the pure 1.5 engine only
-    #: reads. `None` means the round runner has not populated it (unused by Riverside).
+    #: reads. `None` means the round runner has not populated it (unused by the reference pack).
     placement: str | None = None
 
     @property
@@ -218,7 +218,7 @@ class TeamState:
     available_funds_by_round: tuple[int, ...] = ()
     #: Per-capability debt ratio (1.6 output, contract-spec S5). `None` means the round runner
     #: did not supply it; the `debt_above` precondition then raises `MissingRoundInputError`
-    #: rather than silently reading FALSE. Unreachable in v1 (no Riverside event uses it).
+    #: rather than silently reading FALSE. Unreachable in v1 (no reference-pack event uses it).
     debt_ratio_by_capability: dict[str, float] | None = None
 
     # -- convenience indexes, all pure ------------------------------------------
