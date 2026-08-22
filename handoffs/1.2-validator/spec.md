@@ -1,9 +1,10 @@
 # 1.2 — Casepack Validator · Build Spec
 
 **Authored under** `SPEC_PROTOCOL.md` v1.1 · **Author:** Claude · **Date:** 2026-07-26
-**Spec version:** v1.5 · **Amended:** 2026-08-21 — readiness closeout adds exact precondition-shape code `E29` and pack-relative W08
+**Spec version:** v1.6 · **Amended:** 2026-08-22 — findings CU-001/CU-002/CU-003: `E18` closes the closed-vocabulary E00-collapse class; the E29 behaviours are enumerated and made variant-visible; the label-routing narrowing is guarded
+**Previously amended:** v1.5, 2026-08-21 — readiness closeout added exact precondition-shape code `E29` and pack-relative W08
 **Previously:** v1.4, 2026-08-21 — obligation and policy coverage; v1.3, 2026-08-18 — `W08` added; v1.2, 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
-**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E17` · `E20`–`E29` · `W01`–`W08` · `I3` · `I8`
+**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E18` · `E20`–`E29` · `W01`–`W08` · `I3` · `I8`
 **Phase:** 1 · **Depends on:** **1.1 as approved** · **Blocks:** 1.3, 6.1
 
 > An unvalidated pack does not fail loudly — it runs and scores wrongly, and you find out
@@ -175,7 +176,21 @@ E15  a policy option value, or a non-null default, that is not a valid
 E16  a policy options list that names the same value twice               NEW v1.4
 E17  a policy default that is not one of its declared options — the precise
      form of the model-load failure that used to collapse to E00        NEW v1.4
+E18  any closed model vocabulary (a Literal or StrEnum field) set outside its
+     range — entities.sensitivity, stakeholders.stakeholder_type,
+     provenance.source, catalog.rgt_tag, watch_rules.metric_kind, and any
+     field like them added later                                        NEW v1.6
 ```
+
+> **`E18` closes finding `CU-001`.** `E15`–`E17` and `E29` each pre-empt ONE family of
+> closed-vocabulary value before the load; every OTHER `Literal`/`StrEnum` field still made
+> `models.py` refuse the whole pack and collapsed to a single opaque `E00` naming no field,
+> against a file that parsed perfectly (`GOVERNANCE 4.10`). `E18` closes the **class**: it
+> reads pydantic's own error report on the load-failure path, which knows the exact field,
+> the bad value and the allowed set for every enum failure — present, future, or nested —
+> so no closed vocabulary can collapse to `E00` again. It restates no vocabulary: `allowed`
+> comes straight off the model. Two independent bad values now both surface as `E18`, and an
+> `E18` no longer hides an independent `E03`/`E04`/`E15`.
 
 > **`E15`–`E17` close finding `1.2-RA-003`.** `PolicyOption.options` is a plain `list[str]`,
 > so the model never checked its shape — empty, non-snake or duplicated option keys loaded
@@ -216,9 +231,22 @@ E26  an obligation whose permissive_value is not a declared option of its
      policy — it would watch for a switch position that cannot occur       NEW v1.4
 E27  an obligation cleared_by referencing an unknown action type           NEW v1.4
 E28  an obligation arming an event the pack does not define                NEW v1.4
-E29  an event precondition with an unknown type, a missing required field,
-     or a field belonging to another type                               NEW v1.5
+E29  an event precondition that is not one exact known shape, in any of four
+     ways: (1) an unknown type; (2) a missing required field; (3) a field
+     belonging to another type; (4) a field set outside its own closed
+     vocabulary (placement, severity) — the `E29_vocab` variant, which runs
+     on raw YAML before the load so it does not collapse to E00     NEW v1.5
 ```
+
+> **`E29` has four behaviours, and they are variants of one code by design.** All four are
+> the same defect — *"this precondition is not one exact known shape"* — so inventing a code
+> per behaviour would break `I1`'s set equality for no gain. The one that runs before the
+> load (`E29_vocab`, behaviour 4) mirrors `E17`: a `Literal` field set out of range would
+> otherwise refuse the whole pack as `E00`. Because the behaviours ride under one code, they
+> are held by a **second** invariant, not `I1`: `catalogue()["variants"]` is checked
+> set-equal against the variants the spec names (finding `CU-002` — `I1` counts codes only,
+> so a new variant used to be able to appear with no spec change and no fixture). The
+> variant register is in **§6** (invariant `I1v`).
 
 > **`E24`–`E28` close finding `1.2-RA-001`.** `obligation_rules.yaml` is loaded
 > (`loader.py:27,89`) but no check read it, so a nonexistent entity, policy, permissive
@@ -378,6 +406,7 @@ would actually run.
 | # | Invariant | Check | Expected |
 |---|---|---|---|
 | I1 | **Every code this spec names is implemented**, and every ERROR carries file, field and fix | compare the code set emitted by `catalogue()` against the codes named in §5.1, §5.2 and §5.3 | **set equality**, no extras and no absences |
+| I1v | **Every message variant this build carries is named in the register below**, and vice versa | compare `catalogue()["variants"]` against the variant register in this section | **set equality**, no extras and no absences |
 | I2 | Exit 1 whenever ≥1 ERROR | run against a deliberately broken pack | exit 1 |
 | I3 | Exit 0 with warnings only | run against a warn-only pack | exit 0 |
 | I4 | No pack-identity branching | `grep -rniE "riverside\|grocer" backend/app/casepack/validate*` | zero |
@@ -395,6 +424,24 @@ would actually run.
 > attribution and reordered relative to the text output, and still satisfied `json.tool`.
 > Since 5.6's instructor view consumes directory mode, the guarantee has to hold there most
 > of all.
+
+> **`I1v` added by finding `CU-002`.** `I1` counts `catalogue()["codes"]` only, so a code's
+> *behaviours* — its message variants — were invisible to it: the catch-up packet added
+> `E29_vocab` (E29's fourth behaviour) with no spec change and no fixture, and `I1` stayed
+> set-equal the whole time. A variant is a distinct thing the validator can say; it is now
+> held set-equal against a register the spec owns, so a new one cannot appear silently.
+
+### Variant register
+
+A **variant** is an alternate message under an existing code, used when one code has more
+than one authored behaviour. Each is set-equal against `catalogue()["variants"]` by `I1v`.
+
+```
+E10_pack_key       E10 when two packs in a directory share a pack_key
+E15_default        E15 when the malformed value is the DEFAULT, not an option
+E26_no_options     E26 when the referenced policy declares no options at all
+E29_vocab          E29 behaviour 4: a precondition field outside its closed vocabulary
+```
 
 ---
 
@@ -553,6 +600,19 @@ This is consistent with `GOVERNANCE §5`: *"No casepack reaches a section until
 ---
 
 ## 10. Changelog
+
+**v1.6 — 2026-08-22, findings CU-001 / CU-002 / CU-003.** Adds `E18`: every closed model
+vocabulary (a `Literal` or `StrEnum` field) set out of range now names its file and field
+instead of collapsing the whole pack into an opaque `E00`. It closes the *class* that
+`E15`–`E17` and `E29` each closed one instance of, by reading pydantic's own error report on
+the load-failure path — so `sensitivity`, `stakeholder_type`, `source`, `rgt_tag`,
+`metric_kind` and any future closed field are covered without restating a vocabulary. `E29`'s
+four behaviours are enumerated in §5.2 and the schema guide, and a new invariant `I1v` holds
+`catalogue()["variants"]` set-equal against the §6 variant register, so a code's behaviours
+can no longer drift invisibly to `I1`. `test_label_routing.py` makes the B5 label-display
+contract executable in both halves — business-label routing and the `misc` narrowing — each
+proven to fail on revert. `broken_E18` fixture added; I1/I5 keep their guards; no invariant
+moved or was dropped.
 
 **v1.5 — 2026-08-21, 1.5 readiness closeout.** Adds `E29` for the closed eleven-type precondition vocabulary and exact per-type fields, including the frozen `placement` and `other_policy` shapes. W08 now derives its minimum from `pack.metadata.rounds`; empty affinity still counts for every strategy and still raises W03. The fixture matrix, focused shape/round tests, catalogue and schema guide change together. I1/I5 keep their numbers and guards; no invariant moved or was dropped.
 

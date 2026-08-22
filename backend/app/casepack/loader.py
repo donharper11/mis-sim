@@ -12,7 +12,15 @@ from app.casepack.models import Casepack
 
 
 class CasepackLoadError(ValueError):
-    """Raised when a casepack file cannot be parsed or validated."""
+    """Raised when a casepack file cannot be parsed or validated.
+
+    When the refusal came from pydantic (a schema violation rather than a YAML syntax
+    error), the full `ValidationError` is attached as `validation_error`. The validator
+    reads it to give each closed-vocabulary failure a targeted code instead of collapsing
+    the whole pack into one opaque E00 (finding CU-001; `GOVERNANCE 4.10`).
+    """
+
+    validation_error: ValidationError | None = None
 
 
 SECTION_FILES = {
@@ -101,4 +109,6 @@ def load_casepack(pack_dir: str | Path) -> Casepack:
         section = loc[0] if loc else "casepack"
         file_name = SECTION_FILES.get(section, section)
         field = ".".join(loc)
-        raise CasepackLoadError(f"{file_name}: {field}: {first['msg']}") from exc
+        error = CasepackLoadError(f"{file_name}: {field}: {first['msg']}")
+        error.validation_error = exc
+        raise error from exc

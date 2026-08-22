@@ -53,6 +53,11 @@ provenance:
   note: handoffs/0.4-mockups-remaining/spec.md section 5.4
 ```
 
+**Fields marked `enum` below have a closed vocabulary.** A value outside it — `source`,
+`rgt_tag`, `sensitivity`, `metric_kind`, `stakeholder_type`, and any like them — is reported
+as `E18`, naming the file and field and listing the allowed values. It no longer collapses
+the whole pack into an unreadable-pack `E00` (finding CU-001).
+
 ## `pack.yaml`
 
 Feeds budget, company profile, round count, and the seeded baseline used to prove the
@@ -327,8 +332,10 @@ Feeds event deck, inbox, response decisions, rationale tags, and outcome trace.
 
 An event fires when every one of its preconditions is true. Each precondition names a
 `type`, and each type reads only the fields it needs. Every field below is optional in the
-union model, but the validator requires the exact shape for the selected type: missing
-fields, unknown types, and fields belonging to another type are `E29` errors.
+union model, but the validator requires the exact shape for the selected type. `E29` covers
+four behaviours: (1) an unknown `type`; (2) a missing required field; (3) a field belonging
+to another type; and (4) a field set outside its own closed vocabulary — `placement` or
+`severity` — reported as the `E29_vocab` variant.
 
 | Field | Type | Read by |
 |---|---|---|
