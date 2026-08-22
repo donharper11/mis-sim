@@ -60,6 +60,16 @@ where BECSR's retrofit pain is avoidable, and I4 enforces it.
 7. **Partial-update semantics for the decision sheet** — only categories present in the
    payload are written. (Learned from GSCM's `PeriodDecisionV2`; a full-replace payload
    silently wipes categories the UI did not send.)
+8. **`people_affected` has one authoritative home: the catalog** *(finding CU-004,
+   `SPEC_PROTOCOL §3` reconciliation rule).* `catalog.yaml`'s `<item>.people_affected.count`
+   is the population a deployment of that item affects. A deployment's `people_affected` — the
+   value the org scorer divides by (`organisation.py`: `training = trained_count /
+   people_affected`) — **must equal the count of its `catalog_key`'s catalog item.** In the
+   R3 seed it is hand-authored and duplicates the catalog; **this packet must derive it from
+   the catalog** so the duplicate home disappears. Until then the two must not drift: the
+   guard `backend/tests/test_people_affected_reconciliation.py` fails if any seeded
+   deployment's `people_affected` disagrees with its catalog item, so the scorer can never
+   silently divide by a number the authored pack does not carry.
 
 ---
 
