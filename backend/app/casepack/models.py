@@ -510,7 +510,14 @@ class Labels(StrictModel):
     sidebar: dict[SnakeKey, str] = Field(default_factory=dict)
     strategies: dict[SnakeKey, str] = Field(default_factory=dict)
     stakeholders: dict[SnakeKey, str] = Field(default_factory=dict)
+    #: An event's in-world message, keyed by its `body_key` -- a sentence or paragraph a
+    #: persona says, NOT a name. `event_names` below is where an event's short title lives.
     events: dict[SnakeKey, str] = Field(default_factory=dict)
+    #: An event's short display title, keyed by the event's own key. Finding J1 (R1): every
+    #: other family here has a name map, but events had only `events` (prose), so findings
+    #: about an event -- E21 -- led with the machine key. Optional: a pack that authors no
+    #: title still gets the key, so existing packs load unchanged.
+    event_names: dict[SnakeKey, str] = Field(default_factory=dict)
     policies: dict[SnakeKey, str] = Field(default_factory=dict)
     entities: dict[SnakeKey, str] = Field(default_factory=dict)
     catalog: dict[SnakeKey, str] = Field(default_factory=dict)

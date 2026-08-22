@@ -267,10 +267,18 @@ roles:
 sidebar:                             # globalstrat's server-supplied sidebarLabels
   applications: "Applications"
   platform: "Platform"
-events:
+events:                              # keyed by body_key: the persona's message (prose)
   event_saturday_queue: |
     Online orders queued for six hours Saturday...
+event_names:                         # keyed by the event's own key: its short title
+  saturday_overflow: "Saturday Overflow"
 ```
+
+**`event_names` added by finding J1.** Every label family maps a key to a short name;
+`events` was the exception — it maps `body_key` to a paragraph of in-world prose, so a
+finding about an event (E21) had nowhere to read a title and led with the machine key.
+`event_names` is the title map, keyed by the event's own key. Optional: an event with no
+title falls back to its key, so existing packs load unchanged.
 
 **No English literal may appear in engine code.** Invariant I2.
 

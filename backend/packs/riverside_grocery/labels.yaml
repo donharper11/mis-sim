@@ -93,6 +93,23 @@ events:
   event_supplier_portal_request: Three of our suppliers want to see stock levels themselves instead of phoning us every morning.
   event_board_wants_numbers: The board wants to know which customers we are losing and why. I cannot answer that from what we hold.
 
+# Event display titles, keyed by the event's own key (finding J1). `events` above is the
+# persona's message; this is the short name a finding or a screen leads with.
+event_names:
+  inventory_audit_question: Inventory Accuracy Challenged
+  warehouse_rollout_gap: Warehouse Rollout Gap
+  pos_support_ending: POS Support Ending
+  ransomware_on_finance: Ransomware on Finance
+  crm_data_exposed: Customer Records Exposed
+  phishing_on_staff_accounts: Staff Accounts Phished
+  privacy_regulator_letter: Privacy Regulator Letter
+  financial_audit_deadline_missed: Audit Deadline Missed
+  unlogged_system_change: Unlogged System Change
+  checkout_queues_lengthen: Checkout Queues Lengthen
+  service_backlog_builds: Service Backlog Builds
+  supplier_portal_request: Supplier Portal Request
+  analytics_request_from_board: Board Wants Numbers
+
 policies:
   data_collection: What customer information we collect
   data_retention: How long we keep it
