@@ -467,6 +467,38 @@ all eleven precondition shapes, event attribution/O2/arms, blast radius + durati
 schema (`CC-D3`/`CC-D4` landed as step 0). **Unblocks 1.6 (round-runner), 1.7, 3.2, 4.3.**
 `OS-D1` (numeric out-of-range → `E00`) remains open, owner **1.2**.
 
+## P. 1.6 Round Runner — independent audit — 2026-08-22
+
+Verdict **PASS WITH FINDINGS** (no Blocking) at `build/1.6-round-runner`
+(`findings/1.6-round-runner-2026-08-22.md`). One Functional finding fixed on the build branch;
+two Report findings addressed; the rest registered here with owners per the standing rule. The
+builder's three surfaced observations were all ruled sound by the integration authority.
+
+**Fixed on `build/1.6-round-runner` (this dispatch):**
+
+| # | Sev | Item | Closing check |
+|---|---|---|---|
+| `1.6-A-001` | Functional | `_missed_signals` keyed the projection by signal key, collapsing episodes so a later cleared episode could mask an earlier open-then-fired one (dropping a genuine "you were told in round N"). Re-keyed by episode identity `(key, episode_id)` (zip `ledger` with `project_signal_state`, which is per-episode). | `tests/test_round_runner.py::test_a001_missed_signals_counts_each_episode` — FAILS on the collapse, passes with the fix (shown 2026-08-22). |
+| `1.6-A-007` | Report | Spec §5.5 overstated the `--full` R3 pin as "byte-identical". Corrected to the honest reading: the pin is preserved hermetically (`test_engine_scoring`) and through the projection seam (`test_round_pin`); `--full` reproduces the credited/un-credited *pattern*, not the number (R3 realised ≈0.2038 ≠ pin 0.249744). | `handoffs/1.6-round-runner/spec.md §5.5`. |
+| `1.6-A-006` | Report | The spec §9 DoD table was unfilled. Filled with builder evidence. | `handoffs/1.6-round-runner/spec.md §9`. |
+
+**Registered (owned; not fixed here — ruled out of 1.6 scope):**
+
+| # | Sev | Item | Owner | Note |
+|---|---|---|---|---|
+| `1.6-A-002` | Functional | Decision-sheet estate mutation is seeded (per-round estate authored), not applied by a `decision_line`→estate-delta engine. **Ruled a legitimate deferral by the integration authority** — the delta contract is undefined and belongs to a later packet. | **Live-decision mutation — Phase 2/3** | Not a defect for 1.6; the runner implements steps 1,3,9–14 and derives 4–8. **1.7 is NOT blocked** — it uses scripted teams (authored estates), exactly what `--full` provides. |
+| `1.6-A-003` | Data | The `--full` opex figures are back-distributed across nodes to hit the authored ratchet targets (47000…70000) rather than derived from real per-node cost models. | **1.7 calibration** + seed author | The recompute path (`opex = sum(live node contributions)`, I7) is real; the per-node *values* are `TODO: calibrate`. |
+| `1.6-A-004` | Data | Decision 8 (`people_affected` derived from the catalog) is not yet applied — the seed still carries hand-authored `people_affected` (kept consistent by `test_people_affected_reconciliation.py`). | **1.7 / content** | Deferred derivation; the reconciliation guard prevents drift meanwhile. |
+| `1.6-A-005` | Report | `team_state.cash` is vestigial (written, not read by any scoring/funds path — the funds ratchet is recomputed). | **cleanup** (a later round/persistence packet) | Harmless; remove or wire when a cash consumer exists. |
+| `1.6-A-008` | Report | The instance-isolation canary runs two instances of **one** casepack, not two different casepacks (GOVERNANCE §5 wording). | **2.2 instance-scoping** | 1.6 has one pack; the canary proves per-instance partitioning + no cross-reads. Full cross-casepack canary at 2.2. |
+| `1.6-A-009` | Report | Step 9's raw score is a dead computation (its output is fully discarded; only step 12 is persisted). **Spec-blessed** (O4 / finding 1.6-SR-001: step 9 is provisional). | **note** (no owner action) | Kept for spec-order fidelity; a future optimisation could skip it if events never perturb tech/org. |
+
+**Register reconciliation 2026-08-22 (build `build/1.6-round-runner`).** Fixed + re-tested on the
+shipped commit: `1.6-A-001` (guard added, reachable from `make check`), `1.6-A-007`, `1.6-A-006`.
+Registered with owners: `1.6-A-002` (Phase 2/3), `1.6-A-003` (1.7), `1.6-A-004` (1.7/content),
+`1.6-A-005` (cleanup), `1.6-A-008` (2.2), `1.6-A-009` (note). CC-D6/7/8/10 remain CLOSED (§M). The
+1.4 pin is byte-identical and `make check` is green on the shipped commit.
+
 ---
 
 ## Standing rule

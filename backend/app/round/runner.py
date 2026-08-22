@@ -243,14 +243,18 @@ class RoundRunner:
 
     def _missed_signals(self, ledger: tuple) -> list[dict]:
         """Signals that were actionable and never credited -- what prints 'you were told in round N'
-        (spec section 5.3). `cheapest_fix_when_raised` is the 1.5 lookup, not an authored figure."""
-        projected = {p.key: p for p in ledger_mod.project_signal_state(ledger)}
+        (spec section 5.3). `cheapest_fix_when_raised` is the 1.5 lookup, not an authored figure.
+
+        Keyed by EPISODE identity, not by signal key (finding 1.6-A-001). `project_signal_state`
+        returns one `SignalState` per ledger row in ledger order, so it is zipped element-for-element
+        with the episodes: a later cleared episode must never mask an earlier open-then-fired episode
+        of the same signal (that dropped a genuine "you were told in round N" from the debrief)."""
         out: list[dict] = []
-        for s in ledger:
-            p = projected.get(s.key)
-            if s.was_actionable and p is not None and not p.acted_before_fire:
+        for s, p in zip(ledger, ledger_mod.project_signal_state(ledger)):
+            if s.was_actionable and not p.acted_before_fire:
                 out.append({
-                    "key": s.key, "first_shown_round": s.first_shown_round,
+                    "key": s.key, "episode_id": s.episode_id,
+                    "first_shown_round": s.first_shown_round,
                     "cheapest_fix_when_raised": s.cheapest_fix_when_raised,
                 })
         return out

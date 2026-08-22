@@ -236,6 +236,39 @@ def test_i9_plant_overwrite_is_detectable(session, pack):
     assert row.status == "open"  # the plant DID change ep1 -> the append-only assertion would FAIL
 
 
+# -- A-001: missed_signals is keyed by EPISODE, not by signal key --------------------------
+
+def test_a001_missed_signals_counts_each_episode(session, pack):
+    """A previously-cleared signal that re-raises and FIRES a new episode must appear in
+    missed_signals for that fired episode; the earlier cleared episode must NOT (finding 1.6-A-001).
+
+    The collapse defect (keying the projection by `s.key`) let the later episode's projection mask
+    the earlier one -- dropping a genuine 'you were told in round N' (or falsely reporting a cleared
+    episode). Keying by episode identity fixes both directions; this test fails on the collapse."""
+    runner = _seed_two_rounds(session, pack)
+    ledger = (
+        # ep1: raised then CLEARED before fire (credited -> acted_before_fire True; NOT a miss)
+        LedgerSignal(
+            key="wh_rollout_01", episode_id=1, capability="order_fulfilment",
+            metric="rollout_without_support", metric_kind="presence", value=1.0,
+            severity="critical", status="cleared", first_shown_round=2, cleared_round=3,
+            fire_round=None, cleared_by=("add_training",), was_actionable=True,
+            cheapest_fix_when_raised=3000,
+        ),
+        # ep2: re-raised and FIRED, never acted (a genuine miss -> must be in missed_signals)
+        LedgerSignal(
+            key="wh_rollout_01", episode_id=2, capability="order_fulfilment",
+            metric="rollout_without_support", metric_kind="presence", value=1.0,
+            severity="critical", status="fired", first_shown_round=4, cleared_round=None,
+            fire_round=4, cleared_by=(), was_actionable=True, cheapest_fix_when_raised=3000,
+        ),
+    )
+    missed = runner._missed_signals(ledger)
+    episodes = {(mn["key"], mn["episode_id"]) for mn in missed}
+    assert ("wh_rollout_01", 2) in episodes, "the fired episode must be reported as a missed signal"
+    assert ("wh_rollout_01", 1) not in episodes, "the cleared (credited) episode must NOT be reported"
+
+
 # -- O2: in-flight purchases materialise only at arrival_round ------------------------------
 
 def test_o2_in_flight_materialises_at_arrival(session, pack):
