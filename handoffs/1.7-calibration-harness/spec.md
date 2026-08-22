@@ -88,7 +88,7 @@ a raw engine key in the printed report is a finding. I3.
    hash of DB rows (autoincrement ids, insert order differ). I2 hashes the score fields only.
 3. **The harness never edits the pack.** It reports; humans decide (I5).
 4. **Runs headless in CI-less local dev.** One command, no services beyond the DB (the round-runner's
-   Postgres, or its `create_all` fallback — `demo._run_full`, `demo.py:150`).
+   Postgres, or its `create_all` fallback — `demo._run_full`, `demo.py:147`).
 5. **The gate is a HUMAN judgment, not a numeric assertion by code** *(reconciled 2026-08-22 — see
    §11; aligns the spec to `design/05` §5, which rules the Phase-1 gate as **"curves reviewed; no
    dominant strategy"**).* The harness is **mechanical and deterministic**: it runs, produces the
@@ -118,7 +118,10 @@ a raw engine key in the printed report is a finding. I3.
 8. **The output is the four BSC dimensions + realised, per archetype, across 6 rounds** (the mandate,
    `design/02:102`). `realised` per archetype per round is `payload["firm_score"]` (strategy-weighted
    Σ realised(c), `rollup.firm_score`, `rollup.py:35`); the four BSC dims are
-   `payload["scorecard"].{financial,customer,internal_process,learning_growth}` (`score.py:96-99`).
+   `payload["scorecard"].{financial,customer,internal_process,learning_growth}` — produced by
+   `runner._rolled_scorecard` (`runner.py:376`), which takes the engine BSC (`score.py:96-99`) and
+   applies fired-event scorecard deltas on top, so in an event-firing round the payload scorecard
+   differs from the raw engine BSC (finding 1.7-SR-001).
 9. **1.7 resolves the `TODO: calibrate` inventory of §12** — 37 pack-YAML marker sites plus five
    register-owned code/seed calibration items — so calibration is a checklist, not a hunt. Row 6 of
    the pre-flight (§7) prints the live list before any curve is interpreted: calibrating against
