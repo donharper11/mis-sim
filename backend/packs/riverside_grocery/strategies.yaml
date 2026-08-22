@@ -37,7 +37,14 @@
     marketing_sales: 0.10
   expected_concentration: 0.28
   target_rgt_mix: {run: 0.45, grow: 0.40, transform: 0.15}
-  maintenance_floor_pct: 0.15
+  # TODO:calibrate (owner 1.7) — RULING #1 (user 2026-08-22): raised 0.15 -> 0.30 to make
+  # underfunded maintenance ("buy everything, skip the upkeep") bite the Overspender's
+  # portfolio_discipline harder so Balanced leads more clearly. Cost leadership lives on a
+  # reliably-maintained low-cost estate, so a 30% run/maintenance floor is defensible; the
+  # value is a first guess. HARD CEILING 0.3223 — the 1.4 pin's maintenance ratio is 0.32231,
+  # clamped to score 1.0; any floor above that drops the pin's maintenance_score and moves the
+  # frozen pin. 0.30 keeps the pin's maintenance_score clamped at 1.0 (0.32231/0.30 = 1.07).
+  maintenance_floor_pct: 0.30
   punishes: overprovisioning
   reopen_cost: 80000
   harvested_raw_fit:

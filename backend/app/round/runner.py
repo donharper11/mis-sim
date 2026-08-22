@@ -304,7 +304,7 @@ class RoundRunner:
         ledger = ledger_mod.advance_ledger(prior_ledger, state_raw, self.pack)
         state_10 = snap.build_team_state(
             self.session, self.instance_id, self.team_id, round, self.pack,
-            signals=ledger_mod.project_signal_state(ledger),
+            signals=ledger_mod.project_signal_state(ledger, current_round=round),
         )
 
         # 11 events: fire (O2 cap + suppression), blast radius, outcome application
@@ -331,7 +331,7 @@ class RoundRunner:
         )
         state_12 = snap.build_team_state(
             self.session, self.instance_id, self.team_id, round, self.pack,
-            signals=ledger_mod.project_signal_state(ledger),
+            signals=ledger_mod.project_signal_state(ledger, current_round=round),
         )
 
         # 12 the single, authoritative re-score (I5). `signal_responsiveness` is read HERE, from

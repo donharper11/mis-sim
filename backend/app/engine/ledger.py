@@ -98,17 +98,42 @@ def compute_status(cleared_round: int | None, fire_round: int | None, still_rais
 # -- the SignalState projection (contract-spec section 5.4, CC-A-001) ---------------------
 
 
-def project_signal_state(ledger: tuple[LedgerSignal, ...]) -> tuple[SignalState, ...]:
+def project_signal_state(
+    ledger: tuple[LedgerSignal, ...], current_round: int | None = None
+) -> tuple[SignalState, ...]:
     """Project the rich ledger to the 4-field `SignalState` the 1.4 scorer reads.
 
     One total rule (contract-spec section 5.4): a clear is credited whenever the episode was
     cleared AND either it never fired (`fire_round is None`, the most responsive outcome of
     all -- the student acted so early the bill never arrived) OR the clear landed on-or-before
     the fire. A clear strictly after fire, or a never-cleared/lapsed signal, earns nothing.
+
+    RULING #2 (1.7 calibration pass 1, user ruling 2026-08-22): an episode first shown in the
+    round being scored has had NO response window yet -- you cannot be scored on responding to
+    what you just saw. When `current_round` is supplied (the round runner's scored snapshots),
+    such an episode is projected `actionable=False` so it drops out of THAT round's
+    responsiveness denominator (`management._signal_responsiveness` filters on `actionable`).
+    The next round the same episode is older-than-current and counts normally.
+
+    RULING A (1.7 calibration pass 2, user ruling 2026-08-22): an episode that fired the instant
+    it appeared (`fire_round == first_shown_round`) never gave the team a response window in ANY
+    round -- so it is PERMANENTLY excluded from the responsiveness denominator, not just the
+    round it appears. (Pass 1's rule alone left these as permanent misses that re-zeroed R2+ via
+    the Management geomean.) Both exclusions are gated on `current_round is not None`.
+
+    When `current_round is None` -- the 1.4 pin / projection-seam compatibility path and the
+    debrief's `_missed_signals` -- every row projects exactly as before, so the frozen pin is
+    untouched by construction (it never passes a round here), and the debrief still reports every
+    actionable-but-uncredited episode.
     """
     rows: list[SignalState] = []
     for s in ledger:
         actionable = s.was_actionable
+        if current_round is not None and (
+            s.first_shown_round == current_round  # no window in the round it appears (RULING #2)
+            or (s.fire_round is not None and s.fire_round == s.first_shown_round)  # fired on sight (RULING A)
+        ):
+            actionable = False
         acted_before_fire = (s.cleared_round is not None) and (
             s.fire_round is None or s.cleared_round <= s.fire_round
         )
