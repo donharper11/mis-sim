@@ -518,6 +518,20 @@ checklist the review loop resolves, not defects the instrument fixes. `B11`/`B17
 live by the harness rather than tracked by a hand-copied count. No pack value and no engine value
 was changed by this build.
 
+**✅ MERGED to `main` at `95f0bb0`.** Independent Heavy-tier audit
+(`findings/1.7-calibration-harness-2026-08-22.md`) PASS WITH FINDINGS at `649847c` — **the curves
+are confirmed TRUSTWORTHY** (digest + curves reproduced; harness scores nothing; estates faithful;
+1.4 pin byte-identical). Cosmetic `1.7-A-001` (report header overflow) fixed pre-merge. All seven
+Phase-1 packets' code is now built, audited, and merged.
+
+**The Phase-1 calibration GATE is OPEN and is the user's.** The instrument is done; the ruling —
+*"no dominant strategy,"* plus resolving the 42 `TODO: calibrate` items — is a human judgment on the
+curves (`design/05 §5`, `GOVERNANCE §6.3` §5.4). Baseline: **no dominant strategy** (Balanced leads;
+all-tech-no-org realises 0.0). Two calibration questions are with the user: (1) the Balanced↔Overspender
+gap is thin and Management-only; (2) R1–R2 realise 0 for all teams because `signal_responsiveness=0`
+zeroes the mgmt geomean early. Owner of the calibration loop: **integration + user**, using the merged
+harness.
+
 ---
 
 ## Standing rule
