@@ -379,7 +379,24 @@ projection, pin preserved), CC-A-002 §5.5.1-4 (`ActionRecord`/funds + target ma
 filter), CC-A-003 §6.1 (`< 2`-option guard), CC-A-004 §7.1/§7.3/§8.1 (ordered attribution + total
 node binding), CC-A-005 §9.1 (outage-schema prerequisite sequenced before dispatch; row 7 hard STOP),
 CC-A-006 §11 (falsification register rebuilt; CC8 detects I/O), CC-A-007 §0 (dispatch prompt carried
-into the tree). **Returns for independent re-audit at the new SHA before merge or dispatch.**
+into the tree).
+
+**✅ CLOSED — re-audit PASS, merged 2026-08-22.** Independent re-audit
+(`findings/1.5-contract-completion-reaudit-2026-08-22.md`, verdict **PASS WITH FINDINGS**)
+confirmed **CC-A-001..007 all genuinely CLOSED** at `de901fe` — the projection recomputed by hand
+to `1/3`, the CC8 canary tested to catch `open(`/session, no non-total case found, 1.4 pin intact.
+Two Report-level miscitations it raised (`RA-001`/`RA-002`, correct values / wrong line pointers)
+were fixed in v1.2 (`7d6b926`, grep-verified). Contract-spec **merged to `main` at `741d358`**
+(`--no-ff`, full lineage: v1.0 → FAIL audit → v1.1 → re-audit → v1.2 preserved).
+
+**Honest note (re-audit observation).** "Fresh author" (`GOVERNANCE §6.2`) was **contextual** — an
+isolated subagent, not a fork — **not confirmable from commit metadata**, since every agent commits
+under the repository git identity. A process improvement to consider: a distinguishing author/co-author
+trailer on agent commits.
+
+**Does NOT unblock the engine.** Per CC-A-005, the outage schema (`CC-D3` `base_rto_hours`, `CC-D4`
+`agreed_availability`) is now a **hard prerequisite** — the 1.1/1.2 outage-schema packet must land and
+be audited before the 1.5 engine builder restarts pre-flight (`contract-spec §9.1`, §12 row 7).
 
 ---
 
