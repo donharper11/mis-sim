@@ -24,6 +24,10 @@
     - {entity: sale, min_level_of_detail: daily_store_total}
   demand_curve: [80, 84, 88, 92, 96, 100]
   demand_unit: reports
+  # The period close depends on the accounting package staying up through the close window,
+  # so its agreed availability sits above the firm-wide 0.99 default. `fin_close_01` measures
+  # realised availability against this target (availability_shortfall, 1.5 contract-spec 4.4).
+  agreed_availability: 0.995  # TODO: calibrate -- authored target, owner 1.7
   provenance: {source: PINNED, note: "0.4 unit chain for finance and accounting package"}
 - key: customer_insight
   chain_position: primary/marketing_sales

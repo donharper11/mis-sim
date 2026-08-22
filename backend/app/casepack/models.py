@@ -170,6 +170,12 @@ class Capability(StrictModel):
     required_entities: list[RequiredEntity]
     demand_curve: list[int]
     demand_unit: SnakeKey
+    #: The per-capability agreed availability target (the SLA the `availability_shortfall`
+    #: watch metric measures realised availability against, 1.5 contract-spec section 4.4).
+    #: Optional with a default of 0.99 so every pack authored before this field existed loads
+    #: unchanged; range-constrained exactly like the sibling `CatalogItem.availability`, so it
+    #: needs no new validator code. Exact per-capability values are 1.7 calibration.
+    agreed_availability: float = Field(default=0.99, gt=0, le=1)
     provenance: Provenance
 
 
@@ -233,6 +239,13 @@ class CatalogItem(StrictModel):
     deployment_modes: dict[Placement, DeploymentMode]
     sizing: Sizing
     availability: float = Field(gt=0, le=1)
+    #: Hours to restore this item after an outage -- the base recovery-time objective the
+    #: outage-duration formula multiplies (1.5 contract-spec section 8.3). Optional with a
+    #: `None` default so every pack authored before this field existed loads unchanged; when
+    #: absent the engine falls back to its default of 8.0 hours. `gt=0` mirrors the existing
+    #: positive-only numeric fields, so it needs no new validator code. Exact per-item values
+    #: are 1.7 calibration.
+    base_rto_hours: float | None = Field(default=None, gt=0)
     service_life_rounds: int = Field(gt=0)
     staff_load: float = Field(ge=0)
     owns_entities: list[EntityDetail] = Field(default_factory=list)

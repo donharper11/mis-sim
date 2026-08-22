@@ -60,13 +60,73 @@ def _describe(name: str, pack: Casepack, state: TeamState) -> str:
     return "\n".join(lines)
 
 
+def _describe_signals(pack: Casepack, state: TeamState) -> str:
+    """The `--with-signals` demonstration: the R1-R3 ledger, its projection compatibility, the
+    two-path event outcome, and a blast-radius traversal (1.5 spec section 5.5, contract-spec
+    section 10). Pure orchestration -- the engine reads no file and no clock (invariant I2)."""
+    from app.engine import events as events_mod
+    from app.engine import graph as graph_mod
+    from app.engine import ledger as ledger_mod
+    from app.engine import catalog as catalog_mod
+    import seeds.riverside_signals as sig
+
+    lines: list[str] = ["", "-- signal ledger (R1-R3 history) --"]
+
+    ledger = sig.signal_history()
+    for s in ledger:
+        lines.append(
+            f"  {s.key} ep{s.episode_id} {s.metric_kind}/{s.metric} sev={s.severity} "
+            f"status={s.status} shown={s.first_shown_round} cleared={s.cleared_round} "
+            f"fired={s.fire_round} actionable={s.was_actionable} fix={s.cheapest_fix_when_raised}"
+        )
+
+    # Compatibility gate: the projection must reproduce the seed's three SignalState rows.
+    projected = ledger_mod.project_signal_state(ledger)
+    seed_rows = state.signals
+    match = projected == seed_rows
+    lines.append(f"  projection reproduces the seed SignalState rows: {match}")
+
+    # Two paths from one event card (warehouse_rollout_gap), opposite outcomes, no branching.
+    lines.append("")
+    lines.append("-- two-path demonstration: warehouse_rollout_gap --")
+    do_nothing = sig.do_nothing_state()
+    open_ledger = ledger_mod.advance_ledger((), do_nothing, pack)
+    fired_dn, _ = events_mod.resolve_events(do_nothing, pack, open_ledger)
+    lines.append(f"  do-nothing path: warehouse_rollout_gap fires = {'warehouse_rollout_gap' in fired_dn}")
+
+    cleared = sig.cleared_state()
+    cleared_ledger = ledger_mod.advance_ledger(open_ledger, cleared, pack)
+    wh = next(s for s in cleared_ledger if s.key == "wh_rollout_01")
+    fired_cl, _ = events_mod.resolve_events(cleared, pack, cleared_ledger)
+    lines.append(
+        f"  cleared path: wh_rollout_01 status={wh.status} cleared_round={wh.cleared_round}; "
+        f"warehouse_rollout_gap fires = {'warehouse_rollout_gap' in fired_cl}"
+    )
+
+    # Blast radius by traversal: removing the WAN link darkens the capabilities behind it.
+    lines.append("")
+    lines.append("-- blast radius (traversal) --")
+    caps = [c.key for c in pack.capabilities]
+    primary = {c: catalog_mod.primary_entity(pack, c) for c in caps}
+    darkened = graph_mod.blast_radius(state, "wan_link", caps, primary)
+    lines.append(f"  removing wan_link darkens: {darkened}")
+
+    return "\n".join(lines)
+
+
 def _main() -> int:
     parser = argparse.ArgumentParser(prog="app.seed.demo")
     parser.add_argument("--scenario", required=True, help="scenario name, e.g. riverside_r3")
+    parser.add_argument(
+        "--with-signals", action="store_true",
+        help="also seed the R1-R3 signal ledger and demonstrate the two paths",
+    )
     args = parser.parse_args()
 
     pack, state = load_scenario(args.scenario)
     print(_describe(args.scenario, pack, state))
+    if args.with_signals:
+        print(_describe_signals(pack, state))
     return 0
 
 

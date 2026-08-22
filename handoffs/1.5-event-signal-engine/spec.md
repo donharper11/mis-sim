@@ -413,16 +413,17 @@ must not proceed until their focused tests pass.
 
 | Item | Status | Evidence |
 |---|---|---|
-| Pre-flight rows 1–11 | | |
-| Steps 1–5 verified | | |
-| I1–I8 | | |
-| O1–O5 implemented exactly as frozen | | |
-| Ledger carries both timestamps 1.4 needs | | |
-| `cheapest_fix_when_raised` populated | | |
-| **Both `metric_kind` paths write an identical ledger shape** | | |
-| Two-team divergence demonstrated from one event card | | |
-| **Seed** — signal history seeded; both paths demonstrated from one seed | | |
-| Browser / auth / instance canaries | | **N-A** — pure, headless |
+| Pre-flight rows 1–11 | ✅ | contract-spec §12 rows 1–8 all PASS (row 7 fields land as STEP 0 per GOVERNANCE §6.3, commit `44c60b1`); 1.5 §7 rows re-verified (graph, 8 rules / 13 events, `metric_kind`, `obligation_rules`, `placement`+`other_policy`, validate `0/0`, W08). |
+| Steps 1–5 verified | ✅ | `python -m app.seed.demo --scenario riverside_r3 --with-signals` prints the ledger, the projection-reproduces-seed gate (`True`), the two-path outcome, and the WAN blast radius; `tests/test_signal_engine.py` (CC1–CC14). |
+| I1–I8 | ✅ | I1/I2/I3/I8 → `tests/check_engine_purity.py` (green, in `make check`); I4 determinism → existing `test_engine_scoring.py`; I5 reachability + I6 derived + I7 cap → `test_signal_engine.py` (CC11/CC12) and the pin tests. |
+| O1–O5 implemented exactly as frozen | ✅ | O1 `was_actionable`/`cheapest_effectful_fix` (CC7); O2 cap + suppression (CC11); O3 clear-after-fire no credit (CC6); O4 pack-duration W08 (existing); O5 `lead_time == 0` (`LedgerSignal.lead_time`). |
+| Ledger carries both timestamps 1.4 needs | ✅ | `LedgerSignal.{first_shown_round, cleared_round, fire_round}` + `lead_time`; projection §5.4 (CC4). |
+| `cheapest_fix_when_raised` populated | ✅ | `ledger.cheapest_effectful_fix` (CC7); populated on every raised row by `advance_ledger` and in the seed history. |
+| **Both `metric_kind` paths write an identical ledger shape** | ✅ | `ledger.evaluate` handles threshold + presence into one `LedgerSignal`; I8 confines `metric_kind` to `ledger.py` (`check_engine_purity.py`). |
+| Two-team divergence demonstrated from one event card | ✅ | `warehouse_rollout_gap` fires on the do-nothing path, does not fire on the `add_training`-cleared path (demo + CC11 scaffold); no authored branching. |
+| **Seed** — signal history seeded; both paths demonstrated from one seed | ✅ | `--with-signals` flag; `seeds/riverside_signals.py`; projection reproduces the three seed `SignalState` rows byte-for-byte (CC4). |
+| Register Reconciliation | ✅ | `CC-D3`/`CC-D4` (the two outage-schema fields) CLOSED — landed as STEP 0 of this build (`OPEN-REGISTER §M`). |
+| Browser / auth / instance canaries | ✅ | **N-A** — pure, headless engine. |
 
 ---
 

@@ -384,7 +384,7 @@ using `--surface-row-highlight`.
 
 ---
 
-## `WatchRule.metric` / the `METRICS` registry — PROSPECTIVE (1.5)
+## `WatchRule.metric` / the `METRICS` registry — LIVE (1.5, `app/engine/metrics.py`)
 
 **Canonical:** `metric` is one of a **closed five-key vocabulary**: `capacity_utilisation` ·
 `rollout_without_support` · `missing_identity_access` · `availability_shortfall` ·
@@ -406,7 +406,7 @@ exceed 1.0 — over-saturation is the point, distinct from 1.4's clipped `capaci
 
 ---
 
-## `LedgerSignal` — the signal ledger row — PROSPECTIVE (1.5)
+## `LedgerSignal` — the signal ledger row — LIVE (1.5, `app/engine/ledger.py`)
 
 **Canonical:** a frozen record `{key · episode_id: int · capability · metric · metric_kind ·
 value: float · severity · status ∈ {open,cleared,fired} · first_shown_round: int ·
@@ -453,7 +453,8 @@ cost): a match requires `action_type ∈ cleared_by`, capability match, and
 available_funds_by_round[r-1]` in **any** round the signal was open — `available_funds_by_round` is
 *remaining* capital (committed spend already deducted, `pack.yaml:612`). **Producers:**
 `action_history` / `available_funds_by_round` — 1.6 round evolution. **Consumer:** the 1.5 clearing +
-actionability computation.
+actionability computation (LIVE, `app/engine/ledger.py`: `cheapest_effectful_fix`,
+`matching_clear_actions`, `was_actionable`).
 
 ---
 
@@ -461,8 +462,10 @@ actionability computation.
 
 **Canonical:** `duration_hours = round(base_rto_hours(node) × failover_factor × staffing_modifier, 1)`.
 
-- `base_rto_hours` — a **NEW `CatalogItem` field** (owner **1.1**), hours; engine default `8.0` if
-  absent; exact values `TODO: calibrate` (**1.7**).
+- `base_rto_hours` — a `CatalogItem` field (`models.py`; folded into the 1.5 engine build per
+  GOVERNANCE §6.3, was owner 1.1), hours, `gt=0`, default `None`; engine default `8.0` if absent;
+  exact values `TODO: calibrate` (**1.7**). `Capability.agreed_availability` (`gt=0, le=1`, default
+  `0.99`) lands in the same schema step for `availability_shortfall`.
 - `failover_factor` = `1.0` if a `failover`-kind edge yields a surviving path for the affected
   capability after node removal, else `no_failover_multiplier` = **`3.0`** (NEW engine constant,
   `TODO: calibrate` 1.7).
@@ -470,8 +473,10 @@ actionability computation.
   formula — G1 states only the direction). `staff_fte == 0` → `UNDERSTAFFED_MULTIPLIER = 4.0`.
 
 **NOT** authored per event (I6 forbids authoring blast radius/duration results); computed from
-graph + staffing. **Producer:** the 1.5 engine. **Consumer:** 1.6 `RoundResult.events[]`
-(`1.6 spec.md:141`). Frozen in `contract-spec.md §8`.
+graph + staffing. **Producer:** the 1.5 engine (LIVE, `app/engine/events.py`: `outage_duration`,
+`failover_exists`, `failed_node`; constants `NO_FAILOVER_MULTIPLIER=3.0`,
+`UNDERSTAFFED_MULTIPLIER=4.0`, `DEFAULT_BASE_RTO_HOURS=8.0`). **Consumer:** 1.6
+`RoundResult.events[]` (`1.6 spec.md:141`). Frozen in `contract-spec.md §8`.
 
 ---
 
