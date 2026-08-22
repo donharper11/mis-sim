@@ -350,9 +350,20 @@ own** — each named here with an owner before the candidate merges, per the sta
 
 **The metric / signal-ledger / precondition / event / blast-radius core runs on existing state plus
 the two 1.6 round inputs (`action_history`, `available_funds_by_round`, both defaulted `()`).**
-`CC-D3`/`CC-D4` are **no longer optional deferrals** — as of contract-spec v1.1 they are the
-outage-schema prerequisite **sequenced before the engine build** (§9.1), which is what makes all five
-metric functions buildable with no deferred-path escape (closes audit CC-A-005).
+`CC-D3`/`CC-D4` are **no longer optional deferrals** — as of contract-spec v1.1 they are required
+before the engine's availability/duration paths, which is what makes all five metric functions
+buildable with no deferred-path escape (closes audit CC-A-005).
+
+**Update 2026-08-22 — `CC-D3`/`CC-D4` FOLDED into the 1.5 engine build (`GOVERNANCE §6.3` gate
+tiering, ruled by the user).** Two defaulted fields with no consumer yet are **Trivial tier** — they
+are the engine build's **step 0** (`handoffs/_prompts/1.5-engine-builder.txt`), covered by the engine's
+own independent audit, rather than a standalone author→review→build→audit cycle. The separate
+`outage-schema-spec.md` / `author/outage-schema-prereq` packet is **retired** as disproportionate. One
+finding it raised is kept:
+
+| # | Item | Owner |
+|---|---|---|
+| `OS-D1` | **Numeric out-of-range collapses to `E00`** — `E18`/CU-001 closed the enum/literal class only; every numeric field (`availability`, `staff_load`, `base_rto_hours`, `agreed_availability` …) still collapses to a bare `E00` on a range violation. Targeted, field-naming coverage for numeric ranges is a separate finding | **1.2** |
 
 ---
 

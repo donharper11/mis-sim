@@ -316,6 +316,28 @@ independence rule of §6.1 applies: for `E*`/`S*` modules the reviewer is a fres
 mandatory. A spec review is minutes; a build-rework loop is days — this moves the cheapest
 reviewer pass to where a spec defect is a text edit, not a rebuild.
 
+### 6.3 Gate tiering by risk *(ruled by the user 2026-08-22)*
+
+The four-gate cycle — author → independent spec review → build → independent audit — is
+calibrated for defects that **silently corrupt scoring or student outcomes**. Applying it to
+work that fails *visibly and locally* is ceremony, and ceremony applied 39 packets deep is how
+a process stops finishing. Gate weight is matched to blast radius:
+
+| Tier | What | Gates |
+|---|---|---|
+| **Heavy** | engine, scoring, the event/signal model, and **schema *contracts*** (a field shape other modules compute against) | full four-gate cycle: independent spec review **and** independent audit |
+| **Light** | UI screens, platform/instructor plumbing, content authoring, docs, mechanical schema *additions* (a defaulted field, a renamed key) | **build + one independent audit.** `make check` and a browser pass are the spec review; no separate pre-dispatch review |
+| **Trivial** | a fix an existing test would catch, a doc/citation edit, a defaulted field with no consumer yet | **fold into its consumer packet** — no standalone cycle. Verified by `make check` and the consumer's own audit |
+
+Two rules keep the lighter tiers honest: **(1)** the builder≠auditor separation is *absolute*
+at every tier (§6.1) — "light" removes the *pre-dispatch* review, never the independent audit
+of anything that reaches `main` with risk; **(2)** a packet is promoted to Heavy the moment it
+touches a scoring path, a cross-module contract, or student-facing correctness — when in doubt,
+Heavy. A Trivial item that grows a real consumer stops being Trivial.
+
+*Applied immediately: the two-field outage schema (`CC-D3`/`CC-D4`) is Trivial — folded into the
+1.5 engine build's step 0 rather than run as its own author→review→build→audit cycle.*
+
 ---
 
 ## 7. Conflict rule
@@ -366,6 +388,11 @@ owner before the packet that produced them merges.
 
 ## Changelog
 
+- **1.4** (2026-08-22) — added §6.3 *Gate tiering by risk* (user ruling): the full four-gate
+  cycle is reserved for engine/scoring/schema-*contract* work; UI/plumbing/content/mechanical
+  packets get build + one independent audit; trivial items fold into their consumer. Builder≠auditor
+  stays absolute at every tier. Applied immediately by folding the two-field outage schema into the
+  1.5 engine build instead of running it as its own cycle.
 - **1.3** (2026-08-22) — plugged the Phase-1 rework gaps identified by the root-cause pass
   over 124 findings. Added §6.2 *Independent spec review before dispatch* (the spec was never
   independently reviewed, only self-checked — the common cause behind the spec-error

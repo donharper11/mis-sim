@@ -17,12 +17,19 @@ READ FIRST, IN FULL, BEFORE ANY OTHER ACTION:
 
 THEN, BEFORE WRITING ANY CODE:
   Run the contract-spec §12 Pre-Flight Verification Register, every row. Report PASS/FAIL with
-  output. Row 7 is now a HARD STOP, not a deferral (audit CC-A-005 / contract-spec §9.1): if
-  `base_rto_hours` / `agreed_availability` are NOT in models.py, the outage-schema prerequisite
-  (OPEN-REGISTER CC-D3/CC-D4) has not merged — STOP; you cannot build, because all five metric
-  functions (availability_shortfall included) are required before the deck is executable. If any
-  hard row FAILS: STOP and report. With row 7 green, ALL five metrics and the duration path are
-  in scope this cycle.
+  output. If any hard row FAILS: STOP and report.
+
+STEP 0 — the outage-schema fields (folded in; GOVERNANCE §6.3 Trivial tier, was CC-D3/CC-D4).
+  These two defaulted fields are a step of THIS build, not a separate packet. Add them first,
+  exactly as the contract-spec froze them (§4.4, §8.3), then build the metrics that consume them:
+    - CatalogItem.base_rto_hours: float | None = Field(default=None, gt=0)   # engine default 8.0
+    - Capability.agreed_availability: float = Field(default=0.99, gt=0, le=1)
+  Optional-with-defaults so all 44 fixtures load unchanged and the 1.4 pin cannot move; range-
+  constrained like the sibling `availability` field, so NO new E-code. Author Riverside's two
+  non-default values (agreed_availability on financial_reporting; base_rto_hours on the
+  infrastructure-backing catalog items) marked `TODO: calibrate` (1.7); document both in
+  docs/casepack-schema.md. With step 0 done, ALL five metrics and the duration path are in scope.
+  (Numeric out-of-range still collapses to E00 — that is OS-D1, owner 1.2, NOT this build.)
 
 WHILE BUILDING — the contract-spec is the authority for every value:
   - Implement the five metrics exactly as §4 freezes them; unknown key raises UnknownMetricError.
