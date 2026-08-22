@@ -62,7 +62,7 @@ fold these into it and say so in that spec's Spec Basis.** Until then they are o
 
 ---
 
-## Phase 1 — Engine · 7 packets
+## Phase 1 — Engine · 7 packets · **CLOSED** — gate passed 2026-08-22 (`b481e53`)
 
 *Headless. No UI. The highest-risk phase and the highest-value gate.*
 
@@ -198,7 +198,7 @@ finding returns to 1.1. This is the real test of the casepack schema.
 
 ```
 Phase 0  Foundation             4   ████  CLOSED
-Phase 1  Engine                 7
+Phase 1  Engine                 7   ████  CLOSED — no dominant strategy
 Phase 2  Platform scaffolding   5
 Phase 3  Student core loop      8
 Phase 4  Student + AI          11
@@ -206,7 +206,7 @@ Phase 5  Instructor console     7
 Phase 6  Second casepack        2
 Phase 7  Pilot readiness        3
                                ──
-                               47   4 complete
+                               47   11 complete (Phases 0-1)
 ```
 
 ## Parallel tracks

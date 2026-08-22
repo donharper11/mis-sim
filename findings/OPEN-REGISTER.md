@@ -524,7 +524,7 @@ are confirmed TRUSTWORTHY** (digest + curves reproduced; harness scores nothing;
 1.4 pin byte-identical). Cosmetic `1.7-A-001` (report header overflow) fixed pre-merge. All seven
 Phase-1 packets' code is now built, audited, and merged.
 
-**The Phase-1 calibration GATE is OPEN and is the user's.** The instrument is done; the ruling —
+**✅ The Phase-1 calibration GATE is PASSED (2026-08-22, merged `b481e53`).** The calibration authority ruled the balance (accept ~14% discipline gap; extend early-round fairness); the audited pass (`findings/1.7-calibration-pass-2026-08-22.md`, PASS) delivered it — **no dominant strategy**, early rounds differentiate, `all-tech-no-org` realises 0.0. Residual: `maintenance_floor_pct` and the other pack `TODO:calibrate` markers remain owner **1.7 (ongoing calibration)** — refined against real playtesting, not blockers. The original open-gate note: The instrument is done; the ruling —
 *"no dominant strategy,"* plus resolving the 42 `TODO: calibrate` items — is a human judgment on the
 curves (`design/05 §5`, `GOVERNANCE §6.3` §5.4). Baseline: **no dominant strategy** (Balanced leads;
 all-tech-no-org realises 0.0). Two calibration questions are with the user: (1) the Balanced↔Overspender
