@@ -1,0 +1,123 @@
+You are the SPEC AUTHOR for the contract-completion prerequisite to module 1.5
+(Event & Signal Engine) of the MIS Simulation.
+
+REPO: /home/ubuntu/projects/mis-sim (origin: github.com/donharper11/mis-sim)
+
+The schema/validator readiness packet is independently audited and merged. The engine
+builder ran spec v1.2 preflight at exact revision
+`38840570cfa6b783ea01a6d1c25e6612ef260d9b`: rows 1-10 passed; row 11 failed in its
+expected builder-owned state. Inspection then found engine behavior requiring inputs or
+semantics the specification does not define. Governance requires a stop rather than an
+invented interface. Close those contract gaps; do NOT implement the engine.
+
+READ FIRST, IN FULL:
+  1. GOVERNANCE.md, QUALITY_PROTOCOL.md, SPEC_PROTOCOL.md, CONTRACTS.md
+  2. handoffs/README.md
+  3. handoffs/1.5-event-signal-engine/{spec,readiness-spec,readiness-dod}.md
+  4. design/02-traceability-matrix.md and design/04-decisions-g1-g6.md
+  5. handoffs/1.4-scoring-engine/{spec,closeout-spec}.md
+  6. handoffs/1.6-round-runner/spec.md
+  7. backend/app/casepack/models.py
+  8. backend/app/engine/{state,graph,technology,management,score}.py
+  9. backend/app/seed/demo.py and backend/seeds/riverside_r3.py
+ 10. Riverside capabilities, catalog, platform, watch rules, events, obligations,
+     policies, and pack metadata.
+
+VERIFY AND RECORD:
+  - exact synchronized main revision and clean tree;
+  - readiness audit verdict and merge commit;
+  - all eleven 1.5 preflight rows, preserving row 11 as engine-builder-owned;
+  - every producer/consumer of TeamState, SignalState, Event, ArchNode,
+    DeploymentState, DecisionState, and PolicyDecisionState;
+  - whether each proposed field belongs to the pure snapshot (1.5), round evolution
+    (1.6), persistence (2.x), or authored casepack schema (1.1/1.2).
+
+PURPOSE AND SCOPE:
+Produce a bounded contract-completion specification that makes 1.5 v1.2 executable.
+Do not implement signals, metrics, events, ledger processing, blast-radius changes,
+duration calculations, seed history, persistence, or UI. Amend 1.5 only where required
+to reference new frozen contracts.
+
+THE SPEC MUST SETTLE:
+
+1. Metric contracts
+   - Freeze signatures, inputs, output types, rounding, and failures for all five keys.
+   - Define capacity_utilisation for missing paths, zero demand, and no bottleneck while
+     preserving the R2 0.83 and R3 1.11 pins.
+   - Define rollout_without_support across zero/one/many deployments and initiated,
+     abandoned, training, process, adoption, and capability scope.
+   - Define missing_identity_access without conflating a filled role with account ownership.
+   - Supply the missing agreed-availability target for availability_shortfall.
+   - Supply the missing numerator/denominator for data_coverage_gap.
+   - Unknown metric keys raise a named exception; never evaluate false.
+
+2. Signal ledger and actionability
+   - Freeze immutable history input and pure result output, including episode identity and
+     ordering. Recurrence creates a new episode and never overwrites history.
+   - Define raising, escalation, clearing, same-round clearing, no de-escalation,
+     fire_round, lead_time, and clearing-after-fire.
+   - Define action history: action type, locked round, capability/target scope, and cost.
+   - Define available-funds history and the exact O1 affordability comparison.
+   - Define how clearing-action prices are found. ACTION_TYPES supplies no prices. Cover
+     ties, no candidates, and affordability changes while open.
+
+3. Event ownership, repetition, and suppression
+   - Freeze total, deterministic event-to-capability attribution for O2, including multiple
+     signal/capability preconditions. Event currently has no capability field.
+   - Resolve "unless repeatable": Event has no repeatable field. Freeze its default and
+     schema/validator ownership if authored repetition remains supported.
+   - Freeze fired-event history and suppression record shape/order.
+   - Define whether obligation arms supplements or replaces normal preconditions and how
+     multiple obligations arming one event combine.
+
+4. Preconditions and runtime state
+   - Define runtime semantics, boundary comparisons, empty/missing behavior, and invalid
+     input behavior for all eleven validated precondition shapes.
+   - Supply debt_above's numerator/denominator.
+   - Supply runtime placement for placement_count using only CONTRACTS.md values; never
+     store derived `hybrid`.
+   - Define entity_unowned over every legitimate owner collection.
+   - Define policy_contradiction using ordinal options, default resolution, and an exact
+     mathematical contradiction test.
+   - Define node_is_spof scope for nodes serving several capabilities.
+
+5. Blast radius and outage duration
+   - Preserve derived blast radius; never author the result list.
+   - Freeze the failed-object model: the helper removes nodes, the seed says WAN link, and
+     the graph also contains ArchEdge objects.
+   - Define failover_exists by edge kind, surviving path, and capability scope.
+   - Supply base_rto and no_failover_multiplier, neither of which exists today.
+   - Freeze staffing_modifier including zero staff and load <= capacity. G1 states the
+     effect but provides no formula.
+   - Freeze duration rounding and result/evidence shape.
+
+6. Seed and compatibility
+   - Add R1-R3 ledger history without changing the independently verified 1.4 scoring pin.
+   - Preserve `python -m app.seed.demo --scenario riverside_r3 --with-signals`.
+   - Specify exact R2/R3 mutations yielding utilisation 0.83/1.11.
+   - Specify the R4 do-nothing and R3-cleared paths for `saturday_queue_collapse`. If that
+     key is absent from the live deck, STOP and assign its content owner.
+
+REQUIRED OUTPUTS:
+  - handoffs/1.5-event-signal-engine/contract-spec.md with preflight and DoD;
+  - minimal cross-reference/correction amendments to the 1.5 spec;
+  - CONTRACTS.md entries for every frozen cross-module interface;
+  - findings/OPEN-REGISTER.md ownership for anything deferred;
+  - builder and independent-auditor prompts for this prerequisite.
+
+QUALITY BAR:
+  - Cite every number/enum or mark it NEW and explicitly decide it.
+  - Include a compliant route and rejected alternative for each material interface.
+  - Require positive, negative, boundary, recurrence, determinism, and compatibility tests.
+  - Preserve existing TeamState constructors via explicit defaults, or enumerate and
+    authorize every caller update.
+  - No identity branching, I/O, clock, randomness, persistence, or displayed English in
+    engine contracts. Browser/auth/instance canaries are N-A for this pure contract packet.
+
+STOP on conflicting authorities, unsettled product judgment, unowned schema changes,
+inability to preserve 1.4 arithmetic/determinism, or any attempt to implement the engine.
+
+HANDOFF GATE:
+Commit and push the specification candidate on its own branch. Do not implement 1.5,
+self-audit, merge, or declare the engine unblocked. Independent audit of the exact candidate
+is required. After accepted merge, the 1.5 builder restarts preflight from the new full SHA.

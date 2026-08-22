@@ -384,6 +384,97 @@ using `--surface-row-highlight`.
 
 ---
 
+## `WatchRule.metric` / the `METRICS` registry — PROSPECTIVE (1.5)
+
+**Canonical:** `metric` is one of a **closed five-key vocabulary**: `capacity_utilisation` ·
+`rollout_without_support` · `missing_identity_access` · `availability_shortfall` ·
+`data_coverage_gap` (`1.5 spec.md:107-110`). Each resolves through an engine `METRICS` registry
+to a pure function `metric(state: TeamState, pack: Casepack, rule: WatchRule) -> float | bool`.
+
+**Rules:** threshold metrics return `float`, presence metrics return `bool`. Threshold
+comparison is **strict `>`** (exactly-at-threshold does not raise). A metric measuring a
+property of an existing serving path returns `0.0` (no raise) when the capability has no path
+or non-positive capacity — "no path" is a coverage failure, not an operational signal. Stored
+`value` rounds to 4 dp; comparison runs on the unrounded float. An **unknown metric key raises
+`UnknownMetricError`** — it never evaluates false (`1.5 spec.md:110`).
+
+**NOT** a free string the engine silently ignores; **NOT** clipped to `[0,1]` (utilisation can
+exceed 1.0 — over-saturation is the point, distinct from 1.4's clipped `capacity` sub-factor).
+
+**Formulas frozen in** `handoffs/1.5-event-signal-engine/contract-spec.md §4`.
+**Producer:** the 1.5 engine (metric functions). **Consumer:** the watch-rule evaluator + ledger.
+
+---
+
+## `LedgerSignal` — the signal ledger row — PROSPECTIVE (1.5)
+
+**Canonical:** a frozen record `{key · episode_id: int · capability · metric · metric_kind ·
+value: float · severity · status ∈ {open,cleared,fired} · first_shown_round: int ·
+cleared_round: int|None · fire_round: int|None · cleared_by: tuple · was_actionable: bool ·
+cheapest_fix_when_raised: int|None}` (`1.5 spec.md:135-141` + `episode_id`).
+
+**Episode identity is `(key, episode_id)`.** History is **append-only and immutable**; a re-raise
+of a cleared condition opens `episode_id + 1` and never overwrites a prior episode
+(`1.5 spec.md:105-106`). `lead_time = cleared_round − first_shown_round`, and `cleared_round` **is**
+the round the resolving action was locked (reconciling `design/02:62`'s two-timestamp pair).
+
+**The 1.4 scorer does NOT read `LedgerSignal` directly — it reads the projection.** The 4-field
+`SignalState(key, capability, actionable, acted_before_fire)` (`state.py:104-109`) is frozen as a
+projection: `actionable = was_actionable`; `acted_before_fire = cleared_round is not None and
+(fire_round is None or cleared_round <= fire_round)`. **A timely clear that PREVENTS a fire
+(`fire_round is None`) is the MOST responsive case and IS credited** — the earlier
+`fire_round is not None`-required form gave it no credit and drove the pin to `0.0` (1.5
+contract-spec CC-A-001). A clear *after* fire earns nothing (O3). This seam keeps the 1.4 pin
+(`test_engine_scoring.py`: tech `0.750008`, org `0.507003`, mgmt `0.656778`, realised `0.249744`)
+byte-identical: the seeded R1–R3 history projects to `acted=1 / actionable=3 → 0.333333`.
+
+**Producer:** the 1.5 engine (pure output). **Consumers:** the `SignalState` projection → 1.4
+scorer; persistence → 1.6 (`signal` table, `1.6 spec.md:103`).
+
+---
+
+## `signal.cleared_by[]` — clearing-price lookup — extends the entry above (1.5)
+
+The existing `signal.cleared_by[]` entry covers the responsiveness match. **1.5 adds the price
+lookup** for `cheapest_fix_when_raised` / `was_actionable` (O1): `cleared_by` action-type keys
+carry **no price** (`checks.py ACTION_TYPES`). The cost is the **minimum, at the raise round,
+among the EFFECTFUL pack options performing any listed action type for the signal's capability** —
+`scale_node`/`add_node`/`move_to_cloud`/`upgrade_component` → cheapest `catalog.deployment_modes.capex`
+(a `saas capex 0` mode is effectful — zero capex, real effect);
+`add_training` → cheapest `training_options.cost` **where `coverage > 0`** (**the `training.none`
+`cost 0 / coverage 0` option is EXCLUDED** — it trains no one, `catalog.yaml:58,80`; 1.5
+contract-spec CC-A-002); `add_service_tier` → `platform` tier cost; `add_policy` → `policies.cost`;
+`redesign_process` → `process_option.cost` when non-null; `retire_component`/`fund_response`
+→ 0 / event-option cost. **Ties** collapse under `min`; **no effectful candidates** → `None` and the
+signal is excluded from the responsiveness denominator. **Which committed action clears which signal**
+is decided by `TeamState.action_history` (`ActionRecord`: type, `locked_round`, capability/target,
+cost): a match requires `action_type ∈ cleared_by`, capability match, and
+`first_shown_round ≤ locked_round ≤ round`. `was_actionable` is TRUE if `cheapest_fix_when_raised ≤
+available_funds_by_round[r-1]` in **any** round the signal was open — `available_funds_by_round` is
+*remaining* capital (committed spend already deducted, `pack.yaml:612`). **Producers:**
+`action_history` / `available_funds_by_round` — 1.6 round evolution. **Consumer:** the 1.5 clearing +
+actionability computation.
+
+---
+
+## Outage-duration constants — NEW (1.5 engine + 1.1 schema)
+
+**Canonical:** `duration_hours = round(base_rto_hours(node) × failover_factor × staffing_modifier, 1)`.
+
+- `base_rto_hours` — a **NEW `CatalogItem` field** (owner **1.1**), hours; engine default `8.0` if
+  absent; exact values `TODO: calibrate` (**1.7**).
+- `failover_factor` = `1.0` if a `failover`-kind edge yields a surviving path for the affected
+  capability after node removal, else `no_failover_multiplier` = **`3.0`** (NEW engine constant,
+  `TODO: calibrate` 1.7).
+- `staffing_modifier` = `1.0 + max(0.0, load_fte/staff_fte − 1.0)` (G1, `design/04:33-39`; NEW
+  formula — G1 states only the direction). `staff_fte == 0` → `UNDERSTAFFED_MULTIPLIER = 4.0`.
+
+**NOT** authored per event (I6 forbids authoring blast radius/duration results); computed from
+graph + staffing. **Producer:** the 1.5 engine. **Consumer:** 1.6 `RoundResult.events[]`
+(`1.6 spec.md:141`). Frozen in `contract-spec.md §8`.
+
+---
+
 ## How to add an entry
 
 Add when a field is consumed in more than one place and its format could plausibly be

@@ -1,0 +1,55 @@
+You are the BUILDER for module 1.5 (Event & Signal Engine) of the MIS Simulation.
+
+DO NOT START until the contract-completion spec has been independently audited and merged to
+`main`. If handoffs/1.5-event-signal-engine/contract-spec.md is not on `main`, STOP — the
+prerequisite has not landed.
+
+REPO: /home/ubuntu/projects/mis-sim (origin: github.com/donharper11/mis-sim)
+Work on branch build/1.5-event-signal-engine. Never push to main.
+
+READ FIRST, IN FULL, BEFORE ANY OTHER ACTION:
+  1. GOVERNANCE.md v1.3, QUALITY_PROTOCOL.md v1.4, SPEC_PROTOCOL.md v1.3, CONTRACTS.md
+  2. handoffs/1.5-event-signal-engine/spec.md (v1.2, the governing spec)
+  3. handoffs/1.5-event-signal-engine/contract-spec.md (the frozen interfaces — THIS is what
+     makes the engine buildable; every metric body, ledger field, precondition rule, and the
+     duration formula is specified there)
+  4. backend/app/engine/{state,graph,technology,management,score}.py and models.py
+
+THEN, BEFORE WRITING ANY CODE:
+  Run the contract-spec §12 Pre-Flight Verification Register, every row. Report PASS/FAIL with
+  output. Row 7 is now a HARD STOP, not a deferral (audit CC-A-005 / contract-spec §9.1): if
+  `base_rto_hours` / `agreed_availability` are NOT in models.py, the outage-schema prerequisite
+  (OPEN-REGISTER CC-D3/CC-D4) has not merged — STOP; you cannot build, because all five metric
+  functions (availability_shortfall included) are required before the deck is executable. If any
+  hard row FAILS: STOP and report. With row 7 green, ALL five metrics and the duration path are
+  in scope this cycle.
+
+WHILE BUILDING — the contract-spec is the authority for every value:
+  - Implement the five metrics exactly as §4 freezes them; unknown key raises UnknownMetricError.
+  - Build `LedgerSignal` and the `SignalState` projection (§5.4). The projection over the seed
+    history MUST reproduce the current three SignalState values (§5.4 compatibility gate) — the
+    1.4 pin (test_engine_scoring.py: tech 0.750008, org 0.507003, mgmt 0.656778, realised
+    0.249744) must stay byte-identical.
+  - Precondition semantics per §6 (strict >, severity is a floor, the policy_contradiction test
+    incl. the `< 2`-option guard that must not divide by zero — §6.1, CC-A-003).
+  - Signal clearing uses `TeamState.action_history` for target matching and the EFFECTFUL price
+    lookup that excludes `training.none` (coverage 0) — §5.5, CC-A-002.
+  - Event capability is DERIVED as an ORDERED tuple, not a set (§7.1, CC-A-004); primary capability
+    = first in sequence; empty sequence → O2-exempt, recorded capability None; fire-once (§7.2);
+    `arms` is an additional gate (§7.4). Failed-node binding is total (§8.1: SPOF pc / primary-cap
+    bottleneck / None).
+  - Duration + NEW constants per §8 (in scope — row 7 is a hard prerequisite, §9.1).
+  - Add the `--with-signals` seed flag; rebind the two-path demo to `warehouse_rollout_gap`
+    (§10.3). Do NOT author `saturday_queue_collapse` (that is 1.3 content, CC-D2).
+  - No identity-branching, I/O, clock, randomness, or displayed English in engine code (I1-I3).
+  - Anything the contract-spec did not settle: STOP and report. Do not improvise a value.
+
+BEFORE CLAIMING DONE:
+  - Walk the verification ladder; `make check` green (pytest + every check_*.py + matrix).
+  - Every new invariant/metric shown to FAIL on a planted defect (SPEC_PROTOCOL §4.3).
+  - Fill 1.5 spec.md §9 DoD with evidence. Register Reconciliation row if any finding touched.
+  - Browser/auth/instance canaries are N-A (pure engine).
+
+DO NOT: implement the duration/availability paths if their schema fields are absent; change any
+1.4 calibration knob to chase a number; author pack content; self-audit; or merge. Push the
+branch and report. An independent auditor reviews before merge.
