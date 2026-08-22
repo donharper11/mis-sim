@@ -273,6 +273,13 @@ per-capability score for the round, and is where `signal_responsiveness` is read
 advanced ledger (O4 ruled 2026-08-22: advance the ledger before any responsiveness-bearing score;
 step 9 supplies raw terms only).
 
+> **How step 9 yields "raw terms only" (finding 1.6-SR-001).** `score_team` always computes a
+> `signal_responsiveness` component of the mgmt term, so step 9 *does* produce a responsiveness
+> number — but from the **pre-advance** ledger, so it is **provisional and discarded**: step 12's
+> re-score, run after `advance_ledger` (step 10) has this round's clears/fires, **overwrites** the
+> per-capability score and is the only responsiveness the `RoundResult` records. The builder does
+> not need a second scoring entry point; it persists step 12's output, not step 9's.
+
 ### 5.3 `RoundResult`
 
 Everything the debrief and 1.7 need, with no recomputation:
