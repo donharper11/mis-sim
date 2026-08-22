@@ -421,8 +421,12 @@ the round the resolving action was locked (reconciling `design/02:62`'s two-time
 **The 1.4 scorer does NOT read `LedgerSignal` directly — it reads the projection.** The 4-field
 `SignalState(key, capability, actionable, acted_before_fire)` (`state.py:104-109`) is frozen as a
 projection: `actionable = was_actionable`; `acted_before_fire = cleared_round is not None and
-fire_round is not None and cleared_round <= fire_round`. This seam keeps the 1.4 pin
-(`test_engine_scoring.py`) byte-identical.
+(fire_round is None or cleared_round <= fire_round)`. **A timely clear that PREVENTS a fire
+(`fire_round is None`) is the MOST responsive case and IS credited** — the earlier
+`fire_round is not None`-required form gave it no credit and drove the pin to `0.0` (1.5
+contract-spec CC-A-001). A clear *after* fire earns nothing (O3). This seam keeps the 1.4 pin
+(`test_engine_scoring.py`: tech `0.750008`, org `0.507003`, mgmt `0.656778`, realised `0.249744`)
+byte-identical: the seeded R1–R3 history projects to `acted=1 / actionable=3 → 0.333333`.
 
 **Producer:** the 1.5 engine (pure output). **Consumers:** the `SignalState` projection → 1.4
 scorer; persistence → 1.6 (`signal` table, `1.6 spec.md:103`).
@@ -434,13 +438,22 @@ scorer; persistence → 1.6 (`signal` table, `1.6 spec.md:103`).
 The existing `signal.cleared_by[]` entry covers the responsiveness match. **1.5 adds the price
 lookup** for `cheapest_fix_when_raised` / `was_actionable` (O1): `cleared_by` action-type keys
 carry **no price** (`checks.py ACTION_TYPES`). The cost is the **minimum, at the raise round,
-among pack options performing any listed action type for the signal's capability** —
-`scale_node`/`add_node`/`move_to_cloud`/`upgrade_component` → cheapest `catalog.deployment_modes.capex`;
-`add_training` → `training_options.cost`; `add_service_tier` → `platform` tier cost; `add_policy`
-→ `policies.cost`; `redesign_process` → `process_option.cost`; `retire_component`/`fund_response`
-→ 0 / event-option cost. **Ties** collapse under `min`; **no candidates** → `None` and the signal
-is excluded from the responsiveness denominator. `was_actionable` is TRUE if affordable against
-`available_funds` in **any** round the signal was open.
+among the EFFECTFUL pack options performing any listed action type for the signal's capability** —
+`scale_node`/`add_node`/`move_to_cloud`/`upgrade_component` → cheapest `catalog.deployment_modes.capex`
+(a `saas capex 0` mode is effectful — zero capex, real effect);
+`add_training` → cheapest `training_options.cost` **where `coverage > 0`** (**the `training.none`
+`cost 0 / coverage 0` option is EXCLUDED** — it trains no one, `catalog.yaml:58,80`; 1.5
+contract-spec CC-A-002); `add_service_tier` → `platform` tier cost; `add_policy` → `policies.cost`;
+`redesign_process` → `process_option.cost` when non-null; `retire_component`/`fund_response`
+→ 0 / event-option cost. **Ties** collapse under `min`; **no effectful candidates** → `None` and the
+signal is excluded from the responsiveness denominator. **Which committed action clears which signal**
+is decided by `TeamState.action_history` (`ActionRecord`: type, `locked_round`, capability/target,
+cost): a match requires `action_type ∈ cleared_by`, capability match, and
+`first_shown_round ≤ locked_round ≤ round`. `was_actionable` is TRUE if `cheapest_fix_when_raised ≤
+available_funds_by_round[r-1]` in **any** round the signal was open — `available_funds_by_round` is
+*remaining* capital (committed spend already deducted, `pack.yaml:612`). **Producers:**
+`action_history` / `available_funds_by_round` — 1.6 round evolution. **Consumer:** the 1.5 clearing +
+actionability computation.
 
 ---
 

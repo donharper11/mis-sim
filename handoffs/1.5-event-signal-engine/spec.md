@@ -448,10 +448,24 @@ written.
 **Second prerequisite — contract completion.** The engine builder ran pre-flight rows 1–10
 (pass) and row 11 in its builder-owned state, then found the metric bodies, ledger object,
 precondition runtime semantics, event attribution, and duration formula **undefined**. Those
-contracts are frozen in `handoffs/1.5-event-signal-engine/contract-spec.md` (v1.0, authored
-2026-08-22, **pending independent audit**). It also amends this spec by cross-reference (§5.5,
-§8 step 3) and records nine owned deferrals (`OPEN-REGISTER §M`). **The engine build restarts
-pre-flight only after the contract-spec is independently audited and merged.**
+contracts are frozen in `handoffs/1.5-event-signal-engine/contract-spec.md` (**v1.1**, revised by a
+fresh author 2026-08-22 to close the v1.0 audit's six Blocking + one Report findings, **pending
+independent re-audit**). It also amends this spec by cross-reference (§5.5, §8 step 3) and records ten
+owned deferrals (`OPEN-REGISTER §M`). **The engine build restarts pre-flight only after the
+contract-spec is independently re-audited and merged.**
+
+**Third prerequisite — outage schema (contract-spec §9.1, resolves the CC-A-005 sequencing).** The
+`availability_shortfall` and outage-duration paths need two NEW casepack-schema fields that do not
+exist today. Because `§4` above requires **all five** metric functions to exist before the deck is
+executable, these fields are **not** a deferred path — they are a small 1.1/1.2 prerequisite packet
+(`CatalogItem.base_rto_hours: float = 8.0`; `Capability.agreed_availability: float = 0.99`; validation)
+that lands and is independently audited **before** the 1.5 engine builder is dispatched, exactly as
+the readiness closeout was. Both carry defaults, so once the fields exist every pack's five metrics are
+buildable. See the pre-flight gate below.
+
+| Owner | Required before 1.5 implementation | Gate |
+|---|---|---|
+| 1.1 schema (+ 1.2 validation) | Add `CatalogItem.base_rto_hours` and `Capability.agreed_availability` (both defaulted) | contract-spec §12 row 7 (hard STOP) |
 
 ---
 

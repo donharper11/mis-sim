@@ -339,17 +339,20 @@ own** — each named here with an owner before the candidate merges, per the sta
 |---|---|---|---|
 | `CC-D1` | **`capacity_utilisation` R2/R3 exact history numbers.** The formula is frozen (§4.1); the spec's illustrative `0.83`/`1.11` are **not reproduced** under the frozen `order_app` throughput `7225.0` (which the 1.4 tech pin fixes). Exact per-round history values are calibration. | **1.7 calibration** + seed author | the `--with-signals` demonstration numbers only; the formula is executable now |
 | `CC-D2` | **`saturday_queue_collapse` is not authored content** — the two-path demo is rebound to `warehouse_rollout_gap` (real). If the fictional event's persona/body/outcomes are wanted, that is pack-content authoring. | **1.3 (pack content)** — optional | nothing (rebind already covers the demo) |
-| `CC-D3` | **`CatalogItem.base_rto_hours`** (NEW schema field for outage duration; engine default 8.0) | **1.1 schema** (+ **1.2** validation) | the duration path only |
-| `CC-D4` | **`Capability.agreed_availability`** (NEW per-capability SLA target; default 0.99) | **1.1 schema** | `availability_shortfall` only |
+| `CC-D3` | **`CatalogItem.base_rto_hours`** (NEW schema field for outage duration; engine default 8.0). **RETAGGED v1.1 (CC-A-005): HARD PREREQUISITE, not optional** — lands + is independently audited before the 1.5 engine builder is dispatched (contract-spec §9.1), like the readiness closeout | **1.1 schema** (+ **1.2** validation) — **sequenced before dispatch** | outage-duration path; part of the "all five metrics buildable" gate |
+| `CC-D4` | **`Capability.agreed_availability`** (NEW per-capability SLA target; default 0.99). **RETAGGED v1.1 (CC-A-005): HARD PREREQUISITE, not optional** — same prerequisite packet as CC-D3 (contract-spec §9.1) | **1.1 schema** (+ **1.2** validation) — **sequenced before dispatch** | `availability_shortfall`; part of the "all five metrics buildable" gate |
 | `CC-D5` | **`Event.repeatable`** (NEW `bool = False`, only if authored repetition is ever wanted; Riverside needs none) | **1.1 schema** | event repetition only |
 | `CC-D6` | **`TeamState.debt_ratio_by_capability`** (round-evolution input for `debt_above`; unreachable in v1 — no Riverside event uses `debt_above`) | **1.6 round** | `debt_above` only |
-| `CC-D7` | **`TeamState.available_funds_by_round`** (O1 affordability input for `was_actionable`) | **1.6 round** → 1.5 consumes | actionability computation |
+| `CC-D7` | **`TeamState.available_funds_by_round`** (O1 affordability input for `was_actionable`; *remaining* capital, committed spend already deducted, contract-spec §5.5.2) | **1.6 round** → 1.5 consumes (explicit `()` default) | actionability computation |
 | `CC-D8` | **`ArchNode.placement`** runtime field for `placement_count` (never store derived `hybrid`) | **1.6/1.1** | `placement_count` only (unused by Riverside) |
 | `CC-D9` | **No "communication" field in rollout state** — v1 `rollout_without_support` reads training + process only; a richer predicate needs the field | **1.1/1.6 (registered gap)** | a richer `rollout_without_support` |
+| `CC-D10` *(new, v1.1)* | **`TeamState.action_history`** (`ActionRecord[]`: action type, `locked_round`, capability/target scope, cost) — the immutable input that decides which committed action clears which signal (contract-spec §5.5.1) | **1.6 round** → 1.5 consumes (explicit `()` default) | signal clearing / responsiveness credit |
 
-**None blocks the engine's metric / signal-ledger / precondition / event / blast-radius core**,
-which runs on existing state plus a defaulted `agreed_availability` and two duration constants.
-`CC-D3`/`CC-D4` gate only the duration and availability paths and sequence behind 1.1.
+**The metric / signal-ledger / precondition / event / blast-radius core runs on existing state plus
+the two 1.6 round inputs (`action_history`, `available_funds_by_round`, both defaulted `()`).**
+`CC-D3`/`CC-D4` are **no longer optional deferrals** — as of contract-spec v1.1 they are the
+outage-schema prerequisite **sequenced before the engine build** (§9.1), which is what makes all five
+metric functions buildable with no deferred-path escape (closes audit CC-A-005).
 
 ---
 
@@ -368,6 +371,15 @@ requirements: `findings/1.5-contract-completion-2026-08-22.md`. All findings ret
 | `CC-A-005` | Blocking | “all five metrics required” contradicts deferring the schema-gated availability path | **1.5 author; 1.1/1.2 schema owners** — one satisfiable sequencing rule |
 | `CC-A-006` | Blocking | §11 omits material falsification checks; CC8 does not detect I/O as claimed | **1.5 contract author** — planted-defect evidence for every load-bearing invariant |
 | `CC-A-007` | Report | Candidate cites an original dispatch file absent from its tree | **1.5 contract author** — exact candidate contains or immutably reaches its dispatch scope |
+
+**Revision status — 2026-08-22.** A **fresh author** (not the v1.0 author, `GOVERNANCE §6.2`)
+revised the candidate to **contract-spec v1.1** on `author/1.5-contract-completion`, closing all seven
+(§15 changelog maps each finding to its section): CC-A-001 §5.4 (total credit rule + three-row
+projection, pin preserved), CC-A-002 §5.5.1-4 (`ActionRecord`/funds + target matching + effectful
+filter), CC-A-003 §6.1 (`< 2`-option guard), CC-A-004 §7.1/§7.3/§8.1 (ordered attribution + total
+node binding), CC-A-005 §9.1 (outage-schema prerequisite sequenced before dispatch; row 7 hard STOP),
+CC-A-006 §11 (falsification register rebuilt; CC8 detects I/O), CC-A-007 §0 (dispatch prompt carried
+into the tree). **Returns for independent re-audit at the new SHA before merge or dispatch.**
 
 ---
 
