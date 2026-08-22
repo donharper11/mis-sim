@@ -387,6 +387,21 @@ and its audit closes them. CC-D8 is 1.6/1.1 (runtime placement from the deployed
 store `hybrid`). No new owner, no re-home — this row records that the producing packet now has
 an authored spec for the production.
 
+**Register reconciliation 2026-08-22 — CC-D6/CC-D7/CC-D8/CC-D10 CLOSED by the 1.6 build**
+(branch `build/1.6-round-runner`, pending independent Heavy-tier audit). 1.6 now *produces and
+persists* all four round-evolution inputs, verified on the shipped `--full` run from a clean DB:
+
+| # | Item | Closing evidence (branch `build/1.6-round-runner`) |
+|---|---|---|
+| `CC-D10` | `TeamState.action_history` | derived from committed `decision_line` rows by `app/round/actions.py` + `snapshot.action_history` (append-only across rounds); `--full` R6 snapshot shows `[(scale_node,3),(add_training,3),(fund_response,3),(add_training,4),(add_node,4),(scale_node,5),(scale_node,6)]`. Guard: `tests/test_round_runner.py`, `tests/check_round_invariants.py`. |
+| `CC-D7` | `TeamState.available_funds_by_round` | `snapshot.available_funds_by_round` (budget − committed, remaining capital, never accumulated); `--full` yields `(282000,142000,18000,88000,82000,82000)`. |
+| `CC-D6` | `TeamState.debt_ratio_by_capability` | `snapshot.debt_ratio_by_capability` from the `debt_item` ledger; supplied for **every** capability (never `None`, so `debt_above` reads a real number). |
+| `CC-D8` | `ArchNode.placement` | persisted on `arch_node`, values `{on_prem, saas}`, `SELECT count(*) WHERE placement='hybrid'` = 0 (never the derived `hybrid`, CONTRACTS.md placement). |
+
+Closing check (all): `cd backend && PYTHONPATH=. python3 -m app.seed.demo --full` on a clean
+migrated DB, then the snapshot/DB reads above; `make check` green (incl. `check_round_invariants.py`,
+`check_instance_isolation.py`). Rows remain subject to the independent 1.6 audit before merge to `main`.
+
 ---
 
 ## N. 1.5 contract-completion independent spec audit — 2026-08-22

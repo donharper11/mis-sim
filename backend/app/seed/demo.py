@@ -114,14 +114,65 @@ def _describe_signals(pack: Casepack, state: TeamState) -> str:
     return "\n".join(lines)
 
 
+def _describe_full(results: list[dict]) -> str:
+    """The `--full` demonstration summary: six immutable RoundResults COMPUTED from the seed,
+    the opex ratchet, and the R3 signal projection (spec section 5.5). Numbers come from the
+    persisted RoundResult payloads, not from any hardcoded value beside them (GOVERNANCE 4.9)."""
+    lines: list[str] = ["", "-- six-round game (--full): immutable RoundResults --"]
+    for r in results:
+        fin = r["financials"]
+        sig = r["signals"]
+        of = next((c for c in r["capabilities"] if c["capability"] == "order_fulfilment"), None)
+        of_realised = f"{of['realised']:.4f}" if of else "n/a"
+        lines.append(
+            f"  round {r['round']}: opex_runrate={fin['opex_runrate']} capex_spent={fin['capex_spent']} "
+            f"debt_total={fin['debt_total']} | order_fulfilment realised={of_realised} | "
+            f"raised={len(sig['raised'])} cleared={len(sig['cleared'])} "
+            f"fired={len(sig['fired'])} open={len(sig['open'])} | "
+            f"missed_signals={len(r['missed_signals'])}"
+        )
+    opex = [r["financials"]["opex_runrate"] for r in results]
+    lines.append(f"  opex ratchet: {' -> '.join(str(o) for o in opex)}")
+    r3 = next((r for r in results if r["round"] == 3), None)
+    if r3 is not None:
+        lines.append("  R3 missed signals (what prints 'you were told in round N'):")
+        for ms in r3["missed_signals"]:
+            lines.append(
+                f"    {ms['key']} first_shown_round={ms['first_shown_round']} "
+                f"cheapest_fix_when_raised={ms['cheapest_fix_when_raised']}"
+            )
+    return "\n".join(lines)
+
+
+def _run_full() -> int:
+    """Seed and run the six-round game from a clean database (spec section 5.5). Creates the
+    round-runner tables if absent (the Postgres path normally uses `alembic upgrade head` first;
+    create_all is the idempotent fallback for a fresh DB)."""
+    from app.round.db import create_all, make_engine, session_for
+    from seeds.riverside_full import run_full_game
+
+    create_all(make_engine())
+    with session_for() as session:
+        results = run_full_game(session)
+    print(_describe_full(results))
+    return 0
+
+
 def _main() -> int:
     parser = argparse.ArgumentParser(prog="app.seed.demo")
-    parser.add_argument("--scenario", required=True, help="scenario name, e.g. riverside_r3")
+    parser.add_argument("--scenario", default="riverside_r3", help="scenario name, e.g. riverside_r3")
     parser.add_argument(
         "--with-signals", action="store_true",
         help="also seed the R1-R3 signal ledger and demonstrate the two paths",
     )
+    parser.add_argument(
+        "--full", action="store_true",
+        help="seed and run the full six-round game into the database (spec section 5.5)",
+    )
     args = parser.parse_args()
+
+    if args.full:
+        return _run_full()
 
     pack, state = load_scenario(args.scenario)
     print(_describe(args.scenario, pack, state))

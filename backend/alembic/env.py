@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import settings
 from app.models import Base
+import app.round.models  # noqa: F401  -- register the 1.6 round-runner tables on Base.metadata
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
