@@ -1116,13 +1116,12 @@ def check_impossible_events(lens: Lens) -> list[Finding]:
                     "events.yaml",
                     f"{event.key}.preconditions",
                     line=lens.source.field_line("events.yaml", event.key, "preconditions"),
-                    # E21 still leads with the machine key, deliberately. `labels.events` maps
-                    # an event's `body_key` to a paragraph of in-world prose, NOT its name
-                    # (docs/casepack-schema.md: "`events` is not a name map"), so routing this
-                    # subject through it would print a persona's message as a locator line.
-                    # There is nowhere to author an event NAME -- open item R1, a schema
-                    # change, reported by this packet rather than improvised here.
-                    event=event.key,
+                    # E21 leads with the event's authored title (finding J1 / R1 closed).
+                    # `labels.event_names` is the name map events gained for exactly this:
+                    # `labels.events` holds the persona's PROSE (keyed by body_key), so it
+                    # could never be the locator line. A pack that authors no title falls
+                    # back to the key, so nothing regresses.
+                    event=lens.label("event_names", event.key),
                     reason=reason,
                 )
             )

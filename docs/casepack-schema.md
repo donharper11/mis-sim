@@ -617,7 +617,8 @@ Feeds every displayed string. Python code never supplies student-facing labels.
 | `sidebar` | map | no | Navigation labels |
 | `strategies` | map | no | Strategy labels |
 | `stakeholders` | map | no | Stakeholder labels |
-| `events` | map | no | Event body strings — see the note below |
+| `events` | map | no | Event body strings (the persona's message) — see the note below |
+| `event_names` | map | no | Event key to short display title — the name a finding or screen leads with |
 | `policies` | map | no | Policy labels |
 | `entities` | map | no | Entity key to display label |
 | `catalog` | map | no | Catalog item key to display label |
@@ -629,10 +630,11 @@ Author a label for every key an instructor or a student will see named. Without 
 message leads with the machine key — an instructor reading a validator finding gets
 `wh_rollout_01` where they should get "Warehouse rollout adoption".
 
-> **`events` is not a name map.** Every other section here maps a key to a short display
-> name. `events` maps an event's `body_key` to the persona's message — a sentence or a
-> paragraph of in-world prose. There is currently nowhere to author an event's *name*,
-> which is why messages about events still print machine keys.
+> **`events` holds prose; `event_names` holds titles.** `events` maps an event's `body_key`
+> to the persona's message — a sentence or a paragraph of in-world prose. An event's short
+> *name* lives in `event_names`, keyed by the event's own key, and is what a finding (E21) or
+> a screen leads with. Author both: the message for the student, the title for the locator
+> line. Without a title an event still falls back to its machine key (finding J1).
 
 Worked example:
 
