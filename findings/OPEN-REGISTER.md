@@ -327,6 +327,32 @@ residue is named with an owner rather than left implicit.
 
 ---
 
+## M. Owned deferrals from the 1.5 contract-completion spec — 2026-08-22
+
+The 1.5 contract-completion candidate (`handoffs/1.5-event-signal-engine/contract-spec.md`,
+authored on `author/1.5-contract-completion`, **pending independent audit**) freezes the engine's
+missing interfaces. Its §0.5 STOP register surfaces changes this packet **specifies but does not
+own** — each named here with an owner before the candidate merges, per the standing rule and
+`GOVERNANCE §9`.
+
+| # | Item | Owner | Gates |
+|---|---|---|---|
+| `CC-D1` | **`capacity_utilisation` R2/R3 exact history numbers.** The formula is frozen (§4.1); the spec's illustrative `0.83`/`1.11` are **not reproduced** under the frozen `order_app` throughput `7225.0` (which the 1.4 tech pin fixes). Exact per-round history values are calibration. | **1.7 calibration** + seed author | the `--with-signals` demonstration numbers only; the formula is executable now |
+| `CC-D2` | **`saturday_queue_collapse` is not authored content** — the two-path demo is rebound to `warehouse_rollout_gap` (real). If the fictional event's persona/body/outcomes are wanted, that is pack-content authoring. | **1.3 (pack content)** — optional | nothing (rebind already covers the demo) |
+| `CC-D3` | **`CatalogItem.base_rto_hours`** (NEW schema field for outage duration; engine default 8.0) | **1.1 schema** (+ **1.2** validation) | the duration path only |
+| `CC-D4` | **`Capability.agreed_availability`** (NEW per-capability SLA target; default 0.99) | **1.1 schema** | `availability_shortfall` only |
+| `CC-D5` | **`Event.repeatable`** (NEW `bool = False`, only if authored repetition is ever wanted; Riverside needs none) | **1.1 schema** | event repetition only |
+| `CC-D6` | **`TeamState.debt_ratio_by_capability`** (round-evolution input for `debt_above`; unreachable in v1 — no Riverside event uses `debt_above`) | **1.6 round** | `debt_above` only |
+| `CC-D7` | **`TeamState.available_funds_by_round`** (O1 affordability input for `was_actionable`) | **1.6 round** → 1.5 consumes | actionability computation |
+| `CC-D8` | **`ArchNode.placement`** runtime field for `placement_count` (never store derived `hybrid`) | **1.6/1.1** | `placement_count` only (unused by Riverside) |
+| `CC-D9` | **No "communication" field in rollout state** — v1 `rollout_without_support` reads training + process only; a richer predicate needs the field | **1.1/1.6 (registered gap)** | a richer `rollout_without_support` |
+
+**None blocks the engine's metric / signal-ledger / precondition / event / blast-radius core**,
+which runs on existing state plus a defaulted `agreed_availability` and two duration constants.
+`CC-D3`/`CC-D4` gate only the duration and availability paths and sequence behind 1.1.
+
+---
+
 ## Standing rule
 
 > **A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is

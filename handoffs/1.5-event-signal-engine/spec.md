@@ -318,15 +318,26 @@ for itself: the ethics layer costs one schema section and zero new engine paths.
 
 ```
 seed        extends riverside_r3 with rounds 1-3 of signal history
-command     python -m app.seed.demo --scenario riverside_r3 --with-signals
-demonstrate ord_cap_01 raised R2 at 0.83 · escalated R3 at 1.11
+command     python -m app.seed.demo --scenario riverside_r3 --with-signals   (NEW flag)
+demonstrate ord_cap_01 raised then escalated across R2->R3 (utilisation from
+              capacity_utilisation, contract-spec §4.1; exact figures are 1.7
+              calibration — the old "0.83/1.11" were illustrative and are NOT
+              reproduced under the frozen 1.4 throughput, contract-spec §0.5 S1)
             a PRESENCE rule raised at critical with no threshold crossed
-            saturday_queue_collapse FIRES at R4 on the do-nothing path
-            and does NOT fire on a path where the signal was cleared at R3
+            warehouse_rollout_gap FIRES on the do-nothing path and does NOT fire
+              on a path where wh_rollout_01 was cleared (rebind from the phantom
+              saturday_queue_collapse, contract-spec §0.5 S2 / §10.3)
             blast radius computed by traversal, printed
 ```
 
 Two paths from one seed is the demonstration — the same event card, opposite outcomes.
+
+> **Amended 2026-08-22 (contract-completion).** The metric bodies, ledger object, precondition
+> runtime semantics, event attribution, and duration formula this section assumes are frozen in
+> `handoffs/1.5-event-signal-engine/contract-spec.md`. Two corrections landed here: the
+> `capacity_utilisation` figures are calibration outputs, not fixed pins (S1); and the two-path
+> demonstration uses `warehouse_rollout_gap` because `saturday_queue_collapse` is not authored
+> content (S2). No build cycle was open, so R1 does not apply.
 
 ---
 
@@ -387,8 +398,8 @@ must not proceed until their focused tests pass.
    `scale_node` action clears it and records `lead_time`. A presence signal clears when its
    metric goes false, with no de-escalation step.
 3. **Event preconditions + firing + cap.** *Verify:* all eleven precondition types evaluate
-   against the §10 fields; `saturday_queue_collapse` fires at R4 for the do-nothing path and
-   **does not fire** when the signal was cleared at R3. I5, I7.
+   with the runtime semantics frozen in `contract-spec.md §6`; `warehouse_rollout_gap` fires on
+   the do-nothing path and **does not fire** when `wh_rollout_01` was cleared (S2 rebind). I5, I7.
 4. **Blast radius + duration + staffing modifier.** *Verify:* removing the WAN link darkens
    the expected capability set; adding a failover edge yields an empty radius from the
    identical event.
@@ -433,6 +444,14 @@ One prerequisite packet remains, specified exhaustively in `readiness-spec.md`:
 This prerequisite is deliberately separate from the engine build and requires its own
 independent audit. After it merges, all 1.5 pre-flight rows must pass before engine code is
 written.
+
+**Second prerequisite — contract completion.** The engine builder ran pre-flight rows 1–10
+(pass) and row 11 in its builder-owned state, then found the metric bodies, ledger object,
+precondition runtime semantics, event attribution, and duration formula **undefined**. Those
+contracts are frozen in `handoffs/1.5-event-signal-engine/contract-spec.md` (v1.0, authored
+2026-08-22, **pending independent audit**). It also amends this spec by cross-reference (§5.5,
+§8 step 3) and records nine owned deferrals (`OPEN-REGISTER §M`). **The engine build restarts
+pre-flight only after the contract-spec is independently audited and merged.**
 
 ---
 
