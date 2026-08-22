@@ -256,9 +256,9 @@ mutates a record; round *r*'s history is a superset of round *r-1*'s.
 the team **for new commitments in round *r*, after that round's already-committed spend is
 subtracted**. **Committed spend IS already deducted**: the figure is *remaining* capital, matching
 the pack's own authored derivation `capital_remaining = capital_available − capital_committed`
-(`pack.yaml:595-612`; R3 = `220000 − 174000 = 46000`, `pack.yaml:612-613,677`). So the affordability
+(`pack.yaml:39-40,99-101`; R3 = `220000 − 174000 = 46000`). So the affordability
 test never double-counts a spend already made. Owner **1.6 round** (§9); the demo seed derives R1–R3
-from `pack.metadata.budget.capex_per_round` (`pack.yaml:587`) minus each round's committed actions.
+from `pack.metadata.budget.capex_per_round` (`pack.yaml:14`) minus each round's committed actions.
 
 #### 5.5.3 Exact target matching — which committed action clears which signal (FROZEN)
 An open episode of signal `s` (rule `R`, capability `C`) is **CLEARED by action** at round `r` iff,
@@ -297,7 +297,7 @@ actually move the metric toward not-raising. `cleared_by` action keys carry no p
     Excluding `coverage == 0` drops it; the cheapest *effectful* training for `order_fulfilment` is
     then `basic` at `12000` (`order_mgmt_v42`/`centraline_im7`, `catalog.yaml:80,102`), not `0`.
   - `add_service_tier` → cheapest `platform.support_tiers[*].cost` / `integration_tiers[*].cost`
-    (`platform.yaml:523-570`); all tiers are effectful.
+    (`platform.yaml:192,236`); all tiers are effectful.
   - `add_policy` → the `policies[*].cost` of the switch the signal's clearing needs
     (`policies.yaml`); a policy move is effectful (it changes the posture).
   - `redesign_process` → `process_option.cost` **when `process_option is not null`** (effectful);
@@ -316,8 +316,8 @@ actually move the metric toward not-raising. `cleared_by` action keys carry no p
   `riverside_r3.py:196-198`):** `ord_cap_01` cheapest fix = a deployment serving `order_fulfilment`
   (a `saas` mode at `capex 0`, `catalog.yaml:71`) → `0`; `wh_rollout_01` cheapest effectful fix =
   `add_training basic 12000` (the `none:0` option excluded) → `12000`; `sec_identity_01` cheapest fix
-  = `central_sign_on saas capex 0` (`platform.yaml:439`) or `add_policy` → affordable. All ≤ the R2/R3
-  remaining capital (`≥ 46000`, `pack.yaml:612`), so all three project `actionable = True`. *(The 1.5
+  = `central_sign_on saas capex 0` (`platform.yaml:103`) or `add_policy` → affordable. All ≤ the R2/R3
+  remaining capital (`≥ 46000`, `pack.yaml:39`), so all three project `actionable = True`. *(The 1.5
   spec's illustrative `cheapest_fix_when_raised: 60000` at `1.5 spec.md:141` is **not reproduced** —
   exact fix prices are 1.7 calibration, consistent with S1; the contract is the lookup, not the
   figure.)*
@@ -712,6 +712,19 @@ line in `CONTRACTS.md` in the same change (§8 behaviour-change ripple).**
 
 ## 15. Changelog
 
+**v1.2 — 2026-08-22.** Re-audit returned **PASS WITH FINDINGS**
+(`findings/1.5-contract-completion-reaudit-2026-08-22.md`): all seven v1.0 findings independently
+confirmed CLOSED, two new Report-level miscitations raised (RA-001, RA-002 — correct values, wrong
+line pointers). Both fixed here: `pack.yaml` citations corrected to `:14` (capex_per_round) and
+`:39-40,99-101` (the capital derivation), `platform.yaml` to `:103` (central_sign_on) and `:192,236`
+(tiers) — all grep-verified against the real files (114 and 241 lines). No contract, formula, or
+value changed; pointers only. `make check` green.
+
+> **Recorded honestly (re-audit observation, not a finding):** the v1.0 and v1.1 commits carry the
+> same git identity, so "fresh author" is a contextual claim (an isolated subagent, not a fork), not
+> one confirmable from commit metadata. The freshness was in the authoring context; git attribution
+> for all agents is the repository identity. Noted for the process, `OPEN-REGISTER §N`.
+
 **v1.1 — 2026-08-22.** Revised by a **fresh author** (not the v1.0 author, `GOVERNANCE §6.2`) to
 close every finding of the v1.0 audit (`findings/1.5-contract-completion-2026-08-22.md`, six Blocking
 + one Report). One logical revision over `main @ de1af03`. Per-finding closure:
@@ -719,7 +732,7 @@ close every finding of the v1.0 audit (`findings/1.5-contract-completion-2026-08
 | Finding | Change |
 |---|---|
 | **CC-A-001** | §5.4 — one **total** responsiveness rule: `acted_before_fire = cleared_round is not None and (fire_round is None or cleared_round <= fire_round)`; `fire_round is None` (clear prevents fire) is now the **most** responsive case. Explicit three-row projection table reproduces the seed's `(ord_cap_01 True, wh_rollout_01 False, sec_identity_01 False)` → `1/3 = 0.333333`, keeping the pin byte-identical; the v1.0 rule is shown to yield `0.0` (pin drift), the watched failure. |
-| **CC-A-002** | §5.5.1-4 — immutable `ActionRecord` (type, locked round, capability/target scope, cost) + `available_funds_by_round`; exact target matching; effectful-option filter excludes `training.none` (`coverage 0`, `catalog.yaml:58,80`); committed spend is **already deducted** (funds = remaining, `pack.yaml:612`). |
+| **CC-A-002** | §5.5.1-4 — immutable `ActionRecord` (type, locked round, capability/target scope, cost) + `available_funds_by_round`; exact target matching; effectful-option filter excludes `training.none` (`coverage 0`, `catalog.yaml:58,80`); committed spend is **already deducted** (funds = remaining, `pack.yaml:39`). |
 | **CC-A-003** | §6.1 — `< 2`-option guard evaluated **before** any division (no `0/0` for one-option or legacy zero-option policies, which `check_policy_options.py` proves load); zero/one-option boundary tests required (§11 CC10). |
 | **CC-A-004** | §7.1/§7.3/§8.1 — **ordered** (tuple, not set) attribution; primary capability = first in sequence; empty-sequence path (`None`, O2-exempt); single recorded suppression `capability`; **total** failed-node binding (SPOF pc → node; primary-cap bottleneck; else `None`/empty radius). |
 | **CC-A-005** | §0.5 S7, §9.1, §12 row 7 — the two outage-schema fields become a **hard 1.1/1.2 prerequisite sequenced before dispatch** (like the readiness closeout); row 7 is a hard STOP, not a deferral; the "all five metrics" acceptance rule is untouched. |
