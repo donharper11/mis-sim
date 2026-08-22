@@ -115,15 +115,25 @@ def project_signal_state(
     responsiveness denominator (`management._signal_responsiveness` filters on `actionable`).
     The next round the same episode is older-than-current and counts normally.
 
+    RULING A (1.7 calibration pass 2, user ruling 2026-08-22): an episode that fired the instant
+    it appeared (`fire_round == first_shown_round`) never gave the team a response window in ANY
+    round -- so it is PERMANENTLY excluded from the responsiveness denominator, not just the
+    round it appears. (Pass 1's rule alone left these as permanent misses that re-zeroed R2+ via
+    the Management geomean.) Both exclusions are gated on `current_round is not None`.
+
     When `current_round is None` -- the 1.4 pin / projection-seam compatibility path and the
     debrief's `_missed_signals` -- every row projects exactly as before, so the frozen pin is
-    untouched by construction (it never passes a round here).
+    untouched by construction (it never passes a round here), and the debrief still reports every
+    actionable-but-uncredited episode.
     """
     rows: list[SignalState] = []
     for s in ledger:
         actionable = s.was_actionable
-        if current_round is not None and s.first_shown_round == current_round:
-            actionable = False  # no response window in the round it first appears (RULING #2)
+        if current_round is not None and (
+            s.first_shown_round == current_round  # no window in the round it appears (RULING #2)
+            or (s.fire_round is not None and s.fire_round == s.first_shown_round)  # fired on sight (RULING A)
+        ):
+            actionable = False
         acted_before_fire = (s.cleared_round is not None) and (
             s.fire_round is None or s.cleared_round <= s.fire_round
         )
