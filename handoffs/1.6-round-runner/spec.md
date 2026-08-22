@@ -162,7 +162,7 @@ behind them do; the engine performs no I/O (1.5 I2, 1.4 I2).
 | **O1** | Can a locked round be unlocked? | **Default: yes, instructor-only, and it invalidates the `RoundResult` rather than editing it.** Instructors need it in a live class; students must not | Record |
 | **O2** | Where do lead-time purchases live between order and arrival? | **Default: an `in_flight` collection on team state, materialising into the graph at `arrival_round`.** Not in the graph early — that would inflate capacity | Record |
 | **O3** | Does the engine run at lock, or at advance? | **Default: at advance.** Lock freezes input; advance produces results. Separating them lets an instructor lock a section and review before committing outcomes | Record |
-| **O4** *(new, 2026-08-22 — STOP surfaced, needs a ruling)* | **Where does the FIRST scoring pass (step 9) sit relative to the ledger advance (step 10) that produces the `SignalState` the responsiveness term reads?** The 1.4 management scorer reads `state.signals` (`management.py:138-143`), and `state.signals` is `ledger.project_signal_state(ledger)`. The §5.2 order authored in 2026-07-26 places 1.4 scoring at step 9 **before** the watch-rule ledger advance at step 10 — but the projection seam that makes `signal_responsiveness` computable did not exist until the merged 1.5 engine. So step 9 as written would score responsiveness against a projection that lacks this round's clears/fires. This is an ordering tension between the 1.6 spec and the merged 1.4/1.5 projection contract on a **scoring path**. | **STOP to authority (`GOVERNANCE §7`) — do NOT resolve silently.** *Proposed compliant route for the ruling:* advance + project the ledger (step 10) **before** any responsiveness-bearing score, and treat the single re-score at step 12 (after events fire, §5.2) as the **authoritative** capability score for the round; the pre-event pass at step 9 supplies only the raw tech/org/mgmt terms events may perturb, and never a responsiveness number read from a stale projection. The frozen 1.4 pin is a single snapshot and does not constrain this ordering, so the choice affects the game's computed responsiveness but not the pin. | **Ruling required before build.** Record the decision and the affected step numbers. |
+| **O4** *(new, 2026-08-22 — STOP surfaced, needs a ruling)* | **Where does the FIRST scoring pass (step 9) sit relative to the ledger advance (step 10) that produces the `SignalState` the responsiveness term reads?** The 1.4 management scorer reads `state.signals` (`management.py:138-143`), and `state.signals` is `ledger.project_signal_state(ledger)`. The §5.2 order authored in 2026-07-26 places 1.4 scoring at step 9 **before** the watch-rule ledger advance at step 10 — but the projection seam that makes `signal_responsiveness` computable did not exist until the merged 1.5 engine. So step 9 as written would score responsiveness against a projection that lacks this round's clears/fires. This is an ordering tension between the 1.6 spec and the merged 1.4/1.5 projection contract on a **scoring path**. | **STOP to authority (`GOVERNANCE §7`) — do NOT resolve silently.** *Proposed compliant route for the ruling:* advance + project the ledger (step 10) **before** any responsiveness-bearing score, and treat the single re-score at step 12 (after events fire, §5.2) as the **authoritative** capability score for the round; the pre-event pass at step 9 supplies only the raw tech/org/mgmt terms events may perturb, and never a responsiveness number read from a stale projection. The frozen 1.4 pin is a single snapshot and does not constrain this ordering, so the choice affects the game's computed responsiveness but not the pin. | ✅ **RULED 2026-08-22 (user): adopt the compliant route.** Advance + project the ledger (step 10) **before** any responsiveness-bearing score; the pre-event pass at step 9 supplies only raw tech/org/mgmt terms; the single re-score at **step 12** is the **authoritative** per-capability score and is **where `signal_responsiveness` is read**, from the freshly-advanced ledger. Folded into §5.2 below. |
 
 ---
 
@@ -234,7 +234,7 @@ consumes them, and neither mutates them.
  6  apply governance: owners, sponsors, priorities, policy
  7  recompute platform pools (compute, storage, IT staff load)
  8  recompute the graph; derive serving paths and SPOFs
- 9  1.4 scoring → per-capability decomposition  (see O4 — ordering STOP)
+ 9  1.4 scoring → raw tech/org/mgmt terms only; NO responsiveness here (O4 ruling)
 10  1.5 watch rules → raise / escalate / clear signals    [ledger.advance_ledger]
 11  1.5 events → fire, blast radius, outcome application   [events.resolve_events + duration]
 12  re-score capabilities affected by event outcomes        ← single re-entry only
@@ -269,7 +269,9 @@ own demo and tests use — `app/seed/demo.py:93-104`, `tests/test_signal_engine.
 (`1.5 contract-spec §3` decision 1) — which is exactly why watch rules (step 10) precede events
 (step 11). The second `advance_ledger` pass at step 11 only stamps `fire_round` from the events
 that fired; it opens no new episode for a signal already open (I9). Step 12 is the authoritative
-per-capability score for the round (subject to the O4 ruling on step 9).
+per-capability score for the round, and is where `signal_responsiveness` is read from the
+advanced ledger (O4 ruled 2026-08-22: advance the ledger before any responsiveness-bearing score;
+step 9 supplies raw terms only).
 
 ### 5.3 `RoundResult`
 
@@ -382,7 +384,8 @@ conflict and **STOPs** (`GOVERNANCE §7`), it does not adapt the engine.
 
 ## 8. Build steps
 
-0. **Confirm the O4 ordering ruling is recorded** before building steps 9–12 (§4 O4 is a STOP).
+0. **O4 ruling is recorded (§4): responsiveness is read at step 12 from the advanced ledger,
+   not at step 9.** Build steps 9–12 to this order.
 1. **State model + migrations**, including the `signal` table at the frozen `LedgerSignal` shape
    (decision 10). *Verify:* I4 on every table; `alembic upgrade head` then `downgrade` then
    `upgrade` cleanly.
