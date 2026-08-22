@@ -375,6 +375,18 @@ two non-default values authored (`financial_reporting.agreed_availability=0.995`
 consumed by the shipped engine (`availability_shortfall`, `outage_duration`). `OS-D1` remains OPEN
 (owner 1.2): numeric out-of-range still collapses to `E00`.
 
+**Reconciliation 2026-08-22 — the 1.6 spec now specifies producing CC-D6/CC-D7/CC-D8/CC-D10.**
+The 1.6 round-runner spec (`handoffs/1.6-round-runner/spec.md` v1.1, branch
+`author/1.6-reconcile`) was reconciled against the merged 1.5 engine. Its decision 9 specifies
+1.6 *populating* the four round-evolution inputs — `TeamState.action_history` (CC-D10),
+`available_funds_by_round` (CC-D7), `debt_ratio_by_capability` (CC-D6), `ArchNode.placement`
+(CC-D8) — all of which **already exist on the engine snapshot with explicit defaults**
+(`backend/app/engine/state.py:45-49,118-134,210-222`), so 1.6 fills them without any engine
+change. **Ownership is unchanged (still 1.6);** these items stay OPEN until the 1.6 build lands
+and its audit closes them. CC-D8 is 1.6/1.1 (runtime placement from the deployed item; never
+store `hybrid`). No new owner, no re-home — this row records that the producing packet now has
+an authored spec for the production.
+
 ---
 
 ## N. 1.5 contract-completion independent spec audit — 2026-08-22
