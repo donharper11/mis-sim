@@ -353,6 +353,24 @@ which runs on existing state plus a defaulted `agreed_availability` and two dura
 
 ---
 
+## N. 1.5 contract-completion independent spec audit — 2026-08-22
+
+Verdict **FAIL — do not merge or dispatch** at candidate `a38b940`. Full proof and closing
+requirements: `findings/1.5-contract-completion-2026-08-22.md`. All findings return to the
+**1.5 contract-completion author**; schema prerequisites retain their existing 1.1/1.2 owners.
+
+| # | Sev | Item | Owner / closing check |
+|---|---|---|---|
+| `CC-A-001` | Blocking | `SignalState` projection gives no credit when a timely clear prevents `fire_round` | **1.5 contract author** — project the successful no-fire path and all three seed rows exactly |
+| `CC-A-002` | Blocking | Action/funds history, target matching, and effectful clearing-price candidates are undefined | **1.5 contract author + 1.6 input owner** — executable actionability/clearing examples, including zero-cost `training.none` exclusion |
+| `CC-A-003` | Blocking | `policy_contradiction` divides by zero for valid zero/one-option policies | **1.5 contract author** — explicit zero/one-option boundary tests |
+| `CC-A-004` | Blocking | Empty/multi-cap events leave O2 suppression and blast-radius node binding non-total/non-deterministic | **1.5 contract author** — deterministic empty/single/multi-cap checks |
+| `CC-A-005` | Blocking | “all five metrics required” contradicts deferring the schema-gated availability path | **1.5 author; 1.1/1.2 schema owners** — one satisfiable sequencing rule |
+| `CC-A-006` | Blocking | §11 omits material falsification checks; CC8 does not detect I/O as claimed | **1.5 contract author** — planted-defect evidence for every load-bearing invariant |
+| `CC-A-007` | Report | Candidate cites an original dispatch file absent from its tree | **1.5 contract author** — exact candidate contains or immutably reaches its dispatch scope |
+
+---
+
 ## Standing rule
 
 > **A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is
