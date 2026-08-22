@@ -304,6 +304,26 @@ It is recorded here with an owner *before* the merge is reported, not after.
 
 ---
 
+## L. Being fixed — on branches, awaiting audit (2026-08-22)
+
+Five findings are implemented on build branches by the integration agent. **None is closed:**
+each requires an independent audit before merge (README audit gate), and closure is recorded
+here only when the packet merges. Listed so the ledger shows the work is in flight, not idle.
+
+| # | Sev | Owner | Branch | What was built |
+|---|---|---|---|---|
+| `CU-001` | Functional | 1.2 | `build/1.2-e00-and-variants` | New code **`E18`**: every closed model vocabulary (Literal/StrEnum) set out of range names its file and field instead of collapsing to `E00`. Reads pydantic's own error report on the load-failure path, so it closes the **class** (nested and future fields included), not five instances. `broken_E18` fixture; Riverside clean |
+| `CU-002` | Data | 1.2 | `build/1.2-e00-and-variants` | New invariant **`I1v`** holds `catalogue()["variants"]` set-equal against a spec-owned variant register (§6); spec §5.2 and the schema guide now enumerate all four `E29` behaviours |
+| `CU-003` | Data | 1.2 | `build/1.2-e00-and-variants` | `test_label_routing.py` guards both halves of B5 — the `Lens.label` business-name routing and the `E07` `misc` narrowing — each mutation-proven to fail on revert |
+| `CU-004` | Data | 1.6 | `build/1.6-people-affected-reconciliation` | Reconciliation rule (1.6 spec §3 decision 8): the catalog is authoritative for `people_affected`; `test_people_affected_reconciliation.py` fails if any seeded deployment disagrees with its catalog item. 1.6 is to derive it and delete the duplicate home |
+| `J1` | Report | 1.1 | `build/1.1-event-title-labels` | New optional `labels.event_names` section (keyed by event key); `E21` leads with the authored title, not the machine key. Docs and 1.1 spec §5.8 updated; `test_event_title_labels.py` guards it |
+
+Each branch carries a DoD (`handoffs/<owner>/dod-*.md`), a full green suite, and a clean I4
+canary. **Next step: dispatch an independent auditor per branch; on PASS, merge and mark the
+row closed above.**
+
+---
+
 ## Standing rule
 
 > **A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is
