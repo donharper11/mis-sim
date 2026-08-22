@@ -10,6 +10,7 @@ build/
 .vite/
 .pytest_cache/
 .mypy_cache/
+.claude/
 npm-debug.log*
 coverage/
 .DS_Store
