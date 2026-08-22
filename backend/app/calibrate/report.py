@@ -48,8 +48,11 @@ def _focus_capability(pack: Casepack) -> str:
     return max(weights, key=lambda k: weights[k]) if weights else pack.capabilities[0].key
 
 
-def _fmt_row(label: str, cells: list[str]) -> str:
-    return f"  {label:<{_ROWLABEL_W}}" + "".join(f"{c:>10}" for c in cells)
+def _fmt_row(label: str, cells: list[str], width: int = 10) -> str:
+    # Column width is a parameter so a table whose headers are longer than 10 chars
+    # ("Internal Process", "Learning & Growth", "Organisation") does not run them together
+    # (finding 1.7-A-001). The realised-curve table keeps the default 10 (R1..R6 headers).
+    return f"  {label:<{_ROWLABEL_W}}" + "".join(f"{c:>{width}}" for c in cells)
 
 
 def _header(pack: Casepack, archetypes, rounds: int) -> list[str]:
@@ -95,11 +98,11 @@ def _realised_section(pack, archetypes, results, rounds: int) -> list[str]:
 
 def _scorecard_section(pack, archetypes, results, rounds: int) -> list[str]:
     lines = ["", f"  BALANCED SCORECARD at R{rounds}                       [from RoundResult.scorecard]"]
-    lines.append(_fmt_row("", [_BSC_LABELS[d] for d in _BSC_ORDER]))
+    lines.append(_fmt_row("", [_BSC_LABELS[d] for d in _BSC_ORDER], width=18))
     for a in archetypes:
         sc = results[a.key][-1]["scorecard"]
         cells = [f"{sc[d]:.3f}" for d in _BSC_ORDER]
-        lines.append(_fmt_row(a.label, cells))
+        lines.append(_fmt_row(a.label, cells, width=18))
     return lines
 
 
@@ -110,13 +113,13 @@ def _decomposition_section(pack, archetypes, results, rounds: int) -> list[str]:
         f"  TERM DECOMPOSITION at R{rounds} -- {_cap_label(pack, focus)}   "
         f"[from RoundResult.capabilities]",
     ]
-    lines.append(_fmt_row("", [_TERM_LABELS[t] for t in _TERM_ORDER] + ["Realised"]))
+    lines.append(_fmt_row("", [_TERM_LABELS[t] for t in _TERM_ORDER] + ["Realised"], width=13))
     for a in archetypes:
         cap = next((c for c in results[a.key][-1]["capabilities"] if c["capability"] == focus), None)
         if cap is None:
             continue
         cells = [f"{cap['terms'][t]:.3f}" for t in _TERM_ORDER] + [f"{cap['realised']:.4f}"]
-        lines.append(_fmt_row(a.label, cells))
+        lines.append(_fmt_row(a.label, cells, width=13))
     return lines
 
 
