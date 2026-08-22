@@ -304,23 +304,26 @@ It is recorded here with an owner *before* the merge is reported, not after.
 
 ---
 
-## L. Being fixed — on branches, awaiting audit (2026-08-22)
+## L. CLOSED — audited PASS and merged (2026-08-22)
 
-Five findings are implemented on build branches by the integration agent. **None is closed:**
-each requires an independent audit before merge (README audit gate), and closure is recorded
-here only when the packet merges. Listed so the ledger shows the work is in flight, not idle.
+All five findings were implemented on build branches, independently audited (verdict **PASS,
+mergeable** on all three — no Blocking/Functional/Data/UX/Report findings), and merged to
+`main`. The auditor independently mutated each guard and confirmed it fails as intended
+(vocabularies → targeted `E18` not `E00`; `I1v` fails when a variant is removed from the
+register; `people_affected` 140→141 fails the reconciliation guard; reverting `E21` to the
+machine key fails the title test). **Register reconciliation per `GOVERNANCE §9`.**
 
-| # | Sev | Owner | Branch | What was built |
+| # | Sev | Owner | Status | Merge |
 |---|---|---|---|---|
-| `CU-001` | Functional | 1.2 | `build/1.2-e00-and-variants` | New code **`E18`**: every closed model vocabulary (Literal/StrEnum) set out of range names its file and field instead of collapsing to `E00`. Reads pydantic's own error report on the load-failure path, so it closes the **class** (nested and future fields included), not five instances. `broken_E18` fixture; Riverside clean |
-| `CU-002` | Data | 1.2 | `build/1.2-e00-and-variants` | New invariant **`I1v`** holds `catalogue()["variants"]` set-equal against a spec-owned variant register (§6); spec §5.2 and the schema guide now enumerate all four `E29` behaviours |
-| `CU-003` | Data | 1.2 | `build/1.2-e00-and-variants` | `test_label_routing.py` guards both halves of B5 — the `Lens.label` business-name routing and the `E07` `misc` narrowing — each mutation-proven to fail on revert |
-| `CU-004` | Data | 1.6 | `build/1.6-people-affected-reconciliation` | Reconciliation rule (1.6 spec §3 decision 8): the catalog is authoritative for `people_affected`; `test_people_affected_reconciliation.py` fails if any seeded deployment disagrees with its catalog item. 1.6 is to derive it and delete the duplicate home |
-| `J1` | Report | 1.1 | `build/1.1-event-title-labels` | New optional `labels.event_names` section (keyed by event key); `E21` leads with the authored title, not the machine key. Docs and 1.1 spec §5.8 updated; `test_event_title_labels.py` guards it |
+| `CU-001` | Functional | 1.2 | ✅ **CLOSED** — `E18` closes the closed-vocabulary E00-collapse **class** (nested and future fields included). Audit mutated all five vocabularies incl. `provenance.source`; each returned targeted `E18`, none `E00` | `a2d39ca` (build `9ff9ab9`) |
+| `CU-002` | Data | 1.2 | ✅ **CLOSED** — invariant `I1v` holds `catalogue()["variants"]` set-equal against the spec register; audit confirmed removing `E29_vocab` from the register fails `I1v`. All four `E29` behaviours documented | `a2d39ca` |
+| `CU-003` | Data | 1.2 | ✅ **CLOSED** — `test_label_routing.py` guards both halves of B5; audit confirmed both tests non-vacuous | `a2d39ca` |
+| `CU-004` | Data | 1.6 | ✅ **CLOSED** — reconciliation guard fails on any seed/catalog drift (audit mutation 140→141 named exact deployment/keys/values). **Residue for 1.6:** derive `people_affected` from the catalog and delete the duplicate seed home (1.6 spec §3 decision 8) | `b102526` (build `cfe6cd1`) |
+| `J1` | Report | 1.1 | ✅ **CLOSED** — `labels.event_names`; `E21` leads with the title; audit confirmed reverting to the machine key fails the test; Riverside 0/0; `event_names` optional as stated | `edec4b7` (build `dc8b416`) |
 
-Each branch carries a DoD (`handoffs/<owner>/dod-*.md`), a full green suite, and a clean I4
-canary. **Next step: dispatch an independent auditor per branch; on PASS, merge and mark the
-row closed above.**
+**`CU-004` carries one explicit residue** (the catalog-derivation, owned by the 1.6 build) —
+per `GOVERNANCE §9` instance-vs-class closure, the guard closes the drift risk now and the
+residue is named with an owner rather than left implicit.
 
 ---
 
