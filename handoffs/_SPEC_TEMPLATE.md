@@ -1,9 +1,10 @@
 # <MODULE-ID> — <Module Name> · Build Spec
 
-**Authored under** `SPEC_PROTOCOL.md` v1.1
+**Authored under** `SPEC_PROTOCOL.md` v1.3
 **Author:** <agent/human id> · **Date:** YYYY-MM-DD
 **Phase:** <n> · **Depends on:** <module ids, or "none">
 **Reference mockup:** `mockups/<file>.html` *(required if acceptance is visual)*
+**Independent spec review** *(SPEC_PROTOCOL §11, before dispatch)*: <reviewer id · date · or "pending">
 
 ---
 
@@ -114,12 +115,14 @@ A stub proves rendering. A seed proves the path from data to display runs.
 
 ## 6. Invariants and their falsification checks
 
-Every *must / never / only / zero / all* ships with the check that would break it.
+Every *must / never / only / zero / all* ships with the check that would break it — and
+**each check is run and watched to FAIL on a deliberately planted defect** before the spec
+ships (`SPEC_PROTOCOL §4.3`). A check that cannot fail is a ritual, not an invariant.
 
-| Invariant | Falsification check | Expected |
-|---|---|---|
-| No engine branch on casepack identity | `grep -rniE "riverside\|grocer" engine/` | zero hits |
-| … | … | … |
+| Invariant | Falsification check | Expected | Shown to fail on |
+|---|---|---|---|
+| No engine branch on casepack identity | `grep -rniE "riverside\|grocer" engine/` | zero hits | a planted `if pack=="riverside"` |
+| … | … | … | … |
 
 ---
 
@@ -173,8 +176,12 @@ Derived mechanically from the body. Builder fills Status and Evidence.
 | Screenshots attached, each with the command that produced its data | | |
 | Instance-isolation canary *(if state-touching)* | | |
 | Design-system canary — no hardcoded colours/fonts | | |
+| **`make check` green — pytest + every check_*.py + fixture matrix** | | |
+| **Every new invariant/check shown to FAIL on a planted defect (§4.3)** | | |
+| **Behaviour-change ripple grepped — messages/docs/CONTRACTS/reports (SPEC_PROTOCOL §8)** | | |
 | `CONTRACTS.md` updated *(if cross-cutting field changed)* | | |
 | Document deltas applied in-place with version bump | | |
+| **Register Reconciliation — every finding touched re-tested on the shipped commit, its OPEN-REGISTER row updated in the same commit (GOVERNANCE §9)** | | |
 
 Status values: **PASS · FAIL · DEVIATION · N-A** (N-A requires a stated reason).
 

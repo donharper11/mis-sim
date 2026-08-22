@@ -295,6 +295,27 @@ invariant checks rather than accepting pasted output.
 Fresh auditors are mandatory from **0.3 onward** — the first module with a visual
 surface.
 
+**An auditor's ACCEPT does not substitute for an author's ruling.** An auditor may *flag* a
+decision a builder resolved without authority, but cannot bless it — the question routes to
+the named authority regardless of the auditor's opinion. *(Proven: CR-001/CR-002, where the
+first auditor accepted two decisions resolved without authority and a second, independent
+auditor reversed them. One auditor's ACCEPT nearly shipped both.)*
+
+### 6.2 Independent spec review before dispatch
+
+Drift originates in the spec (`SPEC_PROTOCOL.md`, opening line), yet only the *build* was
+ever independently audited — the spec got the author's own self-check, run by the agent with
+the blind spot. That asymmetry is the common cause behind the spec-error findings of
+Phase 1 (the same author wrote the acceptance list, the check set, and the invariants, and
+never ran one against another).
+
+**From here, a spec passes an independent review before a builder is dispatched.** A fresh
+agent (not the author) runs the bounded checklist in `SPEC_PROTOCOL.md §11` — a consistency
+pass, not a re-derivation. It gates *dispatch* the way the audit gates *merge*, and the
+independence rule of §6.1 applies: for `E*`/`S*` modules the reviewer is a fresh agent,
+mandatory. A spec review is minutes; a build-rework loop is days — this moves the cheapest
+reviewer pass to where a spec defect is a text edit, not a rebuild.
+
 ---
 
 ## 7. Conflict rule
@@ -303,6 +324,13 @@ Spec vs README vs code disagreement → **stop, surface with evidence, await dir
 
 Do not reconcile. Do not pick the one that seems right. The disagreement is itself the
 finding.
+
+**A spec that contradicts itself, and an input contract the spec never defined, are the same
+class.** Neither is the builder's to resolve nor the auditor's to bless — both STOP to the
+named authority. Choosing one arm of a contradiction "because the outcome is defensible" is
+still resolving without authority. *(Proven: CR-001 — decision 3 vs decision 9 resolved by
+the builder; CR-002 — an undefined `overrides` shape silently ignored. Both reached `main`'s
+doorstep before the second auditor stopped them.)*
 
 ---
 
@@ -314,8 +342,36 @@ opened.
 
 ---
 
+## 9. Findings discipline
+
+**A finding is closed, owned, or being fixed. There is no fourth state, and "flagged" is
+not one of them.** Every audit appends its findings to `findings/OPEN-REGISTER.md` with an
+owner before the packet that produced them merges.
+
+- **Instance vs class.** A finding cannot be marked CLOSED at the instance level. Closing a
+  defect *class* requires either the class-wide fix, or an explicit residue row naming an
+  owner. **The auditor re-runs the class, not the builder's proof.** *(Proven: CU-001/B7 —
+  the E00 collapse was fixed for one field and marked closed while five other closed
+  vocabularies still collapsed the whole pack.)*
+- **Every finding ships an executable closing check** — the command that fails while the
+  finding is open and passes once it is fixed. A finding with no closing check is a claim,
+  not an action.
+- **Register reconciliation.** A packet that touches any finding ends with a reconciliation
+  row in its DoD: every finding it fixed, re-tested on the *shipped* commit, its register
+  row updated in the *same* commit. *(Proven: the 1.2 rework fixed five register rows and
+  updated none; the entire catch-up-rework packet existed because owners were recorded but
+  never converted into a dispatch — and it then reproduced the same defect, CU-001.)*
+
+---
+
 ## Changelog
 
+- **1.3** (2026-08-22) — plugged the Phase-1 rework gaps identified by the root-cause pass
+  over 124 findings. Added §6.2 *Independent spec review before dispatch* (the spec was never
+  independently reviewed, only self-checked — the common cause behind the spec-error
+  findings); §9 *Findings discipline* (instance-vs-class closure, executable closing checks,
+  register reconciliation — the catch-up-rework class); and strengthened §6.1 / §7 so a
+  decision resolved without authority is a STOP the auditor may flag but not bless (CR-001/2).
 - **1.2** (2026-07-27) — added §4.9 *Seed data, never stubs*. Every packet producing a
   visible surface or computed result ships seed data and demonstrates the result computed
   from it. One command produces a complete demo environment.

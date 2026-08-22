@@ -50,7 +50,12 @@ State the reason — do not silently skip.
 
 ### Rung 2 — Implementation verification
 - Typecheck / lint / build
-- Backend tests where applicable
+- **`make check` is green** — the single entry point runs `pytest` **plus every
+  `backend/tests/check_*.py` plus the fixture matrix**, and fails non-zero if any does. A
+  guard that runs only when someone invokes it by path does not count as shipped: five of
+  six injected mutations once passed `pytest` and the matrix and were caught only by a
+  standalone script (`1.5-RC-004`), which is why the B5 label routing rotted unguarded for
+  two packets (`CU-003`). A new guard must be reachable from `make check`.
 - Migration dry-run or schema check
 - **Casepack validator passes** on all packs the change could affect
 
@@ -176,9 +181,14 @@ Before any module lands:
 □  Auth canary passed (if browser-gated)
 □  Instance-isolation canary passed (if state-touching)
 □  Casepack validator clean
+□  `make check` green — pytest + every check_*.py + fixture matrix (no guard runs only by hand)
+□  Every new invariant/check shown to FAIL on a planted defect (SPEC_PROTOCOL §4.3)
 □  Design-system canary clean (no hardcoded colours/fonts)
+□  Independent spec review complete before dispatch (SPEC_PROTOCOL §11, for E*/S*)
 □  Independent audit pass complete, findings filed
+□  Behaviour-change ripple grepped — messages/docs/CONTRACTS/reports updated (SPEC_PROTOCOL §8)
 □  CONTRACTS.md updated if any cross-cutting field changed
+□  Register Reconciliation — every finding this packet touched re-tested on the shipped commit, its OPEN-REGISTER row updated in the same commit (GOVERNANCE §9)
 ```
 
 Any unchecked box = not landed.
@@ -196,12 +206,20 @@ In order:
    improvised architecture costs a rebuild.
 
 Never: infer a schema from nearby code, invent an identifier, resolve a spec/code
-conflict, or mark something done that was not verified in a browser.
+conflict, **resolve a contradiction internal to the spec, or fill an input contract the
+spec left undefined** (both STOP to the authority — `GOVERNANCE §7`), or mark something
+done that was not verified in a browser.
 
 ---
 
 ## Changelog
 
+- **1.4** (2026-08-22) — plugged Phase-1 rework gaps from the 124-finding root-cause pass.
+  Rung 2 and the gate now require `make check` (one runner over pytest + every check_*.py +
+  the matrix — no guard runs only by hand); the gate adds rows for planted-defect proof
+  (SPEC_PROTOCOL §4.3), independent spec review (§11), behaviour-change ripple (§8), and
+  Register Reconciliation (GOVERNANCE §9). §6 now names spec-internal contradictions and
+  undefined input contracts as STOP conditions.
 - **1.3** (2026-07-27) — rung 3 and the pre-merge gate now require a seed command and
   evidence computed from it. Half of Phase 0's screenshots proved only that HTML renders.
 - **1.2** (2026-07-26) — §1: an action is not done because the command exited 0; verify

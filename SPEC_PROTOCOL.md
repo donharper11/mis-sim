@@ -157,6 +157,28 @@ while rewriting the token names that `main.jsx` reads at runtime to theme Ant De
 degraded **silently**. One `grep -rn "getPropertyValue\|var(--" frontend/src` would have
 caught it; it is now pre-flight row 3 of that spec.
 
+### 4.3 Every check is proven able to fail
+
+An invariant, an acceptance criterion, or a pre-flight row ships with evidence it was **run
+and watched to fail on a deliberately planted defect.** A check that cannot fail is not a
+check — it is a ritual, and it passes audit while guarding nothing. This was the single most
+recurring defect of Phase 1, spanning spec and build alike. Named violations, each seen:
+
+- an invariant that compares the build to itself, so it cannot fail on the dimension it
+  names (`I1` counting one file against the same file — `1.2-017`);
+- an acceptance row predicting output no check in the spec can produce (`1.2-002`, which
+  **recurred verbatim** as `1.2-026` one cycle later);
+- a pre-flight row that exits 0 for any input, including a target that does not exist
+  (`1.2-004`);
+- a regression test that passes unchanged on the pre-fix base, so it cannot regress the
+  thing the packet fixed (`1.1-PR-002`).
+
+**The same rule binds prose.** Every load-bearing sentence in a spec, a provenance file, or
+a DoD is recomputed before it ships — not only the conclusion. A true headline resting on an
+un-re-derived supporting claim is the "true conclusion, unverified sentence" defect
+(`1.3-003`, `1.3-006`, `1.3-010`, `1.3-HR-001` — it recurred *inside* the rework meant to
+fix it).
+
 - **Copy is spec'd.** Student-facing strings are written out, not described. Vocabulary
   drift starts in paraphrase.
 - **Visual-acceptance rule.** Any spec whose acceptance is how a screen reads MUST ship
@@ -213,8 +235,16 @@ the negligent path included deliberately.
 - **Document deltas land with the change.** Exact replacement text included, applied in
   the same session, merged into the living document with a version bump — never shipped
   as a standalone delta file.
+- **Behaviour-change ripple.** When a change alters *what satisfies* a check — a new legal
+  shape, a widened predicate, a renamed field — every message, `Fix:` line, doc,
+  `CONTRACTS.md` row, and report that described the old behaviour is grepped and updated in
+  the same change. *(Proven: `1.2-030`/`031`/`023`/`034` left messages asserting the
+  pre-change truth and pointing authors at the wrong file; a cross-cutting field changed with
+  no `CONTRACTS.md` entry three separate times despite that already being mandated.)*
 - **Conflict rule:** spec vs README vs code disagreement → stop, surface with evidence,
-  await direction.
+  await direction. A spec that contradicts itself, or an input contract it never defined,
+  is the same class — STOP to the authority (`GOVERNANCE.md §7`), never resolved by the
+  builder or blessed by an auditor.
 
 ---
 
@@ -246,11 +276,43 @@ Every spec in this project additionally states:
 9. DoD table derived from the body, nothing orphaned
 10. Playthrough Script written, including the negligent path
 11. §9 project-specific statements present
+12. Every invariant/acceptance/pre-flight check was run and **watched to fail** on a planted
+    defect (§4.3); every load-bearing prose claim recomputed
+13. Independent spec review (§11) requested — self-check does not substitute for it
+
+---
+
+## 11. Independent spec review before dispatch
+
+Self-check (§10) is run by the agent with the blind spot; it does not replace an independent
+pass. Before a spec is dispatched to a builder, a **fresh agent (not the author,
+`GOVERNANCE.md §6.2`)** runs this bounded checklist. It is a consistency pass, not a
+re-derivation — minutes, not a rebuild — and it gates dispatch the way the audit gates merge.
+
+1. **Every acceptance criterion maps to the specific check or code path that emits its
+   expected result.** *(Catches `1.2-002`/`026`: an acceptance row no check can produce.)*
+2. **Every invariant ships a falsification check shown to fail on a planted defect** (§4.3).
+   *(Catches `1.2-017`, `1.2-004`: checks that cannot fail.)*
+3. **Every field the spec touches agrees across spec ↔ `CONTRACTS.md` ↔ `design/` ↔
+   `models.py`** — no contradiction, no missing CONTRACTS entry. *(Catches `1.1-PR-001`,
+   `F1`/`F2`, `B21`: docstring says one thing, design/CONTRACTS another.)*
+4. **"Name one compliant route" (§4.1) is actually written.**
+5. **Every new schema section enumerates every downstream check and label/vocabulary home it
+   needs.** *(Catches `1.2-024`, `1.2-037`, and the label-section gap that recurred three
+   times as `1.2-008` → `1.2-024` → `J1`.)*
+
+A spec that fails a row returns to the author before any builder is dispatched. The reviewer
+records the pass (reviewer id, date) in the spec folder.
 
 ---
 
 ## Changelog
 
+- **1.3** (2026-08-22) — plugged Phase-1 rework gaps from the 124-finding root-cause pass.
+  Added §4.3 *Every check is proven able to fail* (the dominant recurring defect — checks
+  that could not fail), §11 *Independent spec review before dispatch* (drift originates in
+  the spec but only the build was audited), and a §8 *Behaviour-change ripple* rule (stale
+  messages/docs/CONTRACTS after a behaviour change). Self-check items 12–13 added.
 - **1.2** (2026-07-26) — added §4.1 *Named compliant route* and §4.2 *Out-of-scope
   dependency check*. Both prompted by 0.3 v1, which shipped three jointly unsatisfiable
   invariants and declared files out of scope that consumed what it changed — 17 defects
