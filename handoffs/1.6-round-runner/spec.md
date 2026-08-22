@@ -338,9 +338,30 @@ that hand-authors the R1–R3 `LedgerSignal` history (`seeds/riverside_signals.p
 path `warehouse_rollout_gap` demo. **1.6's `--full` supersedes the hand-authored history:** it
 populates the `signal` table by **running the real `ledger.advance_ledger` transition** across six
 rounds (§5.2 step 10), so the persisted ledger is computed, not stubbed (`GOVERNANCE §4.9` — seed
-data, never stubs). The `--full` run must still project (`ledger.project_signal_state`) to the same
-`SignalState` rows the 1.4 pin depends on at R3, keeping the pin byte-identical (I10). `--with-signals`
-remains valid as the isolated engine demo; `--full` is the round-runner's clean-DB seed.
+data, never stubs).
+
+**How the pin is preserved — the honest reading (corrected, finding 1.6-A-007).** The frozen 1.4
+pin is preserved **two ways, neither of which is the `--full` seed's own R3 number**:
+1. **Hermetically** — `test_engine_scoring.py` scores the `riverside_r3` snapshot directly and 1.6
+   touches no engine, scoring, or calibration code, so the pin (tech `0.750008` / org `0.507003` /
+   mgmt `0.656778` / realised `0.249744`) is **byte-identical** by construction (I10).
+2. **Through the projection seam** — the R1–R3 `LedgerSignal` history projects
+   (`ledger.project_signal_state`) to exactly the three `SignalState` rows the pin depends on, and
+   scoring the snapshot with those *projected* signals still yields the pin (`test_round_pin.py`,
+   the CC-A-001 mechanism). The round-evolution inputs 1.6 produces drive that projection
+   (`action_history` → `cleared_round`; `available_funds_by_round` → `was_actionable`), so planting
+   either drifts the pin.
+
+The `--full` seed is a **distinct, coherent playthrough**: its R3 ledger, run through the real
+`advance_ledger`, reproduces the same credited/un-credited **pattern** the pin depends on
+(`ord_cap_01` cleared-before-fire = credited; `wh_rollout_01`/`sec_identity_01` un-credited; all
+actionable), but **not the pinned number** — the seed scales order capacity so `ord_cap_01` can clear
+before the deck fires it, which changes the order-fulfilment technology term (R3 realised `≈0.2038`
+≠ the pinned `0.249744`). This is expected: the pinned snapshot's near-capacity order system cannot
+reproduce a cleared-before-fire `ord_cap_01` under the real deck (`pos_support_ending` fires it on
+warning), which is exactly why the pin is anchored to `test_engine_scoring` and the projection seam
+rather than to the seed's computed R3 score. `--with-signals` remains valid as the isolated engine
+demo; `--full` is the round-runner's clean-DB seed.
 
 ---
 
@@ -417,26 +438,30 @@ conflict and **STOPs** (`GOVERNANCE §7`), it does not adapt the engine.
 
 ## 9. Definition of Done
 
+*Filled by the builder on `build/1.6-round-runner` (finding 1.6-A-006); the independent audit
+returned **PASS WITH FINDINGS** (`findings/1.6-round-runner-2026-08-22.md`, no Blocking).*
+
 | Item | Status | Evidence |
 |---|---|---|
-| Pre-flight rows 1–10 | | |
-| **O4 ordering ruling recorded before build (STOP)** | | |
-| Steps 0–7 verified | | |
-| I1–I10 | | |
-| O1, O2, O3 recorded; O4 ruled | | |
-| Resolution order matches §5.2 exactly; steps 10–12 bind to the merged entry points (decision 11) | | |
-| **The four round-evolution inputs populated at the frozen shape (decision 9/CC-D6/7/8/10)** | | |
-| **`signal` table round-trips every `LedgerSignal` field; ledger append-only (I9)** | | |
-| **1.4 pin byte-identical after the six-round seed (I10)** | | |
-| Six-round run produces six immutable results | | |
-| Migration up/down/up clean | | |
-| `CONTRACTS.md` updated if any field shape changed | | (no change expected — 1.6 populates existing frozen shapes; the `LedgerSignal`/`action_history`/`available_funds` entries already name 1.6 as producer/persister) |
-| **OPEN-REGISTER §M reconciliation — CC-D6/7/8/10 re-tested on the shipped commit, rows updated in the same commit (GOVERNANCE §9)** | | |
-| Instance-isolation canary | | **partial** — column enforced; full canary at 2.2 |
-| **Seed** — `--full` produces six rounds from a clean DB in one command | | |
-| Every later packet can reproduce the demo state with it | | |
-| Auth / browser canaries | | **N-A** — headless |
-| Independent spec review (SPEC_PROTOCOL §11) before dispatch — Heavy tier | **pending** | this v1.1 reconciliation returns for review |
+| Pre-flight rows 1–10 | ✅ | All 10 PASS, reported before code (builder report §Pre-Flight). E.g. row 5 `python -m app.engine.score riverside_r3` → order_fulfilment tech 0.750/org 0.507/mgmt 0.657; row 10 pin green. |
+| **O4 ordering ruling recorded before build (STOP)** | ✅ | Build step 0: responsiveness read at step 12 from the advanced ledger, not step 9. `runner.advance()` step 9 is a provisional pass (discarded); step 12 `score_team` is authoritative (finding 1.6-SR-001). |
+| Steps 0–7 verified | ✅ | `runner.py` implements steps 1–14; `test_round_runner.py` + `--full` cover them; A-002 (estate-mutation of steps 2/4–6) registered as a ruled deferral (§ below). |
+| I1–I10 | ✅ | `check_round_invariants.py` (I1/I3/I4/I5/I6/I7/I9 green); `test_round_runner.py` (I5/I8/I9 property + plants); `test_round_pin.py` (I10 seam + plants); I2 by `check_engine_purity.py` (engine unchanged). |
+| O1, O2, O3 recorded; O4 ruled | ✅ | `test_round_runner.py::test_o1_*`, `test_o2_in_flight_*`, `test_o3_*`; O4 folded into §5.2. |
+| Resolution order matches §5.2 exactly; steps 10–12 bind to the merged entry points (decision 11) | ✅ | `runner.advance()` calls `advance_ledger → resolve_events → outage_duration/failed_node → advance_ledger(fired_signals) → project_signal_state → score_team`. |
+| **The four round-evolution inputs populated at the frozen shape (decision 9/CC-D6/7/8/10)** | ✅ | `--full` R6 snapshot: `action_history=[(scale_node,3)…(scale_node,6)]`; `available_funds_by_round=(282000,142000,18000,88000,82000,82000)`; `debt_ratio_by_capability` a dict over all 7 caps (never None); `ArchNode.placement ∈ {on_prem,saas}`, `hybrid` count = 0. |
+| **`signal` table round-trips every `LedgerSignal` field; ledger append-only (I9)** | ✅ | `\d signal` = 14 LedgerSignal fields, PK `(instance_id,team_id,key,episode_id)`; `test_i9_*` (re-raise opens ep2, prior row byte-unchanged; plant overwrite FAILS). |
+| **1.4 pin byte-identical after the six-round seed (I10)** | ✅ | `pytest tests/test_engine_scoring.py` green after `--full` (tech 0.750008/org 0.507003/mgmt 0.656778/realised 0.249744); `test_round_pin.py` seam + plants. **Note:** the pin is preserved hermetically + via the seam; the `--full` seed reproduces the credited/un-credited *pattern*, not the number (R3 realised ≈0.2038) — corrected §5.5 (1.6-A-007). |
+| Six-round run produces six immutable results | ✅ | `SELECT count(*) FROM round_result WHERE instance_id=1` = 6, opex 47000→53000→58300→62200→66000→70000. |
+| Migration up/down/up clean | ✅ | `alembic upgrade head` → `downgrade base` → `upgrade head` clean on Postgres (`20260822_0002_round_runner`). |
+| `CONTRACTS.md` updated if any field shape changed | ✅ | No change — 1.6 populates existing frozen shapes; the `LedgerSignal`/`action_history`/`available_funds` entries already name 1.6 as producer/persister. |
+| **OPEN-REGISTER §M reconciliation — CC-D6/7/8/10 re-tested on the shipped commit, rows updated in the same commit (GOVERNANCE §9)** | ✅ | `findings/OPEN-REGISTER.md §M` — CLOSED with evidence table, in the build commit. |
+| Instance-isolation canary | ✅ **partial** | `check_instance_isolation.py` green (two instances, zero cross-reads). Single-casepack limitation registered as 1.6-A-008 (full cross-casepack canary at 2.2). |
+| **Seed** — `--full` produces six rounds from a clean DB in one command | ✅ | `python -m app.seed.demo --full` from a clean migrated DB → six RoundResults computed. |
+| Every later packet can reproduce the demo state with it | ✅ | `--full` is idempotent (wipes instance 1 first); one command, any session. |
+| Auth / browser canaries | **N-A** | Headless; no UI/auth in 1.6. |
+| Independent spec review (SPEC_PROTOCOL §11) before dispatch — Heavy tier | ✅ | Completed before dispatch (`bb3ee26`, folded `1.6-SR-001` at `23eb6c7`). |
+| Independent audit (Heavy tier) | ✅ | PASS WITH FINDINGS, no Blocking (`findings/1.6-round-runner-2026-08-22.md`); A-001 fixed, A-007/A-006 addressed, A-002/3/4/5/8/9 registered with owners. |
 
 ---
 
