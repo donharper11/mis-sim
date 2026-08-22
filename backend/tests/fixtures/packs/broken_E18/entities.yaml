@@ -1,0 +1,12 @@
+- key: appointment
+  levels_of_detail: [daily_total, slot]
+  sensitivity: classified
+  provenance: {source: AUTHORED, note: "a booking is either a day's count or one named slot"}
+- key: client
+  levels_of_detail: [segment, household]
+  sensitivity: high
+  provenance: {source: AUTHORED, note: "pet owners are contactable people; held at household level"}
+- key: visit
+  levels_of_detail: [daily_total, visit_line]
+  sensitivity: high
+  provenance: {source: AUTHORED, note: "a consultation is either a day's count or line-by-line clinical notes"}

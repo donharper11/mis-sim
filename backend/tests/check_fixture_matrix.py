@@ -77,6 +77,11 @@ MATRIX: dict[str, tuple[set[str], set[str], int]] = {
     # Aggregate diagnostics: a bad policy default AND an independent weight error. Both must
     # surface -- one invalid default must not hide E03 behind a single E00 (1.2-RA-003).
     "broken_policy_aggregate": ({"E17", "E03"}, {"E00"}, 1),
+    # ---- CU-001: closed model vocabularies name the field, not a blanket E00 -----------
+    # A `sensitivity` outside its Literal makes models.py refuse the pack. E00 is forbidden:
+    # the whole point of E18 is that no closed vocabulary collapses to the unreadable-pack
+    # path any more -- the class E15/E17/E29 each fixed one instance of.
+    "broken_E18": ({"E18"}, {"E00"}, 1),
     # ---- 1.2-RA-001: obligation references -----------------------------------------
     "broken_E24": ({"E24"}, set(), 1),
     "broken_E25": ({"E25"}, set(), 1),
@@ -187,6 +192,52 @@ def check_i1() -> list[str]:
     if extra:
         problems.append(f"I1: this build implements codes the spec does not name: {sorted(extra)}")
     print(f"I1  set equality      : {'PASS' if not problems else 'FAIL'}")
+    return problems
+
+
+# ---------------------------------------------------------------------------------------
+# I1v -- message VARIANTS this build carries vs variants the spec's register names
+# ---------------------------------------------------------------------------------------
+#
+# Finding CU-002: I1 counts catalogue()["codes"] only, so a code's behaviours -- its message
+# variants -- were invisible to it. E29_vocab (E29's fourth behaviour) was added with no
+# spec change and no fixture, and I1 stayed set-equal throughout. A variant is a distinct
+# thing the validator can say; it is held set-equal here against a register the spec owns.
+
+
+def spec_named_variants() -> set[str]:
+    """Variant keys named in the spec's §6 variant register, read from the spec."""
+    text = SPEC.read_text(encoding="utf-8")
+    after = text.split("### Variant register", 1)
+    if len(after) < 2:
+        raise SystemExit("spec.md has no '### Variant register' section for I1v")
+    block = re.search(r"```\n(.*?)```", after[1], re.S)
+    if not block:
+        raise SystemExit("spec.md variant register has no fenced block")
+    named: set[str] = set()
+    for line in block.group(1).splitlines():
+        match = re.match(r"^([EWI]\d+_[A-Za-z0-9_]+)\b", line)
+        if match:
+            named.add(match.group(1))
+    return named
+
+
+def check_i1v() -> list[str]:
+    sys.path.insert(0, str(REPO / "backend"))
+    from app.casepack.validate import catalogue  # noqa: E402
+
+    implemented = set(catalogue().get("variants", {}))
+    named = spec_named_variants()
+    print("I1v implemented variants:", len(implemented), sorted(implemented))
+    print("I1v spec-named variants :", len(named), sorted(named))
+    problems: list[str] = []
+    missing = named - implemented
+    extra = implemented - named
+    if missing:
+        problems.append(f"I1v: spec names variants this build does not carry: {sorted(missing)}")
+    if extra:
+        problems.append(f"I1v: this build carries variants the spec does not name: {sorted(extra)}")
+    print(f"I1v set equality        : {'PASS' if not problems else 'FAIL'}")
     return problems
 
 
@@ -307,6 +358,8 @@ def main() -> int:
     print()
     problems += check_i1()
     print()
+    problems += check_i1v()
+    print()
     problems += check_i5([PACKS / "minimal_valid", PACKS / "warn_heuristics", REPO / "backend/packs/riverside_grocery", PACKS])
     print()
 
@@ -324,7 +377,7 @@ def main() -> int:
         return 1
     print(f"all {len(MATRIX)} fixtures behave as named; "
           f"{len(covered)} of {len(declared)} codes exercised, {sorted(NO_FIXTURE)} recorded as unfixturable")
-    print("I1 set-equal against the spec; I5 identical in single-pack and directory mode")
+    print("I1/I1v set-equal against the spec; I5 identical in single-pack and directory mode")
     return 0
 
 

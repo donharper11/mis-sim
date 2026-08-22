@@ -13,7 +13,7 @@ from typing import Any
 import yaml
 
 from app.casepack import checks as base_checks
-from app.casepack.loader import CasepackLoadError, load_casepack
+from app.casepack.loader import SECTION_FILES, CasepackLoadError, load_casepack
 from app.casepack.models import Casepack
 
 # --------------------------------------------------------------------------------------
@@ -553,6 +553,90 @@ def check_precondition_vocab_raw(raw: dict[str, Any], source: PackSource) -> lis
                         allowed=", ".join(allowed),
                     )
                 )
+    return findings
+
+
+#: The pydantic error types that mean "a value outside a closed vocabulary": `Literal`
+#: fields report `literal_error`, `StrEnum` fields report `enum`. Both carry the offending
+#: input and the expected set in the error record, which is all E18 needs.
+_CLOSED_VOCAB_ERRORS = frozenset({"literal_error", "enum"})
+
+
+def _readable_field(loc: tuple[Any, ...], raw: dict[str, Any]) -> str:
+    """Turn a pydantic error `loc` into a field path an author can find in their file.
+
+    `('entities', 3, 'sensitivity')` becomes `<row-key>.sensitivity` when the raw row at
+    index 3 carries a `key`, and `entities.3.sensitivity` when it does not. The section
+    itself is dropped -- E18 already names the file it maps to.
+    """
+    parts: list[str] = []
+    cursor: Any = raw.get(str(loc[0])) if isinstance(raw, dict) else None
+    for step in loc[1:]:
+        if isinstance(step, int) and isinstance(cursor, list) and step < len(cursor):
+            element = cursor[step]
+            if isinstance(element, dict) and isinstance(element.get("key"), str):
+                parts.append(element["key"])
+            else:
+                parts.append(str(step))
+            cursor = element
+        else:
+            parts.append(str(step))
+            cursor = cursor.get(step) if isinstance(cursor, dict) else None
+    return ".".join(parts) if parts else str(loc[-1]) if loc else "casepack"
+
+
+def check_closed_vocab_load(
+    exc: CasepackLoadError, raw: dict[str, Any], source: PackSource
+) -> list[Finding]:
+    """E18 -- every closed model vocabulary reports the field, not a blanket E00.
+
+    A `Literal` or `StrEnum` field set outside its vocabulary makes `models.py` refuse the
+    whole pack, and that refusal used to reach the instructor as a single opaque
+    `E00 "This pack could not be read"` naming no field, against a file that parsed
+    perfectly (finding CU-001; `GOVERNANCE 4.10`). `check_policy_vocab` and
+    `check_precondition_vocab_raw` each pre-empt ONE such family before the load; this
+    closes the CLASS by reading pydantic's own error report -- which knows the exact field
+    path, the bad value and the expected set for every enum failure, present or future,
+    however deeply nested -- so no closed vocabulary can collapse to E00 again.
+
+    The vocabularies are never restated here: `expected` comes straight off the pydantic
+    error, so this cannot become a second home for values the model already owns.
+    """
+    validation_error = exc.validation_error
+    if validation_error is None:
+        return []
+    findings: list[Finding] = []
+    for error in validation_error.errors():
+        if error.get("type") not in _CLOSED_VOCAB_ERRORS:
+            continue
+        loc = tuple(error.get("loc", ()))
+        if not loc:
+            continue
+        # Precondition placement/severity are closed vocabularies too, but they are already
+        # pre-empted before the load by `check_precondition_vocab_raw` as `E29_vocab` -- the
+        # event engine's own contract. E18 must not also fire on them, or one bad value would
+        # report twice under two codes.
+        if "preconditions" in loc and str(loc[-1]) in base_checks.PRECONDITION_VOCABULARIES:
+            continue
+        section = str(loc[0])
+        relative = SECTION_FILES.get(section, section)
+        field = _readable_field(loc, raw)
+        leaf = str(loc[-1])
+        value = error.get("input")
+        allowed = str((error.get("ctx") or {}).get("expected") or error.get("msg", ""))
+        findings.append(
+            make_finding(
+                "E18",
+                relative,
+                field,
+                line=source.token_line(relative, str(value)),
+                path=field,
+                field_leaf=leaf,
+                value=_show(value),
+                allowed=allowed,
+                file=relative,
+            )
+        )
     return findings
 
 
@@ -1676,6 +1760,10 @@ def validate_pack_dir(pack_dir: str | Path) -> Report:
         # those two checks have to run against raw YAML on this path.
         findings += check_weights_raw(raw, source)
         findings += check_demand_raw(raw, source)
+        # A closed-vocabulary value (a Literal or StrEnum field set out of range) is the
+        # other family that refuses the load; E18 names the field instead of collapsing the
+        # whole pack into E00 (finding CU-001).
+        findings += check_closed_vocab_load(exc, raw, source)
         if not any(item.severity == ERROR for item in findings):
             findings.append(
                 make_finding("E00", _blamed_file(exc), "casepack", detail=str(exc), file=_blamed_file(exc))

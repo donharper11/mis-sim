@@ -202,6 +202,18 @@ codes:
     message: "Starts on default '{default}', which is not one of its options {options}. A team would begin the game on a switch position the switch cannot hold."
     fix: "Fix: in policies.yaml, set '{policy}' default to one of {options}, or add '{default}' to its options."
 
+  # E18 -- any CLOSED model vocabulary (a Literal or StrEnum field) set out of range.
+  # Finding CU-001: such a value makes models.py refuse the whole pack, and E15/E17 and E29
+  # each only pre-empt ONE family of it. E18 closes the class off pydantic's own error, so
+  # `entities.sensitivity`, `stakeholders.stakeholder_type`, `provenance.source`,
+  # `catalog.rgt_tag`, `watch_rules.metric_kind` -- and any field like them added later --
+  # name the field instead of collapsing into the opaque E00 (GOVERNANCE 4.10).
+  E18:
+    severity: ERROR
+    subject: "Field {path}"
+    message: "Sets {field_leaf} to {value}, which is outside its closed vocabulary. Allowed: {allowed}."
+    fix: "Fix: in {file}, set {field_leaf} to one of the allowed values ({allowed})."
+
   # ---- coherence (spec 5.2) --------------------------------------------------------
 
   E20:
