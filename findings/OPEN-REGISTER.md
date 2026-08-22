@@ -503,6 +503,21 @@ Registered with owners: `1.6-A-002` (Phase 2/3), `1.6-A-003` (1.7), `1.6-A-004` 
 `1.6-A-005` (cleanup), `1.6-A-008` (2.2), `1.6-A-009` (note). CC-D6/7/8/10 remain CLOSED (§M). The
 1.4 pin is byte-identical and `make check` is green on the shipped commit.
 
+**Register reconciliation 2026-08-22 (build `build/1.7-calibration-harness`).** The 1.7 calibration
+**instrument** landed: four scripted archetype seed builders (`backend/seeds/archetype_*.py`) run
+through the real `RoundRunner.advance` for six rounds each, and `python -m app.calibrate <pack>`
+prints the score curves (four BSC dimensions + realised), the term decomposition, informational
+diagnostics, and the **live** `TODO: calibrate` inventory. Guard: `tests/check_calibration_harness.py`
+(I1–I6, reachable from `make check`); the 1.4 pin is byte-identical after a harness run (the harness
+reads `RoundResult` and scores nothing). The harness **does not calibrate** and **does not rule** —
+the calibration-review gate is the user's (spec §5.4). Status of the §12 calibration items 1.7
+*owns for the human review loop* (re-tested via the live inventory, which prints them each run):
+`B12`/`F5`, `CC-D1`, `1.6-A-003`, `1.6-A-004`, `J2` remain **OPEN** — they are the calibration
+checklist the review loop resolves, not defects the instrument fixes. `B11`/`B17` stay **CLOSED**
+(catch-up rework); `B16` stays **OPEN BY DESIGN** — the 37 pack-YAML marker sites are now printed
+live by the harness rather than tracked by a hand-copied count. No pack value and no engine value
+was changed by this build.
+
 ---
 
 ## Standing rule
