@@ -469,10 +469,14 @@ schema (`CC-D3`/`CC-D4` landed as step 0). **Unblocks 1.6 (round-runner), 1.7, 3
 
 ## P. 1.6 Round Runner — independent audit — 2026-08-22
 
-Verdict **PASS WITH FINDINGS** (no Blocking) at `build/1.6-round-runner`
-(`findings/1.6-round-runner-2026-08-22.md`). One Functional finding fixed on the build branch;
-two Report findings addressed; the rest registered here with owners per the standing rule. The
-builder's three surfaced observations were all ruled sound by the integration authority.
+Verdict **PASS WITH FINDINGS** (no Blocking) at `build/1.6-round-runner` @ `57fa0b5`
+(`findings/1.6-round-runner-2026-08-22.md`); Functional `1.6-A-001` and Report `1.6-A-006/007`
+fixed @ `777adee`. ✅ **MERGED to `main` at `1a27394`** (Heavy-tier: build → audit → mechanical
+close-out → merge; the corrected SHA was mechanically re-verified — `make check` green, 1.4 pin
+byte-identical, A-001 guard passing). One Functional finding fixed on the build branch; two Report
+findings addressed; the rest registered here with owners per the standing rule. The builder's three
+surfaced observations were all ruled sound by the integration authority. **Unblocks 1.7** (which uses
+scripted teams). CC-D6/CC-D7/CC-D8/CC-D10 CLOSED (§M).
 
 **Fixed on `build/1.6-round-runner` (this dispatch):**
 
