@@ -164,6 +164,10 @@
     saas: {capex: 0, opex: 8000, lead_time_rounds: 0, bypasses_platform: true}
   sizing: {driver: sites, base: {compute: 1, storage_gb: 20}, per_unit: {compute: 0.1, storage_gb: 2, per: 1}}
   availability: 0.99
+  # Infrastructure-backing: firm-wide security perimeter. Its base recovery-time objective is
+  # authored below the 8.0-hour default because a firewall is re-imaged faster than a data
+  # store is restored (1.5 contract-spec 8.3).
+  base_rto_hours: 4.0  # TODO: calibrate -- authored, owner 1.7
   service_life_rounds: 6
   staff_load: 0.2
   owns_entities: []
@@ -290,6 +294,10 @@
     saas: {capex: 0, opex: 3200, lead_time_rounds: 1, bypasses_platform: true}
   sizing: {driver: orders, base: {compute: 1, storage_gb: 400}, per_unit: {compute: 0.3, storage_gb: 60, per: 10000}}
   availability: 0.99
+  # Infrastructure-backing: the order store of record. Restoring the transaction store is the
+  # slow part of an outage, so its base recovery-time objective is authored above the engine's
+  # 8.0-hour default (1.5 contract-spec 8.3).
+  base_rto_hours: 12.0  # TODO: calibrate -- authored, owner 1.7
   service_life_rounds: 6
   staff_load: 0.3
   owns_entities: [{entity: order, level_of_detail: order_line}]

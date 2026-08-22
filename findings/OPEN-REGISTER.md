@@ -365,6 +365,16 @@ finding it raised is kept:
 |---|---|---|
 | `OS-D1` | **Numeric out-of-range collapses to `E00`** — `E18`/CU-001 closed the enum/literal class only; every numeric field (`availability`, `staff_load`, `base_rto_hours`, `agreed_availability` …) still collapses to a bare `E00` on a range violation. Targeted, field-naming coverage for numeric ranges is a separate finding | **1.2** |
 
+**Register reconciliation 2026-08-22 — `CC-D3`/`CC-D4` CLOSED.** Both fields landed as STEP 0 of the
+1.5 engine build on `build/1.5-event-signal-engine`: `CatalogItem.base_rto_hours: float | None =
+Field(default=None, gt=0)` and `Capability.agreed_availability: float = Field(default=0.99, gt=0,
+le=1)` (`backend/app/casepack/models.py`), documented in `docs/casepack-schema.md`, with Riverside's
+two non-default values authored (`financial_reporting.agreed_availability=0.995`;
+`order_db_cluster.base_rto_hours=12.0`, `next_gen_firewall.base_rto_hours=4.0`, all `TODO: calibrate`
+→ 1.7). All 44 fixtures load unchanged; the 1.4 pin is byte-identical; `make check` green. Both are
+consumed by the shipped engine (`availability_shortfall`, `outage_duration`). `OS-D1` remains OPEN
+(owner 1.2): numeric out-of-range still collapses to `E00`.
+
 ---
 
 ## N. 1.5 contract-completion independent spec audit — 2026-08-22

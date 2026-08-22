@@ -113,6 +113,7 @@ and reporting detail.
 | `required_entities` | list | yes | Each has `entity`, `min_level_of_detail` |
 | `demand_curve` | integer list | yes | Exactly `rounds` entries |
 | `demand_unit` | snake string | yes | Unit for the curve |
+| `agreed_availability` | number | no | `0 < agreed_availability <= 1`; the SLA target the `availability_shortfall` watch metric measures realised availability against (1.5 engine). Defaults to `0.99` when absent, so packs authored before this field load unchanged. Exact values are 1.7 calibration. |
 | `provenance` | object | yes | Source tag and rationale |
 
 Worked example:
@@ -140,6 +141,7 @@ training/process decisions, TCO forecast, and Run/Grow/Transform mix.
 | `deployment_modes` | map | yes | Keys: `on_prem`, `cloud`, `saas`; each has `capex`, `opex`, `lead_time_rounds`, optional `bypasses_platform` |
 | `sizing` | object | yes | `driver`, `base{compute, storage_gb}`, `per_unit{compute, storage_gb, per}` |
 | `availability` | number | yes | `0 < availability <= 1` |
+| `base_rto_hours` | number | no | `> 0`; hours to restore the item after an outage — the base recovery-time objective the outage-duration formula multiplies (1.5 engine). Omit it and the engine uses a default of `8.0` hours, so packs authored before this field load unchanged. Exact values are 1.7 calibration. |
 | `service_life_rounds` | integer | yes | Positive |
 | `staff_load` | number | yes | IT FTE load |
 | `owns_entities` | list | yes | May be empty; each has `entity`, `level_of_detail` |

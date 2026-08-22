@@ -42,6 +42,11 @@ class ArchNode:
     serves: tuple[str, ...] = ()
     throughput: float | None = None
     owns_entities: tuple[tuple[str, str], ...] = ()  # (entity_key, level_of_detail)
+    #: Runtime placement of the deployed item behind this node, one of on_prem/cloud/saas
+    #: (never the derived `hybrid`, CONTRACTS.md placement). The `placement_count`
+    #: precondition reads it; it is a 1.6 round-evolution field the pure 1.5 engine only
+    #: reads. `None` means the round runner has not populated it (unused by Riverside).
+    placement: str | None = None
 
     @property
     def is_client_access(self) -> bool:
@@ -107,6 +112,26 @@ class SignalState:
     capability: str
     actionable: bool
     acted_before_fire: bool
+
+
+@dataclass(frozen=True)
+class ActionRecord:
+    """One committed team action, as the immutable snapshot the 1.5 engine reads to decide
+    which action cleared which signal (1.5 contract-spec section 5.5.1).
+
+    Append-only history produced by 1.6 round evolution; the pure 1.5 engine never writes it.
+    `action_type` is one of the closed ten-key `checks.ACTION_TYPES` set; `locked_round` is the
+    round the team committed the action (the responsiveness clock); `capability` is the
+    capability it targets (`None` = firm-wide, e.g. `add_policy`); `target_key` is the exact
+    catalog item / platform tier / policy / node acted on; `cost` is the capex actually
+    committed for it.
+    """
+
+    action_type: str
+    locked_round: int
+    capability: str | None = None
+    target_key: str | None = None
+    cost: int = 0
 
 
 @dataclass(frozen=True)
@@ -182,6 +207,19 @@ class TeamState:
     #: null path deterministic and backward-compatible with existing callers while
     #: still charging the information-policy discipline factor.
     policy_decisions: tuple[PolicyDecisionState, ...] = ()
+    #: Immutable action history (1.6 output, 1.5 contract-spec section 5.5.1). The empty-tuple
+    #: default preserves every existing constructor and the 1.4 pin; the 1.5 signal engine
+    #: reads it to match a committed action to the signal it clears.
+    action_history: tuple[ActionRecord, ...] = ()
+    #: Remaining capital available for NEW commitments per round, index r-1 for round r, AFTER
+    #: that round's already-committed spend is subtracted (1.6 output, contract-spec 5.5.2).
+    #: The affordability test (`was_actionable`, O1) reads it; committed spend is already
+    #: deducted, so it never double-counts. Empty default preserves existing constructors.
+    available_funds_by_round: tuple[int, ...] = ()
+    #: Per-capability debt ratio (1.6 output, contract-spec S5). `None` means the round runner
+    #: did not supply it; the `debt_above` precondition then raises `MissingRoundInputError`
+    #: rather than silently reading FALSE. Unreachable in v1 (no Riverside event uses it).
+    debt_ratio_by_capability: dict[str, float] | None = None
 
     # -- convenience indexes, all pure ------------------------------------------
     def node(self, key: str) -> ArchNode | None:
