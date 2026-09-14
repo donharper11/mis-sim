@@ -196,3 +196,33 @@ and unaffordable sample-game findings block its dependent builders. Whole-compon
 exposure is not approved as an implicit replacement for an entity-scoped integration.
 The author must supply a coherent reviewed correction and truthful signal-fix pricing
 semantics. P0's separately reviewed capacity/RTO/path packet retains its original scope.
+
+**M1-R16 — Entity-access correction, approved for specification.** Use an explicit immutable
+one-hop grant naming connection, physical source, receiver, capability and entity. Preserve
+the physical nodes' original ownership, roles and serving membership. An imported primary
+data route must traverse its live receiver and integration edge; source/receiver capacity,
+reliability and failure identity remain real. Owner evidence de-duplicates physical sources.
+SPOF, blast and failover consumers must use the same route/exclusion semantics. No transitive
+grants or broad source-serving extension. Absent new inputs must preserve every historical
+payload. The exact optional inputs, structural validation, native/imported path ordering,
+failure semantics and evidence are subject to independent review in P0b before code.
+
+**M1-R17 — Repair-assessment correction, approved for specification.** Production may provide
+a bounded catalogue of verified single-operation repair candidates, using the same legal
+estate/organisation effects and actual cost/operating/horizon checks as ordinary decisions.
+Prevention, no-ops, initial-only modes and infeasible late effects are not repairs. Each
+candidate needs a reproducible command/price/effect/affordability witness. A cheapest physical
+repair may differ from an affordable repair; distinguish them. No verified candidate means
+**unassessed**, with an explicit limitation, not a proof that no repair or combination exists.
+Preserve the original action timestamps, clearing rules and immutable episode initial quote;
+later verified opportunities can update actionability without rewriting earlier evidence.
+Unpriced exposure needs explicit reporting. Share pure effect/cost preparation to avoid
+recursive quote→ledger→quote evaluation. A separate optional engine input retains exact
+legacy defaults. The precise candidate catalogue, null paths, witness/history shapes and
+debt interaction require review; this ruling is not a completed solver or balance verdict.
+
+Scope amendment: the documentation-only author may also add
+`production-inputs/spec.md` for P0b. Its proposed engine allowlist is state/graph/technology/
+metrics/events/ledger plus one focused test file and its DoD. P0b follows audited P0 and
+requires independent spec review and build audit. The master must include this prerequisite;
+P1–P6 remain gated on correction/review of the complete master contract.
