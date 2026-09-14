@@ -167,3 +167,32 @@ sets, inferred metrics or fallback mappings.
 
 These rulings settle author choices; independent review still must verify complete field
 shapes, source references, null/error paths, formulas, examples and acceptance coverage.
+
+### Review-stage clarifications
+
+- A paused order carried to its last feasible resume round automatically expires as
+  abandoned if no continue/cancel is supplied. Its cost remains sunk and it produces no
+  arrival or clearing action. An explicit continue may still arrive within the game;
+  a new pause that leaves no feasible in-game resume is rejected. Empty rounds remain total.
+- The operating test compares real per-round liability schedules. Fully capital-funded
+  one-off training, repair or prevention may proceed despite an unavoidable operating
+  deficit if it increases no future operating liability. Any such liability increase
+  requires a nonnegative complete candidate forecast. Reductions offset liabilities only
+  in the rounds where they actually occur; no transfer between reserves is implied.
+- Preserve the scorer's one-primary-capability-per-deployment contract. Merged assignments
+  cannot give one physical catalog asset multiple primary capabilities or duplicate rollouts.
+- Read/initialize views expose detached typed checkpoint state for later service consumers.
+  Pack identity binds semantic content, with defensive copies and digest checking; it is
+  neither a filesystem watcher nor permission to mutate a bound bundle through an alias.
+- The original platform preference cloud/on-prem weights receive explicit source-context
+  dispositions under the approved exact-placement v1 interpretation. Source-leaf coverage
+  must define its universe and permit one source weight to support several named views.
+- P2 precedes P3 because organisation consumes the estate/resource implementation. Final
+  TeamState projection receives explicit staff and stakeholder-alignment outputs; it cannot
+  import an unbuilt later module or recompute that module's formulas.
+
+Master candidate `dcb59f5` is under independent review. Concrete integration-access leakage
+and unaffordable sample-game findings block its dependent builders. Whole-component data
+exposure is not approved as an implicit replacement for an entity-scoped integration.
+The author must supply a coherent reviewed correction and truthful signal-fix pricing
+semantics. P0's separately reviewed capacity/RTO/path packet retains its original scope.
