@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-09-14 — scorecard contract revision 1: explicit event points, normalized bounded runtime perspectives, persisted partial-financial status and versioned evidence. Previous history: 2026-08-21 (catch-up rework: `capital_remaining` entry added — one home, `budget`, with `review`'s second home eliminated as a schema change, finding `1.3-001` / CG-6; earlier 2026-08-21: 1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
+**Last updated:** 2026-09-15 — production engine input contract v1: scoped entity access and verified credit-eligible repair assessments. Previous update: 2026-09-14 — scorecard contract revision 1: explicit event points, normalized bounded runtime perspectives, persisted partial-financial status and versioned evidence. Previous history: 2026-08-21 (catch-up rework: `capital_remaining` entry added — one home, `budget`, with `review`'s second home eliminated as a schema change, finding `1.3-001` / CG-6; earlier 2026-08-21: 1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -433,7 +433,12 @@ scorer; persistence → 1.6 (`signal` table, `1.6 spec.md:103`).
 
 ---
 
-## `signal.cleared_by[]` — clearing-price lookup — extends the entry above (1.5)
+## `signal.cleared_by[]` — historical clearing-price lookup — extends the entry above (1.5)
+
+The generic price/funds lookup below remains the compatibility path when
+`TeamState.repair_assessments` is absent. Production inputs v1 use the separately described
+verified credit-eligible assessments; action matching and its original timestamps remain
+the same in both paths.
 
 The existing `signal.cleared_by[]` entry covers the responsiveness match. **1.5 adds the price
 lookup** for `cheapest_fix_when_raised` / `was_actionable` (O1): `cleared_by` action-type keys
@@ -551,6 +556,40 @@ Producer/consumer cases and checks are frozen in
 **Changelog — 2026-09-14:** Engine input contract v1 adds optional unit-specific capacity
 and explicit physical-node RTO. Historical complete 24-result payloads and scoring pins
 are unchanged; Simulation v1 producers remain a later M1 packet.
+
+---
+
+## `TeamState` production inputs — LIVE, production engine input contract v1
+
+**Production engine inputs v1.** Optional TeamState entity_access grants expose one
+original source-owned entity to one declared receiving capability through a mandatory
+live receiver/integration path. Ownership, roles, serves, currency membership and physical
+identity remain original. Per-entity access provenance lives at
+TechResult.evidence.data_adequacy.entities[entity].access_via under this packet's exact
+sorted/valid-grant/production-empty/legacy-omitted contract. Serving capacity, SPOF, blast and failover queries use the same
+exclusions, so receiver failure cannot be bypassed by an unrelated physical shortcut.
+Optional repair_assessments replace legacy generic actionability estimates only for
+production. A verified candidate has real effect/price/horizon/affordability evidence;
+unassessed means no candidate verified in the bounded catalogue, not no repair exists.
+Episode initial quotes/timestamps remain frozen, and later verified opportunities update
+only current/persistent actionability. Absent optional inputs preserve exact legacy24
+results. Simulation projection/consequence preparation are sole production producers.
+
+P0b implements these immutable engine inputs and their graph/ledger consumers. Simulation
+projection and consequence preparation remain planned M1 producers. Each repair candidate
+must also qualify under the original watch's clearing-action vocabulary and commitment
+window. A physical repair without that eligibility is excluded from the assessed minimum;
+the production producer will report it separately. Structural engine validation does not
+replace verification of candidate commands and live content by those producers.
+
+The complete record shapes, strict exclusions, per-entity evidence, current assessment
+coverage, frozen episode quotes and compatibility cases are defined in the
+[P0b specification](handoffs/recovery/decision-evolution/production-inputs/spec.md).
+No new scoring formula, physical ownership rule or scorecard-v1 field is introduced.
+
+**Changelog — 2026-09-15:** Production engine input contract v1 adds optional immutable
+entity access and verified credit-eligible repair assessments. Absent-input historical
+payloads remain unchanged. The production transition and candidate generator remain M1 work.
 
 ---
 

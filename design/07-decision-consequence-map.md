@@ -265,3 +265,16 @@ only within the requested capability; incidental transit with no map entry has n
 path order implement the bounded [P0 contract](../handoffs/recovery/decision-evolution/engine-inputs/spec.md).
 The living producer/consumer entry is in [CONTRACTS.md](../CONTRACTS.md).
 This seam alone does not implement production decision evolution.
+
+### Entity access and assessed repair opportunity
+
+An integration grants only its named data, not every role or record held by its source.
+Imported data must pass through the live receiving system. Runtime repair assessments
+use bounded verified choices and distinguish a priced repair, an affordable repair and
+an unassessed possibility. Historical generic repair-price examples remain fixture-only.
+
+**Changelog — 2026-09-15, production engine input contract v1:** The
+[P0b contract](../handoffs/recovery/decision-evolution/production-inputs/spec.md) adds scoped
+entity access and verified credit-eligible repair inputs to the pure engine. The living
+producer/consumer entry is in [CONTRACTS.md](../CONTRACTS.md). Production projection and
+repair-candidate generation remain later M1 packets.
