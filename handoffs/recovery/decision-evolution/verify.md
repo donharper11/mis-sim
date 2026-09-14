@@ -12,18 +12,53 @@ use another explicitly recorded environment. No shared DB or ambient DATABASE_UR
 ## Pre-flight register and proof obligations
 
 Every packet reports these rows before edits; P0/P0b use their independent registers.
-The commands below emit inspected facts, not a ritual exit-code check. A missing source,
+The commands below emit inspected facts, not a ritual exit-code check. A missing existing source,
 field or changed count is a STOP/report against the exact assigned base.
 
 | PF | Command / precise check | Required observation and falsification |
 |---|---|---|
 | 0 | `git status --porcelain`; `git rev-parse HEAD` | clean/exact supervisor base; deliberately compare against an incorrect SHA and show mismatch |
 | 1 | `rg -n 'class Casepack|class CatalogItem|class PlatformService|class TeamState|class ActionRecord|class RoundResult|ALL_TABLES' backend/app/{casepack,engine,round}`; import actual audited predecessor functions from spec§8 | actual existing source names/types; absent predecessor import must fail; P1 inspects both audited P0/P0b field and graph/ledger signatures |
+| 1a (P1) | Run the exact-base NEW-file check below; after implementation rerun with the actual P1 candidate SHA | all three declared NEW simulation source files are absent at2859e85; absence authorizes their creation, not an existing-source failure. Candidate added simulation source paths equal exactly those three; missing or extra paths fail. |
 | 2 | Run author probe below, plus own packet's direct original-source parameter assertions |78200/3.7 initial cost/load; actual dependencies, real training/process values,13funds total182000; wrong price/edge/retention rejected |
 | 3 | `PYTHONPATH=backend python -m pytest -q backend/tests/test_engine_scoring.py backend/tests/test_round_pin.py`; P0 full24 capture script | existing pins green and full digest e4260be4986ac085483f84434b6abe8352f83d347083299b2794084f38f4dcd4; changing non-score event evidence fails full digest |
 | 4 | `rg -n 'RoundRunner|build_team_state|ALL_TABLES|EXPECTED_TABLE_COUNT|Base.metadata|_rolled_scorecard|advance\(' backend/app backend/scripts backend/alembic frontend/src` | inspect every production/historical/schema/helper consumer; frontend has no new SimulationService consumer yet. New uninspected consumer stops scope; P5 proves exact migrated schema |
 | 5 | `rg -n 'runtime.yaml|simulation|initial_state|unlock|16|38' CONTRACTS.md design/07-decision-consequence-map.md design/08-implementation-north-star.md handoffs/2.3-round-scheduling/spec.md README.md backend/scripts` | identify living-contract/version/count homes, distinguish historical statements; literal deltas applied by supervisor at integration, no blind global replacement |
 | 6 | Per-packet selected tests below, source inspections and real defect injection | baseline new behavior absent is not PASS; deliver new actual-interface test with failure/restoration evidence, no self-comparison oracle |
+
+P1 NEW-file preflight clarification (no interface change): save the following block to a
+temporary file and run `python <file>` from repository root. On the completed P1 candidate,
+run `python <file> <candidate-sha>`; the latter checks actual Git additions, not intended
+filenames. The existing full P1 allowlist audit still covers runtime content, tests and DoD.
+
+```python
+import subprocess,sys
+BASE='2859e851dd9e429afc2ff9d3e3840f98b017a9cd'
+NEW={'backend/app/simulation/__init__.py','backend/app/simulation/types.py','backend/app/simulation/content.py'}
+def git(*args):return subprocess.check_output(['git',*args],text=True).splitlines()
+assert git('rev-parse',BASE)==[BASE]
+base_paths=set(git('ls-tree','-r','--name-only',BASE))
+def absent(paths):assert not paths&base_paths,sorted(paths&base_paths)
+def created(candidate):
+    actual=set(git('diff','--name-only','--diff-filter=A',BASE,candidate,'--','backend/app/simulation/'))
+    assert actual==NEW,{'missing':sorted(NEW-actual),'extra':sorted(actual-NEW)}
+def detect(name,fn):
+    try:fn()
+    except AssertionError:print(name,'defect DETECTED');return
+    raise AssertionError(name+' escaped')
+absent(NEW)
+print('P1 NEW source files absent at exact base PASS',sorted(NEW))
+detect('existing engine source mislabeled NEW',lambda:absent({'backend/app/engine/state.py'}))
+detect('unchanged base claimed completed P1 creation',lambda:created(BASE))
+if len(sys.argv)>1:
+    assert len(sys.argv)==2
+    created(sys.argv[1]);print('actual P1 candidate creates exactly the three source files PASS')
+else:print('P1 prebuild absence check PASS; actual candidate creation PENDING')
+```
+
+Executed author result: exact-base absence PASS; both source-backed negative checks
+DETECTED. P1 creation remains PENDING until its actual candidate passes the second form.
+Absence is expected only for declared NEW files; the existing-file failure rule is unchanged.
 
 P1 source inventory additionally recursively enumerates131 scalar leaves under original
 catalog/platform/training/services preferences defaults/overrides, excluding provenance;
