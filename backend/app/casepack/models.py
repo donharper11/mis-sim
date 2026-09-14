@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import math
 import re
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, model_validator
 
 
 SnakeKey = str
@@ -385,9 +386,25 @@ class EventPrecondition(StrictModel):
     count: int | None = Field(default=None, ge=0)
 
 
+ScorecardPerspective = Literal["financial", "customer", "internal_process", "learning_growth"]
+
+
 class EventOutcome(StrictModel):
     revenue_loss: int | None = Field(default=None, ge=0)
-    scorecard: dict[SnakeKey, int] = Field(default_factory=dict)
+    scorecard: dict[ScorecardPerspective, StrictInt] = Field(default_factory=dict)
+
+    @field_validator("scorecard")
+    @classmethod
+    def finite_scorecard_points(cls, points):
+        """Authored integers are points; their fraction must be representable."""
+        for perspective, value in points.items():
+            try:
+                finite = math.isfinite(value / 100)
+            except OverflowError:
+                finite = False
+            if not finite:
+                raise ValueError(f"{perspective}: scorecard points overflow")
+        return points
 
 
 class EventOption(StrictModel):

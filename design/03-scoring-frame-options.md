@@ -27,6 +27,14 @@ The engine produces four families of output, and they map onto BSC almost exactl
 | **Internal Process** | realised value per capability, coverage, integration, data adequacy |
 | **Learning & Growth** | training coverage, adoption, resistance, staff skills, governance maturity |
 
+**Implemented scorecard boundary — contract v1:** the pure engine emits normalized
+0–1 base perspectives. Financial is currently the strategic-alignment and
+portfolio-discipline proxy with `financial_partial=True`; the Financial measures
+listed above describe the intended fuller model, not a claim those ledgers already
+feed this score. The round runner alone applies fired-event point adjustments under
+`CONTRACTS.md` and persists bounded scores plus base/delta/status evidence. Engine
+Tech/Org/Mgmt, capability realised value, firm score and historical pins are unchanged.
+
 **Learning & Growth is the deciding argument.** Neither A nor B has a slot for the
 organisational term — and the whole Tech × Org × Mgmt design turns on it. Under frame A
 or B, a team's training and adoption investment has nowhere to show up on the headline
@@ -60,3 +68,8 @@ covers Ch 1 and Ch 12 without either becoming decoration.
   rather than a scorecard quadrant
 - `kpi_scores` table shape (5 fixed columns) — replace with a BSC four-perspective
   structure, or a generic `scorecard_metric` table so the frame is casepack-configurable
+
+
+## Changelog
+
+- **2026-09-14 — scorecard contract v1:** clarifies units and the existing partial Financial boundary; no pure-scoring formula change. Canonical rule: `CONTRACTS.md`.

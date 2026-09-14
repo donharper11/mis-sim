@@ -208,6 +208,14 @@ Internal Process   realised value per capability, coverage, integration, data ad
 Learning & Growth  training coverage, adoption, resistance, staff skills, governance
 ```
 
+**Implemented scorecard boundary — contract v1:** the pure engine emits normalized
+0–1 base perspectives. Financial is currently the strategic-alignment and
+portfolio-discipline proxy with `financial_partial=True`; the Financial measures
+listed above describe the intended fuller model, not a claim those ledgers already
+feed this score. The round runner alone applies fired-event point adjustments under
+`CONTRACTS.md` and persists bounded scores plus base/delta/status evidence. Engine
+Tech/Org/Mgmt, capability realised value, firm score and historical pins are unchanged.
+
 ### 5.5 Stakeholder alignment (G6, layer 1 only)
 
 ```
@@ -329,6 +337,8 @@ already-approved mockups either agree or expose a contradiction.
 ---
 
 ## Changelog
+
+- **2026-09-14 — scorecard contract v1:** clarifies units and the existing partial Financial boundary; no pure-scoring formula change. Canonical rule: `CONTRACTS.md`.
 
 - **2026-08-21 — 1.4 closeout** (`closeout-spec.md`; branch `build/1.4-closeout`;
   DoD `dod.md` §closeout). Built the deferred information-policy path:

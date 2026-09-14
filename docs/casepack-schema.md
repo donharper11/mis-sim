@@ -326,9 +326,21 @@ Feeds event deck, inbox, response decisions, rationale tags, and outcome trace.
 | `strategy_affinity` | list | yes | Strategy keys |
 | `from_persona` | snake string | yes | Stakeholder/persona key |
 | `body_key` | snake string | yes | Label key in `labels.events` |
-| `outcomes` | object | yes | `revenue_loss`, `scorecard` delta map |
+| `outcomes` | object | yes | Optional nonnegative revenue_loss; scorecard is a strict-integer point-delta map (see below). |
 | `options` | list | yes | Each has `key`, `tags`, `cost` |
 | `provenance` | object | yes | Source tag and rationale |
+
+**Scorecard contract v1 (recovery):** event `outcomes.scorecard` uses signed integer
+points on a 100-point scorecard, on `financial`, `customer`, `internal_process`, and
+`learning_growth` only. For example `-12` subtracts twelve points, or `0.12` from a
+normalized runtime score. An omitted map defaults to `{}`; omitted dimensions have
+zero effect. Explicit null, unknown keys, booleans, strings and floats are invalid.
+Point conversion must be finite. `Event.outcomes` remains required. New runtime
+results sum fired-event points, divide by 100, add to the existing 0–1 base and clamp
+once to 0–1, rounded to six decimals; they retain the authored integers in the event
+trace. `revenue_loss` is separate money evidence. No authored values or pack
+schema_version are changed by this contract. Unknown dimensions are reported as E18;
+numeric diagnostic improvements remain owned by OS-D1/M2.
 
 ### Preconditions
 
@@ -661,3 +673,8 @@ with `chain_position`.
 O2: demand curves are explicit absolute per-round arrays.
 
 O3: stakeholder preferences are one file per decision domain under `preferences/`.
+
+
+## Scorecard contract revision history
+
+- **2026-09-14 — revision 1:** strict integer event points and closed dimensions; permissive coercions are no longer accepted. Valid pack bytes/schema version remain unchanged. Canonical rule: [CONTRACTS.md — scorecard contract v1](../CONTRACTS.md#eventoutcomescorecard--roundresultpayloadscorecard--live-scorecard-contract-v1).

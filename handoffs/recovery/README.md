@@ -73,6 +73,41 @@ reviewer passed all five spec checks. [Review and authority ruling](scorecard-co
 accept R1–R4 and specify the next dispatch prerequisites. No scorecard builder was launched
 before that review, and no scorecard code is included in this first wave.
 
-M0 remains open until scorecard implementation and audit pass. Then M1 begins with a
-separate decision-transition contract; its five bounded stages are in the north star.
-M1–M6 are not implemented by the first wave.
+That was the first-wave checkpoint. The following continuation supersedes its pending
+scorecard status; historical candidate evidence remains unchanged.
+
+## Scorecard continuation — M0 accepted
+
+The user's “Can we proceed?” authorized the next reviewed packet. Builder
+`scorecard_builder` received the exact base `c7283dc`, five-file allowlist and no
+subdelegation in [dispatch.md](scorecard-contract/dispatch.md). It completed all six
+preflights before edits. Code/tests were frozen at `5f5b09e`; final candidate `ad5de38`
+adds only the [DoD](scorecard-contract/dod.md). Fresh `scorecard_auditor` independently
+reviewed and verified the build; the supervisor separately checked its complete diff,
+24 persisted results against pre-edit captures, and a new PostgreSQL database.
+
+The accepted correction uses integer event points, bounded 0–1 output and versioned
+base/delta/partial-status evidence. Balanced R1 Financial is **0.696932**; the firm score
+remains **0.35825**. Every other field across all 24 results is unchanged. The full score
+digest changes because it continues to include the corrected BSC values; old evidence
+and old unversioned payloads are preserved. Shared §7 contracts and the NS-003 register
+closure accompany integration. **311 tests, all guards and 44 fixtures pass.**
+[Independent audit and supervisor evidence](../../findings/recovery-scorecard-2026-09-14.md).
+
+**M0 is complete on `build/north-star-foundation`.** No main merge, push or deployment.
+The Financial proxy, scripted estates, transaction/retry gaps and all later product
+milestones retain their explicit limits. Current code and documentation were integrated
+together only after audit acceptance. The combined checkout passed the full gate;
+its five builder files and eight contract documents match the accepted candidate and
+auditor hashes exactly. All disposable audit databases and the private scorecard
+cluster/password were removed after verification; non-secret evidence is retained.
+
+## M1 preparation
+
+In parallel, `decision_inventory` had permission for one new documentation file and no
+implementation or formula design. Candidate `0f08674` was independently reproduced by
+the supervisor and integrated with its review/register update at `54c1ead`.
+[Inventory](decision-evolution/inventory.md) and [review](decision-evolution/review.md)
+record concrete transition failures and D1–D10 contract decisions. No M1 interface has
+passed spec review. The next assignment is its Heavy decision/atomic-transition contract;
+M1's five bounded stages remain those in the north star. M1–M6 remain unfinished.

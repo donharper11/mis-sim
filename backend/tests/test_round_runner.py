@@ -145,36 +145,46 @@ def test_i5_single_rescore_reentry(session, pack, monkeypatch):
     assert calls["n"] == 2, f"expected 2 score_team calls (step 9 + one re-entry), got {calls['n']}"
 
 
-def test_i5_event_outcome_scored_exactly_once(session, pack):
-    """A fired event's scorecard delta is applied EXACTLY ONCE (not doubled by a second re-score).
+def test_i5_event_outcome_scored_exactly_once(session, pack, monkeypatch):
+    """A twelve-point penalty lowers 80 to 68; actual fired outcomes apply once."""
+    from types import SimpleNamespace
+    from app.engine.rollup import BalancedScorecard
 
-    Tested at the application point (`_rolled_scorecard`): a fired event's delta lands once on top
-    of the single step-12 rollup. A defect that scored the event twice (a second re-entry applying
-    the delta again) would land it twice -- the assertion below then FAILS (SPEC_PROTOCOL 4.3)."""
     runner = _seed_two_rounds(session, pack)
+    score = SimpleNamespace(balanced_scorecard=BalancedScorecard(0.8, 0.8, 0.8, 0.8))
+    scorecard, meta = runner._rolled_scorecard(score, [
+        {"key": "twelve_point_loss", "outcomes": {"scorecard": {"financial": -12}}},
+    ])
+    assert scorecard["financial"] == 0.68
+    assert meta["event_delta_points"]["financial"] == -12
+
+    captured = []
+    real_score = runner_mod.score_team
+
+    def capture(p, state):
+        result = real_score(p, state)
+        captured.append(result)
+        return result
+
+    monkeypatch.setattr(runner_mod, "score_team", capture)
     runner.lock(1)
     runner.advance(1)
     runner.lock(2)
     payload = runner.advance(2)
     fired = {ev["key"] for ev in payload["events"]}
-    assert "warehouse_rollout_gap" in fired  # its outcome: internal_process -5, learning_growth -6
-
-    # Reconstruct the step-12 rollup (before deltas) and apply the deltas ourselves ONCE; the
-    # payload must match. Doubling the deltas (the planted defect) breaks the equality.
-    class _FS:
-        def __init__(self, bsc):
-            self.balanced_scorecard = bsc
-
-    base_bsc = runner_mod.score_team(pack, runner_mod.snap.build_team_state(
-        session, full.INSTANCE_ID, full.TEAM_ID, 2, pack, signals=(),
-    )).balanced_scorecard
-    once = runner._rolled_scorecard(_FS(base_bsc), payload["events"])
-    twice = runner._rolled_scorecard(_FS(base_bsc), payload["events"] + payload["events"])
-    delta_ip = sum(ev.get("outcomes", {}).get("scorecard", {}).get("internal_process", 0)
-                   for ev in payload["events"])
-    assert once["internal_process"] == pytest.approx(base_bsc.internal_process + delta_ip)
-    assert twice["internal_process"] == pytest.approx(base_bsc.internal_process + 2 * delta_ip)
-    assert once["internal_process"] != twice["internal_process"]  # doubling is observable
+    assert "warehouse_rollout_gap" in fired
+    assert len(captured) == 4  # raw pass + authoritative pass for each round
+    base = captured[-1].balanced_scorecard
+    for dim in ("financial", "customer", "internal_process", "learning_growth"):
+        points = sum(ev["outcomes"]["scorecard"].get(dim, 0) for ev in payload["events"])
+        expected = round(min(1.0, max(0.0, getattr(base, dim) + points / 100)), 6)
+        assert payload["scorecard"][dim] == expected
+        assert payload["scorecard_meta"]["event_delta_points"][dim] == points
+    persisted = session.get(m.RoundResult, (full.INSTANCE_ID, full.TEAM_ID, 2)).payload
+    assert persisted["scorecard"] == payload["scorecard"]
+    assert persisted["scorecard_meta"] == payload["scorecard_meta"]
+    with pytest.raises(ValueError, match="duplicate"):
+        runner._rolled_scorecard(captured[-1], payload["events"] + payload["events"])
 
 
 # -- I9: the ledger is append-only -- a re-raise opens a new episode, prior row unchanged ----

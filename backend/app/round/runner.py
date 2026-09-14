@@ -16,8 +16,12 @@ must reflect it, but iterating to a fixed point makes outcomes unexplainable.
 
 from __future__ import annotations
 
+import math
+from collections.abc import Mapping
+from typing import get_args
+
 from app.casepack.checks import ACTION_TYPES
-from app.casepack.models import Casepack, Event
+from app.casepack.models import Casepack, Event, EventOutcome, ScorecardPerspective
 from app.engine import events as events_mod
 from app.engine import ledger as ledger_mod
 from app.engine.score import score_team
@@ -134,6 +138,17 @@ class RoundRunner:
             raise SheetValidationError(
                 f"round {round}: committed {committed} exceeds budget {cap}"
             )
+
+    def _validate_scorecard_outcomes(self) -> None:
+        """Reject malformed pack outcomes before any round writes, even for unfired events."""
+        for event in self.pack.events:
+            if not isinstance(event.outcomes, (EventOutcome, Mapping)):
+                raise ValueError(f"event {event.key!r}: outcomes must be a mapping")
+            try:
+                # Reconstruct raw fields: same-model validation can trust a mutated instance.
+                EventOutcome.model_validate(dict(event.outcomes))
+            except ValueError as exc:
+                raise ValueError(f"event {event.key!r}: {exc}") from exc
 
     # -- step 3: materialise in_flight arrivals ----------------------------------------
 
@@ -285,6 +300,7 @@ class RoundRunner:
         if not self.is_locked(round):
             raise LockStateError(f"round {round} is not locked; lock before advancing (O3)")
 
+        self._validate_scorecard_outcomes()
         self._validate_sheet(round)                 # 1  validate the locked sheet
         # 2 retirements/cancellations and 4-6 estate deltas are the round's persisted estate
         #   (seed-authored post-application state); the runner recomputes and derives from it.
@@ -343,13 +359,14 @@ class RoundRunner:
         tco_variance = self._tco_variance(round)
 
         # 14 roll up the Balanced Scorecard and write the immutable RoundResult
-        scorecard = self._rolled_scorecard(final_score, event_records)
+        scorecard, scorecard_meta = self._rolled_scorecard(final_score, event_records)
         capex_spent = snap.committed_spend(self.session, self.instance_id, self.team_id, round)
         debt_total = self._debt_total(round)
         payload = {
             "instance_id": self.instance_id, "team_id": self.team_id, "round": round,
             "capabilities": [c for c in final_score.record()["capabilities"]],
             "scorecard": scorecard,
+            "scorecard_meta": scorecard_meta,
             "signals": self._bucket_signals(ledger, round),
             "events": event_records,
             "suppressed_events": [
@@ -373,19 +390,61 @@ class RoundRunner:
         self.session.flush()
         return payload
 
-    def _rolled_scorecard(self, final_score, event_records: list[dict]) -> dict:
-        """Balanced Scorecard from the engine rollup, then apply fired events' scorecard deltas
-        (spec step 14; events change the round's outcome)."""
-        bsc = final_score.balanced_scorecard
-        sc = {
-            "financial": bsc.financial, "customer": bsc.customer,
-            "internal_process": bsc.internal_process, "learning_growth": bsc.learning_growth,
-        }
+    def _rolled_scorecard(self, final_score, event_records: list[dict] | None = None) -> tuple[dict, dict]:
+        """Convert current fired-event points once; retain the base, totals and status (v1)."""
+        bsc = getattr(final_score, "balanced_scorecard", None)
+        base = {}
+        for dim in get_args(ScorecardPerspective):
+            value = getattr(bsc, dim, None)
+            if (isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not 0 <= value <= 1 or not math.isfinite(value)):
+                raise ValueError(f"{dim}: engine scorecard base must be finite and within 0–1")
+            base[dim] = value
+        partial = getattr(bsc, "financial_partial", None)
+        if not isinstance(partial, bool):
+            raise ValueError("financial_partial: engine status must be a boolean")
+        if not isinstance(event_records, list):
+            raise ValueError("event_records must be a list")
+
+        totals = dict.fromkeys(base, 0)
+        seen = set()
         for ev in event_records:
-            for dim, delta in (ev.get("outcomes", {}).get("scorecard", {}) or {}).items():
-                if dim in sc and isinstance(sc[dim], (int, float)):
-                    sc[dim] = sc[dim] + delta
-        return sc
+            if not isinstance(ev, Mapping):
+                raise ValueError("event record must be a mapping")
+            key = ev.get("key")
+            if not isinstance(key, str) or not key:
+                raise ValueError("event key must be a nonempty string")
+            if key in seen:
+                raise ValueError(f"event {key!r}: duplicate event key")
+            seen.add(key)
+            outcomes = ev.get("outcomes")
+            if not isinstance(outcomes, Mapping):
+                raise ValueError(f"event {key!r}: outcomes must be a mapping")
+            try:
+                validated = EventOutcome.model_validate(dict(outcomes))
+            except ValueError as exc:
+                raise ValueError(f"event {key!r}: {exc}") from exc
+            for dim, points in validated.scorecard.items():
+                totals[dim] += points
+
+        sc = {}
+        for dim, value in base.items():
+            try:
+                adjusted = value + totals[dim] / 100
+            except OverflowError as exc:
+                raise ValueError(f"{dim}: aggregate scorecard points overflow") from exc
+            if not math.isfinite(adjusted):
+                raise ValueError(f"{dim}: aggregate scorecard points must be finite")
+            sc[dim] = round(min(1.0, max(0.0, adjusted)), 6)
+        meta = {
+            "version": 1,
+            "score_unit": "fraction",
+            "event_delta_unit": "scorecard_points",
+            "financial_partial": partial,
+            "base": base,
+            "event_delta_points": totals,
+        }
+        return sc, meta
 
     def _debt_total(self, round: int) -> int:
         rows = self.session.scalars(

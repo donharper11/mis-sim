@@ -1,13 +1,14 @@
 # 1.6 — Round Runner · Build Spec
 
-**Authored under** `SPEC_PROTOCOL.md` v1.3 · **Author:** Claude · **Date:** 2026-07-26 · **Reconciled:** 2026-08-22 (v1.1)
+**Authored under** `SPEC_PROTOCOL.md` v1.3 · **Author:** Claude · **Date:** 2026-07-26 · **Reconciled:** 2026-09-14 (v1.2 recovery scorecard contract)
 **Phase:** 1 · **Depends on:** 1.1, 1.4, 1.5 · **Blocks:** 1.7, 2.3, 3.5, 3.6
 **Gate tier:** **Heavy** (`GOVERNANCE §6.3`) — orchestrates a scoring path and produces
 cross-module contract fields (`action_history`, `available_funds_by_round`,
 `debt_ratio_by_capability`, `ArchNode.placement`) the merged 1.5 engine consumes. Full
 four-gate cycle: independent spec review **and** independent audit.
-**Independent spec review** *(SPEC_PROTOCOL §11, before dispatch)*: **pending** — this v1.1
-reconciliation returns for an independent consistency pass before a builder is dispatched.
+**Recovery spec review:** PASS at `0716eb9`; R1–R4 approved in
+`handoffs/recovery/scorecard-contract/review.md`. Historical v1.1 closure is retained;
+this revision changes the scorecard boundary only. See recovery audit for implementation evidence.
 
 > The orchestrator. 1.4 and 1.5 are pure; this is where state, ordering, and persistence
 > live — which makes it the first packet where `instance_id` is non-negotiable. **1.6 is also
@@ -239,12 +240,13 @@ consumes them, and neither mutates them.
 11  1.5 events → fire, blast radius, outcome application   [events.resolve_events + duration]
 12  re-score capabilities affected by event outcomes        ← single re-entry only
 13  accrue debt for deferrals; reconcile TCO forecasts
-14  roll up Balanced Scorecard; write immutable RoundResult
+14  aggregate fired-event scorecard points; normalize, bound, retain evidence/status; write immutable RoundResult
 ```
 
-Step 12 runs **exactly once**. An event changes state, so scores must reflect it — but
-iterating to a fixed point makes outcomes unexplainable, and explainability is the product.
-Invariant I5.
+Step 12 runs **exactly once** after event/signal resolution and supplies the
+authoritative capability score. Step 14 applies only the report's scorecard point
+adjustments under scorecard contract v1; no scorecard delta is fed back into
+Tech/Org/Mgmt. General event-to-estate/cash mutation remains M1 work. Invariant I5.
 
 **Steps 10–12 bind to the merged 1.5/1.4 entry points** (decision 11; the sequence the engine's
 own demo and tests use — `app/seed/demo.py:93-104`, `tests/test_signal_engine.py`):
@@ -255,10 +257,18 @@ own demo and tests use — `app/seed/demo.py:93-104`, `tests/test_signal_engine.
     state = state with signals = ledger.project_signal_state(ledger)  # → SignalState for 1.4
 11  fired, suppressed = events.resolve_events(state, pack, ledger)  # O2 cap + suppression, in
                                                                    #   authored deck order
-    for each fired event with a bound node:
-        node = events.failed_node(event, state, pack)              # total: node or None
-        evidence = events.outage_duration(state, node, cap, pack)  # blast radius + duration_hours
-        apply the event's outcomes to state (I6 forbids authoring the radius/duration)
+    event_records = []
+    for each ev_key in fired:                                  # EVERY fired event
+        event = pack event identified by ev_key
+        cap = events.primary_capability(event, pack)
+        node = events.failed_node(event, state, pack)
+        if node is not None and cap is not None:
+            evidence = dict(events.outage_duration(state, node, cap, pack))
+        else:
+            evidence = {"node": None, "blast_radius": []}       # no duration field
+        evidence["key"] = ev_key
+        evidence["outcomes"] = dict(event.outcomes)              # ALWAYS record outcomes
+        event_records.append(evidence)                          # point deltas applied at step 14
     ledger = ledger.advance_ledger(ledger, state, pack,
                                    fired_signals=frozenset(fired)) # stamp fire_round
     state = state with signals = ledger.project_signal_state(ledger)
@@ -289,6 +299,12 @@ Everything the debrief and 1.7 need, with no recomputation:
   "capabilities": [ <decomposition record from 1.4 §5.6> ],
   "scorecard": {"financial": …, "customer": …,
                 "internal_process": …, "learning_growth": …},
+  "scorecard_meta": {"version": 1, "score_unit": "fraction",
+                     "event_delta_unit": "scorecard_points", "financial_partial": True,
+                     "base": {"financial": …, "customer": …,
+                              "internal_process": …, "learning_growth": …},
+                     "event_delta_points": {"financial": …, "customer": …,
+                                            "internal_process": …, "learning_growth": …}},
   "signals": {"raised": [...], "cleared": [...], "open": [...], "fired": [...]},
   "events": [ {"key": …, "blast_radius": [...], "duration_hours": …,
                "outcomes": {...}} ],
@@ -297,6 +313,14 @@ Everything the debrief and 1.7 need, with no recomputation:
   "missed_signals": [ {"key": …, "first_shown_round": 2,
                        "cheapest_fix_when_raised": 60000} ] }
 ```
+
+**Scorecard contract v1:** `scorecard` stays a four-number map; `scorecard_meta`
+stores version, units, partial-financial status, base and aggregated event points as
+defined in `CONTRACTS.md`. Step 14 computes them together and preserves raw event
+integers. The current Financial proxy remains partial. Validate event outcomes
+before any round writes and derived score/evidence before publication. Old payloads
+without metadata remain immutable and unversioned; this change performs no backfill
+or unlock. `_rolled_scorecard` now returns `(scorecard, scorecard_meta)` internally.
 
 `missed_signals` is what prints *"you were told in round 2."*
 
@@ -494,6 +518,7 @@ episode history the responsiveness projection and the debrief depend on (`1.5 co
 
 ## 11. Reconciliation changelog
 
+- **v1.2** (2026-09-14) — recovery scorecard contract v1: explicit integer point conversion, single final bounds, strict validation, metadata/status persistence; no changes to pure scores, event timing, estate mutation, transaction/retry policy or old results.
 - **v1.1** (2026-08-22) — **bounded reconciliation** of the 2026-07-26 spec against the merged
   1.4-closeout and 1.5 contracts (`GOVERNANCE §6.3`: 1.6 confirmed **Heavy**). No scope expansion.
   - **Header/§0/§2:** re-based on `SPEC_PROTOCOL v1.3`; added the 2026-08-22 read set (1.5

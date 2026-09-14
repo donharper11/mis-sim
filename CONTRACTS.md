@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-08-21 (catch-up rework: `capital_remaining` entry added — one home, `budget`, with `review`'s second home eliminated as a schema change, finding `1.3-001` / CG-6; earlier 2026-08-21: 1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
+**Last updated:** 2026-09-14 — scorecard contract revision 1: explicit event points, normalized bounded runtime perspectives, persisted partial-financial status and versioned evidence. Previous history: 2026-08-21 (catch-up rework: `capital_remaining` entry added — one home, `budget`, with `review`'s second home eliminated as a schema change, finding `1.3-001` / CG-6; earlier 2026-08-21: 1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -477,6 +477,54 @@ graph + staffing. **Producer:** the 1.5 engine (LIVE, `app/engine/events.py`: `o
 `failover_exists`, `failed_node`; constants `NO_FAILOVER_MULTIPLIER=3.0`,
 `UNDERSTAFFED_MULTIPLIER=4.0`, `DEFAULT_BASE_RTO_HOURS=8.0`). **Consumer:** 1.6
 `RoundResult.events[]` (`1.6 spec.md:141`). Frozen in `contract-spec.md §8`.
+
+---
+
+## `EventOutcome.scorecard` / `RoundResult.payload.scorecard` — LIVE, scorecard contract v1
+
+Event deltas use signed integer **scorecard points on a 100-point headline**, on the
+closed keys `financial`, `customer`, `internal_process`, `learning_growth`. One point
+equals `0.01` in a runtime perspective. Omitted delta map defaults to `{}`; missing
+dimensions contribute zero. Explicit null, unknown keys, bools, strings and floats
+(including integral floats) are rejected. Values and aggregate division by 100 must
+be finitely representable; overflow is invalid, not a clipped endpoint. `revenue_loss`
+remains a separate money field, never an automatic scorecard adjustment.
+
+The runtime `scorecard` contains exactly four finite 0–1 numbers. Per dimension:
+`round(clamp(engine_base + sum(current_fired_event_points)/100, 0, 1), 6)`. Aggregate
+before conversion and clamp once; no strategy reweighting or compounding. Base values
+must already be finite and in 0–1; do not repair invalid bases. Duplicate event records
+are invalid. No event mutates the pure scorer's Tech/Org/Mgmt or firm score through
+this reporting adjustment.
+
+**NEW `payload.scorecard_meta`:** `{version: 1, score_unit: "fraction",
+event_delta_unit: "scorecard_points", financial_partial: bool, base: four-number map,
+event_delta_points: four-integer map}`. Version/unit values are fixed for v1. `base`
+and `financial_partial` copy the engine output; totals derive from current fired-event
+evidence and include zeros. The final map is authoritative; metadata reconciles by
+the equation above and is immutable alongside it. Current Financial scoring remains
+the strategic-alignment/portfolio-discipline proxy, marked partial even when cost
+ledgers are present. Full Financial scoring remains separately owned by M4.
+
+Producers: `casepack.models.EventOutcome` validates authoring;
+`engine.rollup.BalancedScorecard` produces base/status;
+`round.runner` validates, converts once and persists the final map/evidence. Consumers:
+the JSON `RoundResult` row and calibration report/digest; future readers must check
+metadata version before interpreting its semantics. Runtime pack outcomes are checked
+before round writes; derived output is checked before result/ledger publication.
+Unknown model vocabulary uses E18; numeric load-error diagnostic refinement remains
+OS-D1/M2. No new validation code or label vocabulary is introduced.
+
+Compatibility: missing metadata means an unversioned historical result, with unknown
+persisted units/status. Never rescale, infer complete Financial scoring, or backfill
+metadata on read. New results use v1. This version is independent of casepack
+schema_version 1, whose valid integer event maps remain compatible while permissive
+coercions/unknown keys are now rejected. `InitialState.scorecard` is separate authored
+0–100 context and is unchanged; `TeamScore.record().balanced_scorecard` is unchanged.
+Full calibration digest changes are expected and recorded beside, never over, old
+evidence. See `handoffs/recovery/scorecard-contract/spec.md` for null/error cases.
+
+**Changelog — 2026-09-14:** Scorecard contract v1 added by recovery/scorecard-contract; valid pack bytes and historical result payloads unchanged.
 
 ---
 

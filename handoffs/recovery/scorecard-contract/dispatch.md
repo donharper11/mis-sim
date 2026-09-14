@@ -39,3 +39,11 @@ The deliverable is an audited implementation of this contract, including all N1โ
 evidence and living deltas. M0 can close only after that acceptance; M1 remains separate.
 In parallel, `decision_inventory` has documentation-only permission for one new inventory
 file in its isolated worktree. It may map M1 gaps but may not design formulas or build them.
+
+## Acceptance
+
+Code/tests `5f5b09e`, final candidate `ad5de38`: independently audited by fresh
+`scorecard_auditor`, with separate supervisor persisted-game and PostgreSQL reproduction.
+The supervisor applied the living ยง7 deltas and recorded NS-003 closure in the same
+integration commit. [Audit and limits](../../../findings/recovery-scorecard-2026-09-14.md).
+M0 passes; M1 remains at the inventoried, not-yet-specified boundary.

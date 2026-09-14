@@ -26,17 +26,21 @@ from engine state. Stakeholder satisfaction uses realised value, not just purcha
 | Engine | Pure graph/scoring functions, policy scoring, event/precondition model, signal episodes, explanatory decompositions |
 | Persistence | 16 runtime tables, instance-scoped snapshots, lock/advance, arrivals, result and ledger persistence |
 | Calibration | Four scripted archetypes × six rounds; all perspectives now visible in every round, 38 live marker sites and raw scale diagnostics; all scripts declare Cost Leadership; August ruling retained |
-| Verification | Recovery integration: 132 pytest tests, all guards, 44 fixtures; fresh declared dependencies and actual PostgreSQL migrations/16 tables/six results; Riverside zero errors/warnings |
+| Verification | M0 integration: 311 pytest tests, all guards, 44 fixtures; fresh declared dependencies and actual PostgreSQL migrations/16 tables/six results; all 96 corrected BSC values independently reconciled; Riverside zero errors/warnings |
 | Application | React token-preview page and 404 only; auth remains 501; student/instructor workflows unbuilt |
 
 The original packet count is **11 of 47 recorded closed**. Phase 1 closure covers the
 audited scripted-state model with accepted deferrals. It does not prove a decision-driven
 game, balance across all strategies, a usable application, or readiness for a cohort.
 
-The first recovery implementation wave passed independent audit on
-`build/north-star-foundation`: reporting integrated at `94b85e7`, corrected runtime at
-`4adafd8`. The runtime audit found and returned a shared-dotenv failure before acceptance.
+**M0 is complete** on `build/north-star-foundation`: reporting (`94b85e7`), runtime
+(`4adafd8`) and the independently audited scorecard candidate (`ad5de38`). Scores now
+apply integer event points to normalized bases once and retain versioned base/delta/partial
+status. All other fields across 24 scripted results and historical result rows are preserved.
 Main remains at the historical baseline. [Evidence and limits](handoffs/recovery/README.md).
+
+M1 preparation is [inventoried and independently reproduced](handoffs/recovery/decision-evolution/review.md).
+The next handoff defines typed decisions and atomic transitions; no M1 builder is dispatched.
 
 ## The important unfinished boundary
 
@@ -53,8 +57,8 @@ Historical scorer fixtures remain useful regression evidence; they are not that 
 
 ## Current delivery order
 
-1. **M0 — trustworthy baseline:** declared dependencies, disposable PostgreSQL proof,
-   complete calibration visibility, explicit scorecard units and owned gaps.
+1. **M0 — trustworthy baseline — COMPLETE:** declared dependencies, disposable PostgreSQL
+   proof, complete calibration visibility, explicit scorecard units and owned gaps.
 2. **M1 — decision-driven simulation:** typed commands, actual state transitions, atomic
    advance/retry semantics, organisational evolution, accounting and decision-only playthroughs.
 3. **M2 — platform:** hierarchy, guarded scope/auth, pack versions and scheduling. A login

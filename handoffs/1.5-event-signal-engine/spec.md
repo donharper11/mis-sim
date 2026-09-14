@@ -199,6 +199,11 @@ for each event in deck:
            fire → outcomes → blast radius → scorecard deltas
 ```
 
+Fired-event scorecard deltas retain authored integer point units. The round runner
+converts/aggregates them exactly once at step 14 under scorecard contract v1 in
+`CONTRACTS.md`; event selection, suppression, fire-once timing and raw outcome
+evidence are unchanged. The point adjustment does not re-enter the pure MOT score.
+
 **Precondition types and the fields each needs.** The closed set stands. As of the v1.2
 authoring baseline, `EventPrecondition` carries `type · signal · severity · capability ·
 ratio · node · entity · policy · round · count`. The readiness closeout adds the last two
@@ -471,6 +476,8 @@ buildable. See the pre-flight gate below.
 ---
 
 ## 11. Changelog
+
+**2026-09-14 — scorecard contract v1 clarification.** Fired-event point adjustment is applied once by the round runner; selection, fire-once timing and raw evidence remain unchanged.
 
 **v1.2 — 2026-08-21.** Reconciled against merged 1.1–1.4 and the Phase-1 open
 register. No 1.5 build cycle was open. O1–O5 are frozen; W08 is pack-duration-relative;

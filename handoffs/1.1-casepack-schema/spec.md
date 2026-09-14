@@ -239,6 +239,18 @@ budget:
     scorecard: {customer: -8, financial: -5}
 ```
 
+**Scorecard contract v1 (recovery):** event `outcomes.scorecard` uses signed integer
+points on a 100-point scorecard, on `financial`, `customer`, `internal_process`, and
+`learning_growth` only. For example `-12` subtracts twelve points, or `0.12` from a
+normalized runtime score. An omitted map defaults to `{}`; omitted dimensions have
+zero effect. Explicit null, unknown keys, booleans, strings and floats are invalid.
+Point conversion must be finite. `Event.outcomes` remains required. New runtime
+results sum fired-event points, divide by 100, add to the existing 0–1 base and clamp
+once to 0–1, rounded to six decimals; they retain the authored integers in the event
+trace. `revenue_loss` is separate money evidence. No authored values or pack
+schema_version are changed by this contract. Unknown dimensions are reported as E18;
+numeric diagnostic improvements remain owned by OS-D1/M2.
+
 ### 5.7 `preferences/` — the archetype-default mechanism (decision 6)
 
 ```yaml
@@ -392,3 +404,8 @@ are for user-facing workflows). `verify.md` in this folder holds the CLI sequenc
 auditor re-runs.
 | **Seed** — Riverside pack populated, loader prints real counts, weights sum to 1.000 | | |
 | No unlisted `TODO` in shipped pack content | | |
+
+
+## Scorecard contract revision history
+
+- **2026-09-14 — revision 1:** strict integer event points and closed dimensions; permissive coercions are no longer accepted. Valid pack bytes/schema version remain unchanged. Canonical rule: [CONTRACTS.md — scorecard contract v1](../../CONTRACTS.md#eventoutcomescorecard--roundresultpayloadscorecard--live-scorecard-contract-v1).

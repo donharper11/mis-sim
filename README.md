@@ -18,10 +18,11 @@ Buy the ideal system, train nobody, realise almost nothing.
 **Status (2026-09-14):** Phases 0–1 recorded closed: **11 of 47 original packets**.
 The headless scoring/event/round core and Riverside pack work with scripted estates;
 live decision-to-estate evolution and the student/instructor application remain unfinished.
-The first recovery wave is implemented and audited on `build/north-star-foundation`:
-declared backend dependencies, PostgreSQL verification, shared dotenv handling and complete
-calibration reporting. Combined checks: **132 tests plus all guards and 44 fixtures**.
-M0 remains open for scorecard units; no later product milestone is complete.
+**M0 — trustworthy baseline is complete** on `build/north-star-foundation`: declared
+backend dependencies, PostgreSQL verification, complete calibration reporting and corrected,
+versioned scorecard units. Independent build audit and supervisor checks pass:
+**311 tests plus all guards and 44 fixtures**. M1's decision/transition gaps are inventoried;
+its typed-command and atomic-transition contract is next. M1–M6 remain unfinished.
 
 ---
 
@@ -107,9 +108,11 @@ stakeholder layer adopted, market layer deferred.
 ## Open blockers
 
 See the north star's recovery ownership table and `findings/OPEN-REGISTER.md`.
-The immediate gaps are reproducible PostgreSQL execution, complete calibration reporting,
-scorecard units, and a real decision-driven state transition. Existing training/adoption,
-financial, freshness and UI-capture deferrals have explicit destination milestones there.
+The immediate gap is a real decision-driven state transition, including validation,
+state carry-forward, atomic advance and consistent retry/unlock behaviour. Existing
+training/adoption, financial, freshness and UI-capture deferrals have explicit destination
+milestones there. Runtime, reporting and scorecard-unit recovery are audited and closed;
+Financial scoring remains an explicitly labelled partial proxy.
 
 ---
 

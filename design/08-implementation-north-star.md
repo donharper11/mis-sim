@@ -175,9 +175,18 @@ Combined verification: **132 pytest tests, all guards and 44 fixtures**, fresh d
 dependencies, and real disposable PostgreSQL migration plus six committed round results.
 See [execution record and audits](../handoffs/recovery/README.md).
 
-**M0 remains open:** scorecard-unit normalization and persisted partial-financial status
-are the next Heavy implementation. Its [contract and authority ruling](../handoffs/recovery/scorecard-contract/review.md)
-passed independent review after two spec corrections; implementation is not yet dispatched.
-This wave changes no score,
-pack value or state-transition behavior. **M1–M6 remain pending.** Main/remote publication
-and later implementation dispatch are not implied by this first-wave completion.
+2026-09-14 continuation: **M0 COMPLETE on the integration branch.** The reviewed
+scorecard implementation (`5f5b09e`, final candidate `ad5de38`) passed fresh independent
+build audit and supervisor reproduction. Combined verification: **311 pytest tests, all
+guards and 44 fixtures**; real PostgreSQL migrations and six committed v1 results. All
+96 BSC values follow the approved points-to-fraction rule; every other payload field
+across 24 results, pure-scoring code, pack values, seeds and historical pins is preserved.
+Financial remains explicitly partial. Shared contracts and NS-003 close with integration.
+See the [scorecard audit](../findings/recovery-scorecard-2026-09-14.md).
+
+**M1 preparation complete; implementation pending.** The independently reproduced
+[inventory](../handoffs/recovery/decision-evolution/inventory.md) identifies invalid-target
+acceptance, absent carry-forward, late duplicate-advance refusal, incomplete rewind and
+caller-committable partial writes. D1–D10 must be resolved in the next Heavy decision and
+transition contract, then independently reviewed before estate/organisation builders start.
+**M1–M6 remain unfinished.** Main and remote publication remain untouched.
