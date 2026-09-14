@@ -155,8 +155,9 @@ The first implementation wave is deliberately limited to two independent Light h
 | `recovery/runtime` | Installable declared dependencies and a reproducible disposable-PostgreSQL verification path | No scorer/runner semantics, auth, hierarchy, deployment, or shared DB writes |
 | `recovery/calibration-report` | Live complete marker inventory and every round of every BSC perspective, with factual diagnostics | No changed pack numbers, scoring, strategy claims, persisted payloads, or archetype tuning |
 
-After the first audit cycle, commission the Heavy scorecard and transition contracts.
-Those authors return contracts and open decisions, not speculative implementations. M0
+Heavy scorecard/transition contract authoring may proceed while the first-wave builders
+finish; no dependent implementation starts before its independent spec review. Those
+authors return contracts and open decisions, not speculative implementations. M0
 does not pass until its numerical contract and runtime evidence pass too. No later milestone
 is claimed merely because these first two handoffs land.
 

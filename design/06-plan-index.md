@@ -41,7 +41,8 @@ the component library is `3.1`. Build steps inside a packet are **Steps**, not P
 
 Written in by the auditor of `0.3`, per `GOVERNANCE.md §8` — a finding parked in
 `findings/` is a letter nobody opened. **Whoever authors the component-library spec must
-fold these into it and say so in that spec's Spec Basis.** Until then they are open.
+fold the remaining open items into it and say so in that spec's Spec Basis.** Explicitly
+resolved rows below are preservation requirements, not open findings.
 
 | Source | Item | Destination packet |
 |---|---|---|
