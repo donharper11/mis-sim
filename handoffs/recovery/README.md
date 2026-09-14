@@ -43,6 +43,36 @@ audit, then integrate that commit and check the combined tree. Findings and limi
 must be recorded before claiming completion. A failed candidate returns to its builder.
 Main and remote publication remain untouched during this bounded first wave.
 
-The next Heavy work is the scorecard units contract and decision-transition contract.
-M0 remains open until the scorecard semantics and runtime/report acceptance all pass;
+## First-wave acceptance and cleanup
+
+- Reporting candidate `f858b8a` was independently accepted by `report_auditor`, then
+  integrated with living-spec/register reconciliation at **`94b85e7`**.
+- Initial runtime candidate `d68d892` returned for NS-006: shared dotenv keys prevented
+  settings import and exposed fixture values in the traceback. Supervisor scope amendment
+  `6a6c707` authorized the one-line configuration correction and subprocess regressions.
+  Corrected candidate `ae634456` passed re-audit, integrated at **`4adafd8`**.
+- Supervisor combined-tree checks: **132 pytest tests**, every guard and **44 fixtures**,
+  `pip check`, and actual PostgreSQL migrations/16 scoped tables/six persisted rounds.
+  Refusal and missing-table-before-seed checks also passed on the combined checkout.
+- All supervisor-created disposable databases were dropped. The runtime builder then
+  dropped its two retained verification databases, stopped its isolated cluster on
+  `127.0.0.1:53883`, confirmed `pg_ctl status` reports no server, and removed that cluster,
+  dummy dotenv directory and its two venvs. Logs remain as evidence; no shared service
+  was touched. The supervisor's fresh verification venv remains available under `/tmp`.
+
+Audit details and durable reproduction commands are linked above. Historical builder
+DoDs record their candidate-ready state; these acceptance records supersede their
+pending-audit status without rewriting the historical evidence.
+
+## Next reviewed handoff
+
+`scorecard_author` delivered the Heavy [scorecard contract](scorecard-contract/spec.md)
+on an isolated branch, with no implementation permission. Fresh reviewer `report_auditor`
+returned two concrete gaps at `6caf40b`; the author corrected them at `0716eb9` and the
+reviewer passed all five spec checks. [Review and authority ruling](scorecard-contract/review.md)
+accept R1–R4 and specify the next dispatch prerequisites. No scorecard builder was launched
+before that review, and no scorecard code is included in this first wave.
+
+M0 remains open until scorecard implementation and audit pass. Then M1 begins with a
+separate decision-transition contract; its five bounded stages are in the north star.
 M1–M6 are not implemented by the first wave.

@@ -168,6 +168,16 @@ Routine implementation choices inside an approved contract belong to the supervi
 
 ## Progress
 
-2026-09-14: plan authored; baseline verified in the investigation. M0 in preparation.
-Runtime and calibration-report handoffs are specified below `handoffs/recovery/`; build
-and independent audit evidence will be linked here as it actually exists. M1–M6 pending.
+2026-09-14: first bounded implementation wave integrated on `build/north-star-foundation`.
+Reporting (`94b85e7`) passed an author-independent audit; runtime (`4adafd8`) passed the
+supervisor's independent build audit after a shared-dotenv defect was returned and fixed.
+Combined verification: **132 pytest tests, all guards and 44 fixtures**, fresh declared
+dependencies, and real disposable PostgreSQL migration plus six committed round results.
+See [execution record and audits](../handoffs/recovery/README.md).
+
+**M0 remains open:** scorecard-unit normalization and persisted partial-financial status
+are the next Heavy implementation. Its [contract and authority ruling](../handoffs/recovery/scorecard-contract/review.md)
+passed independent review after two spec corrections; implementation is not yet dispatched.
+This wave changes no score,
+pack value or state-transition behavior. **M1–M6 remain pending.** Main/remote publication
+and later implementation dispatch are not implied by this first-wave completion.

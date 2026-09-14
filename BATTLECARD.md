@@ -25,13 +25,18 @@ from engine state. Stakeholder satisfaction uses realised value, not just purcha
 | Content | One substantive Riverside pack: 7 capabilities, 14 catalog items, 8 entities, 8 watch rules, 13 events, 4 strategies, 14 stakeholders, 6 policy switches and 6 obligation rules |
 | Engine | Pure graph/scoring functions, policy scoring, event/precondition model, signal episodes, explanatory decompositions |
 | Persistence | 16 runtime tables, instance-scoped snapshots, lock/advance, arrivals, result and ledger persistence |
-| Calibration | Four scripted archetypes × six rounds; August 22 historical gate passed; all scripts declare Cost Leadership |
-| Verification | Baseline: 82 pytest tests, all standalone guards, 44 validator fixtures; Riverside zero errors/warnings |
+| Calibration | Four scripted archetypes × six rounds; all perspectives now visible in every round, 38 live marker sites and raw scale diagnostics; all scripts declare Cost Leadership; August ruling retained |
+| Verification | Recovery integration: 132 pytest tests, all guards, 44 fixtures; fresh declared dependencies and actual PostgreSQL migrations/16 tables/six results; Riverside zero errors/warnings |
 | Application | React token-preview page and 404 only; auth remains 501; student/instructor workflows unbuilt |
 
 The original packet count is **11 of 47 recorded closed**. Phase 1 closure covers the
 audited scripted-state model with accepted deferrals. It does not prove a decision-driven
 game, balance across all strategies, a usable application, or readiness for a cohort.
+
+The first recovery implementation wave passed independent audit on
+`build/north-star-foundation`: reporting integrated at `94b85e7`, corrected runtime at
+`4adafd8`. The runtime audit found and returned a shared-dotenv failure before acceptance.
+Main remains at the historical baseline. [Evidence and limits](handoffs/recovery/README.md).
 
 ## The important unfinished boundary
 

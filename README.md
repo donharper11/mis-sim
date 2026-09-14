@@ -18,13 +18,18 @@ Buy the ideal system, train nobody, realise almost nothing.
 **Status (2026-09-14):** Phases 0–1 recorded closed: **11 of 47 original packets**.
 The headless scoring/event/round core and Riverside pack work with scripted estates;
 live decision-to-estate evolution and the student/instructor application remain unfinished.
-Recovery work is on a build branch and is not complete until independently audited.
+The first recovery wave is implemented and audited on `build/north-star-foundation`:
+declared backend dependencies, PostgreSQL verification, shared dotenv handling and complete
+calibration reporting. Combined checks: **132 tests plus all guards and 44 fixtures**.
+M0 remains open for scorecard units; no later product milestone is complete.
 
 ---
 
 > **Start with the [implementation north star](design/08-implementation-north-star.md).**
 > It defines the current delivery sequence, evidence gates, and agent boundaries.
 > [`BATTLECARD.md`](BATTLECARD.md) is the concise status; the original packet list preserves scope.
+> [Recovery execution and audits](handoffs/recovery/README.md) record exact candidates and limits.
+> [Backend development](docs/backend-development.md) provides the fresh-install and disposable PostgreSQL recipe.
 
 ## Read these first
 
