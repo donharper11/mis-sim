@@ -233,3 +233,30 @@ Real but uncredited repairs are reported separately, never renamed to manufactur
 The minimum and its debt estimate are scoped to verified credit-eligible candidates in the
 bounded catalogue. P0b final spec `2bab351` received independent PASS on that exact meaning;
 its input seam is dispatchable after P0, while full P4 producer semantics remain master work.
+
+**M1-R18 — Nonrecursive response validation and hypothetical preparation.** Inspection of
+all eleven `engine/preconditions.py` consumers confirms that signal predicates read ledger
+status and severity, not repair prices or actionability. Candidate response eligibility may
+therefore use a disposable status-only ledger: start with the real prior ledger and candidate
+prepared state/actions, provide complete empty repair assessments for the current round,
+and call the existing ledger transition before testing original event predicates and arms.
+Discard that probe ledger. Only the final transition with real assessments may publish
+prices, actionability or episode history. Do not exclude all held-response capabilities or
+all non-signal predicate types merely to avoid recursive repair search.
+
+Pure preparation starts from the immutable prior checkpoint and the merged current sheet,
+including the candidate. It applies grants, decay, effects and charges once. It returns
+provisional capital and the complete operating forecast separately from unchanged prior
+accounting/history. A hypothetical unaffordable candidate may carry signed funds for metric
+and predicate evaluation; it can publish an `affordable=false` witness, never a committed
+checkpoint. Public quote/resolve validates affordability before publication. Candidate
+construction must preserve same-target conflicts and held-response eligibility, without
+replacing an existing committed choice or assuming unspecified future decisions.
+
+The production-v1 content gate explicitly refuses `debt_above` while monetary debt exposure
+can be partial/unpriced; completing that predicate's production contract belongs to M4.
+`node_is_spof` remains supported only for an authored initial physical asset ID, because
+the existing consumer compares `pc.node` directly with physical graph keys. Catalog IDs
+and guessed future command IDs fail `invalid_reference`; no identity translation or
+predicate reinterpretation is implied. These rulings were verified and approved on
+2026-09-15 and must be expressed in the independently reviewed master successor.
