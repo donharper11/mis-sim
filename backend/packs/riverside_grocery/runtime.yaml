@@ -1,0 +1,1543 @@
+version: 1
+catalog:
+  pos_system_2011:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      store_operations: 6000
+    capacity_multiplier_by_config:
+      core: 1.0
+      modernised: 1.2
+    opex_multiplier_by_config:
+      core: 1.0
+      modernised: 1.0
+  order_mgmt_v42:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      order_fulfilment: 8000
+      store_operations: 6000
+    capacity_multiplier_by_config:
+      core: 1.0
+      forecasting: 1.5
+      full_suite: 2.17
+    opex_multiplier_by_config:
+      core: 1.0
+      forecasting: 1.0
+      full_suite: 1.0
+  centraline_im7:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      order_fulfilment: 7500
+    capacity_multiplier_by_config:
+      core: 1.0
+      forecasting: 1.5
+      full_suite: 2.17
+    opex_multiplier_by_config:
+      core: 1.0
+      forecasting: 1.0
+      full_suite: 1.0
+  accounting_package:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      financial_reporting: 100
+    capacity_multiplier_by_config:
+      core: 1.0
+      reporting: 1.1
+    opex_multiplier_by_config:
+      core: 1.0
+      reporting: 1.0
+  store_spreadsheets:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      store_operations: null
+      financial_reporting: null
+    capacity_multiplier_by_config:
+      core: 1.0
+    opex_multiplier_by_config:
+      core: 1.0
+  next_gen_firewall:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      firm_infrastructure: 10
+    capacity_multiplier_by_config:
+      core: 1.0
+    opex_multiplier_by_config:
+      core: 1.0
+  customer_database:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      customer_insight: 1250
+      service: 375
+    capacity_multiplier_by_config:
+      core: 1.0
+      segmentation: 1.4
+    opex_multiplier_by_config:
+      core: 1.0
+      segmentation: 1.0
+  analytics_workspace:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      customer_insight: 1250
+      financial_reporting: 100
+    capacity_multiplier_by_config:
+      core: 1.0
+      predictive: 1.8
+    opex_multiplier_by_config:
+      core: 1.0
+      predictive: 1.0
+  ecommerce_site:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      marketing_sales: 1125
+    capacity_multiplier_by_config:
+      core: 1.0
+      loyalty: 1.3
+    opex_multiplier_by_config:
+      core: 1.0
+      loyalty: 1.0
+  service_desk:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      service: 375
+    capacity_multiplier_by_config:
+      core: 1.0
+    opex_multiplier_by_config:
+      core: 1.0
+  order_db_cluster:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      order_fulfilment: 7500
+      store_operations: 5250
+    capacity_multiplier_by_config:
+      core: 1.0
+      clustered: 1.8
+    opex_multiplier_by_config:
+      core: 1.0
+      clustered: 1.0
+  store_back_office_pc:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      store_operations: null
+    capacity_multiplier_by_config:
+      core: 1.0
+    opex_multiplier_by_config:
+      core: 1.0
+  nosql_database:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      order_fulfilment: 7500
+      customer_insight: 1250
+    capacity_multiplier_by_config:
+      core: 1.0
+      replicated: 1.7
+    opex_multiplier_by_config:
+      core: 1.0
+      replicated: 1.0
+  erp_suite:
+    purchasable_placements:
+    - on_prem
+    - cloud
+    - saas
+    capacity_by_capability:
+      financial_reporting: 100
+      order_fulfilment: 7500
+    capacity_multiplier_by_config:
+      basic: 1.0
+      mid: 1.4
+      advanced: 2.1
+    opex_multiplier_by_config:
+      basic: 1.0
+      mid: 1.0
+      advanced: 1.0
+services:
+  client_network:
+    serves: &id001
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  compute_pool:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 12
+        storage_gb: 0
+      cloud:
+        compute: 24
+        storage_gb: 0
+      saas:
+        compute: 24
+        storage_gb: 0
+    max_units: 8
+  storage_pool:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 5000
+      cloud:
+        compute: 0
+        storage_gb: 10000
+      saas:
+        compute: 0
+        storage_gb: 10000
+    max_units: 8
+  backup_recovery:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  failover_cluster:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  central_sign_on:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  intrusion_detection:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  threat_detection:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  integration_api:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  end_user_email:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  data_platform:
+    serves: *id001
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+drivers:
+  transactions:
+  - 80000
+  - 90000
+  - 100000
+  - 110000
+  - 120000
+  - 130000
+  sku_count:
+  - 12000
+  - 12000
+  - 12000
+  - 12000
+  - 12000
+  - 12000
+  reporting_periods:
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  customer_records:
+  - 10000
+  - 12500
+  - 15000
+  - 18000
+  - 22000
+  - 26000
+  records:
+  - 100000
+  - 120000
+  - 140000
+  - 160000
+  - 180000
+  - 200000
+  visits:
+  - 10000
+  - 11000
+  - 13000
+  - 16000
+  - 19000
+  - 23000
+  orders:
+  - 6000
+  - 6600
+  - 12000
+  - 15000
+  - 18000
+  - 22000
+  stores:
+  - 8
+  - 8
+  - 8
+  - 8
+  - 8
+  - 8
+  sites:
+  - 8
+  - 8
+  - 8
+  - 8
+  - 8
+  - 8
+  tickets:
+  - 300
+  - 360
+  - 430
+  - 520
+  - 620
+  - 740
+people:
+  training_retention: 0.9
+  resistance_retention: 0.9
+  arrival_shock: 0.1
+  strategy_shock: 0.1
+  resistance_ceiling: 0.9
+  adoption_adjustment: 0.35
+  sponsor_present: 1.0
+  sponsor_absent: 0.75
+  staff_floor: 0.25
+  starting_wage_per_fte: 31000
+  placement_staff_multiplier:
+    on_prem: 1.0
+    cloud: 0.6
+    saas: 0.2
+  hiring_options:
+    it_generalist:
+      fte: 1.0
+      wage_per_round: 31000
+      lead_time_rounds: 1
+  communication_options:
+    change_champions:
+      cost: 4000
+      resistance_reduction: 0.1
+    knowledge_portal:
+      cost: 3500
+      resistance_reduction: 0.05
+    feedback_loops:
+      cost: 2500
+      resistance_reduction: 0.08
+  units:
+    finance:
+      label: finance
+      initial_resistance: 0.2
+    firm:
+      label: firm
+      initial_resistance: 0.2
+    it:
+      label: it
+      initial_resistance: 0.2
+    marketing_sales:
+      label: marketing sales
+      initial_resistance: 0.2
+    service:
+      label: service
+      initial_resistance: 0.2
+    store_operations:
+      label: store operations
+      initial_resistance: 0.2
+    warehouse:
+      label: warehouse
+      initial_resistance: 0.2
+initial:
+  assets:
+  - id: initial_pos_system_2011
+    source_kind: catalog
+    source_key: pos_system_2011
+    placement: on_prem
+    config: core
+    units: 1
+    installed_round: 0
+  - id: initial_order_mgmt_v42
+    source_kind: catalog
+    source_key: order_mgmt_v42
+    placement: on_prem
+    config: core
+    units: 1
+    installed_round: 0
+  - id: initial_accounting_package
+    source_kind: catalog
+    source_key: accounting_package
+    placement: on_prem
+    config: core
+    units: 1
+    installed_round: 0
+  - id: initial_store_spreadsheets
+    source_kind: catalog
+    source_key: store_spreadsheets
+    placement: on_prem
+    config: core
+    units: 1
+    installed_round: 0
+  - id: initial_order_db_cluster
+    source_kind: catalog
+    source_key: order_db_cluster
+    placement: on_prem
+    config: core
+    units: 1
+    installed_round: 0
+  - id: initial_store_back_office_pc
+    source_kind: catalog
+    source_key: store_back_office_pc
+    placement: on_prem
+    config: core
+    units: 1
+    installed_round: 0
+  - id: initial_client_network
+    source_kind: service
+    source_key: client_network
+    placement: on_prem
+    config: null
+    units: 1
+    installed_round: 0
+  - id: initial_compute_pool
+    source_kind: service
+    source_key: compute_pool
+    placement: on_prem
+    config: null
+    units: 1
+    installed_round: 0
+  - id: initial_storage_pool
+    source_kind: service
+    source_key: storage_pool
+    placement: on_prem
+    config: null
+    units: 1
+    installed_round: 0
+  - id: initial_backup_recovery
+    source_kind: service
+    source_key: backup_recovery
+    placement: on_prem
+    config: null
+    units: 1
+    installed_round: 0
+  connections:
+  - id: initial_network_pos_system_2011
+    src: initial_client_network
+    dst: initial_pos_system_2011
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_network_order_mgmt_v42
+    src: initial_client_network
+    dst: initial_order_mgmt_v42
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_network_accounting_package
+    src: initial_client_network
+    dst: initial_accounting_package
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_network_store_spreadsheets
+    src: initial_client_network
+    dst: initial_store_spreadsheets
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_network_order_db_cluster
+    src: initial_client_network
+    dst: initial_order_db_cluster
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_network_store_back_office_pc
+    src: initial_client_network
+    dst: initial_store_back_office_pc
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_network_compute_pool
+    src: initial_client_network
+    dst: initial_compute_pool
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_network_storage_pool
+    src: initial_client_network
+    dst: initial_storage_pool
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_network_backup_recovery
+    src: initial_client_network
+    dst: initial_backup_recovery
+    kind: network
+    entity: null
+    tier: null
+  - id: initial_pos_product
+    src: initial_pos_system_2011
+    dst: initial_order_mgmt_v42
+    kind: integration
+    entity: product
+    tier: basic
+  - id: initial_order_accounting
+    src: initial_order_mgmt_v42
+    dst: initial_accounting_package
+    kind: integration
+    entity: order
+    tier: basic
+  training_fraction: 0.6
+  adoption: 0.6
+  process_with_option: partial
+  process_without_option: unchanged
+  primary:
+    order_fulfilment: initial_order_mgmt_v42
+    store_operations: initial_pos_system_2011
+    financial_reporting: initial_accounting_package
+    customer_insight: null
+    marketing_sales: null
+    service: null
+    firm_infrastructure: null
+  governance:
+    order_fulfilment:
+      owner: null
+      sponsor: null
+    store_operations:
+      owner: null
+      sponsor: null
+    financial_reporting:
+      owner: null
+      sponsor: null
+    customer_insight:
+      owner: null
+      sponsor: null
+    marketing_sales:
+      owner: null
+      sponsor: null
+    service:
+      owner: null
+      sponsor: null
+    firm_infrastructure:
+      owner: null
+      sponsor: null
+accounting:
+  opening_capital: 0
+  opening_operating: 0
+  operating_allowances:
+  - 100000
+  - 100000
+  - 100000
+  - 100000
+  - 100000
+  - 100000
+  connection_terms:
+    network:
+      capex_source: none
+      opex: 0
+      staff_load: 0.0
+    failover:
+      capex_source: none
+      opex: 3100
+      staff_load: 0.0
+    basic:
+      capex_source: none
+      opex: 3100
+      staff_load: 0.0
+    advanced:
+      capex_source: none
+      opex: 3100
+      staff_load: 0.0
+    vendor_managed:
+      capex_source: none
+      opex: 3100
+      staff_load: 0.0
+  cancellation: sunk
+  platform_capability: firm_infrastructure
+  decision_attribution_version: 1
+  action_attribution_version: 1
+  tco_estimators:
+    training: one_round_opex
+    integration: one_round_opex
+    lifecycle: one_round_opex
+    capacity: one_round_opex
+    data_migration: one_round_opex
+    policy: one_round_opex
+    process_redesign: one_round_opex
+    maintenance: one_round_opex
+    backup: one_round_opex
+  tco_capex_fraction: 0.1
+  process_partial_fraction: 0.5
+preferences:
+  rules:
+  - stakeholder: senior_management
+    cares_about: &id002
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
+    views:
+    - metric: cost_posture
+      ideal: 0
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: asset_reliability
+      ideal: 0.98
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: platform_placement
+      ideal: cloud
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: support_tier
+      ideal: basic
+      weight: 0.48
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: integration_tier
+      ideal: advanced
+      weight: 0.32
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: finance
+    cares_about:
+    - financial_reporting
+    views:
+    - metric: cost_posture
+      ideal: 0
+      weight: 0.9
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: platform_placement
+      ideal: cloud
+      weight: 0.9
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: support_tier
+      ideal: basic
+      weight: 0.81
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: integration_tier
+      ideal: basic
+      weight: 0.72
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: employees
+    cares_about: *id002
+    views:
+    - metric: training_coverage
+      ideal: 1
+      weight: 0.7
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: training_coverage
+      ideal: 1
+      weight: 0.9
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: support_tier
+      ideal: premium
+      weight: 0.49
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: operations
+    cares_about:
+    - order_fulfilment
+    - store_operations
+    views:
+    - metric: asset_reliability
+      ideal: 0.99
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: platform_placement
+      ideal: on_prem
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: training_coverage
+      ideal: 1
+      weight: 0.9
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: support_tier
+      ideal: premium
+      weight: 0.72
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: integration_tier
+      ideal: advanced
+      weight: 0.4
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: it_department
+    cares_about: *id002
+    views:
+    - metric: staff_load_ratio
+      ideal: 0
+      weight: 0.7
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: staff_load_ratio
+      ideal: 0
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: platform_placement
+      ideal: on_prem
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: support_tier
+      ideal: premium
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: integration_tier
+      ideal: vendor_managed
+      weight: 0.64
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: hr
+    cares_about: *id002
+    views:
+    - metric: training_coverage
+      ideal: 1
+      weight: 0.7
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: training_coverage
+      ideal: 1
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: marketing
+    cares_about:
+    - customer_insight
+    - marketing_sales
+    views:
+    - metric: platform_placement
+      ideal: cloud
+      weight: 0.6
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: investor
+    cares_about: *id002
+    views:
+    - metric: cost_posture
+      ideal: 0
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: cost_posture
+      ideal: 0
+      weight: 0.7
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: customer
+    cares_about:
+    - customer_insight
+    - service
+    views:
+    - metric: asset_reliability
+      ideal: 1
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: asset_reliability
+      ideal: 1
+      weight: 0.8
+      source_note: "master spec \xA76 frozen v1 view"
+  - stakeholder: vendor
+    cares_about: *id002
+    views:
+    - metric: integration_tier
+      ideal: vendor_managed
+      weight: 0.7
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: integration_tier
+      ideal: vendor_managed
+      weight: 0.7
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: integration_tier
+      ideal: vendor_managed
+      weight: 0.7
+      source_note: "master spec \xA76 frozen v1 view"
+    - metric: support_tier
+      ideal: premium
+      weight: 0.56
+      source_note: "master spec \xA76 frozen v1 view"
+  dispositions:
+  - source_path: /preferences/catalog/defaults_by_archetype/c_suite/ideal_cost_posture
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/c_suite/ideal_reliability
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/c_suite/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/finance/ideal_cost_posture
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/finance/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/employees/ideal_training_coverage
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/employees/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/operations/ideal_reliability
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/operations/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/it/ideal_staff_load
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/it/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/hr/ideal_training_coverage
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/hr/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/marketing/ideal_customer_data
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/marketing/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/investor/ideal_cost_posture
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/investor/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/customer/ideal_availability
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/customer/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/vendor/ideal_integration
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/vendor/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/security_auditor/ideal_security
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/security_auditor/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/regulator/ideal_compliance
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/regulator/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/general_public/ideal_privacy
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/general_public/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/media/ideal_incident_visibility
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/defaults_by_archetype/media/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/overrides/0/item
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/overrides/0/archetype
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/overrides/0/ideal_value
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/overrides/0/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/overrides/1/item
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/overrides/1/archetype
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/overrides/1/ideal_value
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/catalog/overrides/1/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/c_suite/ideal_placement
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/c_suite/cloud_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/c_suite/on_prem_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/c_suite/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/finance/ideal_placement
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/finance/cloud_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/finance/on_prem_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/finance/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/employees/ideal_placement
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/employees/cloud_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/employees/on_prem_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/employees/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/operations/ideal_placement
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/operations/cloud_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/operations/on_prem_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/operations/ideal_availability
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/operations/views/0
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/operations/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/it/ideal_placement
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/it/cloud_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/it/on_prem_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/it/ideal_staff_load
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/it/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/hr/ideal_placement
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/hr/cloud_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/hr/on_prem_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/hr/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/marketing/ideal_placement
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/marketing/cloud_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/marketing/on_prem_weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/marketing/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/investor/ideal_cost_posture
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/investor/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/customer/ideal_availability
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/customer/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/vendor/ideal_integration
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/vendor/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/security_auditor/ideal_identity_access
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/security_auditor/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/regulator/ideal_recovery
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/regulator/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/general_public/ideal_privacy
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/general_public/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/media/ideal_incident_visibility
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/defaults_by_archetype/media/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/overrides/0/item
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/overrides/0/archetype
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/overrides/0/ideal_value
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/overrides/0/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/overrides/1/item
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/overrides/1/archetype
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/overrides/1/ideal_value
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/platform/overrides/1/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/operations/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/support_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/support_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/integration_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/integration_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/employees/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/employees/by_decision/support_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/employees/by_decision/support_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/it/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/it/by_decision/support_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/it/by_decision/support_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/it/by_decision/integration_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/it/by_decision/integration_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/finance/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/support_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/support_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/integration_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/integration_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/c_suite/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/support_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/support_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/integration_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/integration_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/vendor/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/integration_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/integration_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/support_tier/ideal_tier
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/support_tier/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/operations/ideal_training_coverage
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/operations/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/employees/ideal_training_coverage
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/employees/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/hr/ideal_training_coverage
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/hr/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/finance/ideal_cost_posture
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/finance/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/it/ideal_change_volume
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/defaults_by_archetype/it/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/overrides/0/item
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/overrides/0/archetype
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/overrides/0/ideal_value
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/training/overrides/0/weight
+    disposition: context_m4
+    runtime_views: []
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
+response_disposition:
+  inventory_audit_question:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  warehouse_rollout_gap:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  pos_support_ending:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  ransomware_on_finance:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  crm_data_exposed:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  phishing_on_staff_accounts:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  privacy_regulator_letter:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  financial_audit_deadline_missed:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  unlogged_system_change:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  checkout_queues_lengthen:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  service_backlog_builds:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  supplier_portal_request:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+  analytics_request_from_board:
+    fund_effect: prevent_current_round
+    explanation: funded response prevents this round
+provenance:
+  /:
+    source: AUTHORED
+    note: "TODO: calibrate \u2014 owner M1/M4"
+units:
+  /: mixed_runtime_content

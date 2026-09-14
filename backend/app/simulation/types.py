@@ -1,0 +1,566 @@
+"""Strict, versioned P1 models.
+
+The models in this module are intentionally independent of SQLAlchemy and of
+the legacy round runner.  They are the typed seam consumed by the later
+estate, organisation, consequence and service packets.
+"""
+
+from __future__ import annotations
+
+import math
+import re
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator, model_validator
+
+
+KEY_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+HEX64_RE = re.compile(r"^[0-9a-f]{64}$")
+PLACEMENTS = {"on_prem", "cloud", "saas"}
+CAPABILITIES = (
+    "order_fulfilment", "store_operations", "financial_reporting",
+    "customer_insight", "marketing_sales", "service", "firm_infrastructure",
+)
+COMMAND_CATEGORIES = {
+    "buy_application": "application", "replace_application": "application",
+    "buy_service": "platform_service", "replace_service": "platform_service",
+    "connect": "integration", "disconnect": "integration",
+    "cancel_order": "lifecycle", "retire_asset": "lifecycle", "project": "lifecycle",
+    "train": "training", "set_process": "process_redesign", "communicate": "communication",
+    "hire": "staffing", "set_support": "staffing", "assign": "governance",
+    "set_primary": "governance", "declare_strategy": "governance", "set_policy": "policy",
+    "respond": "event_response", "request_capital": "capital_request",
+}
+COMMAND_FIELDS: dict[str, tuple[str, ...]] = {
+    "buy_application": ("catalog", "placement", "config", "primary_for", "tco_categories"),
+    "replace_application": ("asset", "placement", "config"),
+    "buy_service": ("service", "placement", "units"),
+    "replace_service": ("asset", "placement", "units"),
+    "connect": ("src", "dst", "kind", "entity", "tier"),
+    "disconnect": ("connection",),
+    "cancel_order": ("order",), "retire_asset": ("asset",),
+    "project": ("order", "choice"), "train": ("asset", "option"),
+    "set_process": ("asset", "choice"), "communicate": ("org_unit", "option"),
+    "hire": ("option",), "set_support": ("tier", "covered_assets"),
+    "assign": ("capability", "owner", "sponsor"),
+    "set_primary": ("capability", "asset"), "declare_strategy": ("strategy",),
+    "set_policy": ("policy", "selected"),
+    "respond": ("event", "option", "rationale_tag"),
+    "request_capital": ("amount", "reason"),
+}
+NULLABLE_COMMAND_FIELDS = {"primary_for", "entity", "tier", "owner", "sponsor", "asset"}
+
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+
+def _key(value: str, limit: int = 64) -> str:
+    if not isinstance(value, str) or not KEY_RE.fullmatch(value) or len(value) > limit:
+        raise ValueError(f"must be lower snake_case and at most {limit} characters")
+    return value
+
+
+def _finite(value: float) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise ValueError("must be a finite number")
+    return float(value)
+
+
+class SimulationError(ValueError):
+    """Closed, machine-readable error at the P1 boundary."""
+
+    CODES = {
+        "not_found", "invalid_input", "invalid_reference", "conflicting_commands",
+        "unaffordable", "revision_conflict", "locked", "round_state", "pack_mismatch",
+        "scope_exists", "unsupported_operation", "arrival_after_game_end", "invalid_output",
+    }
+
+    def __init__(self, code: str, field: str = "", details: dict[str, Any] | None = None):
+        if code not in self.CODES:
+            raise ValueError(f"unknown simulation error code: {code}")
+        self.code, self.field, self.details = code, field, details or {}
+        super().__init__(f"{code}{(': ' + field) if field else ''}")
+
+
+class CommandV1(StrictModel):
+    key: StrictStr = Field(min_length=1, max_length=48)
+    op: StrictStr
+    # The union of the frozen operation fields.  The validator below supplies
+    # the closed discriminated vocabulary while keeping a convenient public DTO.
+    catalog: str | None = None
+    placement: str | None = None
+    config: str | None = None
+    primary_for: str | None = None
+    tco_categories: list[str] | None = None
+    service: str | None = None
+    units: StrictInt | None = None
+    asset: str | None = None
+    src: str | None = None
+    dst: str | None = None
+    kind: str | None = None
+    entity: str | None = None
+    tier: str | None = None
+    connection: str | None = None
+    order: str | None = None
+    choice: str | None = None
+    option: str | None = None
+    org_unit: str | None = None
+    covered_assets: list[str] | None = None
+    capability: str | None = None
+    owner: str | None = None
+    sponsor: str | None = None
+    strategy: str | None = None
+    policy: str | None = None
+    selected: str | None = None
+    event: str | None = None
+    rationale_tag: str | None = None
+    amount: StrictInt | None = None
+    reason: str | None = None
+
+    @field_validator("key")
+    @classmethod
+    def valid_command_key(cls, value: str) -> str:
+        return _key(value, 48)
+
+    @model_validator(mode="after")
+    def validate_operation(self) -> "CommandV1":
+        if self.op not in COMMAND_CATEGORIES:
+            raise ValueError("unknown command operation")
+        fields = COMMAND_FIELDS[self.op]
+        unexpected = self.model_fields_set - (set(fields) | {"key", "op"})
+        if unexpected:
+            raise ValueError(f"fields not allowed for {self.op}: {sorted(unexpected)}")
+        for field in fields:
+            if field not in self.model_fields_set:
+                raise ValueError(f"{self.op} requires {field}")
+            value = getattr(self, field)
+            if value is None and field not in NULLABLE_COMMAND_FIELDS:
+                raise ValueError(f"{self.op}.{field} cannot be null")
+        if self.placement is not None and self.placement not in PLACEMENTS:
+            raise ValueError("invalid placement")
+        if self.units is not None and self.units <= 0:
+            raise ValueError("units must be positive")
+        if self.amount is not None and self.amount <= 0:
+            raise ValueError("amount must be positive")
+        if self.reason is not None and (not self.reason.strip() or len(self.reason) > 1000):
+            raise ValueError("reason must be nonempty and at most 1000 characters")
+        if self.op == "connect" and self.kind not in {"network", "integration", "failover"}:
+            raise ValueError("invalid connection kind")
+        if self.op == "project" and self.choice not in {"continue", "pause", "kill"}:
+            raise ValueError("invalid project choice")
+        if self.op == "set_process" and self.choice not in {"unchanged", "partial", "redesigned"}:
+            raise ValueError("invalid process choice")
+        if self.op == "set_support" and self.tier is None and self.covered_assets is None:
+            raise ValueError("set_support requires tier or covered_assets")
+        if self.tco_categories is not None:
+            if len(set(self.tco_categories)) != len(self.tco_categories):
+                raise ValueError("duplicate tco category")
+        for name, value in self.__dict__.items():
+            if name in {"key", "op", "reason"} or value is None:
+                continue
+            if isinstance(value, str):
+                _key(value)
+            elif isinstance(value, list):
+                for item in value:
+                    _key(item)
+        return self
+
+
+class SheetPatchV1(StrictModel):
+    version: Literal[1]
+    replace_categories: dict[str, list[CommandV1]]
+
+    @model_validator(mode="after")
+    def validate_categories(self) -> "SheetPatchV1":
+        keys: set[str] = set()
+        for category, commands in self.replace_categories.items():
+            if category not in set(COMMAND_CATEGORIES.values()):
+                raise ValueError("unknown command category")
+            for command in commands:
+                if COMMAND_CATEGORIES[command.op] != category:
+                    raise ValueError("command category does not match operation")
+                if command.key in keys:
+                    raise ValueError("duplicate command key")
+                keys.add(command.key)
+        return self
+
+
+class CatalogRuntimeV1(StrictModel):
+    purchasable_placements: list[str]
+    capacity_by_capability: dict[str, float | None]
+    capacity_multiplier_by_config: dict[str, float]
+    opex_multiplier_by_config: dict[str, float]
+
+    @model_validator(mode="after")
+    def unique_placements(self) -> "CatalogRuntimeV1":
+        if len(set(self.purchasable_placements)) != len(self.purchasable_placements):
+            raise ValueError("duplicate purchasable placement")
+        return self
+
+
+class SupplyV1(StrictModel):
+    compute: float
+    storage_gb: float
+
+
+class ServiceRuntimeV1(StrictModel):
+    serves: list[str]
+    availability: float
+    service_life_rounds: StrictInt
+    capacity_by_capability: dict[str, float | None]
+    supply_by_placement: dict[str, SupplyV1]
+    max_units: StrictInt
+
+    @model_validator(mode="after")
+    def unique_serves(self) -> "ServiceRuntimeV1":
+        if len(set(self.serves)) != len(self.serves):
+            raise ValueError("duplicate service capability")
+        return self
+
+
+class HiringOptionV1(StrictModel):
+    fte: float
+    wage_per_round: StrictInt
+    lead_time_rounds: StrictInt
+
+
+class CommunicationOptionV1(StrictModel):
+    cost: StrictInt
+    resistance_reduction: float
+
+
+class UnitV1(StrictModel):
+    label: StrictStr
+    initial_resistance: float
+
+
+class PeopleV1(StrictModel):
+    training_retention: float
+    resistance_retention: float
+    arrival_shock: float
+    strategy_shock: float
+    resistance_ceiling: float
+    adoption_adjustment: float
+    sponsor_present: float
+    sponsor_absent: float
+    staff_floor: float
+    starting_wage_per_fte: StrictInt
+    placement_staff_multiplier: dict[str, float]
+    hiring_options: dict[str, HiringOptionV1]
+    communication_options: dict[str, CommunicationOptionV1]
+    units: dict[str, UnitV1]
+
+
+class InitialAssetV1(StrictModel):
+    id: str
+    source_kind: Literal["catalog", "service"]
+    source_key: str
+    placement: str
+    config: str | None
+    units: StrictInt
+    installed_round: StrictInt
+
+
+class InitialConnectionV1(StrictModel):
+    id: str
+    src: str
+    dst: str
+    kind: Literal["network", "integration", "failover"]
+    entity: str | None
+    tier: str | None
+
+
+class GovernanceV1(StrictModel):
+    owner: str | None
+    sponsor: str | None
+
+
+class InitialV1(StrictModel):
+    assets: list[InitialAssetV1]
+    connections: list[InitialConnectionV1]
+    training_fraction: float
+    adoption: float
+    process_with_option: Literal["partial", "redesigned"]
+    process_without_option: Literal["unchanged"]
+    primary: dict[str, str | None]
+    governance: dict[str, GovernanceV1]
+
+
+class ConnectionTermsV1(StrictModel):
+    capex_source: Literal["none", "integration_tier"]
+    opex: StrictInt
+    staff_load: float
+
+
+class AccountingV1(StrictModel):
+    opening_capital: StrictInt
+    opening_operating: StrictInt
+    operating_allowances: list[StrictInt]
+    connection_terms: dict[str, ConnectionTermsV1]
+    cancellation: Literal["sunk"]
+    platform_capability: str
+    decision_attribution_version: Literal[1]
+    action_attribution_version: Literal[1]
+    tco_estimators: dict[str, str]
+    tco_capex_fraction: float
+    process_partial_fraction: float
+
+
+class PreferenceViewV1(StrictModel):
+    metric: str
+    ideal: float | str
+    weight: float
+    source_note: str
+
+
+class PreferenceRuleV1(StrictModel):
+    stakeholder: str
+    cares_about: list[str]
+    views: list[PreferenceViewV1]
+
+
+class PreferenceDispositionV1(StrictModel):
+    source_path: str
+    disposition: Literal["live_v1", "context_m4", "no_preference"]
+    runtime_views: list[str]
+    reason: str
+
+
+class PreferencesV1(StrictModel):
+    rules: list[PreferenceRuleV1]
+    dispositions: list[PreferenceDispositionV1]
+
+    @model_validator(mode="after")
+    def unique_sources(self) -> "PreferencesV1":
+        paths = [item.source_path for item in self.dispositions]
+        if len(paths) != len(set(paths)):
+            raise ValueError("duplicate preference disposition")
+        for rule in self.rules:
+            if len(rule.cares_about) != len(set(rule.cares_about)):
+                raise ValueError("duplicate caring capability")
+        return self
+
+
+class ResponseDispositionV1(StrictModel):
+    fund_effect: Literal["prevent_current_round"]
+    explanation: str
+
+
+class ProvenanceEntryV1(StrictModel):
+    source: Literal["AUTHORED", "HARVESTED", "PINNED"]
+    note: str
+
+
+class RuntimeContentV1(StrictModel):
+    version: Literal[1]
+    catalog: dict[str, CatalogRuntimeV1]
+    services: dict[str, ServiceRuntimeV1]
+    drivers: dict[str, list[float]]
+    people: PeopleV1
+    initial: InitialV1
+    accounting: AccountingV1
+    preferences: PreferencesV1
+    response_disposition: dict[str, ResponseDispositionV1]
+    provenance: dict[str, ProvenanceEntryV1]
+    units: dict[str, StrictStr]
+
+    @model_validator(mode="after")
+    def validate_numbers(self) -> "RuntimeContentV1":
+        def walk(value: Any, path: str = ""):
+            if isinstance(value, bool):
+                raise ValueError(f"boolean is not a numeric/content value at {path}")
+            if isinstance(value, float) and not math.isfinite(value):
+                raise ValueError(f"non-finite numeric value at {path}")
+            if isinstance(value, dict):
+                for k, v in value.items(): walk(v, f"{path}/{k}")
+            elif isinstance(value, list):
+                for i, v in enumerate(value): walk(v, f"{path}/{i}")
+        walk(self.model_dump())
+        return self
+
+
+class RuntimePackV1(StrictModel):
+    """Bound immutable semantic bundle (the constructor copies its inputs)."""
+
+    casepack: Any
+    runtime: RuntimeContentV1
+    pack_digest: StrictStr = Field(pattern=HEX64_RE.pattern)
+    canonical_bytes: bytes
+
+
+class PackIdentityV1(StrictModel):
+    key: str
+    version: str
+    digest: StrictStr = Field(pattern=HEX64_RE.pattern)
+
+
+class OperatingForecastV1(StrictModel):
+    round: StrictInt; opening: StrictInt; allowance: StrictInt; recurring: StrictInt; closing: StrictInt
+
+
+class WarningV1(StrictModel):
+    code: Literal["operating_deficit", "unpriced_repair"]
+    keys: list[str]
+
+
+class PreviewV1(StrictModel):
+    version: Literal[1]
+    round: StrictInt
+    normalized_commands: list[CommandV1]
+    arrivals: list[str]; retirements: list[str]; expiries: list[str]
+    capital_available: StrictInt; capital_spend: StrictInt; capital_remaining: StrictInt
+    operating_runrate: StrictInt
+    operating_forecast: list[OperatingForecastV1]
+    challenges: list[dict[str, Any]]
+    repair_assessments: list[dict[str, Any]]
+    prevented_events: list[str]; would_fire: list[str]
+    cost_entries: list[dict[str, Any]]; warnings: list[WarningV1]
+
+
+class SheetViewV1(StrictModel):
+    version: Literal[1]
+    round: StrictInt; revision: StrictInt; locked_revision: StrictInt | None
+    commands: list[CommandV1]; preview: PreviewV1
+
+
+class RunViewV1(StrictModel):
+    version: Literal[1]
+    pack_identity: PackIdentityV1
+    current_round: StrictInt
+    status: Literal["draft", "locked", "completed"]
+    checkpoint_round: StrictInt
+    checkpoint_digest: StrictStr = Field(pattern=HEX64_RE.pattern)
+    state: CheckpointStateV1
+    sheet: SheetViewV1 | None
+
+
+class CostEntryV1(StrictModel):
+    round: StrictInt; kind: str; source: str
+    asset: str | None = None; capability: str | None = None; category: str | None = None
+    capital_delta: StrictInt; operating_delta: StrictInt
+
+
+class EffectCandidateV1(StrictModel):
+    effect_kind: Literal["arrival", "replacement", "training", "process", "integration", "support", "retirement", "policy"]
+    source_round: StrictInt; source_command: str; effect_round: StrictInt
+    asset_id: str | None; target_key: str | None; capabilities: list[str]
+    cost: StrictInt
+    action_type: Literal["add_node", "scale_node", "move_to_cloud", "upgrade_component", "add_training", "redesign_process", "add_service_tier", "retire_component", "add_policy"]
+
+
+class ResourceViewV1(StrictModel):
+    by_placement: dict[str, dict[str, float]]
+    by_asset: dict[str, dict[str, Any]]
+    integration_load: float; policy_load: float; total_load: float; total_opex: StrictInt
+
+
+class StaffPoolV1(StrictModel):
+    capacity: float; load: float; available: float
+
+
+class StakeholderDecisionAlignmentV1(StrictModel):
+    stakeholder: str; value: float; cares_about: list[str]
+
+
+class EstateDeltaV1(StrictModel):
+    assets: dict[str, AssetV1]; connections: dict[str, ConnectionV1]; projects: dict[str, ProjectV1]
+    hiring_orders: dict[str, dict[str, Any]]; staff_hires: list[dict[str, Any]]; rollouts: dict[str, RolloutV1]; primary: dict[str, str | None]
+    charge_entries: list[CostEntryV1]; arrived_ids: list[str]; retired_ids: list[str]; expired_ids: list[str]; effect_candidates: list[EffectCandidateV1]
+
+
+class OrgDeltaV1(StrictModel):
+    rollouts: dict[str, RolloutV1]; unit_resistance: dict[str, float]; governance: dict[str, GovernanceStateV1]
+    primary: dict[str, str | None]; policies: dict[str, PolicyStateV1]; support: SupportV1
+    strategy: str; strategy_declared_round: StrictInt; staff: StaffPoolV1
+    communication: dict[str, str]; charge_entries: list[CostEntryV1]; stakeholder_alignments: list[StakeholderDecisionAlignmentV1]
+    effect_candidates: list[EffectCandidateV1]
+
+
+class TransitionV1(StrictModel):
+    state: CheckpointStateV1; result: dict[str, Any]; preview: PreviewV1
+
+
+class AssetV1(StrictModel):
+    id: str; source_kind: Literal["catalog", "service"]; source_key: str
+    placement: str; config: str | None; units: StrictInt
+    installed_round: StrictInt; retired_round: StrictInt | None
+
+
+class ProjectV1(StrictModel):
+    id: str; asset_id: str; source_kind: Literal["catalog", "service"]; source_key: str
+    placement: str; config: str | None; units: StrictInt; ordered_round: StrictInt
+    paid_capex: StrictInt; remaining_lead: StrictInt
+    status: Literal["pending", "paused", "arrived", "cancelled", "abandoned"]
+    replacement_target: str | None; tco_categories: list[str]
+
+
+class ConnectionV1(StrictModel):
+    id: str; src: str; dst: str; kind: Literal["network", "integration", "failover"]
+    entity: str | None; tier: str | None; created_round: StrictInt; retired_round: StrictInt | None
+
+
+class RolloutV1(StrictModel):
+    trained_count: StrictInt; adoption: float
+    process: Literal["unchanged", "partial", "redesigned"]
+    ever_trained: bool; lifecycle: Literal["active", "retired", "abandoned"]
+
+
+class GovernanceStateV1(StrictModel):
+    owner: str | None; sponsor: str | None
+
+
+class PolicyStateV1(StrictModel):
+    selected: str; actively_decided: bool
+
+
+class SupportV1(StrictModel):
+    tier: str | None; covered_assets: list[str]
+
+
+class ActionRecordV1(StrictModel):
+    action_type: str; locked_round: StrictInt; capability: str | None
+    target_key: str | None; cost: StrictInt
+
+
+class ActionEnvelopeV1(StrictModel):
+    id: StrictStr = Field(pattern=HEX64_RE.pattern)
+    source_round: StrictInt; source_command: str; effect_round: StrictInt
+    record: ActionRecordV1
+
+
+class CheckpointStateV1(StrictModel):
+    strategy: str; strategy_declared_round: StrictInt
+    assets: dict[str, AssetV1]; connections: dict[str, ConnectionV1]
+    projects: dict[str, ProjectV1]; hiring_orders: dict[str, dict[str, Any]]
+    staff_hires: list[dict[str, Any]]; support: SupportV1
+    rollouts: dict[str, RolloutV1]; unit_resistance: dict[str, float]
+    governance: dict[str, GovernanceStateV1]; primary: dict[str, str | None]
+    policies: dict[str, PolicyStateV1]; capital_balance: StrictInt; operating_reserve: StrictInt
+    cost_ledger: list[dict[str, Any]]; technical_debt: list[dict[str, Any]]
+    signal_ledger: list[dict[str, Any]]; action_history: list[ActionEnvelopeV1]
+    available_funds_by_round: list[StrictInt]; event_history: list[dict[str, Any]]
+    response_history: list[dict[str, Any]]; tco_forecasts: list[dict[str, Any]]
+    repair_assessment_history: list[dict[str, Any]]; unpriced_signal_exposures: list[dict[str, Any]]
+
+    @model_validator(mode="after")
+    def validate_state(self) -> "CheckpointStateV1":
+        if any(k != v.id for k, v in self.assets.items()):
+            raise ValueError("asset map key must equal asset id")
+        if any(k != v.id for k, v in self.projects.items()):
+            raise ValueError("project map key must equal project id")
+        if any(v is not None and v not in self.assets for v in self.primary.values()):
+            raise ValueError("primary references unknown asset")
+        for key, project in self.projects.items():
+            if project.asset_id not in self.assets and project.status not in {"cancelled", "abandoned"}:
+                raise ValueError("project references unknown asset")
+        if any(x < 0 for x in self.available_funds_by_round):
+            raise ValueError("available funds cannot be negative")
+        return self
+
+
+# A few inter-packet DTOs are declared before the detailed checkpoint records so
+# their public order mirrors the contract.  Resolve those forward references once
+# the complete P1 type graph exists.
+for _model in (RunViewV1, EstateDeltaV1, OrgDeltaV1, TransitionV1):
+    _model.model_rebuild()
