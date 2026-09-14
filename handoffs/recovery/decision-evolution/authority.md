@@ -226,3 +226,10 @@ Scope amendment: the documentation-only author may also add
 metrics/events/ledger plus one focused test file and its DoD. P0b follows audited P0 and
 requires independent spec review and build audit. The master must include this prerequisite;
 P1–P6 remain gated on correction/review of the complete master contract.
+
+R17 qualification: actionability candidates must be **credit-eligible** under the original
+watch's cleared_by vocabulary and commitment window, as well as actually repair its metric.
+Real but uncredited repairs are reported separately, never renamed to manufacture credit.
+The minimum and its debt estimate are scoped to verified credit-eligible candidates in the
+bounded catalogue. P0b final spec `2bab351` received independent PASS on that exact meaning;
+its input seam is dispatchable after P0, while full P4 producer semantics remain master work.
