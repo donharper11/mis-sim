@@ -260,3 +260,10 @@ the existing consumer compares `pc.node` directly with physical graph keys. Cata
 and guessed future command IDs fail `invalid_reference`; no identity translation or
 predicate reinterpretation is implied. These rulings were verified and approved on
 2026-09-15 and must be expressed in the independently reviewed master successor.
+
+R18 clarification during successor review: held-response eligibility applies to every
+`respond` option, including `fund`, `defer` and `reject`. A hypothetical repair cannot
+invalidate any such held choice and remain a valid candidate. The status-only check
+therefore runs whenever response commands are present, with the same
+`held_response_ineligible` exclusion reason; only funded responses deduct capital or
+prevent an event. This makes the global complete-candidate rule explicit at its producer.
