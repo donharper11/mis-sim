@@ -90,9 +90,34 @@ the contract cannot declare M1 complete by deferring its required state transiti
 ## Controlled execution
 
 `m1_contract_author` is documentation-only in `/tmp/mis-sim-m1-author`, exact base above;
-only new `spec.md` and `verify.md` in this handoff are allowed. Independent
+only new `spec.md`, `verify.md`, and (explicit scope amendment)
+`engine-inputs/spec.md` in this handoff are allowed. The small engine-input packet may
+receive independent review while the master contract is completed; this does not authorize
+estate/organisation builders before their complete contract review. Independent
 `m1_content_basis` may add only `content-basis.md` in its own worktree. Neither may code,
 subdelegate, alter shared contracts or publish. A fresh spec reviewer follows the author.
 Builders then receive individually frozen interfaces, exact bases and file lists, with no
 more than two implementation tracks. The supervisor owns shared contracts/register/status
 integration and requires an independent build audit behind each implementation packet.
+
+## Response ruling and initial-content clarification
+
+**M1-R10a — APPROVED for specification.** Each runtime event may explicitly author the
+`prevent_current_round` funded-response effect. A valid funded response pays the existing
+option price, prevents that event's current-round consequence, and expires at round end.
+It creates neither a training purchase nor a permanent fix, does not clear the underlying
+signal, and does not mark an event falsely fired. Persist the prevention's scope, rationale
+and price separately from fired/suppressed evidence. Later unfunded fire retains original
+outcomes. Eligibility must use the canonical state and all committed costs consistently
+in preview/lock/advance; the author must define the exact checks and ordering. The transient
+filtered event deck cannot mutate the bound pack or change other events' ordering/caps.
+All thirteen event-specific explanations are NEW authored effect semantics, not facts
+inferred from the existing option labels.
+
+The independently checked content basis is accepted as research (`content-review.md`).
+$14,200 is the proposed initial references' actual recurring price before wages; inherited
+2 FTE at the NEW wage treatment produces $76,200 total, not the historical $47,000 target.
+Explicit runtime supply/driver/throughput defaults require unit/rationale/calibration labels.
+Affordability must include projected pending liabilities, rather than admitting unlimited
+zero-capex hiring before arrival. Existing price/weight files and historical fixtures remain
+protected except for an independently reviewed, explicitly necessary compatibility seam.
