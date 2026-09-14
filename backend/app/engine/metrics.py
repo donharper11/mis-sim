@@ -52,7 +52,7 @@ def capacity_utilisation(state: TeamState, pack: Casepack, rule: WatchRule) -> f
     path = _serving_path(state, pack, cap)
     if path is None:
         return 0.0
-    bottleneck = graph.bottleneck_capacity(state, path)
+    bottleneck = graph.bottleneck_capacity(state, path, cap)
     if bottleneck is None or bottleneck <= 0:
         return 0.0
     return round(demand / bottleneck, 4)

@@ -184,9 +184,19 @@ across 24 results, pure-scoring code, pack values, seeds and historical pins is 
 Financial remains explicitly partial. Shared contracts and NS-003 close with integration.
 See the [scorecard audit](../findings/recovery-scorecard-2026-09-14.md).
 
-**M1 preparation complete; implementation pending.** The independently reproduced
+**M1 underway; milestone unfinished.** P0's capability-capacity/RTO input seam and stable
+paths passed a fresh build audit at `7dbb4c8` and are integrated. Combined verification:
+**406 tests, all guards and 44 fixtures**, with complete historical24 payloads byte-identical
+across six hash seeds. [Build audit](../findings/recovery-engine-inputs-2026-09-14.md).
+The master contract `dcb59f5` was independently returned with four owned corrections;
+entity-access and verified-repair inputs need an additional reviewed seam before the
+typed-content, estate, organisation, consequences, persistence and game packets proceed.
+The [master review](../handoffs/recovery/decision-evolution/master-review-1.md) records
+the failures and closing checks. No dependent builder may resolve those choices silently.
+
+The independently reproduced
 [inventory](../handoffs/recovery/decision-evolution/inventory.md) identifies invalid-target
 acceptance, absent carry-forward, late duplicate-advance refusal, incomplete rewind and
-caller-committable partial writes. D1–D10 must be resolved in the next Heavy decision and
+caller-committable partial writes. D1–D10 must be resolved in the Heavy decision and
 transition contract, then independently reviewed before estate/organisation builders start.
 **M1–M6 remain unfinished.** Main and remote publication remain untouched.

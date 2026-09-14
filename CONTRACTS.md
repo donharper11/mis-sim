@@ -528,6 +528,32 @@ evidence. See `handoffs/recovery/scorecard-contract/spec.md` for null/error case
 
 ---
 
+## `ArchNode` runtime inputs — LIVE, engine input contract v1
+
+**M1 engine inputs v1.** ArchNode may carry an immutable
+`capacity_by_capability` mapping and positive finite `base_rto_hours`. An absent capacity
+map preserves historical scalar throughput. A present map forbids scalar throughput;
+finite nonnegative entries are unit-specific ceilings, zero is an outage, and None or an
+omitted key means no ceiling for that capability. Graph, technology, metrics and event
+bottleneck consumers must pass capability context for mapped nodes. The runtime projection
+is the sole production producer and validates pack capability keys. Explicit RTO wins;
+absence retains historical catalog-key lookup and8-hour fallback. One physical node keeps
+one placement/failure identity. This adds no scorecard-v1 field or scoring formula.
+
+The planned Simulation v1 projection will produce these fields; P0 implements only their
+engine boundary. Construction copies the capacity mapping and refuses malformed containers,
+keys, booleans, nonnumeric, nonfinite, negative or overflowing values. Explicit RTO also
+refuses zero. Mapped-path queries without capability context raise ValueError; a supplied
+capability absent from a map has no ceiling. Existing scalar snapshots remain compatible.
+Producer/consumer cases and checks are frozen in
+[the P0 specification](handoffs/recovery/decision-evolution/engine-inputs/spec.md).
+
+**Changelog — 2026-09-14:** Engine input contract v1 adds optional unit-specific capacity
+and explicit physical-node RTO. Historical complete 24-result payloads and scoring pins
+are unchanged; Simulation v1 producers remain a later M1 packet.
+
+---
+
 ## How to add an entry
 
 Add when a field is consumed in more than one place and its format could plausibly be

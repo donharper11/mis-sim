@@ -21,8 +21,10 @@ live decision-to-estate evolution and the student/instructor application remain 
 **M0 — trustworthy baseline is complete** on `build/north-star-foundation`: declared
 backend dependencies, PostgreSQL verification, complete calibration reporting and corrected,
 versioned scorecard units. Independent build audit and supervisor checks pass:
-**311 tests plus all guards and 44 fixtures**. M1's decision/transition gaps are inventoried;
-its typed-command and atomic-transition contract is next. M1–M6 remain unfinished.
+**311 tests plus all guards and 44 fixtures** at M0 closeout. **M1 is underway:** its first
+engine-input packet is independently audited and integrated, with **406 tests plus all
+guards and 44 fixtures** passing and all historical payloads preserved. The master
+transition contract is being corrected after independent review. M1–M6 remain unfinished.
 
 ---
 

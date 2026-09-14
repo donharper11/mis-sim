@@ -23,10 +23,10 @@ from engine state. Stakeholder satisfaction uses realised value, not just purcha
 |---|---|
 | Foundation | FastAPI/React scaffold, migrations, semantic tokens, local IBM Plex fonts, 19 static reference mockups |
 | Content | One substantive Riverside pack: 7 capabilities, 14 catalog items, 8 entities, 8 watch rules, 13 events, 4 strategies, 14 stakeholders, 6 policy switches and 6 obligation rules |
-| Engine | Pure graph/scoring functions, policy scoring, event/precondition model, signal episodes, explanatory decompositions |
+| Engine | Pure graph/scoring functions, policy scoring, event/precondition model, signal episodes, explanatory decompositions; audited optional capability-specific capacity/RTO inputs and deterministic paths |
 | Persistence | 16 runtime tables, instance-scoped snapshots, lock/advance, arrivals, result and ledger persistence |
 | Calibration | Four scripted archetypes × six rounds; all perspectives now visible in every round, 38 live marker sites and raw scale diagnostics; all scripts declare Cost Leadership; August ruling retained |
-| Verification | M0 integration: 311 pytest tests, all guards, 44 fixtures; fresh declared dependencies and actual PostgreSQL migrations/16 tables/six results; all 96 corrected BSC values independently reconciled; Riverside zero errors/warnings |
+| Verification | M1 P0 integration: 406 pytest tests, all guards, 44 fixtures; complete 24 historical payloads preserved across six hash seeds. M0's actual PostgreSQL migrations/16 tables/six results and all 96 reconciled BSC values remain the baseline; Riverside zero errors/warnings |
 | Application | React token-preview page and 404 only; auth remains 501; student/instructor workflows unbuilt |
 
 The original packet count is **11 of 47 recorded closed**. Phase 1 closure covers the
@@ -39,8 +39,12 @@ apply integer event points to normalized bases once and retain versioned base/de
 status. All other fields across 24 scripted results and historical result rows are preserved.
 Main remains at the historical baseline. [Evidence and limits](handoffs/recovery/README.md).
 
-M1 preparation is [inventoried and independently reproduced](handoffs/recovery/decision-evolution/review.md).
-The next handoff defines typed decisions and atomic transitions; no M1 builder is dispatched.
+**M1 is underway.** Its bounded capacity/RTO/path packet passed a fresh build audit at
+`7dbb4c8` and is integrated. [Audit](findings/recovery-engine-inputs-2026-09-14.md).
+The master contract was returned with four owned findings: entity-access leakage,
+unaffordable game templates, repair-quote semantics and incomplete shared interfaces.
+Corrections are in authoring/review; dependent estate/organisation/service builders remain
+gated. [Master review](handoffs/recovery/decision-evolution/master-review-1.md).
 
 ## The important unfinished boundary
 

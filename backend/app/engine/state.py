@@ -17,7 +17,10 @@ invent the formula that produced it.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from math import isfinite
+from types import MappingProxyType
 from typing import Literal
 
 
@@ -29,9 +32,10 @@ ProcessState = Literal["redesigned", "partial", "unchanged"]
 class ArchNode:
     """One placed thing in the team's architecture graph.
 
-    `throughput` is the node's capacity in the demand unit of the capabilities it
-    serves; `None` means the node imposes no capacity ceiling (a client endpoint,
-    a firewall). `serves` lists the capability keys this node participates in.
+    `throughput` preserves the historical scalar capacity input. A present
+    `capacity_by_capability` instead supplies ceilings in each capability's demand
+    unit; absent entries and `None` impose no ceiling. `serves` lists the capability
+    keys this node participates in. One node retains one physical failure identity.
     """
 
     key: str
@@ -47,10 +51,42 @@ class ArchNode:
     #: precondition reads it; it is a 1.6 round-evolution field the pure 1.5 engine only
     #: reads. `None` means the round runner has not populated it (unused by the reference pack).
     placement: str | None = None
+    capacity_by_capability: Mapping[str, float | None] | None = None
+    base_rto_hours: float | None = None
+
+    def __post_init__(self) -> None:
+        capacities = self.capacity_by_capability
+        if capacities is not None:
+            if not isinstance(capacities, Mapping):
+                raise ValueError("capacity_by_capability must be a mapping or None")
+            if self.throughput is not None:
+                raise ValueError("capacity_by_capability and throughput cannot both be supplied")
+            copied = dict(capacities)
+            for key, value in copied.items():
+                if not isinstance(key, str) or not key.strip():
+                    raise ValueError("capacity_by_capability keys must be nonempty strings")
+                if value is not None:
+                    _validate_numeric_input(value, f"capacity_by_capability[{key!r}]", positive=False)
+            object.__setattr__(self, "capacity_by_capability", MappingProxyType(copied))
+        if self.base_rto_hours is not None:
+            _validate_numeric_input(self.base_rto_hours, "base_rto_hours", positive=True)
 
     @property
     def is_client_access(self) -> bool:
         return "client_access" in self.roles_filled
+
+
+def _validate_numeric_input(value: float, name: str, *, positive: bool) -> None:
+    """Validate only the additive inputs, leaving legacy scalar behavior unchanged."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a finite number")
+    try:
+        finite = isfinite(value)
+    except OverflowError as exc:
+        raise ValueError(f"{name} must be finitely representable") from exc
+    if not finite or value < 0 or (positive and value == 0):
+        bound = "positive" if positive else "nonnegative"
+        raise ValueError(f"{name} must be finite and {bound}")
 
 
 @dataclass(frozen=True)

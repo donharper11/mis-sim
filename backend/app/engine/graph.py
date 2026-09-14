@@ -36,7 +36,7 @@ def _bfs_path(
     """Shortest node path from any source to any target, or None if disconnected."""
     prev: dict[str, str | None] = {}
     q: deque[str] = deque()
-    for s in sources:
+    for s in sorted(set(sources)):
         if s in adj and s not in prev:
             prev[s] = None
             q.append(s)
@@ -50,7 +50,7 @@ def _bfs_path(
                 path.append(prev[path[-1]])  # type: ignore[arg-type]
             path.reverse()
             return path
-        for nxt in adj[cur]:
+        for nxt in sorted(adj[cur]):
             if nxt not in prev:
                 prev[nxt] = cur
                 q.append(nxt)
@@ -110,18 +110,33 @@ def path_reliability(state: TeamState, path: list[str]) -> float:
     return r
 
 
-def bottleneck_capacity(state: TeamState, path: list[str]) -> float | None:
-    """min() of throughput along the serving path -- the bottleneck, not the sum
-    (settled decision 4, invariant I8). Nodes with no throughput ceiling are
-    skipped. Returns None if no node on the path declares a throughput."""
-    caps = [
-        state.node(k).throughput  # type: ignore[union-attr]
-        for k in path
-        if state.node(k) is not None and state.node(k).throughput is not None  # type: ignore[union-attr]
-    ]
+def _node_capacity(node: ArchNode, capability: str | None) -> float | None:
+    """Select one unit's ceiling, requiring context for an authoritative map."""
+    if node.capacity_by_capability is None:
+        return node.throughput
+    if capability is None:
+        raise ValueError("capability is required for capacity_by_capability")
+    return node.capacity_by_capability.get(capability)
+
+
+def bottleneck_capacity(
+    state: TeamState, path: list[str], capability: str | None = None
+) -> float | None:
+    """Minimum capacity along the path in the requested capability's demand unit.
+
+    Nodes without a ceiling are skipped; zero remains a real ceiling. Omitted
+    context preserves scalar callers and refuses paths containing mapped nodes.
+    """
+    caps = []
+    for key in path:
+        node = state.node(key)
+        if node is not None:
+            capacity = _node_capacity(node, capability)
+            if capacity is not None:
+                caps.append(capacity)
     if not caps:
         return None
-    return min(caps)  # type: ignore[type-var]
+    return min(caps)
 
 
 def articulation_points(state: TeamState, subset: set[str] | None = None) -> set[str]:

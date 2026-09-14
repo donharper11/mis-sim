@@ -107,7 +107,7 @@ def technology(pack: Casepack, state: TeamState, cap_key: str) -> TechResult:
         evidence["serving_path"] = None
     else:
         demand = catalog.demand_at(pack, cap_key, state.round)
-        bottleneck = graph.bottleneck_capacity(state, path)
+        bottleneck = graph.bottleneck_capacity(state, path, cap_key)
         capacity = clamp((bottleneck / demand) if bottleneck is not None else 1.0)
         reliability = graph.path_reliability(state, path)
         spofs = graph.spofs_on_path(state, path)

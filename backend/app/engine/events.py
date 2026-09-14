@@ -142,16 +142,18 @@ def _primary_map(pack: Casepack, capabilities: list[str]) -> dict[str, tuple[str
     return {cap: catalog.primary_entity(pack, cap) for cap in capabilities}
 
 
-def bottleneck_node(state: TeamState, path: list[str]) -> str | None:
-    """The first node in serving-path order whose throughput equals the path minimum,
+def bottleneck_node(
+    state: TeamState, path: list[str], capability: str | None = None
+) -> str | None:
+    """The first node in serving-path order whose capacity equals the path minimum,
     skipping nodes with no throughput ceiling (contract-spec section 8.1). The stable path
     order makes the "first at the minimum" tie-break deterministic."""
-    minimum = graph.bottleneck_capacity(state, path)
+    minimum = graph.bottleneck_capacity(state, path, capability)
     if minimum is None:
         return None
     for key in path:
         node = state.node(key)
-        if node is not None and node.throughput is not None and node.throughput == minimum:
+        if node is not None and graph._node_capacity(node, capability) == minimum:
             return key
     return None
 
@@ -172,7 +174,7 @@ def failed_node(event: Event, state: TeamState, pack: Casepack) -> str | None:
         path = graph.serving_path(state, seq[0], entity, level, order)
         if path is None:
             return None
-        return bottleneck_node(state, path)
+        return bottleneck_node(state, path, seq[0])
     return None
 
 
@@ -212,10 +214,14 @@ def outage_duration(state: TeamState, failed: str, capability: str, pack: Casepa
     `duration_hours = round(base_rto_hours(node) * failover_factor * staffing_modifier, 1)`.
     """
     base_rto = DEFAULT_BASE_RTO_HOURS
-    for item in pack.catalog:
-        if item.key == failed and item.base_rto_hours is not None:
-            base_rto = item.base_rto_hours
-            break
+    node = state.node(failed)
+    if node is not None and node.base_rto_hours is not None:
+        base_rto = node.base_rto_hours
+    else:
+        for item in pack.catalog:
+            if item.key == failed and item.base_rto_hours is not None:
+                base_rto = item.base_rto_hours
+                break
 
     has_failover = failover_exists(state, failed, capability, pack)
     failover_factor = 1.0 if has_failover else NO_FAILOVER_MULTIPLIER

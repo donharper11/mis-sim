@@ -252,3 +252,16 @@ instantly would be tuning the wrong game — and it would pass, which is worse.
 Every ✅ in `02-traceability-matrix.md` means *a factor has a capture point*. It does not mean
 *a decision has a consequence*. Those are different questions, and only this document asks
 the second one.
+
+### M1 deterministic engine input contract
+
+**M1 deterministic paths.** Serving-path BFS visits unique source keys and adjacency
+neighbors in lexicographic node-key order. Equal-length paths therefore have a stable
+cross-process tie-break. Adoption of this tie-break requires byte-identical canonical
+historical24 RoundResult payloads and unchanged R3 pins. New mapped capacities are compared
+only within the requested capability; incidental transit with no map entry has no ceiling.
+
+**Changelog — 2026-09-14, engine input contract v1:** The optional engine inputs and stable
+path order implement the bounded [P0 contract](../handoffs/recovery/decision-evolution/engine-inputs/spec.md).
+The living producer/consumer entry is in [CONTRACTS.md](../CONTRACTS.md).
+This seam alone does not implement production decision evolution.
