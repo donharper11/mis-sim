@@ -131,9 +131,11 @@ An owner label is not completion. A status moves through **planned → specified
   evidence. They can continue unrelated in-scope work while a question is resolved.
 - Heavy work (scoring, transition semantics, cross-module fields) gets an independent
   spec review before coding and an independent build audit. Light work gets one independent
-  build audit. A builder never audits its own work. The supervisor audits agent changes;
-  if the supervisor authored a Heavy spec or wrote the code, an additional fresh reviewer
-  provides the required independent audit.
+  build audit. A builder never audits its own work. Author/auditor independence follows
+  `GOVERNANCE §6.1` at every tier, including reports displaying scoring factors. The
+  supervisor reruns and audits agent changes for integration; a fresh build auditor also
+  reviews any such work whose spec the supervisor authored. Author-audit is declared only
+  for the infrastructure-only exception (no scoring factor or student surface).
 - The auditor reads the diff and independently runs behaviour checks on the candidate
   commit. A passing builder report is not evidence by itself. New guards must fail on a
   deliberate regression; changing an expected output to match the implementation is not

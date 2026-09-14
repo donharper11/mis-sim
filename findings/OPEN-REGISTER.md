@@ -1,5 +1,10 @@
 # Open Findings Register
 
+**Current execution update (2026-09-14):** the recovery ownership/closure section **Q**
+below and `design/08-implementation-north-star.md` govern current dispatches. Earlier
+entries retain their historical evidence; read later reconciliations before treating an
+old OPEN/CLOSED statement as current. The August 22 scripted calibration gate remains passed.
+
 **Authored by the author, 2026-08-18. This is not an audit** — it is the ledger that should
 have existed from the first carried finding and did not.
 
@@ -533,6 +538,24 @@ zeroes the mgmt geomean early. Owner of the calibration loop: **integration + us
 harness.
 
 ---
+
+## Q. North-star recovery — 2026-09-14
+
+Investigation baseline: `952aeac`; implementation is on `build/north-star-foundation`,
+not yet merged to main. Original Phase 0–1 closure and calibration ruling stand within
+their scripted-state scope. The north star supplies the current dispatch order.
+
+| ID | Finding / evidence | Owner | Status and closing check |
+|---|---|---|---|
+| NS-001 | `app.round.db.make_engine` strips `+asyncpg` and needs undeclared psycopg2; driver construction raises before connecting | `recovery/runtime` | **BUILDING.** Fresh declared dependencies, `make check`, migration schema verified before seed, and six persisted rounds in disposable PostgreSQL; independent runtime audit required |
+| NS-002 | Inventory exact match omits strategies.yaml's no-space marker; 38 sites vs reported 37. Report shows only final-round BSC | `recovery/calibration-report` | **BUILDING.** Whitespace/header movement regressions, all-round perspective values/diagnostics, unchanged scoring digest; independent report audit required |
+| NS-003 | BSC base declares 0–1 (`engine/rollup.py:90`) but runner adds pack deltas directly (`round/runner.py:376`); Balanced R1 Financial -26.033068 | `recovery/scorecard-contract` | **OPEN; M0 gate.** Specify units and partial-financial metadata; independently review before implementation; regression proves ordinary event deltas remain on the declared scale |
+| NS-004 | Per-round estate mutation remains supplied by scripts (`runner.py:289`); adoption/decay/resistance producers remain unfinished | `recovery/decision-evolution` | **OPEN; M1 gate.** One initial estate plus six decision-only sheets through atomic state transitions, accounting, scoring and trace, including retry/failure/isolation checks |
+| NS-005 | README/BATTLECARD and Phase 2 assumptions lag shipped state; capture/auth gate ordering conflicts | supervisor; M2 handoff authors | **IN PROGRESS.** Current status and milestone sequence reconciled; M2 specs must revalidate actual table set/interfaces before dispatch |
+
+The NS labels identify findings, not new phase/packet numbers. Other open Phase-1 residues
+retain their original IDs and are assigned to concrete north-star milestones in its ownership
+table. No residual is closed by adding an owner or by the historical gate ruling alone.
 
 ## Standing rule
 

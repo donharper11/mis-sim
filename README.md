@@ -15,15 +15,16 @@ Realised Value  =  Technology Capability × Organisational Readiness × Manageme
 Multiplication, not addition — Laudon's complementary-assets argument made mechanical.
 Buy the ideal system, train nobody, realise almost nothing.
 
-**Status:** Phase 0 **closed** · Phase 1 in progress · 4 of 47 packets complete.
-FastAPI + React scaffold, two-tier design tokens, 19 reference mockups, and the casepack
-module with a populated `riverside_grocery` pack are on `main`.
+**Status (2026-09-14):** Phases 0–1 recorded closed: **11 of 47 original packets**.
+The headless scoring/event/round core and Riverside pack work with scripted estates;
+live decision-to-estate evolution and the student/instructor application remain unfinished.
+Recovery work is on a build branch and is not complete until independently audited.
 
 ---
 
-> **New to this project? Read [`BATTLECARD.md`](BATTLECARD.md) first.** Objective, the
-> engine, the decision hierarchy, current state, open blockers, and the plan end to end —
-> enough to pick up any packet and start.
+> **Start with the [implementation north star](design/08-implementation-north-star.md).**
+> It defines the current delivery sequence, evidence gates, and agent boundaries.
+> [`BATTLECARD.md`](BATTLECARD.md) is the concise status; the original packet list preserves scope.
 
 ## Read these first
 
@@ -60,6 +61,7 @@ screenshots/  evidence attached to playthroughs
 | 05 | `design/05-implementation-plan.md` | Module inventory, phases, gates, risks |
 | 06 | `design/06-plan-index.md` | **The authoritative packet list** — every packet, one page |
 | 07 | `design/07-decision-consequence-map.md` | **Every decision → its stakeholder preference, scoring path and consequence.** The three-path test, and the two classes that fail it |
+| 08 | `design/08-implementation-north-star.md` | Current delivery milestones, recovery ownership, dispatch boundaries and independent audit gates |
 
 ---
 
@@ -99,10 +101,10 @@ stakeholder layer adopted, market layer deferred.
 
 ## Open blockers
 
-See `BATTLECARD.md` §6. **No blocking findings open.** Carried work: six content gaps owned
-by 1.3 (`findings/content-coverage-2026-07-27.md`, plus CG-6 from the 1.1 audit) and six
-scoring factors with no UI capture point (`findings/field-coverage-2026-07-27.md`), which
-land in Phase 3/4.
+See the north star's recovery ownership table and `findings/OPEN-REGISTER.md`.
+The immediate gaps are reproducible PostgreSQL execution, complete calibration reporting,
+scorecard units, and a real decision-driven state transition. Existing training/adoption,
+financial, freshness and UI-capture deferrals have explicit destination milestones there.
 
 ---
 
@@ -110,16 +112,17 @@ land in Phase 3/4.
 
 ```
 0  Foundation             4 packets    CLOSED
-1  Engine                 7 packets    ← current. 1.1 built and audited; 1.2 ready
-   GATE: 6 rounds × 4 scripted teams, no dominant strategy
-2  Platform scaffolding   5 packets    specced
+1  Engine                 7 packets    CLOSED with accepted deferrals
+   Historical gate: 6 rounds × 4 scripted teams; passed 2026-08-22
+2  Platform scaffolding   5 packets    specs require reconciliation
 3  Student core loop      8 packets    direction only
 4  Student + AI          11 packets    direction only
 5  Instructor console     7 packets    direction only
 6  Second casepack        2 packets    direction only
 7  Pilot readiness        3 packets    direction only
                          ──
-                         47 · 4 complete
+                         47 · 11 recorded complete
 ```
 
-Authoritative packet list: `design/06-plan-index.md`.
+Original scope: `design/06-plan-index.md`. Current execution gates:
+`design/08-implementation-north-star.md`. Packet counts do not measure product readiness.

@@ -1,7 +1,9 @@
 # Recovery: complete calibration visibility
 
 Date: 2026-09-14. Tier: Light (read-only reporting; numerical outputs remain untouched).
-Owner: assigned reporting builder. Auditor: supervising agent, independently.
+Owner: assigned reporting builder. Auditor: fresh independent build reviewer, plus the
+supervisor's integration audit. The supervisor authored this spec; the report displays
+scoring factors, so the infrastructure author-audit exception does not apply.
 Base: planning commit named in dispatch. Read governance/quality/spec protocols, CONTRACTS,
 the north-star plan, 1.7 spec, and the source named below before implementation.
 

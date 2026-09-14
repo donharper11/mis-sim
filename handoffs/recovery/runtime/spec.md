@@ -1,7 +1,9 @@
 # Recovery: reproducible backend runtime
 
 Date: 2026-09-14. Tier: Light (dependency/runtime plumbing; no scoring contract change).
-Owner: assigned runtime builder. Auditor: supervising agent, independently.
+Owner: assigned runtime builder. Auditor: supervising agent, independently of the builder.
+Author-audit exception declared under `GOVERNANCE §6.1`: infrastructure only, no scoring
+factor or student-facing surface; the auditor reruns actual dependency/runtime checks.
 Base: the planning commit supplied in the dispatch. Prerequisite: read
 `design/08-implementation-north-star.md`, governance/quality/spec protocols and CONTRACTS.
 
@@ -41,8 +43,10 @@ whose name has a documented verification-only prefix; check that it has no user 
 before migrations. The script may fail clearly when prerequisites are absent; it must never
 skip PostgreSQL and report success. Document clean-environment install and verification commands.
 
-Exercise the existing Alembic migrations and six-round seed through PostgreSQL, then inspect
-persisted results for the expected six rounds and all 16 runtime tables' instance columns.
+Exercise the existing Alembic migrations through PostgreSQL. **Before any seed/create_all
+call**, assert the Alembic revision and all 16 expected runtime tables with non-null instance
+columns using actual database inspection. A seed must not conceal a missing-table migration
+by recreating it. Then run the six-round seed and inspect the six persisted round results.
 Migration up/down/up is permissible only inside that disposable database. Cleanup must target
 only resources created for this verification; leave shared services and databases untouched.
 
@@ -56,8 +60,9 @@ only resources created for this verification; leave shared services and database
 4. In that venv, constructing the synchronous engine with a nonconnecting dummy PostgreSQL
    URL succeeds; meaningful driver regression fails if the declared driver is omitted.
 5. Run `make check` in the fresh venv. No ambient site packages may supply missing dependencies.
-6. Run the disposable PostgreSQL path: migrations, seeded six-round results, actual database
-   reads, and cleanup. Record exact command, result counts, versions and exit code.
+6. Run the disposable PostgreSQL path: migrations, pre-seed schema assertions, seeded
+   six-round results, actual database reads, and cleanup. Prove a missing-table migration
+   cannot pass by being repaired by seed/create_all. Record commands, counts, versions and exit.
 7. Prove the verification refuses a non-disposable/nonempty/remote target before mutation.
 
 DoD reports preflight, changed files, validation, refusal checks, limitations, commit SHA and

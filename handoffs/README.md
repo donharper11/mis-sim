@@ -3,6 +3,11 @@
 Every unit of work is a **module**. Every module gets a folder here containing its spec,
 its playthrough script, and its filled Definition-of-Done table.
 
+**Current execution (2026-09-14):** read
+[`../design/08-implementation-north-star.md`](../design/08-implementation-north-star.md).
+Bounded recovery follow-ups live under `recovery/`; builders work in isolated worktrees,
+and the supervisor integrates only independently audited candidates.
+
 ```
 handoffs/
   _SPEC_TEMPLATE.md          copy this to start a spec
@@ -14,8 +19,8 @@ handoffs/
     notes.md                 optional: decisions taken, blockers reported
 ```
 
-Module IDs come from `design/05-implementation-plan.md §1` — `E1`…`E7`, `P1`…`P6`,
-`S0`…`S9`, `I1`…`I7`.
+Original packet IDs come from `design/06-plan-index.md` (`<phase>.<n>`). `E*`, `P*`,
+`S*`, `I*` are labels, not packet identifiers. Named recovery follow-ups preserve those IDs.
 
 ---
 
@@ -176,8 +181,8 @@ DO NOT FIX ANYTHING. You report. A builder fixes.
 
 ## Phase 0 module order
 
-Per `design/05-implementation-plan.md §5`. Nothing in Phase 1 starts until the Phase 0
-gate passes.
+Historical foundation record. Phase 0 closed at four packets; the north star governs
+current work and the original packet index governs the remaining product scope.
 
 | # | Module | Deliverable | Status |
 |---|---|---|---|
@@ -185,10 +190,5 @@ gate passes.
 | 0.2 | Repo scaffold, FastAPI + React skeleton, design tokens | | ✅ merged `d638939` |
 | 0.3 | Canonical token map + mockup pilot ×3 | `theme.css` two-tier · `mockups/` | ✅ merged |
 | 0.4 | Reference mockups ×7 | `mockups/` | ✅ merged |
-| 0.5 | Coverage gaps — Governance, policy, TCO checklist, capital request | `mockups/` | spec written |
-| 0.6 | Design-system component library | `frontend/src/components/design-system/` | blocked on 0.5 |
-
-> Phase 0 IDs are historical — `0.3`/`0.4`/`0.5` rather than `0.3`/`0.4`/`0.5`.
-> Not renamed because 0.3 is in flight. Phases 1–7 use clean sequential IDs.
-> Authoritative list: `design/06-plan-index.md`.
-
+The `0.5-coverage-gaps` folder is design input for Phase 3/4. The component library is
+packet **3.1**, still unbuilt. These are not additional completed foundation packets.

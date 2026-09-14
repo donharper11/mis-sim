@@ -3,6 +3,11 @@
 Covers all modules, the governance apparatus that constrains builder/auditor agents,
 the UX approach, and the verification protocol. Written 2026-07-26.
 
+**Execution update, 2026-09-14:** preserve this document's product rationale and inventory.
+The current delivery order, recovery work and acceptance gates are governed by
+[`08-implementation-north-star.md`](08-implementation-north-star.md). The historical
+phase-order and module-placement statements below predate that reconciliation.
+
 Companion docs: `01-mis_lite-harvest.md` · `02-traceability-matrix.md` ·
 `03-scoring-frame-options.md` · `04-decisions-g1-g6.md`
 

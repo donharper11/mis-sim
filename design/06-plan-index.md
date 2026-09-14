@@ -1,9 +1,10 @@
 # Plan Index — every work packet, one page
 
-The authoritative list. `design/05-implementation-plan.md` explains *why*; this says
-*what and in what order*.
+The original product packet inventory. `design/05-implementation-plan.md` explains *why*.
+[`08-implementation-north-star.md`](08-implementation-north-star.md) now governs the delivery
+order and recovery gates; packet IDs here remain stable for scope and history.
 
-**8 phases · 43 work packets.**
+**8 original phases · 47 work packets · 11 recorded closed, with accepted deferrals.**
 
 ## Numbering
 
@@ -13,14 +14,8 @@ The old module codes (`E4`, `S3`, `I1`, `A2`) survive only as **labels** so the
 implementation plan's §1 inventory stays readable. They are not identifiers. Folder names
 under `handoffs/` use the packet ID.
 
-> **Numbering corrected, 2026-07-26.** Phase 0 previously used `0.3`, `0.4`, `0.5` —
-> an artefact of reordering the mockups ahead of the component library. Now sequential:
-> `0.3` = token map + mockup pilot (formerly `0.3`), `0.4` = mockups ×7, `0.5` =
-> component library. Folder `handoffs/0.3-mockup-pilot/` renamed accordingly.
->
-> **"Phase" now means one thing.** Build steps inside a spec are **Steps**, not Phases —
-> `0.3` Step 1 is the token map; project Phase 1 is the engine (`1.1`–`1.7`). The two
-> were colliding.
+Phase 0 closed at `0.1`–`0.4`. The historical `0.5-coverage-gaps` folder is design input;
+the component library is `3.1`. Build steps inside a packet are **Steps**, not Phases.
 
 ---
 
@@ -50,21 +45,17 @@ fold these into it and say so in that spec's Spec Basis.** Until then they are o
 
 | Source | Item | Destination packet |
 |---|---|---|
-| `0.3-011` | **`IBM Plex Mono` is declared and never delivered.** `frontend/index.html:7` requests `IBM+Plex+Sans` only; `frontend/src/styles/theme.css:32` declares `--p-font-mono: 'IBM Plex Mono', 'Courier New', monospace`. No `@font-face`, no font file tracked, no font package in `package.json` — all three verified 2026-07-26. Body text is correct in production; **every monospace surface renders Courier New** (Liberation Mono on Linux). Only `/_dev/tokens` consumes the mono role today, so nothing student-facing is affected yet. **The spec must settle font delivery:** extend the CDN request to both faces, or self-host both and drop the third-party call — which for a BNBU cohort also removes a Google Fonts request from every student's browser. Hard-stops at Phase 7 pilot readiness | **component library** *(`0.5`)* |
+| `0.3-011` | **Resolved in the shipped foundation; rechecked 2026-09-14.** `theme.css` declares local `@font-face` for IBM Plex Sans and Mono, with tracked WOFF2 files under `frontend/src/styles/fonts/`. `frontend/index.html` no longer requests Google Fonts. Preserve that delivery in real components. | **3.1 component library** (preservation) |
 | `0.3-002`, `0.3-009` | Both were value drift hidden under a deprecation note reading "rename". The 89-row table in `handoffs/0.3-mockup-pilot/dod.md` is the **only** map from the old token names to the new ones, and this packet ports globalstrat components against it. Read the notes, not just the columns | **component library** |
-
-> **Numbering conflict, unresolved — flagged, not decided.** The correction block above states
-> Phase 0 keeps its historical IDs (`0.3` · `0.4` · `0.5`); the Phase 0 table immediately
-> below uses the clean scheme (`0.3` · `0.4` · `0.5`). `handoffs/README.md:159-162` and
-> **RESOLVED 2026-07-26.** The contradiction is gone: Phase 0 is now `0.1 · 0.2 · 0.3 ·
-> 0.4 · 0.5` everywhere — table, prose, README, spec, and folder name. Finding `0.3-012`
-> is closed.
 
 ---
 
 ## Phase 1 — Engine · 7 packets · **CLOSED** — gate passed 2026-08-22 (`b481e53`)
 
 *Headless. No UI. The highest-risk phase and the highest-value gate.*
+
+**Scope of closure:** the gate used authored per-round estates. The decision-to-estate
+path and several dynamic inputs remain deferred; north-star M0/M1 complete and verify them.
 
 | ID | Packet | Label |
 |---|---|---|
@@ -122,14 +113,17 @@ Governance · Challenges, plus the AI layer.
   Governance screen, the six information-policy switches, the TCO checklist and the
   capital request. Six scoring factors currently have no capture point anywhere
   (`findings/field-coverage-2026-07-27.md`). Built once here, wired, rather than twice.
-  Governance itself lands in Phase 4; the policy switches, checklist and capital request
-  land in 3.2, 3.5 and 3.2 respectively
+  Governance is scoped by 4.2; policy switches by 4.3; the checklist by 3.5; capital request
+  by 3.2. North-star M3 brings the necessary controls into the first playable loop and M4
+  verifies exhaustive field coverage.
 - the four cosmetic findings parked from 0.3 — `.button`, `.close`, dead white in the
   Cloud panel, split-rule prose. They become real components at **3.1**
 - the nineteen merged mockups as the visual reference
 
-**Gate:** the full-game playthrough completes six rounds through the UI, **and** a re-run
-of the field-coverage scan returns **zero** absences.
+**Reconciled gate:** north-star M3 proves the six-round browser loop with its necessary
+inputs; M4 requires the field-coverage scan to return **zero** absences after 4.1–4.6
+are complete. Governance/portfolio controls cannot remain in a future phase while this
+document claims every input is captured.
 
 ---
 
@@ -211,17 +205,6 @@ Phase 7  Pilot readiness        3
 
 ## Parallel tracks
 
-Phases are not strictly serial. Two tracks can run once 0.3 is dispatched, because they
-share no files:
-
-```
-TRACK A  visual    0.3 → review → 0.4 → 0.5
-TRACK B  engine    1.1 → review → 1.2 + 1.4 → 1.5 → 1.6 → 1.7 → GATE
-```
-
-Phase 2 needs neither and can start any time after 1.1 settles the schema shape.
-Phase 3 needs **both** tracks complete.
-
-**The binding constraint is review capacity, not agents.** Two tracks is the ceiling —
-beyond that the human gate becomes a rubber stamp, which converts this process into
-theatre.
+At most two implementation tracks run, each in an isolated worktree with a bounded
+handoff. Current dependencies, independent review requirements and integration ownership
+are in the north star. Historical Phase 0/1 dispatch diagrams are superseded.
