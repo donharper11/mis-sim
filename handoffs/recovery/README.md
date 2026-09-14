@@ -10,7 +10,7 @@ Planning commit: `d4652c1`; reviewed amendments/status reconciliation: `0a3f967`
 
 | Handoff | Builder / isolated branch | Reviewer | Current status |
 |---|---|---|---|
-| [`runtime/spec.md`](runtime/spec.md) | `runtime_builder`, `build/recovery-runtime`, initial base `d4652c1` | Supervisor (infrastructure author-audit exception declared) | Initial runtime proof passes; candidate returned for NS-006 dotenv regression under amendment `6a6c707` |
+| [`runtime/spec.md`](runtime/spec.md) | `runtime_builder`, `build/recovery-runtime`, initial base `d4652c1` | Supervisor (infrastructure author-audit exception declared) | Corrected candidate `ae634456` ACCEPTED and integrated after NS-006 rework; [audit](../../findings/recovery-runtime-2026-09-14.md) |
 | [`calibration-report/spec.md`](calibration-report/spec.md) | `report_builder`, `build/recovery-calibration-report`, initial base `d4652c1` | Fresh `report_auditor` plus supervisor integration audit | Candidate `f858b8a` independently ACCEPTED and integrated with shared reconciliation; [audit](../../findings/recovery-calibration-report-2026-09-14.md) |
 
 Each builder received only its named worktree/branch/base, mandatory documents, binding
