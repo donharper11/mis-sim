@@ -20,6 +20,7 @@ No scoring factors or casepack keys change. SQLite remains the fast suite's data
 
 - `backend/requirements.txt`
 - `backend/requirements-dev.txt` (new)
+- `backend/app/config.py` (audit amendment: dotenv extra-key handling only)
 - `backend/tests/test_runtime_dependencies.py` (new, only if needed to guard the actual driver path)
 - `backend/scripts/check_postgres_runtime.py` (new)
 - `docs/backend-development.md` (new)
@@ -27,6 +28,25 @@ No scoring factors or casepack keys change. SQLite remains the fast suite's data
 
 Request a scope amendment for any other file. Do not edit `.env`, Docker Compose, engine,
 round logic, pack values, Makefile, shared registers, or frontend. Do not push or deploy.
+
+### Audit amendment: shared dotenv configuration (2026-09-14)
+
+Supervisor audit of `9ed2b94` reproduced `Settings()` rejecting the `POSTGRES_*` keys
+shipped in `.env.example`, before the verifier can connect. The resulting uncaught
+validation exception also prints those dotenv values. A clean worktree without `.env`
+concealed this. The integration authority adds only `backend/app/config.py` to the
+allowlist: set `Settings.model_config` to ignore extra dotenv keys while retaining its
+existing `.env` source and every declared field/default. The verifier's explicit
+`DATABASE_URL` must continue to win over dotenv and configured defaults. Do not alter
+database adapters, auth settings, known-field validation, or dotenv files.
+
+Add a subprocess regression to the already allowed runtime test file so app configuration
+is freshly imported from a temporary working directory containing the shared dotenv
+shape. It must fail at `9ed2b94`, accept `POSTGRES_*` extras after the correction, construct
+the explicit nonconnecting PostgreSQL engine, and preserve validation failure for an
+invalid declared setting. Repeat the real disposable PostgreSQL verifier from that
+temporary directory, proving six results and no traceback/echo of the fixture secret.
+No real application credentials are needed for this proof. Re-audit the new candidate.
 
 ## Decisions
 
