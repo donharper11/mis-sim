@@ -40,11 +40,13 @@ status. All other fields across 24 scripted results and historical result rows a
 Main remains at the historical baseline. [Evidence and limits](handoffs/recovery/README.md).
 
 **M1 is underway.** Its bounded capacity/RTO/path packet passed a fresh build audit at
-`7dbb4c8` and is integrated. [Audit](findings/recovery-engine-inputs-2026-09-14.md).
-The master contract was returned with four owned findings: entity-access leakage,
-unaffordable game templates, repair-quote semantics and incomplete shared interfaces.
-Corrections are in authoring/review; dependent estate/organisation/service builders remain
-gated. [Master review](handoffs/recovery/decision-evolution/master-review-1.md).
+`7dbb4c8`, and its entity-access/verified-repair packet passed at `1729a89`; both are
+integrated on the recovery branch. [P0 audit](findings/recovery-engine-inputs-2026-09-14.md)
+and [P0b audit](findings/recovery-production-inputs-2026-09-15.md). The corrected master
+contract passed independent Heavy review at `bee3977`, closing the four returned findings.
+[Master review](handoffs/recovery/decision-evolution/master-review-2.md). P1 typed content
+and runtime validation is the next gated handoff; estate, organisation, consequences,
+persistence and games remain unbuilt.
 
 ## The important unfinished boundary
 

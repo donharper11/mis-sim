@@ -185,14 +185,16 @@ Financial remains explicitly partial. Shared contracts and NS-003 close with int
 See the [scorecard audit](../findings/recovery-scorecard-2026-09-14.md).
 
 **M1 underway; milestone unfinished.** P0's capability-capacity/RTO input seam and stable
-paths passed a fresh build audit at `7dbb4c8` and are integrated. Combined verification:
-**406 tests, all guards and 44 fixtures**, with complete historical24 payloads byte-identical
-across six hash seeds. [Build audit](../findings/recovery-engine-inputs-2026-09-14.md).
-The master contract `dcb59f5` was independently returned with four owned corrections;
-entity-access and verified-repair inputs need an additional reviewed seam before the
-typed-content, estate, organisation, consequences, persistence and game packets proceed.
-The [master review](../handoffs/recovery/decision-evolution/master-review-1.md) records
-the failures and closing checks. No dependent builder may resolve those choices silently.
+paths passed a fresh build audit at `7dbb4c8` and are integrated. P0b's scoped entity-access
+and verified-repair input seam passed independent build audit at `1729a89` and is integrated.
+Combined P0b verification is **604 tests, all guards and 44 fixtures**, with complete
+historical24 payloads byte-identical. [P0 audit](../findings/recovery-engine-inputs-2026-09-14.md)
+and [P0b audit](../findings/recovery-production-inputs-2026-09-15.md).
+The master contract corrections passed independent Heavy review at `bee3977`; MSR-001–004
+are closed at specification level. [Master review 1](../handoffs/recovery/decision-evolution/master-review-1.md)
+and [master review 2](../handoffs/recovery/decision-evolution/master-review-2.md).
+P1 is now the next gated implementation packet. P2–P6 remain blocked behind sequential
+audited packets; no dependent builder may resolve those interfaces silently.
 
 The independently reproduced
 [inventory](../handoffs/recovery/decision-evolution/inventory.md) identifies invalid-target

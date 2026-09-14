@@ -43,6 +43,22 @@ audit, then integrate that commit and check the combined tree. Findings and limi
 must be recorded before claiming completion. A failed candidate returns to its builder.
 Main and remote publication remain untouched during this bounded first wave.
 
+## Decision-evolution continuation — P0/P0b accepted
+
+M1 P0 capacity/RTO inputs were independently audited and integrated at `1079b612`.
+P0b entity-scoped access and verified repair inputs were independently audited and
+integrated at `1729a896`; the combined candidate passed 604 tests, all guards and 44
+fixtures, preserved the complete historical24 payload, and detected/restored 13 real
+source mutations. [P0b audit](../../findings/recovery-production-inputs-2026-09-15.md).
+The builder disclosed P0B-BLD-001, a preflight read-order deviation; its exact-base replay
+passed, but the replay does not erase the original procedural residue.
+
+The corrected M1 master transition contract passed independent Heavy review at `bee3977`;
+MSR-001–004 are closed at specification level. [Master review](decision-evolution/master-review-2.md).
+P1 is now the next dispatchable packet. No P1 builder has started, and M1 remains unfinished
+until the typed content, estate, organisation, consequences, persistence and decision-only
+game packets pass their independent audits.
+
 ## First-wave acceptance and cleanup
 
 - Reporting candidate `f858b8a` was independently accepted by `report_auditor`, then
