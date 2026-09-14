@@ -1,16 +1,19 @@
 # 1.7 — Calibration Harness · Build Spec
 
-**Authored under** `SPEC_PROTOCOL.md` v1.3 · **Author:** Claude · **Date:** 2026-07-26 · **Reconciled:** 2026-08-22 (v1.1)
+**Authored under** `SPEC_PROTOCOL.md` v1.3 · **Author:** Claude · **Date:** 2026-07-26 · **Reconciled:** 2026-09-14 (v1.2, supervisor reporting integration)
 **Phase:** 1 · **Depends on:** 1.1–1.6 (all built + merged) · **Blocks:** the Phase 1 gate, and therefore Phase 3
 **Gate tier:** **Heavy** (`GOVERNANCE §6.3`, ruled by the user 2026-08-22) — 1.7 exercises the
 whole scoring path (1.4 realised value, 1.5 signals/events, 1.6 round resolution) and its output is
 the evidence the **Phase-1 calibration gate** rests on. Full four-gate cycle: independent spec review
 **and** independent audit; the *calibration-review gate itself is the user's* (§5.4).
-**Independent spec review** *(SPEC_PROTOCOL §11, before dispatch)*: **pending** — this v1.1
-reconciliation returns for an independent consistency pass before a builder is dispatched.
+**Status:** the original Heavy packet and its human calibration gate closed in August 2026.
+The v1.2 reporting follow-up is independently audited at `f858b8a`; see
+`findings/recovery-calibration-report-2026-09-14.md`. Its bounded dispatch contract is
+`handoffs/recovery/calibration-report/spec.md`. This does not reopen or broaden the historical
+balance ruling. The decision-driven continuation gate is in `design/08-implementation-north-star.md`.
 
 > **The highest-value packet in the project.** Every number in this simulation is currently
-> a guess (`GOVERNANCE §4.9`; 37 `TODO: calibrate` marker sites, §12). This is where we find out
+> a guess (`GOVERNANCE §4.9`; 38 `TODO:calibrate` marker sites, §12). This is where we find out
 > whether the model produces genuine decisions or a dominant strategy — from a script, before a
 > single screen exists, instead of from thirty students in week 9. **The harness runs the maths
 > and prints the curves; a human reviews them and rules** (`design/05` §5 Phase-1 gate).
@@ -122,7 +125,7 @@ a raw engine key in the printed report is a finding. I3.
    `runner._rolled_scorecard` (`runner.py:376`), which takes the engine BSC (`score.py:96-99`) and
    applies fired-event scorecard deltas on top, so in an event-firing round the payload scorecard
    differs from the raw engine BSC (finding 1.7-SR-001).
-9. **1.7 resolves the `TODO: calibrate` inventory of §12** — 37 pack-YAML marker sites plus five
+9. **1.7 resolves the `TODO: calibrate` inventory of §12** — 38 pack-YAML marker sites plus five
    register-owned code/seed calibration items — so calibration is a checklist, not a hunt. Row 6 of
    the pre-flight (§7) prints the live list before any curve is interpreted: calibrating against
    placeholder values produces confident nonsense.
@@ -134,7 +137,7 @@ a raw engine key in the printed report is a finding. I3.
 | # | Question | Criteria | Reporting |
 |---|---|---|---|
 | **O1** | How is an archetype's per-round play expressed? | **Default: a Python seed builder per archetype, in the shape of `seeds/riverside_full.py`, authoring the post-decision estate + a `decision_line` sheet per round** (decision 6). The 2026-07-26 draft said "YAML decision sheets loaded through the same path a student's decisions take"; that path does not exist yet (live mutation is deferred, `1.6-A-002`), so a sheet alone cannot produce the estate. A builder mirrors exactly what `--full` already does — one command, clean DB, real engine — which is the strongest available "same path". If/when live mutation lands, archetypes migrate to sheet-only. | Record |
-| **O2** | Is a sensitivity sweep in scope for v1? | **Default: NO — optional, a follow-up.** The mandatory deliverable is the curves + decomposition + inventory (the Phase-1 gate inputs). A ±20% single-factor sweep is a useful *diagnostic* for the human review but is not what the gate requires, and it multiplies runs across 37 marker sites. If added, it is a `--sweep` flag printing swing per factor; it never gates. | Record |
+| **O2** | Is a sensitivity sweep in scope for v1? | **Default: NO — optional, a follow-up.** The mandatory deliverable is the curves + decomposition + inventory (the Phase-1 gate inputs). A ±20% single-factor sweep is a useful *diagnostic* for the human review but is not what the gate requires, and it multiplies runs across the live marker inventory. If added, it is a `--sweep` flag printing swing per factor; it never gates. | Record |
 | **O3** | Should the harness assert, or only report? | **RULED (mandate, 2026-08-22): report only.** The harness prints curves and optional diagnostics; it does not assert a dominance gate or exit non-zero on one (decision 5). The 2026-07-26 draft's "assert on the three gate conditions so it can fail a build" is reversed — the judgment is the authority's (§5.4). | Record |
 
 ---
@@ -173,7 +176,7 @@ are **placeholders**, not pinned — the harness prints whatever the engine comp
 $ python -m app.calibrate backend/packs/riverside_grocery
 
   riverside_grocery 1.0.0 · 6 rounds · 4 archetypes
-  (37 TODO: calibrate marker sites live — see the inventory before trusting any curve)
+  (38 TODO:calibrate marker sites live — see the inventory before trusting any curve)
 
   REALISED VALUE (firm, strategy-weighted)      [payload.firm_score]
              R1     R2     R3     R4     R5     R6
@@ -204,6 +207,15 @@ Every value is read from `RoundResult.payload` (`runner.py:349-363`): `firm_scor
 `scorecard.{financial,customer,internal_process,learning_growth}`, `capabilities[].terms`/`realised`.
 The `--full` describe helper (`demo._describe_full`, `demo.py:117`) is the existing precedent for
 printing computed round payloads — this reuses that pattern across four archetypes.
+
+**v1.2 report requirements:** keep the final-round comparison and add a full round table for
+each of Financial, Customer, Internal Process, and Learning & Growth. Read the persisted
+values directly, with no scoring, clipping or rescaling. Print informational diagnostics for
+each nonfinite or outside-0–1 perspective, including archetype, round, perspective and raw
+value. Anomalies do not become a balance verdict or a new exit-code gate. Equal final values
+use `=` in the ranking; only unequal values use `>`. State the declared strategies actually
+exercised and that these curves do not establish coverage or balance of every strategy.
+The example above is abbreviated; all four round tables and diagnostics are required.
 
 ### 5.3 Diagnostics — computed, never asserted
 
@@ -288,7 +300,7 @@ human (decision 5, §11). Diagnostics may still compute those numbers (§5.3); t
 | 3 | Riverside validates clean | `[A]` | `cd backend && PYTHONPATH=. python3 -m app.casepack.validate backend/packs/riverside_grocery` (or the module's actual entrypoint) | exit 0, 0 errors |
 | 4 | Riverside has all 4 strategies with weights | `[V]` | `grep -c "^- key:" backend/packs/riverside_grocery/strategies.yaml` | 4 |
 | 5 | `RoundResult` carries the decomposition the curves need | `[V]` | `grep -n "capabilities\|scorecard\|firm_score" backend/app/round/runner.py` | payload carries `capabilities` (from `final_score.record()`, `runner.py:351`), `scorecard` (:346), `firm_score` (:362); `RoundResult.payload` JSON (`models.py:300`) |
-| 6 | **Pack `TODO: calibrate` list — the harness runs on stubs until it is resolved** | `[V]` | `grep -rn "TODO: calibrate" backend/packs/riverside_grocery/ --include=*.yaml \| grep -v "watch_rules.yaml:7:" \| wc -l` | **37 marker sites** (34 in `PROVENANCE.md §7` + 3 outage-schema, §12). **If any remain, report the list before interpreting any curve.** |
+| 6 | **Live calibration inventory includes whitespace variants and follows the convention comment when moved** | `[V]` | From `backend/`: `PYTHONPATH=. python -m pytest tests/test_calibration_reporting.py -q`; live scanner command in §12.1 | **38 marker sites**; no-space strategy marker included; explanatory header excluded by content, not fixed line. List unresolved values before interpreting curves. |
 | 7 | `firm_score` is the strategy-weighted realised (the "realised" curve) | `[V]` | `grep -n "def firm_score" backend/app/engine/rollup.py` | `firm_score(pack, declared_strategy, realised) = Σ realised(c) × weight` (`rollup.py:35-36`) |
 | 8 | The four BSC dims exist on the score record | `[V]` | `grep -n "financial\|customer\|internal_process\|learning_growth" backend/app/engine/score.py` | all four in `record()["balanced_scorecard"]` (`score.py:96-99`) |
 | 9 | The `--full` seed builder is the archetype template | `[V]` | `grep -n "def run_full_game\|_seed_round_estate\|_decision_lines_for_round" backend/seeds/riverside_full.py` | present — the per-round `(estate + sheet)` shape decision 6/O1 mirrors |
@@ -363,6 +375,11 @@ without understanding why it failed.** A tuned-to-pass model looks finished and 
 
 ## 11. Reconciliation changelog
 
+- **v1.2** (2026-09-14) — report-only recovery: 38 live marker sites including no-space
+  markers; convention-header exclusion follows its text; register totals derive from the
+  register list; all four BSC perspectives have round tables and raw scale diagnostics;
+  ties and strategy scope are explicit. Score payloads and pack bytes are unchanged.
+  Independent audit: `findings/recovery-calibration-report-2026-09-14.md`.
 - **v1.1** (2026-08-22) — **bounded reconciliation** of the 2026-07-26 draft against the built,
   merged 1.4/1.5/1.6 (`GOVERNANCE §6.3`: 1.7 confirmed **Heavy**). No scope expansion. Three draft
   assumptions were verified against the working tree and **corrected**:
@@ -405,12 +422,19 @@ Every value 1.7 is expected to move, with where it lives and what it affects. **
 these knowingly; do not interpret a curve while a load-bearing one is a placeholder** (pre-flight
 row 6).
 
-### 12.1 Pack-YAML `TODO: calibrate` marker sites — 37
+### 12.1 Pack-YAML `TODO:calibrate` marker sites — 38
 
-Verified live: `grep -rn "TODO: calibrate" backend/packs/riverside_grocery/ --include=*.yaml | grep -v
-"watch_rules.yaml:7:"` → 37 sites (the excluded `watch_rules.yaml:7` is the convention header, not a
-marker). 34 are tabulated in `PROVENANCE.md §7`; the **3 outage-schema sites** below were added by
-the 1.5 engine build (`OPEN-REGISTER §M`, CC-D3/CC-D4) after that table and are additional.
+Verified 2026-09-14: 38 marker lines. Match `TODO:[ \t]*calibrate` in pack YAML and exclude
+the explanatory convention comment by its text, wherever it moves. A fixed line-number
+exclusion or exact spaced substring misses valid sites. From `backend/`:
+
+```bash
+PYTHONPATH=. python -c 'from app.calibrate.inventory import scan, total_sites; print(total_sites(scan("packs/riverside_grocery")))'
+```
+
+Expected: `38`. The historical provenance table has 34, the outage-schema additions have
+three, and the strategy maintenance-floor marker adds one. The report scans live content;
+tests independently exercise whitespace variants and a moved header.
 
 | File | Sites | What is unjustified | Affects |
 |---|---|---|---|
@@ -426,6 +450,7 @@ the 1.5 engine build (`OPEN-REGISTER §M`, CC-D3/CC-D4) after that table and are
 | `preferences/platform.yaml` | 1 | the `weight` column throughout | stakeholder view weighting |
 | `preferences/policies.yaml` | 1 | both `weight` columns | policy-preference weighting (Mgmt) |
 | `preferences/services.yaml` | 1 | both `weight` columns | service-tier preference weighting |
+| `strategies.yaml` | 1 | cost-leadership `maintenance_floor_pct` remains a calibrated first estimate | maintenance discipline and the Balanced/Overspender comparison |
 
 ### 12.2 Register-owned calibration items 1.7 owns that are **not** pack-YAML markers
 
@@ -437,8 +462,9 @@ the 1.5 engine build (`OPEN-REGISTER §M`, CC-D3/CC-D4) after that table and are
 | `1.6-A-004` | `people_affected` derivation from the catalog (still hand-authored in the seed) | `seeds/riverside_r3.py` + `catalog.yaml` `people_affected.count` | Org training denominator (`organisation.py`); reconciliation guard prevents drift meanwhile |
 | `J2` | `preferences/training.yaml` provenance overstates the harvest; 8 change-mgmt options + 20 fit cells never authored | `preferences/training.yaml` + `PROVENANCE.md §5a` | training-preference content; the provenance claim |
 
-**Count for the report:** 37 pack-YAML marker sites + 5 register-owned items = the 1.7 calibration
-checklist. Note many marker sites cover *multiple* numbers ("both weight columns throughout", "the
+**Current count:** 38 pack-YAML marker sites + 5 register-owned items. Both printed totals
+are derived from the live scan and `REGISTER_ITEMS`, rather than fixed constants. This is
+the calibration checklist. Note many marker sites cover *multiple* numbers ("both weight columns throughout", "the
 whole band", "every `config_tiers` multiplier") — the count is of marker *sites*, not of individual
 figures, which is larger.
 

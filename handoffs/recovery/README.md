@@ -10,8 +10,8 @@ Planning commit: `d4652c1`; reviewed amendments/status reconciliation: `0a3f967`
 
 | Handoff | Builder / isolated branch | Reviewer | Current status |
 |---|---|---|---|
-| [`runtime/spec.md`](runtime/spec.md) | `runtime_builder`, `build/recovery-runtime`, initial base `d4652c1` | Supervisor (infrastructure author-audit exception declared) | Building; no integration claim |
-| [`calibration-report/spec.md`](calibration-report/spec.md) | `report_builder`, `build/recovery-calibration-report`, initial base `d4652c1` | Fresh `plan_reviewer` build audit plus supervisor integration audit | Building; no integration claim |
+| [`runtime/spec.md`](runtime/spec.md) | `runtime_builder`, `build/recovery-runtime`, initial base `d4652c1` | Supervisor (infrastructure author-audit exception declared) | Initial runtime proof passes; candidate returned for NS-006 dotenv regression under amendment `6a6c707` |
+| [`calibration-report/spec.md`](calibration-report/spec.md) | `report_builder`, `build/recovery-calibration-report`, initial base `d4652c1` | Fresh `report_auditor` plus supervisor integration audit | Candidate `f858b8a` independently ACCEPTED and integrated with shared reconciliation; [audit](../../findings/recovery-calibration-report-2026-09-14.md) |
 
 Each builder received only its named worktree/branch/base, mandatory documents, binding
 handoff allowlist/preflight/DoD, no-push/no-deploy/no-main-merge rule, and the instruction to

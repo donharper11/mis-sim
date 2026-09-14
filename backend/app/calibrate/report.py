@@ -12,6 +12,8 @@ calibration authority's (spec section 5.4).
 
 from __future__ import annotations
 
+import math
+
 from app.casepack.models import Casepack
 
 from app.calibrate import inventory
@@ -66,6 +68,7 @@ def _header(pack: Casepack, archetypes, rounds: int) -> list[str]:
 def _inventory_section(pack_dir, debug: bool) -> list[str]:
     markers = inventory.scan(pack_dir)
     total = inventory.total_sites(markers)
+    register_count = len(inventory.REGISTER_ITEMS)
     lines = [
         "",
         f"  CALIBRATION CHECKLIST -- {total} TODO:calibrate marker sites live in the pack",
@@ -78,12 +81,12 @@ def _inventory_section(pack_dir, debug: bool) -> list[str]:
             for lineno, text in fm.sites:
                 lines.append(f"        L{lineno}: {text}")
     lines.append("")
-    lines.append("  plus 5 register-owned calibration items (not pack-YAML markers):")
+    lines.append(f"  plus {register_count} register-owned calibration items (not pack-YAML markers):")
     for code, what, affects in inventory.REGISTER_ITEMS:
         lines.append(f"    {code:<12} {what}")
         if debug:
             lines.append(f"                 affects: {affects}")
-    lines.append(f"  = {total} marker sites + 5 register items = the 1.7 calibration checklist")
+    lines.append(f"  = {total} marker sites + {register_count} register items = the 1.7 calibration checklist")
     return lines
 
 
@@ -103,6 +106,41 @@ def _scorecard_section(pack, archetypes, results, rounds: int) -> list[str]:
         sc = results[a.key][-1]["scorecard"]
         cells = [f"{sc[d]:.3f}" for d in _BSC_ORDER]
         lines.append(_fmt_row(a.label, cells, width=18))
+    return lines
+
+
+def _scorecard_curves_section(archetypes, results, rounds: int) -> list[str]:
+    lines: list[str] = []
+    for perspective in _BSC_ORDER:
+        lines += [
+            "",
+            f"  BALANCED SCORECARD -- {_BSC_LABELS[perspective]} by round   "
+            "[from RoundResult.scorecard]",
+            _fmt_row("", [f"R{r}" for r in range(1, rounds + 1)]),
+        ]
+        for a in archetypes:
+            cells = [f"{p['scorecard'][perspective]:.3f}" for p in results[a.key]]
+            lines.append(_fmt_row(a.label, cells))
+    return lines
+
+
+def _score_scale_diagnostics_section(archetypes, results) -> list[str]:
+    lines = [
+        "",
+        "  SCORE-SCALE DIAGNOSTICS REQUIRING REVIEW (informational -- not a balance verdict)",
+        "  Perspective values are checked against 0–1; source values are retained unchanged.",
+    ]
+    diagnostics = []
+    for a in archetypes:
+        for payload in results[a.key]:
+            for perspective in _BSC_ORDER:
+                value = payload["scorecard"][perspective]
+                if not math.isfinite(value) or value < 0 or value > 1:
+                    diagnostics.append(
+                        f"    {a.label} | R{payload['round']} | {_BSC_LABELS[perspective]} "
+                        f"| raw value {value!r}"
+                    )
+    lines += diagnostics or ["    All reported perspective values are finite and within 0–1."]
     return lines
 
 
@@ -143,7 +181,11 @@ def _diagnostics_section(pack, archetypes, results, rounds: int) -> list[str]:
         )
 
     ranked = sorted(archetypes, key=lambda a: finals[a.key], reverse=True)
-    lines.append(f"    rank order at R{rounds}: " + " > ".join(a.label for a in ranked))
+    ranking = ranked[0].label
+    for previous, current in zip(ranked, ranked[1:]):
+        separator = " = " if finals[previous.key] == finals[current.key] else " > "
+        ranking += separator + current.label
+    lines.append(f"    rank order at R{rounds}: " + ranking)
     return lines
 
 
@@ -156,17 +198,22 @@ def render(pack: Casepack, pack_dir, archetypes, results, *, debug: bool = False
     lines += _inventory_section(pack_dir, debug)
     lines += _realised_section(pack, archetypes, results, rounds)
     lines += _scorecard_section(pack, archetypes, results, rounds)
+    lines += _scorecard_curves_section(archetypes, results, rounds)
+    lines += _score_scale_diagnostics_section(archetypes, results)
     lines += _decomposition_section(pack, archetypes, results, rounds)
     lines += _diagnostics_section(pack, archetypes, results, rounds)
     lines += [
         "",
+        "  Scope: these archetype curves cover only their listed declared strategies.",
+        "  No claim is made that all strategies were exercised or that strategy balance is proven.",
         "  Declared strategy per archetype:",
     ]
     for a in archetypes:
         lines.append(f"    {a.label:<18} {_strategy_label(pack, a.strategy)}")
     lines += [
         "",
-        "  -> reviewed by the calibration authority (spec section 5.4). No exit-code judgment.",
+        "  -> For review by the calibration authority (spec section 5.4). No exit-code judgment.",
+        "  The historical human calibration gate remains unchanged.",
         "",
     ]
     if debug:
