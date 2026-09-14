@@ -121,3 +121,49 @@ Explicit runtime supply/driver/throughput defaults require unit/rationale/calibr
 Affordability must include projected pending liabilities, rather than admitting unlimited
 zero-capex hiring before arrival. Existing price/weight files and historical fixtures remain
 protected except for an independently reviewed, explicitly necessary compatibility seam.
+
+## Final accounting, action and content rulings for master review
+
+**M1-R11 — Initial integrations.** Use the actual receiver requirements: POS product data
+feeds order management; order-management order data feeds accounting. Each basic connection
+has NEW provisional recurring cost $1,000 and load .2 FTE (advanced $2,000/.1;
+vendor-managed $3,000/.05), in addition to the existing one-off tier price. Including the
+two inherited connections, initial recurring cost is **$78,200** and staff load **3.7**.
+This supersedes any draft that treated $76,200 as the complete initial cost. No integration
+may fabricate an owned entity or an undeclared receiver dependency. The missing customer-data
+role for marketing_sales remains a named M4 content limitation. M1's all-strategy gate proves
+executable, deterministic games and honest evidence, not perfect coverage or balance.
+
+**M1-R12 — Action timing.** Emit clearing-action records only when an effect becomes live,
+retaining the original commitment's locked round. Pending, cancelled and ineffective/no-op
+choices create no clearing action. Actual historical timing and the original signal watch
+still determine responsiveness; arrival does not rewrite the commitment clock.
+
+**M1-R13 — Bounded solvency.** No invented funding beyond the final game round. Reject a new
+procurement, replacement or hire whose arrival would exceed that round with
+`arrival_after_game_end`. Pause/continue cannot create a back door to an unsupported late
+arrival. Forecast all committed live and pending operating costs through the final round,
+including the arrival-round charge. Sunk cancellation/abandonment costs remain. A forecast
+is not an infinite-horizon solvency claim. Empty and liability-reducing choices remain
+resolvable after unavoidable deficits. A later-horizon model belongs to M4.
+
+**M1-R14 — Money, debt and TCO.** Approve the proposed explicit one-off capital versus
+recurring operating categories, with integer dollars and Decimal HALF_UP rounding. Technical
+debt records one frozen positive cheapest-fix estimate per signal episode, settles when the
+actual cause stops raising, and never creates a second cash expense/refund. Fired episode
+history stays immutable even when its monetary estimate settles. Debt ratios use outstanding
+debt and cumulative real attributed capital. Approve the concrete provisional TCO category
+estimators in the master contract: forecast frozen at commitment, actuals from unique real
+asset-attributed cost entries, overhead shown separately, and partial observations clearly
+labeled. Selected decoys can distort a forecast but never fabricate expenditure. Full
+valuation, ROI and Financial scoring remain M4.
+
+**M1-R15 — Preference scope.** The ten explicitly enumerated stakeholder rows in the master
+contract are NEW provisional interpretations of source interests. Every original preference
+leaf needs a validated live-rule or explicit context/M4 disposition. Unsupported raw metrics
+and ambiguous item overrides are not silently neutral votes or guessed numeric conversions.
+Existing policy preference scoring remains separate. No builder may select weights, caring
+sets, inferred metrics or fallback mappings.
+
+These rulings settle author choices; independent review still must verify complete field
+shapes, source references, null/error paths, formulas, examples and acceptance coverage.
