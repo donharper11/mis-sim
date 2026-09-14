@@ -16,7 +16,7 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Iterable
 
-from app.engine.state import ArchNode, TeamState
+from app.engine.state import ArchNode, EntityAccess, TeamState
 
 
 def _adjacency(state: TeamState, exclude: str | None = None) -> dict[str, set[str]]:
@@ -65,7 +65,7 @@ def _level_ok(owned_level: str, required_level: str, order: list[str]) -> bool:
     return order.index(owned_level) >= order.index(required_level)
 
 
-def owner_nodes(
+def _native_owner_nodes(
     state: TeamState,
     capability: str,
     entity: str,
@@ -82,20 +82,105 @@ def owner_nodes(
     return out
 
 
+def valid_entity_access(
+    state: TeamState, capability: str, entity: str, required_level: str, level_order: list[str]
+) -> tuple[EntityAccess, ...]:
+    """Live exact grants, using original physical ownership and receiver membership."""
+    live: set[EntityAccess] = set()
+    for grant in state.entity_access or ():
+        if grant.capability != capability or grant.entity != entity:
+            continue
+        source, receiver = state.node(grant.source), state.node(grant.receiver)
+        if source is None or receiver is None or capability not in receiver.serves:
+            continue
+        if not any(
+            e == entity and _level_ok(level, required_level, level_order)
+            for e, level in source.owns_entities
+        ):
+            continue
+        if any(
+            e.kind == "integration" and {e.src, e.dst} == {source.key, receiver.key}
+            for e in state.edges
+        ):
+            live.add(grant)
+    return tuple(sorted(live, key=lambda g: (g.connection, g.source, g.receiver, g.capability, g.entity)))
+
+
+def owner_nodes(
+    state: TeamState, capability: str, entity: str, required_level: str, level_order: list[str]
+) -> list[str]:
+    """Original serving owners plus valid grant sources; grants never create owners."""
+    native = _native_owner_nodes(state, capability, entity, required_level, level_order)
+    if state.entity_access is None:
+        return native
+    return sorted(set(native) | {
+        g.source for g in valid_entity_access(state, capability, entity, required_level, level_order)
+    })
+
+
+def _edge_identity(src: str, dst: str, kind: str) -> tuple[str, str, str]:
+    return min(src, dst), max(src, dst), kind
+
+
+def _validate_exclusions(exclude_nodes: frozenset[str], exclude_edges: frozenset[tuple[str, str, str]]) -> None:
+    if type(exclude_nodes) is not frozenset or type(exclude_edges) is not frozenset:
+        raise ValueError("exclusions must be frozensets")
+    if any(not isinstance(n, str) or not n.strip() for n in exclude_nodes):
+        raise ValueError("excluded nodes must be nonempty strings")
+    for edge in exclude_edges:
+        if (
+            type(edge) is not tuple or len(edge) != 3
+            or any(not isinstance(v, str) or not v.strip() for v in edge)
+            or edge[0] >= edge[1] or edge[2] not in ("network", "integration", "failover")
+        ):
+            raise ValueError("excluded edges must be canonical (source, destination, kind) tuples")
+
+
+def _pruned_adjacency(
+    state: TeamState, exclude_nodes: frozenset[str], exclude_edges: frozenset[tuple[str, str, str]]
+) -> dict[str, set[str]]:
+    adj: dict[str, set[str]] = {n.key: set() for n in state.nodes if n.key not in exclude_nodes}
+    for e in state.edges:
+        if e.src in adj and e.dst in adj and _edge_identity(e.src, e.dst, e.kind) not in exclude_edges:
+            adj[e.src].add(e.dst)
+            adj[e.dst].add(e.src)
+    return adj
+
+
 def serving_path(
     state: TeamState,
     capability: str,
     primary_entity: str,
     required_level: str,
     level_order: list[str],
+    *,
+    exclude_nodes: frozenset[str] = frozenset(),
+    exclude_edges: frozenset[tuple[str, str, str]] = frozenset(),
 ) -> list[str] | None:
-    """Graph walk from any client_access serving node to a node owning the
-    capability's primary entity at the required level (spec section 5.1)."""
+    """Shortest stable native or mandatory-receiver route after physical exclusions."""
+    _validate_exclusions(exclude_nodes, exclude_edges)
     sources = [n.key for n in state.nodes_serving(capability) if n.is_client_access]
-    targets = set(owner_nodes(state, capability, primary_entity, required_level, level_order))
-    if not sources or not targets:
-        return None
-    return _bfs_path(_adjacency(state), sources, targets)
+    targets = set(_native_owner_nodes(state, capability, primary_entity, required_level, level_order))
+    if state.entity_access is None and not exclude_nodes and not exclude_edges:
+        if not sources or not targets:
+            return None
+        return _bfs_path(_adjacency(state), sources, targets)
+    native = _bfs_path(_pruned_adjacency(state, exclude_nodes, exclude_edges), sources, targets)
+    if state.entity_access is None:
+        return native
+    candidates = [native] if native is not None else []
+    for grant in valid_entity_access(state, capability, primary_entity, required_level, level_order):
+        if grant.source in exclude_nodes or grant.receiver in exclude_nodes:
+            continue
+        if _edge_identity(grant.source, grant.receiver, "integration") in exclude_edges:
+            continue
+        prefix = _bfs_path(
+            _pruned_adjacency(state, exclude_nodes | frozenset({grant.source}), exclude_edges),
+            sources, {grant.receiver},
+        )
+        if prefix is not None:
+            candidates.append(prefix + [grant.source])
+    return min(candidates, key=lambda path: (len(path), tuple(path))) if candidates else None
 
 
 def path_reliability(state: TeamState, path: list[str]) -> float:
@@ -192,6 +277,16 @@ def spofs_on_path(state: TeamState, path: list[str]) -> list[str]:
     return [k for k in path[1:-1] if k in aps and k in interior]
 
 
+def serving_spofs(
+    state: TeamState, capability: str, entity: str, level: str, level_order: list[str], path: list[str]
+) -> list[str]:
+    """Interior physical nodes whose loss leaves no valid serving alternative."""
+    return [
+        key for key in path[1:-1]
+        if serving_path(state, capability, entity, level, level_order, exclude_nodes=frozenset({key})) is None
+    ]
+
+
 def blast_radius(state: TeamState, node_key: str, capabilities: list[str], primary: dict[str, tuple[str, str, list[str]]]) -> list[str]:
     """Capabilities that lose their serving path when `node_key` is removed.
 
@@ -200,6 +295,13 @@ def blast_radius(state: TeamState, node_key: str, capabilities: list[str], prima
     hit: list[str] = []
     for cap in capabilities:
         entity, level, order = primary[cap]
+        if state.entity_access is not None:
+            if (
+                serving_path(state, cap, entity, level, order) is not None
+                and serving_path(state, cap, entity, level, order, exclude_nodes=frozenset({node_key})) is None
+            ):
+                hit.append(cap)
+            continue
         sources = [n.key for n in state.nodes_serving(cap) if n.is_client_access and n.key != node_key]
         targets = set(
             k for k in owner_nodes(state, cap, entity, level, order) if k != node_key

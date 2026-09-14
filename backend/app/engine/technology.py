@@ -5,7 +5,7 @@ tech(c) = geomean(coverage, capacity, reliability, data_adequacy, currency)
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from app.casepack.models import Casepack
@@ -62,6 +62,10 @@ def _data_adequacy(pack: Casepack, state: TeamState, cap_key: str) -> tuple[floa
         if ok:
             satisfied += 1
         detail["entities"][entity_key] = {"required_level": level, "owned_by": owners}
+        if state.entity_access is not None:
+            detail["entities"][entity_key]["access_via"] = [
+                asdict(grant) for grant in graph.valid_entity_access(state, cap_key, entity_key, level, order)
+            ]
         if len(owners) >= 2:
             # Owned by two-plus nodes: penalise unless every pair is integrated.
             integrated = all(
@@ -110,7 +114,10 @@ def technology(pack: Casepack, state: TeamState, cap_key: str) -> TechResult:
         bottleneck = graph.bottleneck_capacity(state, path, cap_key)
         capacity = clamp((bottleneck / demand) if bottleneck is not None else 1.0)
         reliability = graph.path_reliability(state, path)
-        spofs = graph.spofs_on_path(state, path)
+        spofs = (
+            graph.spofs_on_path(state, path) if state.entity_access is None
+            else graph.serving_spofs(state, cap_key, primary_entity, primary_level, primary_order, path)
+        )
         evidence["serving_path"] = path
         evidence["capacity"] = {"bottleneck": bottleneck, "demand": demand}
 

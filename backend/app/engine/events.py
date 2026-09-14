@@ -183,6 +183,18 @@ def failover_exists(state: TeamState, failed: str, capability: str, pack: Casepa
     a `failover`-kind edge (contract-spec section 8.2) -- redundancy is what saved it, not
     merely the bare existence of some surviving path."""
     entity, level, order = catalog.primary_entity(pack, capability)
+    if state.entity_access is not None:
+        excluded = frozenset({failed})
+        if graph.serving_path(state, capability, entity, level, order, exclude_nodes=excluded) is None:
+            return False
+        for edge in state.edges:
+            if edge.kind == "failover" and edge.src != failed and edge.dst != failed:
+                if graph.serving_path(
+                    state, capability, entity, level, order, exclude_nodes=excluded,
+                    exclude_edges=frozenset({graph._edge_identity(edge.src, edge.dst, edge.kind)}),
+                ) is None:
+                    return True
+        return False
     sources = [n.key for n in state.nodes_serving(capability) if n.is_client_access and n.key != failed]
     targets = {k for k in graph.owner_nodes(state, capability, entity, level, order) if k != failed}
     if not sources or not targets:

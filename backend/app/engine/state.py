@@ -96,6 +96,77 @@ class ArchEdge:
     kind: EdgeKind = "network"
 
 
+def _validate_key(value: str, name: str) -> None:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{name} must be a nonempty string")
+
+
+def _validate_count(value: int, name: str, *, positive: bool) -> None:
+    if type(value) is not int:
+        raise ValueError(f"{name} must be an integer")
+    _validate_numeric_input(value, name, positive=positive)
+
+
+def _record_tuple(values, record_type: type, name: str) -> tuple:
+    """Copy the two supported containers; never retain a caller-owned list."""
+    if type(values) not in (tuple, list) or any(type(v) is not record_type for v in values):
+        raise ValueError(f"{name} must be a tuple or list of {record_type.__name__}")
+    return tuple(values)
+
+
+@dataclass(frozen=True)
+class EntityAccess:
+    """One producer-authorized, one-hop grant of original source-owned data."""
+
+    connection: str
+    source: str
+    receiver: str
+    capability: str
+    entity: str
+
+    def __post_init__(self) -> None:
+        for name in ("connection", "source", "receiver", "capability", "entity"):
+            _validate_key(getattr(self, name), name)
+        if self.source == self.receiver:
+            raise ValueError("entity access source and receiver must differ")
+
+
+@dataclass(frozen=True)
+class RepairCandidate:
+    """Compact P4 attestation of a verified, credit-eligible repair witness."""
+
+    candidate_key: str
+    capital_cost: int
+    effective_round: int
+    affordable: bool
+
+    def __post_init__(self) -> None:
+        _validate_key(self.candidate_key, "candidate_key")
+        if len(self.candidate_key) != 64 or any(c not in "0123456789abcdef" for c in self.candidate_key):
+            raise ValueError("candidate_key must be a lowercase SHA256 hex digest")
+        _validate_count(self.capital_cost, "capital_cost", positive=False)
+        _validate_count(self.effective_round, "effective_round", positive=True)
+        if type(self.affordable) is not bool:
+            raise ValueError("affordable must be a bool")
+
+
+@dataclass(frozen=True)
+class RepairAssessment:
+    """One watch's bounded assessment; empty candidates means unassessed."""
+
+    signal: str
+    checked_round: int
+    candidates: tuple[RepairCandidate, ...]
+
+    def __post_init__(self) -> None:
+        _validate_key(self.signal, "signal")
+        _validate_count(self.checked_round, "checked_round", positive=True)
+        copied = _record_tuple(self.candidates, RepairCandidate, "candidates")
+        if len({c.candidate_key for c in copied}) != len(copied):
+            raise ValueError("duplicate repair candidate_key")
+        object.__setattr__(self, "candidates", copied)
+
+
 @dataclass(frozen=True)
 class DeploymentState:
     """A catalog item placed into an org unit, with its rollout state.
@@ -256,6 +327,22 @@ class TeamState:
     #: did not supply it; the `debt_above` precondition then raises `MissingRoundInputError`
     #: rather than silently reading FALSE. Unreachable in v1 (no reference-pack event uses it).
     debt_ratio_by_capability: dict[str, float] | None = None
+    #: None preserves historical ownership/routes; a tuple enables scoped production access.
+    entity_access: tuple[EntityAccess, ...] | None = None
+    #: P4 supplies complete current-round assessments; None retains generic legacy quotes.
+    repair_assessments: tuple[RepairAssessment, ...] | None = None
+
+    def __post_init__(self) -> None:
+        if self.entity_access is not None:
+            copied = _record_tuple(self.entity_access, EntityAccess, "entity_access")
+            if len(set(copied)) != len(copied):
+                raise ValueError("duplicate entity access grant")
+            object.__setattr__(self, "entity_access", copied)
+        if self.repair_assessments is not None:
+            copied = _record_tuple(self.repair_assessments, RepairAssessment, "repair_assessments")
+            if len({a.signal for a in copied}) != len(copied):
+                raise ValueError("duplicate repair assessment signal")
+            object.__setattr__(self, "repair_assessments", copied)
 
     # -- convenience indexes, all pure ------------------------------------------
     def node(self, key: str) -> ArchNode | None:

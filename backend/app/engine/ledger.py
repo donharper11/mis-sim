@@ -18,7 +18,7 @@ from typing import Literal
 
 from app.casepack.models import Casepack, WatchRule
 from app.engine import metrics
-from app.engine.state import SignalState, TeamState
+from app.engine.state import RepairAssessment, SignalState, TeamState
 
 Severity = Literal["warning", "critical"]
 Status = Literal["open", "cleared", "fired"]
@@ -271,6 +271,28 @@ def _watch_rule(pack: Casepack, key: str) -> WatchRule:
     raise KeyError(f"watch rule {key!r} not in pack")
 
 
+def _repair_assessments(state: TeamState, pack: Casepack) -> dict[str, RepairAssessment] | None:
+    """Validate the producer's complete, current, in-horizon watch assessment set."""
+    if state.repair_assessments is None:
+        return None
+    assessments = {a.signal: a for a in state.repair_assessments}
+    if set(assessments) != {rule.key for rule in pack.watch_rules}:
+        raise ValueError("repair assessments must cover exactly the pack's watch rules")
+    for assessment in assessments.values():
+        if assessment.checked_round != state.round:
+            raise ValueError("repair assessment checked_round must equal state.round")
+        if any(not assessment.checked_round <= c.effective_round <= pack.metadata.rounds for c in assessment.candidates):
+            raise ValueError("repair candidate effective_round must be within the checked round and horizon")
+    return assessments
+
+
+def _affordable_witness(assessment: RepairAssessment):
+    return min(
+        (candidate for candidate in assessment.candidates if candidate.affordable),
+        key=lambda c: (c.capital_cost, c.candidate_key), default=None,
+    )
+
+
 def advance_ledger(
     prior: tuple[LedgerSignal, ...],
     state: TeamState,
@@ -285,6 +307,7 @@ def advance_ledger(
     overwritten (section 5.2).
     """
     close_round = state.round
+    assessments = _repair_assessments(state, pack)
     latest_index: dict[str, int] = {}
     for i, row in enumerate(prior):
         latest_index[row.key] = i  # prior is append-order, so the last wins
@@ -314,9 +337,11 @@ def advance_ledger(
                 cleared_round, cleared_by = None, ()
             fire_round = latest.fire_round if latest.fire_round is not None else (close_round if fired else None)
             status = compute_status(cleared_round, fire_round, still_raises)
-            actionable = latest.was_actionable or was_actionable(
-                latest.cheapest_fix_when_raised, state.available_funds_by_round,
-                range(latest.first_shown_round, close_round + 1),
+            actionable = latest.was_actionable or (
+                was_actionable(
+                    latest.cheapest_fix_when_raised, state.available_funds_by_round,
+                    range(latest.first_shown_round, close_round + 1),
+                ) if assessments is None else _affordable_witness(assessments[rule.key]) is not None
             )
             out[idx] = replace(
                 latest, severity=severity, value=value, status=status,
@@ -330,10 +355,15 @@ def advance_ledger(
             continue
         severity, value = raised
         episode_id = (latest.episode_id + 1) if latest is not None else 1
-        cheapest = cheapest_effectful_fix(rule, pack)
-        actionable = was_actionable(
-            cheapest, state.available_funds_by_round, range(close_round, close_round + 1)
-        )
+        if assessments is None:
+            cheapest = cheapest_effectful_fix(rule, pack)
+            actionable = was_actionable(
+                cheapest, state.available_funds_by_round, range(close_round, close_round + 1)
+            )
+        else:
+            assessment = assessments[rule.key]
+            cheapest = min((c.capital_cost for c in assessment.candidates), default=None)
+            actionable = _affordable_witness(assessment) is not None
         fire_round = close_round if fired else None
         status = compute_status(None, fire_round, True)
         out.append(LedgerSignal(
