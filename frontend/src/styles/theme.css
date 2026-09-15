@@ -447,6 +447,37 @@ select {
 .platform-form button:disabled { background: var(--action-disabled); border-color: var(--action-disabled); color: var(--action-disabled-text); cursor: not-allowed; }
 .platform-error { margin: 0; color: var(--status-danger-text); }
 
+.components-page { display: grid; gap: var(--space-lg); }
+.components-context, .components-toolbar, .components-table-panel, .components-detail, .components-wizard, .components-projects, .components-empty { padding: var(--space-lg); background: var(--surface-card); border: 1px solid var(--border-default); }
+.components-context, .components-toolbar, .components-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); }
+.components-context p, .components-panel-heading p, .components-projects p { margin: 0; }
+.components-muted { color: var(--text-muted); font-size: 13px; }
+.components-filters { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+.components-filters button, .components-tabs button, .components-primary, .components-secondary, .components-danger { min-height: 2.5rem; padding: var(--space-sm) var(--space-md); border: 1px solid var(--border-default); background: var(--surface-sunken); color: var(--text-primary); cursor: pointer; font-weight: 600; }
+.components-filters button { color: var(--text-secondary); font-weight: 500; }
+.components-filters button:hover, .components-filter--active { border-color: var(--border-focus) !important; background: var(--surface-row-highlight) !important; color: var(--text-link) !important; }
+.components-primary { border-color: var(--action-primary); background: var(--action-primary); color: var(--action-primary-text); }
+.components-primary:disabled, .components-secondary:disabled, .components-danger:disabled { background: var(--action-disabled); border-color: var(--action-disabled); color: var(--action-disabled-text); cursor: not-allowed; }
+.components-secondary { background: var(--action-secondary); }
+.components-danger { border-color: var(--status-danger-text); color: var(--status-danger-text); }
+.components-tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin: var(--space-lg) 0; border-bottom: 1px solid var(--border-default); }
+.components-tabs button { border-width: 0 0 2px; background: transparent; color: var(--text-secondary); }
+.components-tabs .components-tab--active { border-color: var(--border-focus); color: var(--text-link); }
+.components-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+.components-detail-grid article, .components-detail-copy, .components-review { display: grid; gap: var(--space-sm); padding: var(--space-md); background: var(--surface-sunken); border: 1px solid var(--border-default); }
+.components-detail-grid h3, .components-detail-copy h3, .components-review h3 { margin: 0; font-size: 15px; }
+.components-detail-grid p, .components-detail-copy p, .components-review p { margin: 0; color: var(--text-secondary); line-height: 1.5; }
+.components-wizard { display: grid; gap: var(--space-lg); }
+.components-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-xs); }
+.components-steps span { padding: var(--space-sm); background: var(--surface-sunken); border: 1px solid var(--border-default); color: var(--text-muted); font-size: 13px; }
+.components-steps .components-step--active { border-color: var(--border-focus); background: var(--surface-row-highlight); color: var(--text-link); font-weight: 600; }
+.components-steps .components-step--done { color: var(--status-ok-text); }
+.components-wizard-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); margin-top: var(--space-lg); }
+.components-error { margin: 0; color: var(--status-danger-text); }
+.components-projects { display: grid; gap: var(--space-sm); }
+.components-projects h2, .components-table-panel h2, .components-empty h2 { margin: 0; font-size: 18px; }
+.components-empty p { margin: var(--space-sm) 0 0; color: var(--text-secondary); }
+
 @media (max-width: 720px) {
   .option-card-grid { grid-template-columns: 1fr; }
   .product-shell { grid-template-columns: 1fr; }
@@ -463,4 +494,6 @@ select {
   .platform-hosting { grid-template-columns: 1fr; }
   .platform-context, .platform-banner, .platform-summary { align-items: flex-start; flex-direction: column; }
   .platform-form { grid-template-columns: 1fr; }
+  .components-context, .components-toolbar, .components-panel-heading { align-items: flex-start; flex-direction: column; }
+  .components-detail-grid, .components-steps { grid-template-columns: 1fr; }
 }

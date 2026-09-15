@@ -243,3 +243,8 @@ scoped Platform hosting/service surface: it reads checkpoint and estate state an
 typed `platform_service` patches through `SimulationService`. Focused API, frontend lint/build
 and 1024px browser checks pass; the repository-wide suite remains 680 passed with the existing
 environment-only PostgreSQL driver/Alembic failures recorded in the packet DoD.
+Packet 3.5 is now implemented as the scoped Components workbench: it reads versioned
+catalog assets, projects, and rollouts with legacy estate/deployment fallback, and sends
+only typed `application`/`lifecycle` patches through `SimulationService`. Focused API,
+frontend lint/build, and the shared 1024px browser probe pass; M3.5 is accepted locally
+pending the normal integration commit and publication decision.

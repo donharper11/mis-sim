@@ -5,10 +5,11 @@ import { apiClient, clearAccessToken } from "../api/client.js";
 import AppShell from "../components/AppShell.jsx";
 import Dashboard from "./Dashboard.jsx";
 import Platform from "./Platform.jsx";
+import Components from "./Components.jsx";
 
 export default function Shell({ view = "dashboard" }) {
   const navigate = useNavigate();
-  const [state, setState] = useState({ status: "loading", me: null, instance: null, schedule: null, dashboard: null, error: "" });
+  const [state, setState] = useState({ status: "loading", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, error: "" });
 
   useEffect(() => {
     let active = true;
@@ -20,6 +21,7 @@ export default function Shell({ view = "dashboard" }) {
         let schedule = null;
         let dashboard = null;
         let platform = null;
+        let components = null;
         if (me.instance_id) {
           const instanceResponse = await apiClient.get(`/instances/${me.instance_id}`);
           instance = instanceResponse.data;
@@ -31,8 +33,12 @@ export default function Shell({ view = "dashboard" }) {
             const platformResponse = await apiClient.get(`/instances/${me.instance_id}/platform`);
             platform = platformResponse.data;
           }
+          if (view === "components") {
+            const componentsResponse = await apiClient.get(`/instances/${me.instance_id}/components`);
+            components = componentsResponse.data;
+          }
         }
-        if (active) setState({ status: "ready", me, instance, schedule, dashboard, platform, error: "" });
+        if (active) setState({ status: "ready", me, instance, schedule, dashboard, platform, components, error: "" });
       } catch (requestError) {
         if (!active) return;
         if (requestError.response?.status === 401 || requestError.response?.status === 403) {
@@ -40,7 +46,7 @@ export default function Shell({ view = "dashboard" }) {
           navigate("/login", { replace: true });
           return;
         }
-        setState({ status: "error", me: null, instance: null, schedule: null, dashboard: null, platform: null, error: requestError.response?.data?.detail || "The simulation context could not be loaded." });
+        setState({ status: "error", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, error: requestError.response?.data?.detail || "The simulation context could not be loaded." });
       }
     }
     load();
@@ -49,7 +55,7 @@ export default function Shell({ view = "dashboard" }) {
 
   if (state.status === "loading") return <main className="app-shell plain-state"><p>Loading your simulation…</p></main>;
   if (state.status === "error") return <main className="app-shell plain-state"><h1>We could not open this simulation</h1><p role="alert">{state.error}</p></main>;
-  return <AppShell me={state.me} instance={state.instance} schedule={state.schedule} dashboard={state.dashboard} activePath={view === "platform" ? "/platform" : "/"} pageTitle={view === "platform" ? "Platform" : "Dashboard"}>
-    {view === "platform" ? <Platform data={state.platform} instanceId={state.instance?.instance_id} /> : <Dashboard data={state.dashboard} />}
+  return <AppShell me={state.me} instance={state.instance} schedule={state.schedule} dashboard={state.dashboard} activePath={view === "platform" ? "/platform" : view === "components" ? "/components" : "/"} pageTitle={view === "platform" ? "Platform" : view === "components" ? "Components" : "Dashboard"}>
+    {view === "platform" ? <Platform data={state.platform} instanceId={state.instance?.instance_id} /> : view === "components" ? <Components data={state.components} instanceId={state.instance?.instance_id} /> : <Dashboard data={state.dashboard} />}
   </AppShell>;
 }
