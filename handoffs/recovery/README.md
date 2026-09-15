@@ -130,6 +130,16 @@ The final gate is **675 passed**, all guards green, and the same-host browser
 canary logged in a seeded student, read `/api/auth/me`, and received 403 for a
 different section's instance. M2 packet 2.3 scheduling remains next.
 
+## M2 continuation — 2.3 scheduling accepted
+
+Packet 2.3 was amended and dispatched from `8cc3ff1` with explicit UTC APIs, persisted
+grace, instance-safe participant snapshots, the production `SimulationService` boundary,
+and database claim fencing. Initial candidate `ca140d2` returned for warning-setting and
+stale-lease side effects; successor `d41edb3` corrected both. The independent audit is
+recorded in [`recovery-m2-scheduling-2026-09-16.md`](../../findings/recovery-m2-scheduling-2026-09-16.md).
+The final gate is **682 passed**, all guards green, migration reversible, and the two-instance
+cohort scheduling canary green. M2 platform packets 2.1–2.5 are now accepted; M3 is next.
+
 ## First-wave acceptance and cleanup
 
 - Reporting candidate `f858b8a` was independently accepted by `report_auditor`, then

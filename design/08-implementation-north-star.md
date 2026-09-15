@@ -226,5 +226,8 @@ independent audit; it registers validated runtime-capable tuples, verifies seman
 digests, and pins instance bindings. The combined tree now passes 666 tests and all
 guards. Packet 2.4 auth/login is accepted at `d89d5b6` after independent audit; it
 adds live-user JWT authorization, guarded hierarchy routes, seeded accounts, and the
-M2 login surface. The combined tree now passes 675 tests and all guards. Scheduling
-remains the separate M2 packet with its amended contract; it is not included in 2.4.
+M2 login surface. The combined tree then passed 675 tests and all guards. Packet 2.3
+scheduling is now accepted at `d41edb3` after its independent successor audit; it adds
+fixed-time per-team lock/advance scheduling, persisted grace, registry/digest checks, and
+database lease fencing. The combined tree passes 682 tests and all guards. M2 is complete;
+M3 is the next product milestone.

@@ -100,7 +100,10 @@ returns a deterministic busy/no-op result. A worker may reclaim an expired claim
 participant mutation is conditional on the current claim token. The worker clears its lease
 only with `UPDATE round_schedule SET claim_token=NULL, claim_until=NULL WHERE id=:schedule_id
 AND claim_token=:worker_token`; a stale worker therefore cannot clear a newer claim. An
-expired claim is the recovery path for process failure.
+expired claim is the recovery path for process failure. Before invoking the separately
+transactional `SimulationService.lock` or `.advance`, the worker must conditionally verify
+ownership of the current claim token; a lost claim records `schedule claim lost` and does
+not invoke the production service.
 
 Instance settings provide defaults only: positive `default_round_duration_hours`, boolean
 `auto_advance_on_deadline`, nonnegative `grace_period_minutes`, and nonnegative

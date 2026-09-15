@@ -44,8 +44,9 @@ production `SimulationService`. It never calls the legacy `RoundRunner`.
 `advance_now(..., at)` require an aware timestamp supplied by the caller. Only the CLI
 entrypoint may read the clock. A due schedule is claimed in the database with a unique
 worker token and a fixed 60-second lease; participant writes and lease clearing require
-that token. A competing worker returns a deterministic busy/no-op result, and an
-expired lease is reclaimable.
+that token, and production lock/advance calls are fenced by a pre-call token check. A
+competing worker returns a deterministic busy/no-op result, and an expired lease is
+reclaimable.
 
 **Producers:** `backend/app/scheduling/service.py` and
 `backend/app/scheduling/entrypoint.py` (**M2.3**).
@@ -625,19 +626,6 @@ entity access and verified credit-eligible repair assessments. Absent-input hist
 payloads remain unchanged. The production transition and candidate generator remain M1 work.
 
 ---
-
-## Round scheduling — M2.3
-
-Schedule rows persist timezone-aware UTC `start_at` and `deadline`, immutable per-row
-`auto_advance` and `grace_period_minutes`, `lock_reason` (`deadline_expired` or
-`instructor_locked`), and `advanced_at`. The service API accepts explicit aware UTC `at`
-values for manual lock/advance and `tick(now)`; only the CLI boundary may read the clock.
-Participant snapshots carry the schedule's `instance_id` and use composite foreign keys so
-teams cannot cross instances. Concurrent ticks use a database `claim_token`/`claim_until`
-lease with conditional updates; a zero-row claim is a deterministic busy/no-op and expired
-leases are reclaimable. Producers are `app.scheduling.service` and its CLI; consumers are
-future instructor controls and student deadline views. This contract keeps replay, retries,
-and multi-worker execution deterministic.
 
 ## How to add an entry
 
