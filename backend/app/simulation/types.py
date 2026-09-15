@@ -927,6 +927,15 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("governance/primary capability key is unknown")
         if len(self.staff_hires) != len({x.order_id for x in self.staff_hires}):
             raise ValueError("duplicate staff hire order")
+        if any(hire.order_id not in self.hiring_orders for hire in self.staff_hires):
+            raise ValueError("staff hire references unknown hiring order")
+        for connection in self.connections.values():
+            if connection.src not in self.assets or connection.dst not in self.assets or connection.src == connection.dst:
+                raise ValueError("connection endpoints must be distinct known assets")
+            if connection.kind in {"network", "failover"} and (connection.entity is not None or connection.tier is not None):
+                raise ValueError("network/failover connections cannot carry entity or tier")
+            if connection.kind == "integration" and (connection.entity is None or connection.tier is None):
+                raise ValueError("integration connections require entity and tier")
         covered = self.support.covered_assets
         if len(covered) != len(set(covered)) or any(x not in self.assets for x in covered):
             raise ValueError("support covered asset join invalid")

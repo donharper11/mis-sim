@@ -178,6 +178,26 @@ def test_checkpoint_nested_evidence_and_map_identity_are_strict():
     bad_strategy = deepcopy(base)
     bad_strategy["strategy"] = "x" * 65
     with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad_strategy)
+    assets = {
+        "asset_a": {"id": "asset_a", "source_kind": "catalog", "source_key": "catalog", "placement": "on_prem", "config": "core", "units": 1, "installed_round": 0, "retired_round": None},
+        "asset_b": {"id": "asset_b", "source_kind": "catalog", "source_key": "catalog", "placement": "on_prem", "config": "core", "units": 1, "installed_round": 0, "retired_round": None},
+    }
+    def with_edges(edge, staff=None):
+        value = deepcopy(base); value["assets"] = assets; value["connections"] = {edge["id"]: edge}
+        value["hiring_orders"] = {"order": {"id": "order", "option": "option", "ordered_round": 0, "remaining_lead": 0, "status": "pending", "arrival_round": None}}
+        value["staff_hires"] = staff or []
+        return value
+    network = {"id": "edge", "src": "asset_a", "dst": "asset_b", "kind": "network", "entity": "entity", "tier": None, "created_round": 0, "retired_round": None}
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(with_edges(network))
+    self_edge = dict(network, entity=None, src="asset_a", dst="asset_a")
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(with_edges(self_edge))
+    unknown_endpoint = dict(network, entity=None, dst="missing")
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(with_edges(unknown_endpoint))
+    integration_missing = dict(network, kind="integration", entity=None, tier="basic")
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(with_edges(integration_missing))
+    integration_no_tier = dict(network, kind="integration", entity="order", tier=None)
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(with_edges(integration_no_tier))
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(with_edges(dict(network, entity=None), [{"order_id": "missing", "option": "option", "arrival_round": 0}]))
 
 
 def test_checkpoint_nested_numbers_and_key_lengths_are_bounded():
