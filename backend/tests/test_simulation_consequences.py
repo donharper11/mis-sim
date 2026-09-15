@@ -96,3 +96,9 @@ def test_empty_round_can_carry_forward_an_existing_operating_deficit(pack, state
     assert first.state.operating_reserve < 0
     second = resolve_transition(pack, first.state, [], 2)
     assert second.state.operating_reserve < first.state.operating_reserve
+
+
+def test_pending_hire_liability_is_refused_before_commit(pack, state):
+    commands = [CommandV1(key=f"hire_{index}", op="hire", option="it_generalist") for index in range(100)]
+    with pytest.raises(SimulationError, match="unaffordable"):
+        resolve_transition(pack, state, commands, 1)

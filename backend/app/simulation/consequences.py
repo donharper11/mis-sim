@@ -337,7 +337,12 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     prior_recurring = recurring_entries(pack, prior, round)
     prior_operating_runrate = -sum(x.operating_delta for x in prior_recurring)
     new_recurring_liability = prepared.operating_runrate > prior_operating_runrate
-    if any(row["closing"] < 0 for row in forecast) and new_recurring_liability:
+    pending_recurring_liability = any(
+        (order.model_dump(mode="python") if hasattr(order, "model_dump") else order).get("status") == "pending"
+        and (order.model_dump(mode="python") if hasattr(order, "model_dump") else order).get("arrival_round", 10**9) <= pack.casepack.metadata.rounds
+        for order in (prepared.state.hiring_orders.values() if hasattr(prepared.state, "hiring_orders") else prepared.state["hiring_orders"].values())
+    )
+    if any(row["closing"] < 0 for row in forecast) and (new_recurring_liability or pending_recurring_liability):
         raise SimulationError("unaffordable", "operating")
     staff = StaffPool(staff_fte=float(prepared.organisation.staff.capacity), load_fte=float(prepared.organisation.staff.load))
     alignments = tuple(StakeholderDecisionAlignment(stakeholder=x.stakeholder, alignment=float(x.value), cares_about=tuple(x.cares_about)) for x in prepared.organisation.stakeholder_alignments)

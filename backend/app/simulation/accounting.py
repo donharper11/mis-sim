@@ -116,6 +116,18 @@ def recurring_entries(pack: RuntimePackV1, state: Any, round: int) -> list[CostE
             if option is None:
                 raise SimulationError("invalid_reference", "hiring.option")
             out.append(entry(round, "wages", raw["order_id"], operating=-int(option.wage_per_round), category="wages"))
+    # Pending hires become recurring wage liabilities when their authored
+    # arrival round is reached. Include them in the forward forecast so an
+    # oversized batch is refused before it can be committed.
+    hiring_orders = state.hiring_orders if hasattr(state, "hiring_orders") else state.get("hiring_orders", {})
+    for order in hiring_orders.values():
+        raw = order.model_dump(mode="python") if hasattr(order, "model_dump") else order
+        if raw.get("status") != "pending" or raw.get("arrival_round", 10**9) > round:
+            continue
+        option = pack.runtime.people.hiring_options.get(raw.get("option"))
+        if option is None:
+            raise SimulationError("invalid_reference", "hiring.option")
+        out.append(entry(round, "wages", raw["id"], operating=-int(option.wage_per_round), category="wages"))
     return out
 
 
