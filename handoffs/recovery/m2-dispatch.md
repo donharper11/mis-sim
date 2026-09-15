@@ -37,6 +37,8 @@ The builder starts from `c95892b`. The allowed implementation paths are:
 * `backend/alembic/env.py` (register the new model metadata)
 * `backend/app/main.py` (include the platform router)
 * `backend/app/seed/demo.py` (add the deterministic `--cohort` hierarchy seed)
+* `backend/requirements.txt` (declare the async SQLite test driver used by the
+  async service tests)
 * `backend/tests/test_platform_hierarchy.py` (new focused tests and planted
   invariant checks)
 * `handoffs/2.1-hierarchy/dod.md` (builder evidence only)
