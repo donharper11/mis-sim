@@ -231,3 +231,7 @@ scheduling is now accepted at `d41edb3` after its independent successor audit; i
 fixed-time per-team lock/advance scheduling, persisted grace, registry/digest checks, and
 database lease fencing. The follow-up service-transaction fence closes M2-006. The combined
 tree passes 682 tests and all guards. M2 is accepted; M3 is the next product milestone.
+
+M3 packet 3.1 is now accepted at the frontend boundary: the shared component library and
+development gallery pass lint/build, semantic-token checks, and the browser interaction probe.
+Packet 3.2 is the next step and owns the authenticated live shell and instance data seam.

@@ -142,6 +142,14 @@ cohort scheduling canary green. The follow-up race fix closes M2-006 by fencing 
 production mutation transaction itself; M2 platform packets 2.1–2.5 are accepted and M3
 is next.
 
+## M3 continuation — 3.1 component library accepted
+
+Packet 3.1 is accepted with reusable `StatusBadge`, Pattern A/B choice controls, detail-row
+affordances, and the readable split-rule primitive. The `/_dev/components` gallery passed
+lint, build, semantic-token checks, and a 1024px browser interaction probe. Evidence is in
+[`recovery-m3-3.1-2026-09-16.md`](../../findings/recovery-m3-3.1-2026-09-16.md). Packet 3.2
+now owns the authenticated live shell and instance data seam.
+
 ## First-wave acceptance and cleanup
 
 - Reporting candidate `f858b8a` was independently accepted by `report_auditor`, then
