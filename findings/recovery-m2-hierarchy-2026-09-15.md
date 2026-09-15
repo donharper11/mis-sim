@@ -40,3 +40,44 @@ The create paths do validate section/team relationships, but that does not repai
 ## Conclusion
 
 **RETURN.** Add scoped read signatures/queries for teams and enrollments (and preserve those scopes in later route consumers), then rerun focused tests and the disposable PostgreSQL upgrade → downgrade → upgrade evidence. No implementation or shared contract files were modified by this audit.
+
+## Successor audit — `5d6b5733b923f044b6dbb8dcadbe01e98748c803`
+
+**Verdict: PASS.** This successor includes the scoped-read correction from
+`ad199f5` and the cohort seed team-ID correction.
+
+### Scope and tree
+
+The cumulative builder changes from `35f9ab5` through `5d6b573` are confined
+to the dispatch allowlist: the six hierarchy implementation paths, the
+Alembic metadata adapter, `main.py`, `seed/demo.py`, `requirements.txt`, the
+focused test, and the hierarchy DoD. The only additional tracked artifact in
+the audit chain is this findings report. `git diff --check` passed and the
+candidate was clean before this report append.
+
+### Independent evidence
+
+- Declared supervisor environment (`/tmp/mis-sim-supervisor-venv-r2cjbjvg`),
+  with the newly declared `aiosqlite`, focused hierarchy tests: **5 passed**.
+- SQLite Alembic: `upgrade head`, `downgrade 20260914_0003`, and `upgrade
+  head` all passed. The final database had 26 expected tables and
+  `alembic_version=20260915_0004`.
+- Fresh migrated SQLite database plus `python -m app.seed.demo --cohort`:
+  output was `sections=2 instances=2 teams=4 enrollments=16`; persisted counts
+  were user=17, course=1, section=2, instance=2, team=4, enrollment=16.
+  Pack tuples were `pack_alpha@1.0.0` and `pack_beta@1.0.0`; each section had
+  eight enrollments and eight non-null team assignments.
+- The focused scope probes now prove section and instance reads succeed only
+  in the matching scope, mismatched scopes return `PlatformNotFound`, and an
+  unscoped team/enrollment read raises `PlatformConflict`.
+- The route table contains the exact minimum hierarchy routes under `/api` and
+  no hierarchy service reads runtime state tables.
+- Direct deletion probe blocked course deletion with an active instance and
+  allowed setup-section cleanup; a fresh session confirmed section, instance,
+  team, and enrollment rows were all removed.
+- The supervisor reported the full root gate green at **662 passed**, with all
+  guards green.
+
+M2-001 is closed: both `TeamService.read` and `EnrollmentService.read` now
+require `section_id` or `instance_id` and apply that predicate to the query.
+No implementation or shared contract files were modified by this audit.
