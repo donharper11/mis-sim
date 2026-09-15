@@ -1042,7 +1042,7 @@ All filenames below are NEW unless marked existing. A packet may add its own
 | P1 content-types | NEW backend/app/simulation/__init__.py; NEW backend/app/simulation/types.py; NEW backend/app/simulation/content.py; backend/packs/riverside_grocery/runtime.yaml; backend/tests/test_simulation_content.py | strict command/runtime/checkpoint DTOs and immutable pack binding; complete frozen NEW content, missing/extra/duplicate/invalid/null/override refusals; no reducer or DB |
 | P2 estate | backend/app/simulation/estate.py, resources.py, projection.py; backend/tests/test_simulation_estate.py | one initial estate, lifecycle, edges, source prices/resources, physical graph projection and action-effect candidates; no organisation formulas or persistence |
 | P3 organisation | backend/app/simulation/organisation.py; backend/tests/test_simulation_organisation.py | real training/process/communication/resistance/adoption, staff/governance/policy/preferences; only pure DTO input/output |
-| P4 consequences | backend/app/simulation/accounting.py, consequences.py, repairs.py; backend/app/round/scorecard.py; existing backend/app/round/runner.py (only mechanical helper delegation); backend/tests/test_simulation_consequences.py | complete pure quote/resolution, costs/actions/ledger/events/debt/TCO, shared M0 helper, authoritative scorer call; no DB |
+| P4 consequences | NEW backend/app/simulation/accounting.py, consequences.py, repairs.py; existing backend/app/round/runner.py (only mechanical scorer delegation); NEW backend/tests/test_simulation_consequences.py; NEW handoffs/recovery/decision-evolution/consequences/dod.md | complete pure quote/resolution, costs/actions/ledger/events/debt/TCO, shared M0 helper, authoritative scorer call; no DB |
 | P5 persistence | backend/app/simulation/models.py, service.py; NEW backend/alembic/versions/20260914_0003_simulation_v1.py; existing backend/alembic/env.py, backend/scripts/check_postgres_runtime.py; NEW backend/tests/test_postgres_runtime_check.py; backend/tests/test_simulation_service.py | three canonical tables, fresh owned transactions, revisions/reopen/retry/isolation, full migrated schema verification |
 | P6 games | backend/app/simulation/games.py; backend/tests/test_simulation_games.py; backend/tests/fixtures/simulation_v1_decisions.json; backend/docs/simulation-v1.md | actual headless decision-only route, four archetypes×four strategies×six rounds, documented direct Python use and evidence limits |
 
@@ -1059,6 +1059,13 @@ adds SIMULATION_TABLES with the3 NEW models, and imports both model modules into
 metadata. Expected public schema is the exact migrated19 model tables plus alembic_version;
 verify_schema must not weaken its equality assertion. No Base.create_all substitute for
 migration evidence, no table rename, and no database selected from ambient environment.
+
+P4's shared scorer is the existing private `RoundRunner._rolled_scorecard` helper in
+`backend/app/round/runner.py`, which is authoritative for the frozen M0 scorecard shape and
+legacy behavior. P4 may expose `rolled_scorecard(pack, final_score, event_records)` through
+that existing runner module only as a mechanical adapter to the helper. It must not create a
+new `scorecard.py` module or change runner semantics beyond that delegation; this path
+correction does not expand P4's behavior or persistence scope.
 
 NEW internal interfaces (all pure except service; dataclasses/strict models may implement):
 
