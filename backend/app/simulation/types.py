@@ -660,7 +660,8 @@ class ActionEnvelopeV1(StrictModel):
 
 
 class HiringOrderV1(StrictModel):
-    id: str; option: str; ordered_round: StrictInt; remaining_lead: StrictInt
+    id: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
+    option: str; ordered_round: StrictInt; remaining_lead: StrictInt
     status: Literal["pending", "arrived", "cancelled"]; arrival_round: StrictInt | None
 
     @model_validator(mode="after")
@@ -721,7 +722,7 @@ class SignalV1(StrictModel):
 
 
 class EventOutcomeV1(StrictModel):
-    revenue_loss: StrictInt | None
+    revenue_loss: StrictInt | None = Field(default=None, ge=0)
     scorecard: dict[Literal["financial", "customer", "internal_process", "learning_growth"], StrictInt]
 
 
@@ -871,13 +872,14 @@ class RepairAssessmentV1(StrictModel):
 
 
 class UnpricedSignalExposureV1(StrictModel):
-    signal: str; episode_id: StrictInt; capability: str; reason: Literal["unpriced", "unassessed"]
+    signal: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
+    episode_id: StrictInt; opened_round: StrictInt; settled_round: StrictInt | None
+    reason: Literal["unassessed_initial_repair"]
 
     @model_validator(mode="after")
     def valid_exposure_keys(self) -> "UnpricedSignalExposureV1":
-        _machine_key(self.signal, "signal"); _machine_key(self.capability, "capability")
-        if self.episode_id < 0:
-            raise ValueError("episode id must be nonnegative")
+        if self.episode_id < 0 or self.opened_round < 0 or (self.settled_round is not None and self.settled_round < self.opened_round):
+            raise ValueError("invalid unpriced exposure rounds")
         return self
 
 
