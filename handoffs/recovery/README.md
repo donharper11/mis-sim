@@ -75,8 +75,10 @@ persistence passed independent audit at `58a75669` and is integrated in the curr
 branch. It supplies the three canonical simulation tables, strict 19-table migration/runtime
 verification and fresh transaction service operations; the independent PostgreSQL evidence
 completed six committed rounds. [P5 audit](../../findings/recovery-persistence-2026-09-15.md).
-P6 games is now the next dispatchable packet. M1 remains unfinished until the decision-only
-game packet passes its independent audit.
+P6 games passed independent audit at `3855188` and is integrated. The frozen typed fixture
+now runs through `SimulationService`; evidence covers 16 games, 96 persisted reports,
+fresh-scope determinism, causal cross-effects and hash-seed stability. [P6 audit](../../findings/recovery-games-2026-09-15.md).
+M1 is complete; subsequent work belongs to M2 and the later product milestones.
 
 ## First-wave acceptance and cleanup
 

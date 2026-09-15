@@ -26,7 +26,7 @@ from engine state. Stakeholder satisfaction uses realised value, not just purcha
 | Engine | Pure graph/scoring functions, policy scoring, event/precondition model, signal episodes, explanatory decompositions; audited optional capability-specific capacity/RTO inputs and deterministic paths |
 | Persistence | 16 runtime tables, instance-scoped snapshots, lock/advance, arrivals, result and ledger persistence |
 | Calibration | Four scripted archetypes × six rounds; all perspectives now visible in every round, 38 live marker sites and raw scale diagnostics; all scripts declare Cost Leadership; August ruling retained |
-| Verification | M1 P1 integration: 618 pytest tests, all guards, 44 fixtures; complete 24 historical payloads preserved across six hash seeds. M0's actual PostgreSQL migrations/16 tables/six results and all 96 reconciled BSC values remain the baseline; Riverside zero errors/warnings |
+| Verification | M1 P6 integration: 652 pytest tests, all guards, 44 fixtures; complete historical payloads preserved, plus 16 decision games/96 persisted reports and matching hash-seed digests. M0's actual PostgreSQL migrations/16 tables/six results and all 96 reconciled BSC values remain the baseline; Riverside zero errors/warnings |
 | Application | React token-preview page and 404 only; auth remains 501; student/instructor workflows unbuilt |
 
 The original packet count is **11 of 47 recorded closed**. Phase 1 closure covers the
@@ -39,7 +39,7 @@ apply integer event points to normalized bases once and retain versioned base/de
 status. All other fields across 24 scripted results and historical result rows are preserved.
 Main remains at the historical baseline. [Evidence and limits](handoffs/recovery/README.md).
 
-**M1 is underway.** Its bounded capacity/RTO/path packet passed a fresh build audit at
+**M1 is complete.** Its bounded capacity/RTO/path packet passed a fresh build audit at
 `7dbb4c8`, and its entity-access/verified-repair packet passed at `1729a89`; both are
 integrated on the recovery branch. [P0 audit](findings/recovery-engine-inputs-2026-09-14.md)
 and [P0b audit](findings/recovery-production-inputs-2026-09-15.md). The corrected master
@@ -55,7 +55,11 @@ and the shared M0 scorer adapter. [P4 audit](findings/recovery-consequences-2026
 P5 persistence passed independent audit at `58a75669` and is now integrated. It adds the
 three canonical simulation tables, strict 19-table migration verification and fresh
 transaction service operations. [P5 audit](findings/recovery-persistence-2026-09-15.md).
-P6 games is the next gated handoff.
+P6 games passed independent audit at `3855188` and is integrated. It loads the frozen
+typed six-round fixture through `SimulationService`; final evidence covers 16 games,
+96 persisted reports, fresh-scope determinism, causal archetype differences and hash-seed
+stability. The nullable-command persistence and no-op/pending-liability affordability fixes
+are integrated in `3c2bb51`, `e2356e7`, `3624f2` and `8ef2411`. [P6 audit](findings/recovery-games-2026-09-15.md).
 
 ## The important unfinished boundary
 

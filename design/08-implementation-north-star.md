@@ -199,12 +199,17 @@ P2 estate passed independent audit at `b4bfec9` and is integrated. [P2 audit](..
 P3 organisation passed independent audit at `2c42f24` and is integrated. [P3 audit](../findings/recovery-organisation-2026-09-15.md).
 P4 consequences passed independent audit at `f43ea7f8` and is integrated. [P4 audit](../findings/recovery-consequences-2026-09-15.md).
 P5 persistence passed independent audit at `58a75669` and is integrated. [P5 audit](../findings/recovery-persistence-2026-09-15.md).
-P6 is now the next gated implementation packet and may not resolve audited interfaces silently.
+P6 games passed independent audit at `3855188` and is integrated. The frozen fixture now
+executes through `SimulationService`; nullable command persistence, no-op affordability and
+pending-hire refusal are covered by the predecessor corrections. The final evidence covers
+16 games, 96 persisted reports, fresh-scope determinism, cross-effects and hash-seed stability.
+[P6 audit](../findings/recovery-games-2026-09-15.md).
 
 The independently reproduced
 [inventory](../handoffs/recovery/decision-evolution/inventory.md) identifies invalid-target
 acceptance, absent carry-forward, late duplicate-advance refusal, incomplete rewind and
 caller-committable partial writes. D1–D10 must be resolved in the Heavy decision and
 transition contract, then independently reviewed before estate/organisation builders start.
-**M1 remains unfinished after audited P5 integration.** P6 games remains.
+**M1 is complete after audited P6 integration.** Broader product work begins at M2; the
+decision-driven simulation boundary is now the maintained foundation.
 Main and remote publication remain untouched.
