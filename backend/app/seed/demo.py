@@ -22,9 +22,9 @@ from app.casepack.loader import load_casepack
 from app.casepack.models import Casepack
 from app.engine.state import TeamState
 from app.database import async_session
-from app.models.platform import Course, Enrollment, Section, User
+from app.models.platform import Casepack, Course, Enrollment, Section, SimulationInstance, Team, User
 from app.services.auth import hash_password
-from app.services.platform import CourseService, EnrollmentService, InstanceService, SectionService, TeamService
+from app.services.platform import CourseService, EnrollmentService, InstanceService, PlatformConflict, SectionService, TeamService
 from app.casepack.registry import register_casepack
 
 #: scenario name -> (pack directory relative to backend/, seed builder module path)
@@ -168,14 +168,32 @@ def _run_full() -> int:
 
 async def seed_cohort(session) -> dict:
     """Create the deterministic two-section platform cohort used by M2 canaries."""
+    existing_course = await session.scalar(select(Course).where(Course.course_code == "MIS-PLATFORM"))
+    if existing_course is not None:
+        sections = (await session.scalars(select(Section).where(Section.course_id == existing_course.id).order_by(Section.id))).all()
+        if len(sections) != 2:
+            raise PlatformConflict("M2 cohort exists with an incomplete section set; refusing duplicate seed")
+        instances = []
+        teams = []
+        enrollments = []
+        for section in sections:
+            instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section.id))
+            if instance is None:
+                raise PlatformConflict("M2 cohort exists with an incomplete instance set; refusing duplicate seed")
+            instances.append(instance)
+            teams.extend((await session.scalars(select(Team).where(Team.instance_id == instance.instance_id).order_by(Team.id))).all())
+            enrollments.extend((await session.scalars(select(Enrollment).where(Enrollment.section_id == section.id).order_by(Enrollment.id))).all())
+        return {"course": existing_course, "sections": sections, "instances": instances, "teams": teams, "enrollments": enrollments}
     has_registry = await session.run_sync(lambda sync: "casepack" in inspect(sync.get_bind()).get_table_names())
     if has_registry:
-        await session.run_sync(
-            lambda sync: [
-                register_casepack(sync, _BACKEND_ROOT / "packs" / name)
-                for name in ("riverside_grocery", "m2_isolation_fixture")
-            ]
-        )
+        def ensure_packs(sync):
+            for name, key, version in (
+                ("riverside_grocery", "riverside_grocery", "0.1.0"),
+                ("m2_isolation_fixture", "m2_isolation_fixture", "0.1.1"),
+            ):
+                if sync.scalar(select(Casepack).where(Casepack.pack_key == key, Casepack.pack_version == version)) is None:
+                    register_casepack(sync, _BACKEND_ROOT / "packs" / name)
+        await session.run_sync(ensure_packs)
         pack_tuples = (("riverside_grocery", "0.1.0"), ("m2_isolation_fixture", "0.1.1"))
     else:
         # Isolated pre-registry unit fixtures retain their historical synthetic IDs.

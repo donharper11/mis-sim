@@ -130,6 +130,8 @@ class EnrollmentOut(RowOut):
 
 
 def _error(exc: Exception) -> HTTPException:
+    if isinstance(exc, HTTPException):
+        return exc
     if isinstance(exc, PlatformNotFound):
         return HTTPException(status_code=404, detail=str(exc))
     if isinstance(exc, (PlatformConflict, DeletionBlocked)):

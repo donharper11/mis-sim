@@ -12,6 +12,7 @@ from app.api import deps, platform
 from app.main import create_app
 from app.models.base import Base
 from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
+from app.seed.demo import seed_cohort
 from app.services.auth import create_access_token, hash_password
 
 
@@ -97,5 +98,39 @@ def test_student_login_and_staff_rejection_have_canonical_bodies(setup_db):
                 assert staff.status_code == 403
                 assert staff.json() == {"detail": "This login is for instructors and TAs only"}
             app.dependency_overrides.clear()
+        await engine.dispose()
+    asyncio.run(run())
+
+
+def test_authorization_http_errors_are_not_collapsed_to_400(setup_db):
+    async def run():
+        engine, factory, user_id, own, other = setup_db
+        async with factory() as session:
+            token = create_access_token(user_id=user_id, role="student", section_id=1, instance_id=own)
+            async def get_session():
+                yield session
+            app = create_app()
+            app.dependency_overrides[deps.get_session] = get_session
+            app.dependency_overrides[platform.get_session] = get_session
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.get("/api/sections/2", headers={"Authorization": f"Bearer {token}"})
+                assert response.status_code == 403
+            app.dependency_overrides.clear()
+        await engine.dispose()
+    asyncio.run(run())
+
+
+def test_cohort_seed_is_idempotent(tmp_path):
+    async def run():
+        engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path / 'cohort.db'}")
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all, tables=[User.__table__, Course.__table__, Section.__table__, SimulationInstance.__table__, Team.__table__, Enrollment.__table__])
+        factory = async_sessionmaker(engine, expire_on_commit=False)
+        async with factory() as session:
+            first = await seed_cohort(session)
+            await session.commit()
+            second = await seed_cohort(session)
+            assert len(first["sections"]) == len(second["sections"]) == 2
+            assert len(second["teams"]) == 4 and len(second["enrollments"]) == 16
         await engine.dispose()
     asyncio.run(run())
