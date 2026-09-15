@@ -169,7 +169,13 @@ def _default_runtime(pack: Casepack) -> dict[str, Any]:
                             "vendor_managed": {"capex_source": "integration_tier", "opex": 3000, "staff_load": .05},
                         },
                         "cancellation": "sunk", "platform_capability": "firm_infrastructure", "decision_attribution_version": 1, "action_attribution_version": 1,
-                        "tco_estimators": {k: "one_round_opex" for k in ["training", "integration", "lifecycle", "capacity", "data_migration", "policy", "process_redesign", "maintenance", "backup"]},
+                        "tco_estimators": {
+                            "training": "full_training", "integration": "basic_integration",
+                            "process_redesign": "full_process", "capacity": "compute_unit",
+                            "backup": "backup_unit", "lifecycle": "capex_fraction",
+                            "policy": "max_policy", "maintenance": "one_round_opex",
+                            "data_migration": "capex_fraction",
+                        },
                         "tco_capex_fraction": .1, "process_partial_fraction": .5},
         "preferences": preferences,
         "response_disposition": {event.key: {"fund_effect": "prevent_current_round", "explanation": RESPONSE_EXPLANATIONS[event.key] + " TODO: calibrate M1/M4"} for event in pack.events},
@@ -267,41 +273,55 @@ def _preference_content(pack: Casepack) -> dict[str, Any]:
         leaves(raw.get("overrides", []), f"/preferences/{name}/overrides")
     if len(dispositions) != 131:
         raise SimulationError("invalid_output", "preferences.dispositions", {"expected": 131, "actual": len(dispositions)})
-    # Mark source leaves whose units have an approved v1 metric.  Unsupported
-    # risk/visibility ideals and raw overrides remain explicit M4 context rows.
-    supported_ideal = {"ideal_cost_posture", "ideal_reliability", "ideal_training_coverage", "ideal_staff_load", "ideal_availability", "ideal_integration", "ideal_placement", "ideal_tier"}
-    supported_weights: set[str] = set()
-    for name, pref in pack.preferences.items():
-        if name == "policies": continue
-        data = pref.model_dump(mode="json", exclude_none=False).get("defaults_by_archetype", {})
-        def inspect(value: Any, path: str):
-            if not isinstance(value, dict): return
-            keys = set(value)
-            if keys & supported_ideal:
-                if "weight" in keys: supported_weights.add(f"/preferences/{name}/defaults_by_archetype/{path}/weight")
-                for child, nested in value.items():
-                    if child == "by_decision" and isinstance(nested, dict):
-                        for decision, decision_value in nested.items():
-                            if isinstance(decision_value, dict) and "ideal_tier" in decision_value and "weight" in decision_value:
-                                supported_weights.add(f"/preferences/{name}/defaults_by_archetype/{path}/by_decision/{decision}/weight")
-            for child, nested in value.items():
-                if isinstance(nested, dict): inspect(nested, f"{path}/{child}" if path else child)
-        for archetype, value in data.items(): inspect(value, archetype)
+    # Mark only fields with an approved v1 metric, and point each source field
+    # at its own stakeholder rule.  A generic weight never fans out to all 33
+    # views: it follows the metric-bearing sibling fields in its source row.
+    metric_by_leaf = {
+        "ideal_cost_posture": "cost_posture", "ideal_reliability": "asset_reliability",
+        "ideal_training_coverage": "training_coverage", "ideal_staff_load": "staff_load_ratio",
+        "ideal_availability": "asset_reliability", "ideal_integration": "integration_tier",
+        "ideal_placement": "platform_placement",
+    }
+    alias = {"c_suite": "senior_management", "it": "it_department"}
+    rule_index = {row["stakeholder"]: index for index, row in enumerate(view_rows)}
+    def sibling_metrics(data: Any) -> set[str]:
+        found: set[str] = set()
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key in metric_by_leaf: found.add(metric_by_leaf[key])
+                if key == "ideal_tier": found.add("integration_tier" if "integration_tier" in data else "support_tier")
+                if isinstance(value, dict): found |= sibling_metrics(value)
+        return found
     for row in dispositions:
         path = row["source_path"]
-        leaf = path.rsplit("/", 1)[-1]
-        if "/overrides/" not in path and (leaf in supported_ideal or path in supported_weights):
+        parts = path.strip("/").split("/")
+        if len(parts) < 5 or parts[0] != "preferences" or parts[2] != "defaults_by_archetype":
+            continue
+        name, archetype = parts[1], parts[3]
+        if name not in pack.preferences or "/overrides/" in path:
+            continue
+        leaf = parts[-1]
+        metric = metric_by_leaf.get(leaf)
+        metric_set: set[str] = set()
+        if leaf == "ideal_tier":
+            metric = "integration_tier" if "integration_tier" in path else "support_tier"
+        if leaf == "weight":
+            source = pack.preferences[name].model_dump(mode="json", exclude_none=False)["defaults_by_archetype"].get(archetype, {})
+            metric_set = sibling_metrics(source)
+            # A by_decision row has several weights. Resolve the decision key.
+            if len(parts) >= 7 and parts[4] == "by_decision":
+                decision = parts[5]
+                decision_source = source.get("by_decision", {}).get(decision, {})
+                metric_set = sibling_metrics(decision_source)
+            metric = next(iter(metric_set), None) if len(metric_set) == 1 else None
+        target = alias.get(archetype, archetype)
+        if (metric is None and not metric_set) or target not in rule_index:
+            continue
+        wanted = metric_set or {metric}
+        pointers = [f"/preferences/rules/{rule_index[target]}/views/{view_index}" for view_index, view in enumerate(view_rows[rule_index[target]]["views"]) if view["metric"] in wanted]
+        if pointers:
             row["disposition"] = "live_v1"
-            metric = {
-                "ideal_cost_posture": "cost_posture", "ideal_reliability": "asset_reliability",
-                "ideal_training_coverage": "training_coverage", "ideal_staff_load": "staff_load_ratio",
-                "ideal_availability": "asset_reliability", "ideal_integration": "integration_tier",
-                "ideal_placement": "platform_placement", "ideal_tier": "support_tier",
-            }.get(leaf)
-            if metric is None and "integration_tier" in path:
-                metric = "integration_tier"
-            pointers = [f"/preferences/rules/{index}/views/{view_index}" for index, rule in enumerate(view_rows) for view_index, view in enumerate(rule["views"]) if metric is None or view["metric"] == metric]
-            row["runtime_views"] = pointers or ["/preferences/rules/0/views/0"]
+            row["runtime_views"] = pointers
     return {"rules": view_rows, "dispositions": dispositions}
 
 
@@ -344,10 +364,59 @@ def _validate_against_casepack(pack: Casepack, runtime: RuntimeContentV1) -> Non
             raise SimulationError("invalid_input", f"drivers/{driver}", {"reason": "wrong round length"})
     if set(runtime.response_disposition) != {x.key for x in pack.events}:
         raise SimulationError("invalid_input", "response_disposition", {"reason": "event key mismatch"})
+    # Preference dispositions are a one-to-one inventory of every authored
+    # scalar source leaf, while runtime pointers must resolve to real v1 views.
+    expected_paths: list[str] = []
+    def collect(value: Any, path: str) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key != "provenance": collect(child, f"{path}/{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value): collect(child, f"{path}/{index}")
+        else:
+            expected_paths.append(path)
+    for name, pref in pack.preferences.items():
+        if name == "policies": continue
+        raw_pref = pref.model_dump(mode="json", exclude_none=False)
+        collect(raw_pref.get("defaults_by_archetype", {}), f"/preferences/{name}/defaults_by_archetype")
+        collect(raw_pref.get("overrides", []), f"/preferences/{name}/overrides")
+    actual_paths = [row.source_path for row in runtime.preferences.dispositions]
+    if len(actual_paths) != 131 or len(actual_paths) != len(set(actual_paths)) or set(actual_paths) != set(expected_paths):
+        raise SimulationError("invalid_input", "preferences/dispositions", {"reason": "source path universe mismatch"})
+    metrics = {"training_coverage", "asset_reliability", "staff_load_ratio", "platform_placement", "support_tier", "integration_tier", "cost_posture", "process_fit", "communication"}
+    stakeholders = {x.key for x in pack.stakeholders}
+    categorical = {"platform_placement": {"cloud", "on_prem", "saas"}, "support_tier": {"basic", "premium"}, "integration_tier": {"basic", "advanced", "vendor_managed"}}
+    for rule_index, rule in enumerate(runtime.preferences.rules):
+        if rule.stakeholder not in stakeholders | {"senior_management", "it_department", "employees", "operations", "hr", "marketing", "investor", "customer", "vendor", "finance"}:
+            raise SimulationError("invalid_reference", f"preferences/rules/{rule_index}/stakeholder")
+        if any(cap not in {x.key for x in pack.capabilities} for cap in rule.cares_about):
+            raise SimulationError("invalid_reference", f"preferences/rules/{rule_index}/cares_about")
+        for view_index, view in enumerate(rule.views):
+            if view.metric not in metrics or not isinstance(view.weight, (int, float)) or isinstance(view.weight, bool) or view.weight < 0:
+                raise SimulationError("invalid_input", f"preferences/rules/{rule_index}/views/{view_index}")
+            if view.metric in categorical and view.ideal not in categorical[view.metric]:
+                raise SimulationError("invalid_input", f"preferences/rules/{rule_index}/views/{view_index}/ideal")
+            if view.metric not in categorical and (isinstance(view.ideal, bool) or not isinstance(view.ideal, (int, float)) or not 0 <= view.ideal <= 1):
+                raise SimulationError("invalid_input", f"preferences/rules/{rule_index}/views/{view_index}/ideal")
+    for disposition in runtime.preferences.dispositions:
+        if disposition.disposition == "live_v1" and not disposition.runtime_views:
+            raise SimulationError("invalid_input", f"preferences/dispositions/{disposition.source_path}")
+        for pointer in disposition.runtime_views:
+            match = re.fullmatch(r"/preferences/rules/(\d+)/views/(\d+)", pointer)
+            if not match or int(match.group(1)) >= len(runtime.preferences.rules) or int(match.group(2)) >= len(runtime.preferences.rules[int(match.group(1))].views):
+                raise SimulationError("invalid_reference", f"preferences/dispositions/{disposition.source_path}", {"pointer": pointer})
     if set(runtime.initial.primary) != set(capabilities):
         raise SimulationError("invalid_input", "initial.primary", {"reason": "capability coverage mismatch"})
     if set(runtime.initial.governance) != set(capabilities):
         raise SimulationError("invalid_input", "initial.governance", {"reason": "capability coverage mismatch"})
+    if runtime.accounting.tco_estimators != {
+        "training": "full_training", "integration": "basic_integration", "process_redesign": "full_process",
+        "capacity": "compute_unit", "backup": "backup_unit", "lifecycle": "capex_fraction",
+        "policy": "max_policy", "maintenance": "one_round_opex", "data_migration": "capex_fraction",
+    }:
+        raise SimulationError("invalid_input", "accounting/tco_estimators", {"reason": "exact estimator map required"})
+    expected_catalog = {"pos_system_2011", "order_mgmt_v42", "accounting_package", "store_spreadsheets", "order_db_cluster", "store_back_office_pc"}
+    expected_services = {"client_network", "compute_pool", "storage_pool", "backup_recovery"}
     if len(runtime.initial.assets) != 10 or len({x.id for x in runtime.initial.assets}) != 10:
         raise SimulationError("invalid_input", "initial.assets", {"reason": "expected ten unique initial assets"})
     if any(x.units <= 0 or x.installed_round < 0 for x in runtime.initial.assets):
@@ -393,6 +462,24 @@ def _validate_against_casepack(pack: Casepack, runtime: RuntimeContentV1) -> Non
             raise SimulationError("invalid_reference", f"initial.assets/{asset.id}/config")
         if asset.source_kind == "service" and asset.config is not None:
             raise SimulationError("invalid_input", f"initial.assets/{asset.id}/config", {"reason": "service config must be null"})
+        if asset.installed_round > pack.metadata.rounds:
+            raise SimulationError("invalid_input", f"initial.assets/{asset.id}/installed_round")
+        if asset.id != f"initial_{asset.source_key}" or asset.units != 1 or asset.installed_round != 0:
+            raise SimulationError("invalid_input", f"initial.assets/{asset.id}", {"reason": "initial asset identity is frozen"})
+        if asset.source_kind == "catalog" and (asset.source_key not in expected_catalog or asset.placement != "on_prem" or asset.config != "core"):
+            raise SimulationError("invalid_input", f"initial.assets/{asset.id}", {"reason": "initial catalog set/placement mismatch"})
+        if asset.source_kind == "service" and (asset.source_key not in expected_services or asset.placement != "on_prem"):
+            raise SimulationError("invalid_input", f"initial.assets/{asset.id}", {"reason": "initial service set/placement mismatch"})
+    if {a.source_key for a in runtime.initial.assets if a.source_kind == "catalog"} != expected_catalog or {a.source_key for a in runtime.initial.assets if a.source_kind == "service"} != expected_services:
+        raise SimulationError("invalid_input", "initial.assets", {"reason": "frozen initial source set mismatch"})
+    if any(value is not None and value not in asset_ids for value in runtime.initial.primary.values()):
+        raise SimulationError("invalid_reference", "initial.primary")
+    for capability, asset_id in runtime.initial.primary.items():
+        if asset_id is not None:
+            asset = next(a for a in runtime.initial.assets if a.id == asset_id)
+            source = catalogs.get(asset.source_key) or services.get(asset.source_key)
+            if capability not in {x.key if hasattr(x, "key") else x for x in source.serves}:
+                raise SimulationError("invalid_reference", f"initial.primary/{capability}")
     edge_ids: set[str] = set(); edge_shapes: set[tuple[str, str, str, str | None]] = set()
     entities = {entity.key for entity in pack.entities}
     integration_tiers = {tier.key for tier in pack.platform.integration_tiers}

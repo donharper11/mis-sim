@@ -12,7 +12,9 @@ import yaml
 import pytest
 
 from app.simulation import load_runtime_pack, normalize_patch
-from app.simulation.types import CheckpointStateV1, CommandV1, SheetPatchV1, SimulationError
+from app.simulation.types import (
+    CheckpointStateV1, CommandV1, SheetPatchV1, SimulationError, UnitV1, ServiceRuntimeV1, CatalogRuntimeV1,
+)
 
 
 PACK = Path(__file__).parents[1] / "packs" / "riverside_grocery"
@@ -111,6 +113,64 @@ def test_runtime_negative_cross_reference_and_registry_probes():
     run_mutation(missing_capacity)
     run_mutation(lambda raw: raw["units"].update({"/does/not/exist": "fraction"}))
     run_mutation(lambda raw: raw.update({"generated_defaults": False}))
+
+
+def test_runtime_strict_numbers_and_exact_tco_map():
+    with pytest.raises(ValueError): UnitV1(label="unit", initial_resistance=True)
+    with pytest.raises(ValueError): UnitV1(label="unit", initial_resistance="0.2")
+    with pytest.raises(ValueError): ServiceRuntimeV1(
+        serves=[], availability=True, service_life_rounds=1,
+        capacity_by_capability={}, supply_by_placement={}, max_units=1,
+    )
+    # This StrictInt assertion is the planted guard for accidental removal of
+    # StrictModel's strict configuration: bool would otherwise coerce to 1.
+    with pytest.raises(ValueError): ServiceRuntimeV1(
+        serves=[], availability=0.9, service_life_rounds=True,
+        capacity_by_capability={}, supply_by_placement={}, max_units=1,
+    )
+    with pytest.raises(ValueError): ServiceRuntimeV1(
+        serves=[], availability=float("nan"), service_life_rounds=1,
+        capacity_by_capability={}, supply_by_placement={}, max_units=1,
+    )
+
+    def mutate_estimator(raw, change):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "pack"
+            shutil.copytree(PACK, target)
+            data = yaml.safe_load((target / "runtime.yaml").read_text())
+            change(data["accounting"]["tco_estimators"])
+            (target / "runtime.yaml").write_text(yaml.safe_dump(data, sort_keys=False))
+            with pytest.raises(SimulationError): load_runtime_pack(target)
+    mutate_estimator(None, lambda m: m.update({"unexpected": "one_round_opex"}))
+    mutate_estimator(None, lambda m: m.pop("training"))
+    mutate_estimator(None, lambda m: m.update({"training": "one_round_opex"}))
+
+
+def test_strict_model_configuration_mutation_guard():
+    """A plain numeric field catches removal of StrictModel strict=True."""
+    with pytest.raises(ValueError):
+        CatalogRuntimeV1(
+            purchasable_placements=[], capacity_by_capability={"x": True},
+            capacity_multiplier_by_config={}, opex_multiplier_by_config={},
+        )
+
+
+def test_checkpoint_nested_evidence_and_map_identity_are_strict():
+    base = {
+        "strategy": "cost_leadership", "strategy_declared_round": 0,
+        "assets": {}, "connections": {}, "projects": {}, "hiring_orders": {}, "staff_hires": [],
+        "support": {"tier": None, "covered_assets": []}, "rollouts": {}, "unit_resistance": {},
+        "governance": {}, "primary": {}, "policies": {}, "capital_balance": 0, "operating_reserve": 0,
+        "cost_ledger": [], "technical_debt": [], "signal_ledger": [], "action_history": [],
+        "available_funds_by_round": [], "event_history": [], "response_history": [], "tco_forecasts": [],
+        "repair_assessment_history": [], "unpriced_signal_exposures": [],
+    }
+    bad = deepcopy(base)
+    bad["event_history"] = [{"round": 0, "fired": [{"arbitrary": 1}], "suppressed": [], "prevented": []}]
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
+    bad = deepcopy(base)
+    bad["connections"] = {"wrong_key": {"id": "connection", "src": "a", "dst": "b", "kind": "network", "entity": None, "tier": None, "created_round": 0, "retired_round": None}}
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
 
 
 def test_bound_pack_views_and_digest_are_immutable():

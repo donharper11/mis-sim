@@ -848,15 +848,15 @@ accounting:
   decision_attribution_version: 1
   action_attribution_version: 1
   tco_estimators:
-    training: one_round_opex
-    integration: one_round_opex
-    lifecycle: one_round_opex
-    capacity: one_round_opex
-    data_migration: one_round_opex
-    policy: one_round_opex
-    process_redesign: one_round_opex
+    training: full_training
+    integration: basic_integration
+    process_redesign: full_process
+    capacity: compute_unit
+    backup: backup_unit
+    lifecycle: capex_fraction
+    policy: max_policy
     maintenance: one_round_opex
-    backup: one_round_opex
+    data_migration: capex_fraction
   tco_capex_fraction: 0.1
   process_partial_fraction: 0.5
 preferences:
@@ -1077,190 +1077,49 @@ preferences:
     disposition: live_v1
     runtime_views:
     - /preferences/rules/0/views/0
-    - /preferences/rules/1/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/c_suite/ideal_reliability
     disposition: live_v1
     runtime_views:
     - /preferences/rules/0/views/1
-    - /preferences/rules/3/views/0
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/c_suite/weight
     disposition: live_v1
     runtime_views:
     - /preferences/rules/0/views/0
     - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/finance/ideal_cost_posture
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
     - /preferences/rules/1/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/finance/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
     - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/employees/ideal_training_coverage
     disposition: live_v1
     runtime_views:
     - /preferences/rules/2/views/0
     - /preferences/rules/2/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/employees/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
     - /preferences/rules/2/views/0
     - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/operations/ideal_reliability
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/1
     - /preferences/rules/3/views/0
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/operations/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
     - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/it/ideal_staff_load
     disposition: live_v1
@@ -1271,85 +1130,20 @@ preferences:
   - source_path: /preferences/catalog/defaults_by_archetype/it/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
     - /preferences/rules/4/views/0
     - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/hr/ideal_training_coverage
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/3/views/2
     - /preferences/rules/5/views/0
     - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/hr/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
     - /preferences/rules/5/views/0
     - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/marketing/ideal_customer_data
     disposition: context_m4
@@ -1362,100 +1156,30 @@ preferences:
   - source_path: /preferences/catalog/defaults_by_archetype/investor/ideal_cost_posture
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/1/views/0
     - /preferences/rules/7/views/0
     - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/investor/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
     - /preferences/rules/7/views/0
     - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/customer/ideal_availability
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/1
-    - /preferences/rules/3/views/0
     - /preferences/rules/8/views/0
     - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/customer/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
     - /preferences/rules/8/views/0
     - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/vendor/ideal_integration
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/4
     - /preferences/rules/9/views/0
     - /preferences/rules/9/views/1
     - /preferences/rules/9/views/2
@@ -1463,39 +1187,9 @@ preferences:
   - source_path: /preferences/catalog/defaults_by_archetype/vendor/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
     - /preferences/rules/9/views/0
     - /preferences/rules/9/views/1
     - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/security_auditor/ideal_security
     disposition: context_m4
@@ -1565,10 +1259,6 @@ preferences:
     disposition: live_v1
     runtime_views:
     - /preferences/rules/0/views/2
-    - /preferences/rules/1/views/1
-    - /preferences/rules/3/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/c_suite/cloud_weight
     disposition: context_m4
@@ -1581,48 +1271,12 @@ preferences:
   - source_path: /preferences/platform/defaults_by_archetype/c_suite/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
     - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/finance/ideal_placement
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/2
     - /preferences/rules/1/views/1
-    - /preferences/rules/3/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/finance/cloud_weight
     disposition: context_m4
@@ -1635,48 +1289,11 @@ preferences:
   - source_path: /preferences/platform/defaults_by_archetype/finance/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
     - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/employees/ideal_placement
-    disposition: live_v1
-    runtime_views:
-    - /preferences/rules/0/views/2
-    - /preferences/rules/1/views/1
-    - /preferences/rules/3/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/6/views/0
+    disposition: context_m4
+    runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/employees/cloud_weight
     disposition: context_m4
@@ -1687,50 +1304,13 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/employees/weight
-    disposition: live_v1
-    runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
+    disposition: context_m4
+    runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/operations/ideal_placement
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/2
-    - /preferences/rules/1/views/1
     - /preferences/rules/3/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/operations/cloud_weight
     disposition: context_m4
@@ -1743,56 +1323,18 @@ preferences:
   - source_path: /preferences/platform/defaults_by_archetype/operations/ideal_availability
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/1
     - /preferences/rules/3/views/0
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/operations/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
     - /preferences/rules/3/views/0
     - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/it/ideal_placement
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/2
-    - /preferences/rules/1/views/1
-    - /preferences/rules/3/views/1
     - /preferences/rules/4/views/2
-    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/it/cloud_weight
     disposition: context_m4
@@ -1811,48 +1353,13 @@ preferences:
   - source_path: /preferences/platform/defaults_by_archetype/it/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
     - /preferences/rules/4/views/0
     - /preferences/rules/4/views/1
     - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/hr/ideal_placement
-    disposition: live_v1
-    runtime_views:
-    - /preferences/rules/0/views/2
-    - /preferences/rules/1/views/1
-    - /preferences/rules/3/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/6/views/0
+    disposition: context_m4
+    runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/hr/cloud_weight
     disposition: context_m4
@@ -1863,49 +1370,12 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/hr/weight
-    disposition: live_v1
-    runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
+    disposition: context_m4
+    runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/marketing/ideal_placement
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/2
-    - /preferences/rules/1/views/1
-    - /preferences/rules/3/views/1
-    - /preferences/rules/4/views/2
     - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/marketing/cloud_weight
@@ -1919,137 +1389,35 @@ preferences:
   - source_path: /preferences/platform/defaults_by_archetype/marketing/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
     - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/investor/ideal_cost_posture
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/1/views/0
     - /preferences/rules/7/views/0
     - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/investor/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
     - /preferences/rules/7/views/0
     - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/customer/ideal_availability
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/1
-    - /preferences/rules/3/views/0
     - /preferences/rules/8/views/0
     - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/customer/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
     - /preferences/rules/8/views/0
     - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/vendor/ideal_integration
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/4
     - /preferences/rules/9/views/0
     - /preferences/rules/9/views/1
     - /preferences/rules/9/views/2
@@ -2057,39 +1425,9 @@ preferences:
   - source_path: /preferences/platform/defaults_by_archetype/vendor/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
     - /preferences/rules/9/views/0
     - /preferences/rules/9/views/1
     - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/security_auditor/ideal_identity_access
     disposition: context_m4
@@ -2156,598 +1494,190 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/3/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/support_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
     - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/support_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
     - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/integration_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
+    - /preferences/rules/3/views/4
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/integration_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/4
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
+    - /preferences/rules/3/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/employees/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/2/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/employees/by_decision/support_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
     - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/employees/by_decision/support_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
     - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/4/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/by_decision/support_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
     - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/by_decision/support_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
     - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/by_decision/integration_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
+    - /preferences/rules/4/views/4
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/by_decision/integration_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/4
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
+    - /preferences/rules/4/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/1/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/support_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
     - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/support_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
     - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/integration_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
+    - /preferences/rules/1/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/integration_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/4
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
+    - /preferences/rules/1/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/support_tier/ideal_tier
     disposition: live_v1
     runtime_views:
     - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/support_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
     - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/integration_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
+    - /preferences/rules/0/views/4
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/integration_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/4
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
+    - /preferences/rules/0/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/integration_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
-    - /preferences/rules/9/views/3
-    reason: source leaf retained; v1 metric has no unit-consistent interpretation
-  - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/integration_tier/weight
-    disposition: live_v1
-    runtime_views:
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/4
     - /preferences/rules/9/views/0
     - /preferences/rules/9/views/1
     - /preferences/rules/9/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
+  - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/integration_tier/weight
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/9/views/3
+    reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/support_tier/ideal_tier
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/3
-    - /preferences/rules/1/views/2
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/4/views/3
     - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/support_tier/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
     - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/operations/ideal_training_coverage
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
     - /preferences/rules/3/views/2
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/operations/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
     - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/employees/ideal_training_coverage
     disposition: live_v1
     runtime_views:
     - /preferences/rules/2/views/0
     - /preferences/rules/2/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/employees/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
     - /preferences/rules/2/views/0
     - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/hr/ideal_training_coverage
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/3/views/2
     - /preferences/rules/5/views/0
     - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/hr/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
-    - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
     - /preferences/rules/5/views/0
     - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/finance/ideal_cost_posture
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
     - /preferences/rules/1/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/finance/weight
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/0/views/0
-    - /preferences/rules/0/views/1
-    - /preferences/rules/0/views/2
-    - /preferences/rules/0/views/3
-    - /preferences/rules/0/views/4
     - /preferences/rules/1/views/0
-    - /preferences/rules/1/views/1
-    - /preferences/rules/1/views/2
-    - /preferences/rules/1/views/3
-    - /preferences/rules/2/views/0
-    - /preferences/rules/2/views/1
-    - /preferences/rules/2/views/2
-    - /preferences/rules/3/views/0
-    - /preferences/rules/3/views/1
-    - /preferences/rules/3/views/2
-    - /preferences/rules/3/views/3
-    - /preferences/rules/3/views/4
-    - /preferences/rules/4/views/0
-    - /preferences/rules/4/views/1
-    - /preferences/rules/4/views/2
-    - /preferences/rules/4/views/3
-    - /preferences/rules/4/views/4
-    - /preferences/rules/5/views/0
-    - /preferences/rules/5/views/1
-    - /preferences/rules/6/views/0
-    - /preferences/rules/7/views/0
-    - /preferences/rules/7/views/1
-    - /preferences/rules/8/views/0
-    - /preferences/rules/8/views/1
-    - /preferences/rules/9/views/0
-    - /preferences/rules/9/views/1
-    - /preferences/rules/9/views/2
-    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/it/ideal_change_volume
     disposition: context_m4

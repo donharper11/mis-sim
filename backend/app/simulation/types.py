@@ -220,6 +220,10 @@ class ServiceRuntimeV1(StrictModel):
     def unique_serves(self) -> "ServiceRuntimeV1":
         if len(set(self.serves)) != len(self.serves):
             raise ValueError("duplicate service capability")
+        if isinstance(self.availability, bool) or not math.isfinite(self.availability) or not 0 <= self.availability <= 1:
+            raise ValueError("availability must be finite and within 0..1")
+        if any(value is not None and (not math.isfinite(value) or value <= 0) for value in self.capacity_by_capability.values()):
+            raise ValueError("service capacity must be positive or null")
         return self
 
 
@@ -237,6 +241,13 @@ class CommunicationOptionV1(StrictModel):
 class UnitV1(StrictModel):
     label: StrictStr
     initial_resistance: float
+
+    @field_validator("initial_resistance")
+    @classmethod
+    def valid_resistance(cls, value: float) -> float:
+        if isinstance(value, bool) or not math.isfinite(value) or not 0 <= value <= 1:
+            raise ValueError("initial resistance must be finite and within 0..1")
+        return value
 
 
 class PeopleV1(StrictModel):
@@ -306,9 +317,22 @@ class AccountingV1(StrictModel):
     platform_capability: str
     decision_attribution_version: Literal[1]
     action_attribution_version: Literal[1]
-    tco_estimators: dict[str, str]
+    tco_estimators: dict[str, Literal["full_training", "basic_integration", "full_process", "compute_unit", "backup_unit", "capex_fraction", "max_policy", "one_round_opex"]]
     tco_capex_fraction: float
     process_partial_fraction: float
+
+    @model_validator(mode="after")
+    def exact_tco_estimators(self) -> "AccountingV1":
+        expected = {
+            "training": "full_training", "integration": "basic_integration",
+            "process_redesign": "full_process", "capacity": "compute_unit",
+            "backup": "backup_unit", "lifecycle": "capex_fraction",
+            "policy": "max_policy", "maintenance": "one_round_opex",
+            "data_migration": "capex_fraction",
+        }
+        if self.tco_estimators != expected:
+            raise ValueError("tco_estimators must equal the closed P1 estimator map")
+        return self
 
 
 class PreferenceViewV1(StrictModel):
@@ -566,8 +590,48 @@ class SignalV1(StrictModel):
     cleared_by: list[str]; was_actionable: bool; cheapest_fix_when_raised: StrictInt | None
 
 
+class EventOutcomeV1(StrictModel):
+    revenue_loss: StrictInt | None
+    scorecard: dict[Literal["financial", "customer", "internal_process", "learning_growth"], StrictInt]
+
+
+class EventEvidenceV1(StrictModel):
+    key: StrictStr; node: str | None; blast_radius: list[StrictStr]
+    base_rto_hours: float | None = None; failover_exists: bool | None = None
+    failover_factor: float | None = None; staffing_modifier: float | None = None
+    duration_hours: float | None = None; outcomes: EventOutcomeV1 | None = None
+
+    @model_validator(mode="after")
+    def finite_outage(self) -> "EventEvidenceV1":
+        for value in (self.base_rto_hours, self.failover_factor, self.staffing_modifier, self.duration_hours):
+            if value is not None and (isinstance(value, bool) or not math.isfinite(value) or value < 0):
+                raise ValueError("outage evidence values must be finite and nonnegative")
+        return self
+
+
+class SuppressionV1(StrictModel):
+    event_key: StrictStr; round: StrictInt
+    reason: Literal["cap", "already_fired"]; capability: str | None
+
+
+class SignalEpisodeV1(StrictModel):
+    key: StrictStr; episode_id: StrictInt
+
+
+class PreventionEvidenceV1(StrictModel):
+    key: StrictStr; round: StrictInt; option: StrictStr; rationale_tag: StrictStr
+    cost: StrictInt; effect: Literal["prevent_current_round"]
+    signal_episodes: list[SignalEpisodeV1]
+
+    @model_validator(mode="after")
+    def valid_cost_and_round(self) -> "PreventionEvidenceV1":
+        if self.round < 0 or self.cost < 0:
+            raise ValueError("prevention round/cost out of range")
+        return self
+
+
 class EventHistoryV1(StrictModel):
-    round: StrictInt; fired: list[dict[str, Any]]; suppressed: list[dict[str, Any]]; prevented: list[dict[str, Any]]
+    round: StrictInt; fired: list[EventEvidenceV1]; suppressed: list[SuppressionV1]; prevented: list[PreventionEvidenceV1]
 
 
 class ResponseV1(StrictModel):
@@ -580,9 +644,54 @@ class TcoV1(StrictModel):
     forecast: StrictInt; forecast_horizon_round: StrictInt; estimates: dict[str, StrictInt]
 
 
+class RepairWitnessV1(StrictModel):
+    candidate_key: StrictStr = Field(pattern=HEX64_RE.pattern)
+    commands: list[CommandV1]; capital_cost: StrictInt; effective_round: StrictInt
+    affordable: bool; operating_forecast: list[OperatingForecastV1]
+    baseline_metric: float | bool; candidate_metric: float | bool
+    emitted_action_ids: list[StrictStr] = Field(default_factory=list)
+    credit_eligible: bool; assumptions: Literal["empty_future_decisions"]
+
+    @field_validator("emitted_action_ids")
+    @classmethod
+    def valid_action_ids(cls, values: list[str]) -> list[str]:
+        if any(not HEX64_RE.fullmatch(value) for value in values):
+            raise ValueError("emitted action id must be sha256")
+        if len(values) != len(set(values)):
+            raise ValueError("duplicate emitted action id")
+        return values
+
+
+class RepairExcludedV1(StrictModel):
+    candidate_key: StrictStr = Field(pattern=HEX64_RE.pattern)
+    reason: Literal[
+        "not_found", "invalid_input", "invalid_reference", "conflicting_commands", "unaffordable",
+        "revision_conflict", "locked", "round_state", "pack_mismatch", "scope_exists",
+        "unsupported_operation", "arrival_after_game_end", "invalid_output", "held_response_ineligible",
+        "command_key_collision", "baseline_not_raised", "metric_not_repaired", "no_positive_path",
+        "no_in_game_effect",
+    ]
+
+
 class RepairAssessmentV1(StrictModel):
-    round: StrictInt; signal: str; original_watch_rule_index: StrictInt
-    candidates: list[dict[str, Any]]; uncredited: list[dict[str, Any]]; excluded: list[dict[str, Any]]
+    round: StrictInt; signal: str
+    status: Literal["verified", "unassessed"]
+    reason: Literal["bounded_catalogue_no_verified_repair"] | None
+    initial_state_digest: StrictStr = Field(pattern=HEX64_RE.pattern)
+    merged_sheet_digest: StrictStr = Field(pattern=HEX64_RE.pattern)
+    candidates: list[RepairWitnessV1]
+    repaired_but_uncredited: list[RepairWitnessV1]
+    excluded: list[RepairExcludedV1]
+
+    @model_validator(mode="after")
+    def valid_status(self) -> "RepairAssessmentV1":
+        if self.round < 0:
+            raise ValueError("assessment round out of range")
+        if self.status == "verified" and self.reason is not None:
+            raise ValueError("verified assessment cannot have an unassessed reason")
+        if self.status == "unassessed" and self.reason is None:
+            raise ValueError("unassessed assessment requires a reason")
+        return self
 
 
 class UnpricedSignalExposureV1(StrictModel):
@@ -621,6 +730,38 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("primary references unknown capability")
         if any(not 0 <= value <= 1 or not math.isfinite(value) for value in self.unit_resistance.values()):
             raise ValueError("unit resistance out of range")
+        if any(k != v.id for k, v in self.connections.items()):
+            raise ValueError("connection map key must equal connection id")
+        if any(k != v.id for k, v in self.hiring_orders.items()):
+            raise ValueError("hiring order map key must equal order id")
+        if any(not KEY_RE.fullmatch(k) for k in self.connections | self.hiring_orders | self.rollouts | self.governance | self.policies | self.unit_resistance):
+            raise ValueError("invalid checkpoint map key")
+        if any(k not in self.assets for k in self.rollouts):
+            raise ValueError("rollout references unknown asset")
+        if any(k not in CAPABILITIES for k in self.governance | self.primary):
+            raise ValueError("governance/primary capability key is unknown")
+        if len(self.staff_hires) != len({x.order_id for x in self.staff_hires}):
+            raise ValueError("duplicate staff hire order")
+        covered = self.support.covered_assets
+        if len(covered) != len(set(covered)) or any(x not in self.assets for x in covered):
+            raise ValueError("support covered asset join invalid")
+        if len(self.action_history) != len({x.id for x in self.action_history}):
+            raise ValueError("duplicate action envelope")
+        if any(x.effect_round < x.source_round or x.source_round < 0 for x in self.action_history):
+            raise ValueError("action round ordering invalid")
+        if len(self.event_history) != len({x.round for x in self.event_history}) or [x.round for x in self.event_history] != sorted(x.round for x in self.event_history):
+            raise ValueError("event history must be unique and ascending")
+        if len(self.response_history) != len({(x.round, x.key) for x in self.response_history}):
+            raise ValueError("duplicate response history")
+        if len(self.tco_forecasts) != len({(x.asset_id, x.ordered_round) for x in self.tco_forecasts}):
+            raise ValueError("duplicate TCO forecast")
+        if any(x.asset_id not in self.assets for x in self.tco_forecasts):
+            raise ValueError("TCO references unknown asset")
+        keys = [(x.round, x.signal) for x in self.repair_assessment_history]
+        if len(keys) != len(set(keys)) or keys != sorted(keys):
+            raise ValueError("repair assessment history must be canonical")
+        if any(x.round < 0 for x in self.event_history + self.response_history + self.repair_assessment_history):
+            raise ValueError("negative checkpoint round")
         for key, project in self.projects.items():
             if project.asset_id not in self.assets and project.status not in {"cancelled", "abandoned"}:
                 raise ValueError("project references unknown asset")
