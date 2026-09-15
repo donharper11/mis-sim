@@ -22,7 +22,7 @@ from sqlalchemy.exc import ArgumentError, SQLAlchemyError
 BACKEND = Path(__file__).resolve().parents[1]
 DATABASE_PREFIX = "mis_sim_verify_"
 EXPECTED_ROUNDS = list(range(1, 7))
-EXPECTED_TABLE_COUNT = 16
+EXPECTED_TABLE_COUNT = 19
 
 
 class VerificationError(RuntimeError):
@@ -80,7 +80,10 @@ def require_empty_database(engine, database: str) -> str:
 
 
 def verify_schema(engine, models) -> list[str]:
-    expected = {model.__tablename__ for model in models.ALL_TABLES}
+    from app.simulation import models as simulation_models
+
+    expected_models = (*models.ALL_TABLES, *simulation_models.ALL_TABLES)
+    expected = {model.__tablename__ for model in expected_models}
     if len(expected) != EXPECTED_TABLE_COUNT:
         raise VerificationError(f"expected {EXPECTED_TABLE_COUNT} runtime table models; found {len(expected)}")
     inspector = inspect(engine)
@@ -109,7 +112,7 @@ def verify_results(session, models, instance_id: int, team_id: int) -> dict:
         ) or not payload.get("capabilities") or not payload.get("financials"):
             raise VerificationError(f"round {row.round}: incomplete or incorrectly scoped persisted payload")
     counts = {}
-    for model in models.ALL_TABLES:
+    for model in expected_models:
         counts[model.__tablename__] = session.scalar(select(func.count()).select_from(model).where(
             model.instance_id == instance_id, model.team_id == team_id,
         ))
