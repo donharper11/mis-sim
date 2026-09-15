@@ -13,8 +13,9 @@ import pytest
 
 from app.simulation import load_runtime_pack, normalize_patch
 from app.simulation.types import (
-    AssetV1, CheckpointStateV1, CommandV1, DebtV1, ResponseV1, RolloutV1, SheetPatchV1,
-    SignalV1, SimulationError, TcoV1, UnitV1, ServiceRuntimeV1, CatalogRuntimeV1,
+    AssetV1, CheckpointStateV1, CommandV1, DebtV1, GovernanceStateV1, HiringOrderV1,
+    OperatingForecastV1, PolicyStateV1, RepairWitnessV1, ResponseV1, RolloutV1, SheetPatchV1,
+    SignalV1, SimulationError, SupportV1, TcoV1, UnpricedSignalExposureV1, UnitV1, ServiceRuntimeV1, CatalogRuntimeV1,
 )
 
 
@@ -172,6 +173,9 @@ def test_checkpoint_nested_evidence_and_map_identity_are_strict():
     bad = deepcopy(base)
     bad["connections"] = {"wrong_key": {"id": "connection", "src": "a", "dst": "b", "kind": "network", "entity": None, "tier": None, "created_round": 0, "retired_round": None}}
     with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
+    bad_strategy = deepcopy(base)
+    bad_strategy["strategy"] = "x" * 65
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad_strategy)
 
 
 def test_checkpoint_nested_numbers_and_key_lengths_are_bounded():
@@ -196,6 +200,28 @@ def test_checkpoint_nested_numbers_and_key_lengths_are_bounded():
         "available_funds_by_round": [], "event_history": [], "response_history": [], "tco_forecasts": [], "repair_assessment_history": [], "unpriced_signal_exposures": [],
     }
     with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad_map)
+
+
+def test_repair_and_checkpoint_machine_keys_are_strictly_bounded():
+    with pytest.raises(ValueError): OperatingForecastV1(round=-1, opening=0, allowance=0, recurring=0, closing=0)
+    witness = {
+        "candidate_key": "a" * 64, "commands": [], "capital_cost": 0, "effective_round": 0,
+        "affordable": True, "operating_forecast": [], "baseline_metric": float("nan"),
+        "candidate_metric": 0.5, "emitted_action_ids": [], "credit_eligible": True,
+        "assumptions": "empty_future_decisions",
+    }
+    with pytest.raises(ValueError): RepairWitnessV1.model_validate(witness)
+    witness["baseline_metric"] = 0.5; witness["capital_cost"] = -1
+    with pytest.raises(ValueError): RepairWitnessV1.model_validate(witness)
+    witness["capital_cost"] = 0; witness["effective_round"] = -1
+    with pytest.raises(ValueError): RepairWitnessV1.model_validate(witness)
+    with pytest.raises(ValueError): GovernanceStateV1(owner="x" * 65, sponsor=None)
+    with pytest.raises(ValueError): PolicyStateV1(selected="x" * 65, actively_decided=False)
+    with pytest.raises(ValueError): SupportV1(tier="x" * 65, covered_assets=[])
+    with pytest.raises(ValueError): SupportV1(tier=None, covered_assets=["x" * 65])
+    with pytest.raises(ValueError): HiringOrderV1(id="order", option="x" * 65, ordered_round=0, remaining_lead=0, status="pending", arrival_round=None)
+    with pytest.raises(ValueError): DebtV1(signal="x" * 65, episode_id=0, capability="capability", opened_round=0, amount=0, settled_round=None)
+    with pytest.raises(ValueError): UnpricedSignalExposureV1(signal="signal", episode_id=0, capability="x" * 65, reason="unpriced")
 def test_bound_pack_views_and_digest_are_immutable():
     pack = load_runtime_pack(PACK)
     digest = pack.pack_digest

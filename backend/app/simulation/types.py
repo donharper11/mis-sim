@@ -62,6 +62,12 @@ def _key(value: str, limit: int = 64) -> str:
     return value
 
 
+def _machine_key(value: str, field: str = "key") -> str:
+    if not isinstance(value, str) or not 1 <= len(value) <= 64 or not KEY_RE.fullmatch(value):
+        raise ValueError(f"{field} must be a bounded lower snake_case key")
+    return value
+
+
 def _finite(value: float) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise ValueError("must be a finite number")
@@ -437,6 +443,12 @@ class PackIdentityV1(StrictModel):
 class OperatingForecastV1(StrictModel):
     round: StrictInt; opening: StrictInt; allowance: StrictInt; recurring: StrictInt; closing: StrictInt
 
+    @model_validator(mode="after")
+    def valid_forecast(self) -> "OperatingForecastV1":
+        if min(self.round, self.opening, self.allowance, self.recurring, self.closing) < 0:
+            raise ValueError("operating forecast rounds and money must be nonnegative")
+        return self
+
 
 class WarningV1(StrictModel):
     code: Literal["operating_deficit", "unpriced_repair"]
@@ -546,6 +558,12 @@ class ProjectV1(StrictModel):
     def valid_project_numbers(self) -> "ProjectV1":
         if self.units <= 0 or self.ordered_round < 0 or self.paid_capex < 0 or self.remaining_lead < 0:
             raise ValueError("invalid project units, money or rounds")
+        if self.placement not in PLACEMENTS:
+            raise ValueError("invalid project placement")
+        for value, field in ((self.config, "config"), (self.replacement_target, "replacement_target")):
+            if value is not None: _machine_key(value, field)
+        if any(not isinstance(value, str) or not 1 <= len(value) <= 64 or not KEY_RE.fullmatch(value) for value in self.tco_categories):
+            raise ValueError("invalid TCO category key")
         return self
 
 
@@ -578,13 +596,30 @@ class RolloutV1(StrictModel):
 class GovernanceStateV1(StrictModel):
     owner: str | None; sponsor: str | None
 
+    @model_validator(mode="after")
+    def valid_governance_keys(self) -> "GovernanceStateV1":
+        if self.owner is not None: _machine_key(self.owner, "owner")
+        if self.sponsor is not None: _machine_key(self.sponsor, "sponsor")
+        return self
+
 
 class PolicyStateV1(StrictModel):
     selected: str; actively_decided: bool
 
+    @field_validator("selected")
+    @classmethod
+    def valid_selected(cls, value: str) -> str:
+        return _machine_key(value, "selected")
+
 
 class SupportV1(StrictModel):
     tier: str | None; covered_assets: list[str]
+
+    @model_validator(mode="after")
+    def valid_support_keys(self) -> "SupportV1":
+        if self.tier is not None: _machine_key(self.tier, "tier")
+        for value in self.covered_assets: _machine_key(value, "covered_assets")
+        return self
 
 
 class ActionRecordV1(StrictModel):
@@ -618,6 +653,7 @@ class HiringOrderV1(StrictModel):
     def valid_hiring_order(self) -> "HiringOrderV1":
         if self.ordered_round < 0 or self.remaining_lead < 0 or (self.arrival_round is not None and self.arrival_round < self.ordered_round):
             raise ValueError("invalid hiring order rounds")
+        _machine_key(self.option, "option")
         return self
 
 
@@ -639,6 +675,7 @@ class DebtV1(StrictModel):
     def valid_debt(self) -> "DebtV1":
         if self.episode_id < 0 or self.opened_round < 0 or self.amount < 0 or (self.settled_round is not None and self.settled_round < self.opened_round):
             raise ValueError("invalid debt money or rounds")
+        _machine_key(self.signal, "signal"); _machine_key(self.capability, "capability")
         return self
 
 
@@ -740,6 +777,15 @@ class RepairWitnessV1(StrictModel):
     emitted_action_ids: list[StrictStr] = Field(default_factory=list)
     credit_eligible: bool; assumptions: Literal["empty_future_decisions"]
 
+    @model_validator(mode="after")
+    def valid_witness_numbers(self) -> "RepairWitnessV1":
+        if self.capital_cost < 0 or self.effective_round < 0:
+            raise ValueError("repair witness cost and round must be nonnegative")
+        for value in (self.baseline_metric, self.candidate_metric):
+            if not isinstance(value, bool) and (not isinstance(value, (int, float)) or not math.isfinite(value)):
+                raise ValueError("repair witness metric must be finite")
+        return self
+
     @field_validator("emitted_action_ids")
     @classmethod
     def valid_action_ids(cls, values: list[str]) -> list[str]:
@@ -785,6 +831,13 @@ class RepairAssessmentV1(StrictModel):
 class UnpricedSignalExposureV1(StrictModel):
     signal: str; episode_id: StrictInt; capability: str; reason: Literal["unpriced", "unassessed"]
 
+    @model_validator(mode="after")
+    def valid_exposure_keys(self) -> "UnpricedSignalExposureV1":
+        _machine_key(self.signal, "signal"); _machine_key(self.capability, "capability")
+        if self.episode_id < 0:
+            raise ValueError("episode id must be nonnegative")
+        return self
+
 
 class CheckpointStateV1(StrictModel):
     strategy: str; strategy_declared_round: StrictInt
@@ -802,7 +855,7 @@ class CheckpointStateV1(StrictModel):
 
     @model_validator(mode="after")
     def validate_state(self) -> "CheckpointStateV1":
-        if not KEY_RE.fullmatch(self.strategy) or not self.strategy_declared_round >= 0:
+        if not KEY_RE.fullmatch(self.strategy) or len(self.strategy) > 64 or not self.strategy_declared_round >= 0:
             raise ValueError("invalid strategy or declared round")
         if any(k != v.id for k, v in self.assets.items()):
             raise ValueError("asset map key must equal asset id")
