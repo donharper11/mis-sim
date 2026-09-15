@@ -198,6 +198,22 @@ def test_checkpoint_nested_evidence_and_map_identity_are_strict():
     integration_no_tier = dict(network, kind="integration", entity="order", tier=None)
     with pytest.raises(ValueError): CheckpointStateV1.model_validate(with_edges(integration_no_tier))
     with pytest.raises(ValueError): CheckpointStateV1.model_validate(with_edges(dict(network, entity=None), [{"order_id": "missing", "option": "option", "arrival_round": 0}]))
+    duplicate = with_edges(dict(network, entity=None))
+    duplicate["connections"]["edge_2"] = dict(network, id="edge_2", entity=None)
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(duplicate)
+    duplicate_primary = deepcopy(base); duplicate_primary["assets"] = assets
+    duplicate_primary["primary"] = {"order_fulfilment": "asset_a", "store_operations": "asset_a"}
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(duplicate_primary)
+    service_rollout = deepcopy(base)
+    service_rollout["assets"] = {"service_asset": {"id": "service_asset", "source_kind": "service", "source_key": "service", "placement": "on_prem", "config": None, "units": 1, "installed_round": 0, "retired_round": None}}
+    service_rollout["rollouts"] = {"service_asset": {"trained_count": 0, "adoption": 0.0, "process": "unchanged", "ever_trained": False, "lifecycle": "active"}}
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(service_rollout)
+    duplicate_tco = deepcopy(base); duplicate_tco["assets"] = assets
+    duplicate_tco["tco_forecasts"] = [
+        {"asset_id": "asset_a", "ordered_round": 0, "selected_categories": [], "forecast": 0, "forecast_horizon_round": 0, "estimates": {}},
+        {"asset_id": "asset_a", "ordered_round": 1, "selected_categories": [], "forecast": 0, "forecast_horizon_round": 1, "estimates": {}},
+    ]
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(duplicate_tco)
 
 
 def test_checkpoint_nested_numbers_and_key_lengths_are_bounded():

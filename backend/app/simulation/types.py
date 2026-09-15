@@ -923,12 +923,17 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("invalid checkpoint map key")
         if any(k not in self.assets for k in self.rollouts):
             raise ValueError("rollout references unknown asset")
+        if any(self.assets[k].source_kind != "catalog" for k in self.rollouts):
+            raise ValueError("rollouts are only valid for catalog assets")
         if any(k not in CAPABILITIES for k in self.governance | self.primary):
             raise ValueError("governance/primary capability key is unknown")
         if len(self.staff_hires) != len({x.order_id for x in self.staff_hires}):
             raise ValueError("duplicate staff hire order")
         if any(hire.order_id not in self.hiring_orders for hire in self.staff_hires):
             raise ValueError("staff hire references unknown hiring order")
+        primary_assets = [asset_id for asset_id in self.primary.values() if asset_id is not None]
+        if len(primary_assets) != len(set(primary_assets)):
+            raise ValueError("one capability may be primary for each physical asset")
         for connection in self.connections.values():
             if connection.src not in self.assets or connection.dst not in self.assets or connection.src == connection.dst:
                 raise ValueError("connection endpoints must be distinct known assets")
@@ -936,6 +941,9 @@ class CheckpointStateV1(StrictModel):
                 raise ValueError("network/failover connections cannot carry entity or tier")
             if connection.kind == "integration" and (connection.entity is None or connection.tier is None):
                 raise ValueError("integration connections require entity and tier")
+        topology = [(min(c.src, c.dst), max(c.src, c.dst), c.kind, c.entity) for c in self.connections.values()]
+        if len(topology) != len(set(topology)):
+            raise ValueError("duplicate physical connection topology/entity")
         covered = self.support.covered_assets
         if len(covered) != len(set(covered)) or any(x not in self.assets for x in covered):
             raise ValueError("support covered asset join invalid")
@@ -947,7 +955,7 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("event history must be unique and ascending")
         if len(self.response_history) != len({(x.round, x.key) for x in self.response_history}):
             raise ValueError("duplicate response history")
-        if len(self.tco_forecasts) != len({(x.asset_id, x.ordered_round) for x in self.tco_forecasts}):
+        if len(self.tco_forecasts) != len({x.asset_id for x in self.tco_forecasts}):
             raise ValueError("duplicate TCO forecast")
         if any(x.asset_id not in self.assets for x in self.tco_forecasts):
             raise ValueError("TCO references unknown asset")
