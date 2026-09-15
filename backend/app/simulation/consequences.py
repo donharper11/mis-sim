@@ -191,7 +191,33 @@ def _preview(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: PreparedEf
     rows = [OperatingForecastV1.model_validate(row) for row in forecast]
     warnings = []
     if any(x.closing < 0 for x in rows): warnings.append(WarningV1(code="operating_deficit", keys=[str(x.round) for x in rows if x.closing < 0]))
-    return PreviewV1(version=1, round=prepared.round, normalized_commands=list(prepared.commands), arrivals=list(prepared.arrivals), retirements=list(prepared.retirements), expiries=list(prepared.expiries), capital_available=prepared.capital_available, capital_spend=prepared.capital_spend, capital_remaining=prepared.capital_remaining, operating_runrate=prepared.operating_runrate, operating_forecast=rows, challenges=[], repair_assessments=[_dump(x) for x in (assessments or [])], prevented_events=sorted(prepared.prevented), would_fire=[], cost_entries=[_dump(x) for x in prepared.charges], warnings=warnings)
+    challenges, would_fire = _preview_events(pack, prior, prepared)
+    return PreviewV1(version=1, round=prepared.round, normalized_commands=list(prepared.commands), arrivals=list(prepared.arrivals), retirements=list(prepared.retirements), expiries=list(prepared.expiries), capital_available=prepared.capital_available, capital_spend=prepared.capital_spend, capital_remaining=prepared.capital_remaining, operating_runrate=prepared.operating_runrate, operating_forecast=rows, challenges=challenges, repair_assessments=[_dump(x) for x in (assessments or [])], prevented_events=sorted(prepared.prevented), would_fire=would_fire, cost_entries=[_dump(x) for x in prepared.charges], warnings=warnings)
+
+
+def _preview_events(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: PreparedEffects) -> tuple[list[dict[str, Any]], list[str]]:
+    staff = StaffPool(staff_fte=float(prepared.organisation.staff.capacity), load_fte=float(prepared.organisation.staff.load))
+    alignments = tuple(StakeholderDecisionAlignment(stakeholder=x.stakeholder, alignment=float(x.value), cares_about=tuple(x.cares_about)) for x in prepared.organisation.stakeholder_alignments)
+    team = project_team_state(pack, prepared.state, prepared.round, prepared.resources, staff, alignments, actions=prepared.actions, funds=[prepared.capital_remaining], debt_ratios={}, signals=ledger_engine.project_signal_state(_ledger_rows(prior.signal_ledger), current_round=prepared.round))
+    ledger = _ledger_rows(prior.signal_ledger)
+    already = {item.key for history in prior.event_history for item in history.fired}
+    challenges: list[dict[str, Any]] = []
+    would_fire: list[str] = []
+    for event in pack.casepack.events:
+        if event.key in already:
+            eligible, reason = False, "already_fired"
+        elif not all(event_engine.evaluate_precondition(pc, team, pack.casepack, ledger) for pc in event.preconditions):
+            eligible, reason = False, "precondition"
+        elif event.strategy_affinity and prepared.state.strategy not in event.strategy_affinity:
+            eligible, reason = False, "strategy_affinity"
+        elif not event_engine.arms_gate_satisfied(event, team, pack.casepack):
+            eligible, reason = False, "arms"
+        else:
+            eligible, reason = True, None
+        challenges.append({"event": event.key, "eligible": eligible, "allowed_options": [{"key": option.key, "cost": option.cost, "tags": list(option.tags)} for option in event.options], "ineligible_reason": reason})
+        if eligible and event.key not in prepared.prevented:
+            would_fire.append(event.key)
+    return challenges, would_fire
 
 
 def quote_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iterable[CommandV1], round: int) -> PreviewV1:
@@ -270,7 +296,11 @@ def _tco(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: PreparedEffect
 def _tco_evidence(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: PreparedEffects, rows: list[TcoV1]) -> list[dict[str, Any]]:
     actual_entries = list(prior.cost_ledger) + list(prepared.charges)
     evidence = []
-    for row in rows:
+    by_id = {row.asset_id: row for row in rows}
+    for asset_id, asset in sorted(prepared.state.assets.items()):
+        if asset.source_kind != "catalog":
+            continue
+        row = by_id.get(asset_id) or TcoV1(asset_id=asset_id, ordered_round=asset.installed_round, selected_categories=[], forecast=0, forecast_horizon_round=pack.casepack.metadata.rounds, estimates={})
         asset = prepared.state.assets.get(row.asset_id)
         source = next((x for x in pack.casepack.catalog if x.key == asset.source_key), None) if asset is not None and asset.source_kind == "catalog" else None
         true = [x for x in (source.true_cost_categories if source else []) if x in row.selected_categories]
@@ -365,6 +395,14 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     priced_total = sum(x.amount for x in state.technical_debt if x.settled_round is None)
     capital_attributed = sum(-x.capital_delta for x in state.cost_ledger if x.capital_delta < 0 and x.capability is not None)
     debt_ratio = priced_total / (priced_total + capital_attributed) if priced_total + capital_attributed else 0.0
-    result = {"round": round, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "suppressed_events": [_dump(x) for x in suppressed], "tco": _tco_evidence(pack, prior, prepared, tco_rows), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures), "debt_ratio": debt_ratio}, "financials": {"capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve}}
+    prevented_evidence = [_dump(x) for x in history_row.prevented]
+    round_entries = [_dump(x) for x in all_charges]
+    event_loss = -sum(x.operating_delta for x in event_costs)
+    accounting = {"opening_capital": prior.capital_balance, "opening_operating": prior.operating_reserve, "capital_grant": next((x.capital_delta for x in all_charges if x.kind == "capital_grant"), 0), "operating_allowance": next((x.operating_delta for x in all_charges if x.kind == "operating_allowance"), 0), "capital_spend": -sum(x.capital_delta for x in all_charges if x.capital_delta < 0), "opex_runrate": prepared.operating_runrate, "event_loss": event_loss, "closing_capital": state.capital_balance, "closing_operating": state.operating_reserve, "cost_entries": round_entries, "unallocated_operating": -sum(x.operating_delta for x in all_charges if x.operating_delta < 0 and x.kind in {"wages", "support", "response"}), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures)}}
+    changed_rollouts = [{"key": key, **_dump(value)} for key, value in state.rollouts.items() if prior.rollouts.get(key) != value]
+    changed_policies = [{"key": key, **_dump(value)} for key, value in state.policies.items() if prior.policies.get(key) != value]
+    changed_assignments = [{"key": key, **_dump(value)} for key, value in state.governance.items() if prior.governance.get(key) != value]
+    state_changes = {"arrived": sorted(prepared.arrivals), "retired": sorted(prepared.retirements), "expired": sorted(prepared.expiries), "changed_rollouts": changed_rollouts, "changed_policies": changed_policies, "changed_assignments": changed_assignments, "resource_view": _dump(prepared.resources), "entity_access": [_dump(x) for x in team_state.entity_access or ()]}
+    result = {"simulation_version": 1, "pack_identity": {"key": pack.casepack.metadata.pack_key, "version": pack.casepack.metadata.pack_version, "digest": pack.pack_digest}, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "suppressed_events": [{"key": x.event_key, "reason": x.reason, "capability": x.capability} for x in suppressed], "prevented_events": prevented_evidence, "accounting": accounting, "state_changes": state_changes, "tco": _tco_evidence(pack, prior, prepared, tco_rows), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures), "debt_ratio": debt_ratio}, "financials": {"capital_spend": accounting["capital_spend"], "opex_runrate": prepared.operating_runrate, "debt": priced_total, "capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve}}
     preview = _preview(pack, prior, prepared, assessments)
     return TransitionV1(state=state, result=result, preview=preview)
