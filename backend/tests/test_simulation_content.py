@@ -13,9 +13,11 @@ import pytest
 
 from app.simulation import load_runtime_pack, normalize_patch
 from app.simulation.types import (
-    AssetV1, CheckpointStateV1, CommandV1, DebtV1, GovernanceStateV1, HiringOrderV1,
-    OperatingForecastV1, PolicyStateV1, RepairWitnessV1, ResponseV1, RolloutV1, SheetPatchV1,
-    SignalV1, SimulationError, SupportV1, TcoV1, UnpricedSignalExposureV1, UnitV1, ServiceRuntimeV1, CatalogRuntimeV1,
+    ActionRecordV1, AssetV1, CheckpointStateV1, CommandV1, ConnectionV1, CostEntryV1, DebtV1,
+    EventEvidenceV1, GovernanceStateV1, HiringOrderV1, OperatingForecastV1, PolicyStateV1,
+    PreventionEvidenceV1, RepairAssessmentV1, RepairWitnessV1, ResponseV1, RolloutV1, SheetPatchV1,
+    SignalEpisodeV1, SignalV1, SimulationError, StaffHireV1, SuppressionV1, SupportV1, TcoV1,
+    UnpricedSignalExposureV1, UnitV1, ServiceRuntimeV1, CatalogRuntimeV1,
 )
 
 
@@ -222,6 +224,32 @@ def test_repair_and_checkpoint_machine_keys_are_strictly_bounded():
     with pytest.raises(ValueError): HiringOrderV1(id="order", option="x" * 65, ordered_round=0, remaining_lead=0, status="pending", arrival_round=None)
     with pytest.raises(ValueError): DebtV1(signal="x" * 65, episode_id=0, capability="capability", opened_round=0, amount=0, settled_round=None)
     with pytest.raises(ValueError): UnpricedSignalExposureV1(signal="signal", episode_id=0, capability="x" * 65, reason="unpriced")
+
+
+def test_nested_checkpoint_keys_and_placement_enum_reject_bad_values():
+    asset = dict(id="asset", source_kind="catalog", source_key="catalog", placement="on_prem", config="core", units=1, installed_round=0, retired_round=None)
+    asset["placement"] = "BAD"
+    with pytest.raises(ValueError): AssetV1.model_validate(asset)
+    connection = dict(id="connection", src="src", dst="dst", kind="network", entity="BAD.KEY", tier=None, created_round=0, retired_round=None)
+    with pytest.raises(ValueError): ConnectionV1.model_validate(connection)
+    with pytest.raises(ValueError): StaffHireV1(order_id="BAD.KEY", option="option", arrival_round=0)
+    signal = {
+        "key": "BAD.KEY", "episode_id": 0, "capability": "capability", "metric": "metric", "metric_kind": "threshold",
+        "value": 0.1, "severity": "warning", "status": "open", "first_shown_round": 0, "cleared_round": None,
+        "fire_round": None, "cleared_by": [], "was_actionable": False, "cheapest_fix_when_raised": None,
+    }
+    with pytest.raises(ValueError): SignalV1.model_validate(signal)
+    with pytest.raises(ValueError): EventEvidenceV1(key="BAD.KEY", node=None, blast_radius=[])
+    with pytest.raises(ValueError): SuppressionV1(event_key="event", round=0, reason="cap", capability="BAD.KEY")
+    with pytest.raises(ValueError): SignalEpisodeV1(key="BAD.KEY", episode_id=0)
+    with pytest.raises(ValueError): PreventionEvidenceV1(key="event", round=0, option="option", rationale_tag="BAD.KEY", cost=0, effect="prevent_current_round", signal_episodes=[])
+    with pytest.raises(ValueError): ActionRecordV1(action_type="BAD.KEY", locked_round=0, capability=None, target_key=None, cost=0)
+    with pytest.raises(ValueError): CostEntryV1(round=0, kind="kind", source="source", asset="BAD.KEY", capital_delta=0, operating_delta=0)
+    with pytest.raises(ValueError): TcoV1(asset_id="asset", ordered_round=0, selected_categories=["BAD.KEY"], forecast=0, forecast_horizon_round=0, estimates={})
+    with pytest.raises(ValueError): RepairAssessmentV1(
+        round=0, signal="BAD.KEY", status="unassessed", reason="bounded_catalogue_no_verified_repair",
+        initial_state_digest="a" * 64, merged_sheet_digest="b" * 64, candidates=[], repaired_but_uncredited=[], excluded=[],
+    )
 def test_bound_pack_views_and_digest_are_immutable():
     pack = load_runtime_pack(PACK)
     digest = pack.pack_digest

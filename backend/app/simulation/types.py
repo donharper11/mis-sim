@@ -491,6 +491,12 @@ class CostEntryV1(StrictModel):
     asset: str | None = None; capability: str | None = None; category: str | None = None
     capital_delta: StrictInt; operating_delta: StrictInt
 
+    @model_validator(mode="after")
+    def valid_cost_keys(self) -> "CostEntryV1":
+        for value, field in ((self.kind, "kind"), (self.source, "source"), (self.asset, "asset"), (self.capability, "capability"), (self.category, "category")):
+            if value is not None: _machine_key(value, field)
+        return self
+
 
 class EffectCandidateV1(StrictModel):
     effect_kind: Literal["arrival", "replacement", "training", "process", "integration", "support", "retirement", "policy"]
@@ -542,6 +548,8 @@ class AssetV1(StrictModel):
     def valid_asset_numbers(self) -> "AssetV1":
         if self.units <= 0 or self.installed_round < 0 or (self.retired_round is not None and self.retired_round < self.installed_round):
             raise ValueError("invalid asset units or rounds")
+        if self.placement not in PLACEMENTS: raise ValueError("invalid asset placement")
+        if self.config is not None: _machine_key(self.config, "config")
         return self
 
 
@@ -578,6 +586,8 @@ class ConnectionV1(StrictModel):
     def valid_connection_rounds(self) -> "ConnectionV1":
         if self.created_round < 0 or (self.retired_round is not None and self.retired_round < self.created_round):
             raise ValueError("invalid connection rounds")
+        if self.entity is not None: _machine_key(self.entity, "entity")
+        if self.tier is not None: _machine_key(self.tier, "tier")
         return self
 
 
@@ -630,6 +640,9 @@ class ActionRecordV1(StrictModel):
     def valid_action_record(self) -> "ActionRecordV1":
         if self.locked_round < 0 or self.cost < 0:
             raise ValueError("invalid action round or cost")
+        _machine_key(self.action_type, "action_type")
+        if self.capability is not None: _machine_key(self.capability, "capability")
+        if self.target_key is not None: _machine_key(self.target_key, "target_key")
         return self
 
 
@@ -642,6 +655,7 @@ class ActionEnvelopeV1(StrictModel):
     def valid_action_rounds(self) -> "ActionEnvelopeV1":
         if self.source_round < 0 or self.effect_round < self.source_round:
             raise ValueError("invalid action envelope rounds")
+        _machine_key(self.source_command, "source_command")
         return self
 
 
@@ -665,6 +679,11 @@ class StaffHireV1(StrictModel):
     def nonnegative_arrival(cls, value: int) -> int:
         if value < 0: raise ValueError("arrival round must be nonnegative")
         return value
+
+    @model_validator(mode="after")
+    def valid_staff_keys(self) -> "StaffHireV1":
+        _machine_key(self.order_id, "order_id"); _machine_key(self.option, "option")
+        return self
 
 
 class DebtV1(StrictModel):
@@ -695,6 +714,9 @@ class SignalV1(StrictModel):
             raise ValueError("signal value must be finite")
         if self.cheapest_fix_when_raised is not None and self.cheapest_fix_when_raised < 0:
             raise ValueError("signal repair cost must be nonnegative")
+        _machine_key(self.key, "key"); _machine_key(self.capability, "capability"); _machine_key(self.metric, "metric")
+        if self.metric_kind not in {"threshold", "presence"}: raise ValueError("invalid signal metric kind")
+        for value in self.cleared_by: _machine_key(value, "cleared_by")
         return self
 
 
@@ -714,6 +736,9 @@ class EventEvidenceV1(StrictModel):
         for value in (self.base_rto_hours, self.failover_factor, self.staffing_modifier, self.duration_hours):
             if value is not None and (isinstance(value, bool) or not math.isfinite(value) or value < 0):
                 raise ValueError("outage evidence values must be finite and nonnegative")
+        _machine_key(self.key, "key")
+        if self.node is not None: _machine_key(self.node, "node")
+        for value in self.blast_radius: _machine_key(value, "blast_radius")
         return self
 
 
@@ -721,9 +746,22 @@ class SuppressionV1(StrictModel):
     event_key: StrictStr; round: StrictInt
     reason: Literal["cap", "already_fired"]; capability: str | None
 
+    @model_validator(mode="after")
+    def valid_suppression_keys(self) -> "SuppressionV1":
+        _machine_key(self.event_key, "event_key")
+        if self.capability is not None: _machine_key(self.capability, "capability")
+        if self.round < 0: raise ValueError("suppression round must be nonnegative")
+        return self
+
 
 class SignalEpisodeV1(StrictModel):
     key: StrictStr; episode_id: StrictInt
+
+    @model_validator(mode="after")
+    def valid_episode(self) -> "SignalEpisodeV1":
+        _machine_key(self.key, "key")
+        if self.episode_id < 0: raise ValueError("episode id must be nonnegative")
+        return self
 
 
 class PreventionEvidenceV1(StrictModel):
@@ -735,6 +773,7 @@ class PreventionEvidenceV1(StrictModel):
     def valid_cost_and_round(self) -> "PreventionEvidenceV1":
         if self.round < 0 or self.cost < 0:
             raise ValueError("prevention round/cost out of range")
+        _machine_key(self.key, "key"); _machine_key(self.option, "option"); _machine_key(self.rationale_tag, "rationale_tag")
         return self
 
 
@@ -766,6 +805,8 @@ class TcoV1(StrictModel):
             raise ValueError("TCO asset id must be a bounded key")
         if self.ordered_round < 0 or self.forecast < 0 or self.forecast_horizon_round < 0 or any(value < 0 for value in self.estimates.values()):
             raise ValueError("TCO rounds and money must be nonnegative")
+        for value in self.selected_categories: _machine_key(value, "selected_categories")
+        for value in self.estimates: _machine_key(value, "estimates")
         return self
 
 
@@ -821,6 +862,7 @@ class RepairAssessmentV1(StrictModel):
     def valid_status(self) -> "RepairAssessmentV1":
         if self.round < 0:
             raise ValueError("assessment round out of range")
+        _machine_key(self.signal, "signal")
         if self.status == "verified" and self.reason is not None:
             raise ValueError("verified assessment cannot have an unassessed reason")
         if self.status == "unassessed" and self.reason is None:
