@@ -27,6 +27,33 @@ and carries the standing note *"No data should ever leak between sections."*
 
 **Verify:** `GOVERNANCE.md §5` instance-isolation canary.
 
+## Round scheduling (M2.3)
+
+**Canonical:** `round_schedule` is keyed by `(instance_id, round_number)` and stores
+timezone-aware UTC `start_at`, `deadline`, `grace_period_minutes`, `auto_advance`, the
+original `lock_reason`, and terminal timestamps. `round_schedule_team` is an immutable
+participant snapshot joined by `(schedule_id, instance_id, team_id)`; its participant
+rows are instance-safe and are deleted with the schedule. A team cannot be deleted
+while a snapshot row references it.
+
+**Service boundary:** `Scheduler` resolves the registered `RuntimePackV1` for the
+instance tuple and verifies `simulation_instance.pack_digest` before calling the
+production `SimulationService`. It never calls the legacy `RoundRunner`.
+
+**Time and concurrency:** `Scheduler.tick(now)` and manual `lock_now(..., at)` /
+`advance_now(..., at)` require an aware timestamp supplied by the caller. Only the CLI
+entrypoint may read the clock. A due schedule is claimed in the database with a unique
+worker token and a fixed 60-second lease; participant writes and lease clearing require
+that token. A competing worker returns a deterministic busy/no-op result, and an
+expired lease is reclaimable.
+
+**Producers:** `backend/app/scheduling/service.py` and
+`backend/app/scheduling/entrypoint.py` (**M2.3**).
+
+**Consumers:** future instructor scheduling controls and round progression packets;
+`backend/tests/test_scheduling.py` and `docs/scheduling-operations.md` verify the
+contract.
+
 ## Authenticated bearer token
 
 **Canonical:** JWT claims `{sub: string user.id, role: global User.role, section_id: integer|null, instance_id: integer|null, iat: integer, exp: integer}`. Every request validates the claims, then performs a live active-user lookup. Student and staff context is checked against the path section or instance before access.

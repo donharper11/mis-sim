@@ -9,6 +9,12 @@ for the production `SimulationService` boundary, participant snapshot, schedule
 state, fixed-time entrypoint, and resumable per-team semantics. Its dispatch
 boundary is [`handoffs/recovery/m2-scheduling-dispatch.md`](../recovery/m2-scheduling-dispatch.md).
 
+Implementation preflight recorded that `BECSR/async-round-deadlines.md` is unavailable
+in this checkout; the recovery amendment is the binding replacement. The implementation
+resolves registered `RuntimePackV1` values and verifies `SimulationInstance.pack_digest`,
+snapshots `simulation_run_v1` participants joined to `team` by instance scope, persists
+grace on each schedule row, and uses the fixed-time database-lease boundary.
+
 > 1.6 exposes `lock()` and `advance()`. This decides **when** they fire, so a section can
 > run asynchronously across a semester without the instructor sitting on the clock.
 

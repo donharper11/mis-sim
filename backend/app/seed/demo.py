@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+from datetime import datetime, timezone
 from pathlib import Path
 from sqlalchemy import inspect, select
 from sqlalchemy.engine import make_url
@@ -303,6 +304,53 @@ def _run_cohort(with_users: bool = False) -> int:
     return 0
 
 
+def _run_schedule(with_users: bool = False) -> int:
+    """Seed production runs and exercise both deterministic schedule policies."""
+    async def seed() -> dict:
+        async with async_session() as session:
+            cohort = await seed_cohort(session)
+            if with_users:
+                await seed_users(session, cohort)
+            await session.commit()
+            return cohort
+
+    cohort = asyncio.run(seed())
+    from sqlalchemy.orm import sessionmaker
+    from app.casepack.registry import resolve_runtime_pack
+    from app.round.db import make_engine
+    from app.simulation.service import SimulationService
+    from app.simulation.models import SimulationRunV1
+    from app.scheduling import Scheduler, SchedulingError
+
+    engine = make_engine()
+    try:
+        with sessionmaker(bind=engine, expire_on_commit=False)() as session:
+            for index, instance in enumerate(cohort["instances"]):
+                pack = resolve_runtime_pack(session, instance.pack_key, instance.pack_version)
+                service = SimulationService(engine, pack)
+                teams = list(session.scalars(select(Team).where(Team.instance_id == instance.instance_id).order_by(Team.id)).all())
+                for offset, team in enumerate(teams, start=1):
+                    if session.get(SimulationRunV1, (instance.instance_id, team.id)) is None:
+                        service.initialize(instance.instance_id, team.id, "cost_leadership")
+                scheduler = Scheduler(session)
+                if scheduler.status(instance.instance_id, 1) is None:
+                    scheduler.set_schedule(
+                        instance.instance_id, 1,
+                        datetime(2026, 9, 15, 11, 0, tzinfo=timezone.utc),
+                        datetime(2026, 9, 15, 12, 0, tzinfo=timezone.utc),
+                        auto_advance=index == 0, grace_period_minutes=1,
+                    )
+                    session.commit()
+                at_deadline = scheduler.tick(datetime(2026, 9, 15, 12, 0, tzinfo=timezone.utc))
+                after_grace = scheduler.tick(datetime(2026, 9, 15, 12, 1, tzinfo=timezone.utc))
+                print(f"schedule instance={instance.instance_id} deadline={at_deadline} grace={after_grace}")
+    except SchedulingError as exc:
+        raise SystemExit(str(exc)) from exc
+    finally:
+        engine.dispose()
+    return 0
+
+
 def _run_packs() -> int:
     async def run() -> None:
         async with async_session() as session:
@@ -334,12 +382,15 @@ def _main() -> int:
         help="seed and run the full six-round game into the database (spec section 5.5)",
     )
     parser.add_argument("--cohort", action="store_true", help="seed the deterministic two-section platform cohort")
+    parser.add_argument("--schedule", action="store_true", help="initialize production runs and demonstrate fixed-time scheduling")
     parser.add_argument("--packs", action="store_true", help="register the two runtime-capable demo packs")
     parser.add_argument("--users", action="store_true", help="seed deterministic development auth accounts (requires --cohort)")
     args = parser.parse_args()
 
     if args.full:
         return _run_full()
+    if args.schedule:
+        return _run_schedule(with_users=args.users)
     if args.cohort or args.users:
         return _run_cohort(with_users=args.users)
     if args.packs:

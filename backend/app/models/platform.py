@@ -108,6 +108,7 @@ class Team(Base):
             ondelete="CASCADE",
         ),
         UniqueConstraint("id", "section_id", name="uq_team_section_identity"),
+        UniqueConstraint("id", "instance_id", name="uq_team_instance_identity"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
