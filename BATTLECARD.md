@@ -80,9 +80,11 @@ Historical scorer fixtures remain useful regression evidence; they are not that 
    proof, complete calibration visibility, explicit scorecard units and owned gaps.
 2. **M1 — decision-driven simulation:** typed commands, actual state transitions, atomic
    advance/retry semantics, organisational evolution, accounting and decision-only playthroughs.
-3. **M2 — platform:** hierarchy, guarded scope/auth, pack versions and scheduling. Packet 2.1
-   hierarchy is accepted (`5d6b573`); the remaining packets are not started. A login
-   surface is included before the browser auth canary; a minimal second pack proves isolation.
+3. **M2 — platform:** hierarchy, guarded scope/auth, pack versions and scheduling. Packets 2.1
+   hierarchy and 2.2 instance scoping are accepted (`5d6b573`, `da339c5`); 2.2 covers all
+   19 runtime tables, restrictive instance FKs, orphan preflight, and repository-guarded reads.
+   Registry, auth/login, and scheduling remain separate packets. A login surface is included
+   before the browser auth canary; a minimal second pack proves isolation.
 4. **M3 — first playable browser loop:** required input controls, student review/debrief and
    instructor advance, through six rounds on real state.
 5. **M4 — complete deterministic student experience:** all input capture, real producers,

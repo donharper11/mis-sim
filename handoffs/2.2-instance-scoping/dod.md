@@ -2,9 +2,9 @@
 
 Date: 2026-09-15. Builder: `m2_scoping_builder`.
 Dispatch base: `35a7f3c`.
-Implementation candidate: `03e1233ff2383b694aec851dcd10e3554152f73f`.
-This evidence-only successor records the bounded candidate; it does not claim the
-independent audit or supervisor integration decision.
+Implementation candidate: `da339c5fb8b2fdccc5060e64608c76d0c459d318`.
+This record accompanies the independently audited candidate. Supervisor acceptance
+is recorded in `findings/recovery-m2-scoping-2026-09-15.md`.
 
 ## Scope and implementation
 
@@ -40,6 +40,6 @@ scoring, or transition files were changed.
 | Focused M1 runner regression | PASS | `tests/test_round_runner.py`: **11 passed**. |
 | Focused M1 simulation regression | PASS | `tests/test_simulation_service.py`: **5 passed in 60.82s**. |
 | Diff/allowlist | PASS | `git diff --check` clean; implementation paths match the dispatch allowlist. |
-| Full gate | PENDING | Supervisor runs the cumulative `make check` and independent audit before integration. |
+| Full gate | PASS | Cumulative `make check`: **663 passed in 401.61s**, all guards green, including the round instance-scope guard. |
 
-The working tree is clean at the evidence successor commit.
+The working tree is clean at the accepted candidate and its audit evidence.

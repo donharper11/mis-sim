@@ -93,6 +93,18 @@ driver. The focused packet has five passing tests; the combined tree has 662
 pytest tests and all guards green. M2 packets 2.2, 2.3, 2.4, and 2.5 remain
 separately blocked on their amended contracts and have not been started.
 
+## M2 continuation — 2.2 instance scoping accepted
+
+Packet 2.2 was amended and dispatched from `35a7f3c` against the complete
+19-table runtime inventory. Candidate `da339c5` adds the reversible restrictive
+instance-FK migration with orphan preflight, the mandatory `ScopedRepo` boundary,
+guarded round/simulation reads, and migration-backed two-instance isolation
+evidence. Independent audit PASS is recorded in
+[`recovery-m2-scoping-2026-09-15.md`](../../findings/recovery-m2-scoping-2026-09-15.md).
+The final cumulative gate is **663 passed**, all guards green, including the
+round instance-scope guard. M2 packets 2.3, 2.4, and 2.5 remain separately
+blocked on their amended contracts and have not been started.
+
 ## First-wave acceptance and cleanup
 
 - Reporting candidate `f858b8a` was independently accepted by `report_auditor`, then
