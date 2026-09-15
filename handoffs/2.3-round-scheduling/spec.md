@@ -3,10 +3,11 @@
 **Authored under** `SPEC_PROTOCOL.md` v1.2 · **Author:** Claude · **Date:** 2026-07-26
 **Phase:** 2 · **Depends on:** 2.1, 1.6 · **Blocks:** 5.3, and running a real cohort
 
-**M2 amendment (2026-09-15):** this historical contract is not dispatch-ready.
-Follow [`handoffs/recovery/m2-contract-amendment.md`](../recovery/m2-contract-amendment.md)
-and the later scheduling amendment for per-team runner semantics, schedule
-state, and the concrete entrypoint before implementation.
+**M2 amendment (2026-09-15):** follow
+[`handoffs/recovery/m2-scheduling-amendment.md`](../recovery/m2-scheduling-amendment.md)
+for the production `SimulationService` boundary, participant snapshot, schedule
+state, fixed-time entrypoint, and resumable per-team semantics. Its dispatch
+boundary is [`handoffs/recovery/m2-scheduling-dispatch.md`](../recovery/m2-scheduling-dispatch.md).
 
 > 1.6 exposes `lock()` and `advance()`. This decides **when** they fire, so a section can
 > run asynchronously across a semester without the instructor sitting on the clock.
