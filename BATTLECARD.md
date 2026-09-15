@@ -49,7 +49,10 @@ and runtime validation passed independent audit at `e4f4757` and is integrated i
 current recovery branch. [P1 audit](findings/recovery-content-types-2026-09-15.md). P2
 estate passed independent audit at `b4bfec9` and is now integrated. [P2 audit](findings/recovery-estate-2026-09-15.md).
 P3 organisation passed independent audit at `2c42f24` and is now integrated. [P3 audit](findings/recovery-organisation-2026-09-15.md).
-P4 consequences is now the next gated handoff; persistence and games remain unbuilt.
+P4 consequences passed independent audit at `f43ea7f8` and is now integrated. It adds
+pure accounting, consequence resolution, repairs, preview challenges, prevention, debt/TCO
+and the shared M0 scorer adapter. [P4 audit](findings/recovery-consequences-2026-09-15.md).
+P5 persistence is the next gated handoff; games remain unbuilt.
 
 ## The important unfinished boundary
 

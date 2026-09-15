@@ -197,7 +197,8 @@ P1 typed content and runtime binding passed independent audit at `e4f4757` and i
 integrated in the current recovery branch. [P1 audit](../findings/recovery-content-types-2026-09-15.md).
 P2 estate passed independent audit at `b4bfec9` and is integrated. [P2 audit](../findings/recovery-estate-2026-09-15.md).
 P3 organisation passed independent audit at `2c42f24` and is integrated. [P3 audit](../findings/recovery-organisation-2026-09-15.md).
-P4 is now the next gated implementation packet; P5–P6 remain blocked behind sequential
+P4 consequences passed independent audit at `f43ea7f8` and is integrated. [P4 audit](../findings/recovery-consequences-2026-09-15.md).
+P5 is now the next gated implementation packet; P6 remains blocked behind sequential
 audited packets and may not resolve those interfaces silently.
 
 The independently reproduced
@@ -205,5 +206,5 @@ The independently reproduced
 acceptance, absent carry-forward, late duplicate-advance refusal, incomplete rewind and
 caller-committable partial writes. D1–D10 must be resolved in the Heavy decision and
 transition contract, then independently reviewed before estate/organisation builders start.
-**M1 remains unfinished after audited P1 integration.** P2 estate, P3 organisation,
-P4 consequences, P5 persistence and P6 games remain. Main and remote publication remain untouched.
+**M1 remains unfinished after audited P4 integration.** P5 persistence and P6 games remain.
+Main and remote publication remain untouched.

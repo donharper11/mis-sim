@@ -66,8 +66,12 @@ the packet passed `628` full-gate tests, all guards and the zero-error Riverside
 audit at `2c42f24` and is integrated in the current recovery branch. It supplies pure
 training/process/communication/adoption/staff/governance/policy and preference transitions;
 the packet passed `635` full-gate tests, all guards and the zero-error Riverside validator.
-[P3 audit](../../findings/recovery-organisation-2026-09-15.md). P4 consequences is now the
-next dispatchable packet. M1 remains unfinished until consequences, persistence and
+[P3 audit](../../findings/recovery-organisation-2026-09-15.md). P4 consequences passed
+independent audit at `f43ea7f8` and is integrated in the current recovery branch. It supplies
+pure accounting, consequence/repair resolution, preview challenges, prevention, debt/TCO and
+the shared M0 scorer adapter; it passed `643` full-gate tests, all guards and the zero-error
+Riverside validator. [P4 audit](../../findings/recovery-consequences-2026-09-15.md). P5
+persistence is now the next dispatchable packet. M1 remains unfinished until persistence and
 decision-only game packets pass their independent audits.
 
 ## First-wave acceptance and cleanup
