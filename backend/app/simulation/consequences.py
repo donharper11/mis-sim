@@ -20,14 +20,22 @@ from .estate import reduce_estate
 from .organisation import reduce_organisation
 from .projection import project_team_state
 from .types import (
-    ActionEnvelopeV1, ActionRecordV1, CheckpointStateV1, CommandV1, CostEntryV1,
+    ActionEnvelopeV1, ActionRecordV1, CheckpointStateV1, CommandV1, COMMAND_FIELDS, CostEntryV1,
     DebtV1, EventEvidenceV1, EventHistoryV1, PreviewV1, ResponseV1, RuntimePackV1,
     SignalV1, SimulationError, TcoV1, TransitionV1, WarningV1, PreventionEvidenceV1, SignalEpisodeV1, UnpricedSignalExposureV1,
 )
 
 
 def _dump(value: Any) -> Any:
+    if isinstance(value, CommandV1):
+        return _command_payload(value.model_dump(mode="python", exclude_none=False))
     return value.model_dump(mode="python") if hasattr(value, "model_dump") else deepcopy(value)
+
+
+def _command_payload(raw: dict[str, Any]) -> dict[str, Any]:
+    op = raw.get("op")
+    allowed = {"key", "op", *COMMAND_FIELDS[op]} if op in COMMAND_FIELDS else set(raw)
+    return {key: raw[key] for key in allowed if key in raw}
 
 
 def _canonical(value: Any) -> bytes:
@@ -61,6 +69,9 @@ def _commands(commands: Iterable[CommandV1]) -> tuple[CommandV1, ...]:
 
 def _state_merge(prior: CheckpointStateV1, estate: Any, org: Any, charges: list[CostEntryV1]) -> CheckpointStateV1:
     data = prior.model_dump(mode="python")
+    for assessment in data.get("repair_assessment_history", []):
+        for witness in (*assessment.get("candidates", []), *assessment.get("repaired_but_uncredited", [])):
+            witness["commands"] = [_command_payload(command) for command in witness.get("commands", [])]
     for name in ("assets", "connections", "projects", "hiring_orders", "staff_hires", "rollouts", "primary"):
         if hasattr(estate, name): data[name] = _dump(getattr(estate, name))
     for name in ("rollouts", "unit_resistance", "governance", "primary", "policies", "support", "hiring_orders", "staff_hires", "strategy", "strategy_declared_round"):
@@ -188,7 +199,11 @@ def resource_view(pack: RuntimePackV1, state: CheckpointStateV1, round: int):
 def _preview(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: PreparedEffects, assessments: list[Any] | None = None) -> PreviewV1:
     forecast = forecast_operating(pack, prior.operating_reserve, prepared.state, prepared.round)
     from .types import OperatingForecastV1
-    rows = [OperatingForecastV1.model_validate(row) for row in forecast]
+    # Operating balances may legitimately remain below zero after an
+    # already-realised event loss.  The public preview DTO uses nonnegative
+    # money fields, so retain the deficit warning while flooring only the
+    # display projection; persisted accounting keeps the signed balance.
+    rows = [OperatingForecastV1.model_validate({**row, "opening": max(0, row["opening"]), "closing": max(0, row["closing"])}) for row in forecast]
     warnings = []
     if any(x.closing < 0 for x in rows): warnings.append(WarningV1(code="operating_deficit", keys=[str(x.round) for x in rows if x.closing < 0]))
     challenges, would_fire = _preview_events(pack, prior, prepared)
@@ -314,9 +329,15 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     if prepared.capital_remaining < 0:
         raise SimulationError("unaffordable", "capital")
     forecast = forecast_operating(pack, prior.operating_reserve + sum(x.operating_delta for x in prepared.charges), prepared.state, round + 1) if round < pack.casepack.metadata.rounds else []
-    # A negative close is allowed when it is caused solely by a reduction/no-op;
-    # new discretionary liabilities must stay funded through the horizon.
-    if any(row["closing"] < 0 for row in forecast) and prepared.operating_runrate > 0:
+    # A negative close is allowed when it is caused solely by a reduction/no-op
+    # or by an already-realised event loss.  New recurring liabilities must
+    # stay funded through the horizon.  Compare the candidate run-rate with the
+    # prior estate so baseline maintenance and wages do not turn an empty
+    # decision sheet into a new affordability refusal.
+    prior_recurring = recurring_entries(pack, prior, round)
+    prior_operating_runrate = -sum(x.operating_delta for x in prior_recurring)
+    new_recurring_liability = prepared.operating_runrate > prior_operating_runrate
+    if any(row["closing"] < 0 for row in forecast) and new_recurring_liability:
         raise SimulationError("unaffordable", "operating")
     staff = StaffPool(staff_fte=float(prepared.organisation.staff.capacity), load_fte=float(prepared.organisation.staff.load))
     alignments = tuple(StakeholderDecisionAlignment(stakeholder=x.stakeholder, alignment=float(x.value), cares_about=tuple(x.cares_about)) for x in prepared.organisation.stakeholder_alignments)

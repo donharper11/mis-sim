@@ -89,3 +89,10 @@ def test_unaffordable_capital_refuses_without_state_mutation(pack, state):
     with pytest.raises(SimulationError, match="unaffordable"):
         resolve_transition(pack, state, commands, 1)
     assert state.model_dump(mode="python") == before
+
+
+def test_empty_round_can_carry_forward_an_existing_operating_deficit(pack, state):
+    first = resolve_transition(pack, state, [], 1)
+    assert first.state.operating_reserve < 0
+    second = resolve_transition(pack, first.state, [], 2)
+    assert second.state.operating_reserve < first.state.operating_reserve
