@@ -47,12 +47,15 @@ def _settings(instance: SimulationInstance) -> tuple[float, bool, int]:
     duration = raw.get("default_round_duration_hours", 1)
     auto = raw.get("auto_advance_on_deadline", True)
     grace = raw.get("grace_period_minutes", 0)
+    lock_warning = raw.get("lock_warning_minutes", 0)
     if isinstance(duration, bool) or not isinstance(duration, (int, float)) or duration <= 0:
         raise SchedulingError("default_round_duration_hours must be positive")
     if not isinstance(auto, bool):
         raise SchedulingError("auto_advance_on_deadline must be boolean")
     if isinstance(grace, bool) or not isinstance(grace, int) or grace < 0:
         raise SchedulingError("grace_period_minutes must be nonnegative")
+    if isinstance(lock_warning, bool) or not isinstance(lock_warning, int) or lock_warning < 0:
+        raise SchedulingError("lock_warning_minutes must be nonnegative")
     return float(duration), auto, grace
 
 
@@ -216,6 +219,20 @@ class Scheduler:
         result = self.session.execute(statement.values(**values))
         return result.rowcount == 1
 
+    def _claim_owned(self, schedule: RoundSchedule, token: str | None) -> bool:
+        """Fence service side effects against a worker lease being reclaimed."""
+        if token is None:
+            return True
+        owned = self.session.scalar(select(RoundSchedule.id).where(
+            RoundSchedule.id == schedule.id,
+            RoundSchedule.instance_id == schedule.instance_id,
+            RoundSchedule.claim_token == token,
+        ))
+        # Close this verification read before invoking SimulationService,
+        # whose transaction is deliberately owned by that service.
+        self.session.commit()
+        return owned is not None
+
     def _failure(self, failures: list[dict[str, Any]], team_id: int, exc: Exception) -> None:
         failures.append({"team_id": team_id, "error": str(exc)})
 
@@ -237,6 +254,8 @@ class Scheduler:
                 # scheduler session's read transaction before invoking it;
                 # SQLite's BEGIN IMMEDIATE otherwise sees the read lock.
                 self.session.commit()
+                if not self._claim_owned(schedule, token):
+                    raise SchedulingError("schedule claim lost")
                 service.lock(schedule.instance_id, row.team_id, schedule.round_number, revision)
                 if not self._conditional_participant_update(row, token, locked_revision=revision, locked_at=at):
                     raise SchedulingError("schedule claim lost")
@@ -262,6 +281,8 @@ class Scheduler:
                 continue
             try:
                 self.session.commit()
+                if not self._claim_owned(schedule, token):
+                    raise SchedulingError("schedule claim lost")
                 service.advance(schedule.instance_id, row.team_id, schedule.round_number, row.locked_revision)
                 if not self._conditional_participant_update(row, token, advanced_at=at):
                     raise SchedulingError("schedule claim lost")

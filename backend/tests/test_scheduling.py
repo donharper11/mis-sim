@@ -101,3 +101,31 @@ def test_validation_rejects_naive_and_duplicate(seeded):
     scheduler.set_schedule(instance_id, 1, start, start + timedelta(hours=1))
     with pytest.raises(SchedulingError, match="duplicate"):
         scheduler.set_schedule(instance_id, 1, start, start + timedelta(hours=1))
+
+
+@pytest.mark.parametrize("value", [-1, True, "5"])
+def test_validation_rejects_invalid_lock_warning_minutes(seeded, value):
+    scheduler, _fake, instance_id, session = seeded
+    session.get(SimulationInstance, instance_id).settings = {"lock_warning_minutes": value}
+    start = datetime(2026, 1, 1, tzinfo=UTC)
+    with pytest.raises(SchedulingError, match="lock_warning_minutes"):
+        scheduler.set_schedule(instance_id, 1, start, start + timedelta(hours=1))
+
+
+def test_reclaimed_claim_suppresses_service_calls(seeded):
+    scheduler, fake, instance_id, session = seeded
+    start = datetime(2026, 9, 15, 11, tzinfo=UTC)
+    schedule = scheduler.set_schedule(instance_id, 1, start, start + timedelta(hours=1), auto_advance=False)
+    session.commit()
+
+    locked = scheduler._process(schedule, start + timedelta(hours=1), token="reclaimed-token")
+    assert locked.state == "failed"
+    assert locked.failures[0]["error"] == "schedule claim lost"
+    assert fake.locked == []
+
+    for row in scheduler._rows(schedule):
+        row.locked_revision = 0
+    session.commit()
+    advanced = scheduler._advance(schedule, start + timedelta(hours=1), token="reclaimed-token")
+    assert advanced[0]["error"] == "schedule claim lost"
+    assert fake.advanced == []
