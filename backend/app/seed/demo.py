@@ -13,11 +13,15 @@ next session can confirm the seed is in the loop before trusting any figure.
 from __future__ import annotations
 
 import argparse
+import asyncio
 from pathlib import Path
 
 from app.casepack.loader import load_casepack
 from app.casepack.models import Casepack
 from app.engine.state import TeamState
+from app.database import async_session
+from app.models.platform import User
+from app.services.platform import CourseService, EnrollmentService, InstanceService, SectionService, TeamService
 
 #: scenario name -> (pack directory relative to backend/, seed builder module path)
 _SCENARIOS: dict[str, tuple[str, str]] = {
@@ -158,6 +162,71 @@ def _run_full() -> int:
     return 0
 
 
+async def seed_cohort(session) -> dict:
+    """Create the deterministic two-section platform cohort used by M2 canaries."""
+    instructor = User(student_id=None, name="M2 Instructor", email="m2.instructor@example.edu", role="instructor")
+    session.add(instructor)
+    await session.flush()
+    course = await CourseService.create(
+        session,
+        course_code="MIS-PLATFORM",
+        course_name="Management Information Systems",
+        academic_year="2026",
+        semester="autumn",
+        instructor_id=instructor.id,
+    )
+    sections = []
+    instances = []
+    teams = []
+    enrollments = []
+    for index, (code, pack_key, pack_version) in enumerate(
+        (("A", "pack_alpha", "1.0.0"), ("B", "pack_beta", "1.0.0")), start=1
+    ):
+        section = await SectionService.create(session, course.id, section_code=code, section_name=f"Section {code}")
+        instance = await InstanceService.create(
+            session, section.id, pack_key=pack_key, pack_version=pack_version, total_rounds=6, settings={}
+        )
+        sections.append(section)
+        instances.append(instance)
+        for team_number in (1, 2):
+            team = await TeamService.create(session, instance.instance_id, section.id, name=f"Section {code} Team {team_number}")
+            teams.append(team)
+        for student_number in range(1, 9):
+            student = User(
+                student_id=f"M2-{index}{student_number:02d}",
+                name=f"M2 Student {index}-{student_number}",
+                email=f"m2.student.{index}.{student_number}@example.edu",
+                role="student",
+            )
+            session.add(student)
+            await session.flush()
+            enrollment = await EnrollmentService.create(
+                session,
+                section.id,
+                student.id,
+                team_id=teams[-2 + (student_number > 4)],
+            )
+            enrollments.append(enrollment)
+    await session.commit()
+    return {"course": course, "sections": sections, "instances": instances, "teams": teams, "enrollments": enrollments}
+
+
+def _run_cohort() -> int:
+    async def run() -> None:
+        async with async_session() as session:
+            cohort = await seed_cohort(session)
+            print(
+                f"cohort course={cohort['course'].course_code} sections={len(cohort['sections'])} "
+                f"instances={len(cohort['instances'])} teams={len(cohort['teams'])} "
+                f"enrollments={len(cohort['enrollments'])}"
+            )
+            for section, instance in zip(cohort["sections"], cohort["instances"]):
+                print(f"  section={section.section_code} pack={instance.pack_key}@{instance.pack_version}")
+
+    asyncio.run(run())
+    return 0
+
+
 def _main() -> int:
     parser = argparse.ArgumentParser(prog="app.seed.demo")
     parser.add_argument("--scenario", default="riverside_r3", help="scenario name, e.g. riverside_r3")
@@ -169,10 +238,13 @@ def _main() -> int:
         "--full", action="store_true",
         help="seed and run the full six-round game into the database (spec section 5.5)",
     )
+    parser.add_argument("--cohort", action="store_true", help="seed the deterministic two-section platform cohort")
     args = parser.parse_args()
 
     if args.full:
         return _run_full()
+    if args.cohort:
+        return _run_cohort()
 
     pack, state = load_scenario(args.scenario)
     print(_describe(args.scenario, pack, state))

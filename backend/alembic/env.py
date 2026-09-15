@@ -8,6 +8,7 @@ from app.config import settings
 from app.models import Base
 import app.round.models  # noqa: F401  -- register the 1.6 round-runner tables on Base.metadata
 import app.simulation.models  # noqa: F401  -- register the versioned simulation tables
+import app.models.platform  # noqa: F401  -- register the M2 hierarchy tables
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
