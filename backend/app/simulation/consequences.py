@@ -22,7 +22,7 @@ from .projection import project_team_state
 from .types import (
     ActionEnvelopeV1, ActionRecordV1, CheckpointStateV1, CommandV1, CostEntryV1,
     DebtV1, EventEvidenceV1, EventHistoryV1, PreviewV1, ResponseV1, RuntimePackV1,
-    SignalV1, SimulationError, TcoV1, TransitionV1, WarningV1, PreventionEvidenceV1, SignalEpisodeV1,
+    SignalV1, SimulationError, TcoV1, TransitionV1, WarningV1, PreventionEvidenceV1, SignalEpisodeV1, UnpricedSignalExposureV1,
 )
 
 
@@ -53,7 +53,9 @@ def _commands(commands: Iterable[CommandV1]) -> tuple[CommandV1, ...]:
         raise SimulationError("invalid_input", "commands")
     keys = [c.key for c in out]
     if len(keys) != len(set(keys)):
-        raise SimulationError("command_key_collision", "commands")
+        # ``command_key_collision`` is a history/audit reason, not a public
+        # SimulationError code.  Malformed input must use the closed boundary.
+        raise SimulationError("invalid_input", "command_key_collision")
     return out
 
 
@@ -80,8 +82,12 @@ def _actions(pack: RuntimePackV1, prior: CheckpointStateV1, estate: Any, org: An
         if old is not None and old.source_kind == "catalog":
             effects.append({"effect_kind": "retirement", "source_round": round, "source_command": f"retire_{asset_id}", "effect_round": round, "asset_id": asset_id, "target_key": old.source_key, "capabilities": list(next((x.serves for x in pack.casepack.catalog if x.key == old.source_key), ())), "cost": 0, "action_type": "retire_component"})
     out: list[ActionEnvelopeV1] = []
+    command_keys = {command.key for command in commands}
     for effect in effects:
         row = _dump(effect)
+        historical_commands = {str(project.id).split("_", 1)[-1] for project in prior.projects.values()}
+        if row.get("source_command") not in command_keys and row.get("source_command") not in historical_commands and not str(row.get("source_command", "")).startswith("retire_"):
+            raise SimulationError("invalid_output", "action_history", {"reason": "unjoined effect source command", "source_command": row.get("source_command")})
         if not row.get("capabilities"):
             continue
         asset_id = row.get("asset_id")
@@ -98,18 +104,23 @@ def _actions(pack: RuntimePackV1, prior: CheckpointStateV1, estate: Any, org: An
                     target_key=target, cost=max(0, int(row.get("cost", 0))),
                 ),
             ))
-    unique = {x.id: x for x in out}
-    return [unique[key] for key in sorted(unique)]
+    if len({x.id for x in out}) != len(out):
+        raise SimulationError("invalid_output", "action_history", {"reason": "duplicate envelope id"})
+    return sorted(out, key=lambda x: (x.effect_round, x.source_round, x.source_command, x.record.action_type, x.record.capability or "", x.record.target_key or ""))
 
 
 def _response_entries(pack: RuntimePackV1, commands: tuple[CommandV1, ...], round: int) -> tuple[list[CostEntryV1], list[ResponseV1], set[str]]:
     entries: list[CostEntryV1] = []
     responses: list[ResponseV1] = []
     prevented: set[str] = set()
+    seen_events: set[str] = set()
     event_map = {event.key: event for event in pack.casepack.events}
     for command in commands:
         if command.op != "respond":
             continue
+        if command.event in seen_events:
+            raise SimulationError("conflicting_commands", "response", {"event": command.event})
+        seen_events.add(command.event)
         event = event_map.get(command.event)
         if event is None:
             raise SimulationError("invalid_reference", "event", {"event": command.event})
@@ -185,7 +196,8 @@ def _preview(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: PreparedEf
 
 def quote_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iterable[CommandV1], round: int) -> PreviewV1:
     prepared = prepare_effects(pack, prior, commands, round)
-    return _preview(pack, prior, prepared)
+    from .repairs import assess_repairs
+    return _preview(pack, prior, prepared, assess_repairs(pack, prior, prepared.commands, round, prepared))
 
 
 def _ledger_rows(rows: Iterable[SignalV1]) -> tuple:
@@ -222,14 +234,57 @@ def _tco(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: PreparedEffect
         if any(x not in allowed for x in selected) or len(set(selected)) != len(selected):
             raise SimulationError("invalid_input", "tco_categories")
         base = int(raw["paid_capex"])
-        estimates = {key: 0 for key in selected}
-        forecast = base
+        mode = source.deployment_modes.get(raw["placement"])
+        config = source.config_tiers.get(raw.get("config"))
+        one_round_opex = money(mode.opex * (config.capex_multiplier if config else 1.0)) if mode else 0
+        estimates: dict[str, int] = {}
+        for category in selected:
+            if category == "training":
+                estimates[category] = max((int(option.cost) for option in source.training_options.values()), default=0)
+            elif category == "integration":
+                tier = next((x for x in pack.casepack.platform.integration_tiers if x.key == "basic"), None)
+                estimates[category] = int(tier.cost) if tier else 0
+            elif category == "process_redesign":
+                estimates[category] = int(source.process_option.cost) if source.process_option else 0
+            elif category == "capacity":
+                service = next((x for x in pack.casepack.platform.services if x.key == "compute_pool"), None)
+                estimates[category] = int(service.placement_options[raw["placement"]].capex) if service and raw["placement"] in service.placement_options else 0
+            elif category == "backup":
+                service = next((x for x in pack.casepack.platform.services if x.key == "backup_recovery"), None)
+                estimates[category] = int(service.placement_options[raw["placement"]].capex) if service and raw["placement"] in service.placement_options else 0
+            elif category == "maintenance":
+                estimates[category] = one_round_opex
+            elif category in {"lifecycle", "data_migration"}:
+                estimates[category] = money(base * pack.runtime.accounting.tco_capex_fraction)
+            elif category == "policy":
+                estimates[category] = max((int(x.cost) for x in pack.casepack.policies), default=0)
+            else:
+                estimates[category] = 0
+        arrival = raw["ordered_round"] + int(raw.get("remaining_lead", 0))
+        recurring = one_round_opex * max(0, pack.casepack.metadata.rounds - arrival + 1)
+        forecast = base + recurring + sum(estimates.values())
         rows.append(TcoV1(asset_id=raw["asset_id"], ordered_round=raw["ordered_round"], selected_categories=selected, forecast=forecast, forecast_horizon_round=pack.casepack.metadata.rounds, estimates=estimates))
     return rows
 
 
+def _tco_evidence(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: PreparedEffects, rows: list[TcoV1]) -> list[dict[str, Any]]:
+    actual_entries = list(prior.cost_ledger) + list(prepared.charges)
+    evidence = []
+    for row in rows:
+        asset = prepared.state.assets.get(row.asset_id)
+        source = next((x for x in pack.casepack.catalog if x.key == asset.source_key), None) if asset is not None and asset.source_kind == "catalog" else None
+        true = [x for x in (source.true_cost_categories if source else []) if x in row.selected_categories]
+        decoys = [x for x in (source.decoy_cost_categories if source else []) if x in row.selected_categories]
+        omitted = [x for x in (source.true_cost_categories if source else []) if x not in row.selected_categories]
+        actual = sum(-(x.capital_delta + x.operating_delta) for x in actual_entries if x.asset == row.asset_id)
+        evidence.append({"asset_id": row.asset_id, "selected_categories": list(row.selected_categories), "true_selected": true, "omitted_true": omitted, "selected_decoys": decoys, "forecast": row.forecast, "actual_to_date": actual, "forecast_horizon_round6": row.forecast_horizon_round, "observation_round": prepared.round, "variance": actual - row.forecast})
+    return evidence
+
+
 def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iterable[CommandV1], round: int) -> TransitionV1:
     prepared = prepare_effects(pack, prior, commands, round)
+    from .repairs import assess_repairs
+    assessments = assess_repairs(pack, prior, prepared.commands, round, prepared)
     if prepared.capital_remaining < 0:
         raise SimulationError("unaffordable", "capital")
     forecast = forecast_operating(pack, prior.operating_reserve + sum(x.operating_delta for x in prepared.charges), prepared.state, round + 1) if round < pack.casepack.metadata.rounds else []
@@ -244,24 +299,41 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     official_ledger = ledger_engine.advance_ledger(prior_ledger, team_state, pack.casepack)
     signals = ledger_engine.project_signal_state(official_ledger, current_round=round)
     team_state = project_team_state(pack, prepared.state, round, prepared.resources, staff, alignments, actions=prepared.actions, funds=[prepared.capital_remaining], debt_ratios={}, signals=signals)
-    fired, suppressed = event_engine.resolve_events(team_state, pack.casepack, official_ledger, frozenset(x.key for x in prior.event_history for x in x.fired))
-    fired_records, event_costs = _event_records(pack, team_state, official_ledger, fired, round)
+    fired_pack = pack.casepack.model_copy(update={"events": [event for event in pack.casepack.events if event.key not in prepared.prevented]})
+    fired, suppressed = event_engine.resolve_events(team_state, fired_pack, official_ledger, frozenset(x.key for x in prior.event_history for x in x.fired))
+    stamped_ledger = ledger_engine.advance_ledger(official_ledger, team_state, pack.casepack, fired_signals=frozenset(fired))
+    stamped_signals = ledger_engine.project_signal_state(stamped_ledger, current_round=round)
+    team_state = project_team_state(pack, prepared.state, round, prepared.resources, staff, alignments, actions=prepared.actions, funds=[prepared.capital_remaining], debt_ratios={}, signals=stamped_signals)
+    fired_records, event_costs = _event_records(pack, team_state, stamped_ledger, fired, round)
     all_charges = list(prepared.charges) + event_costs
     capital_delta, operating_delta = totals(all_charges)
     new_data = prepared.state.model_dump(mode="python")
     new_data["capital_balance"] = prior.capital_balance + capital_delta
     new_data["operating_reserve"] = prior.operating_reserve + operating_delta
     new_data["signal_ledger"] = [
-        {**vars(x), "cleared_by": list(x.cleared_by)} for x in official_ledger
+        {**vars(x), "cleared_by": list(x.cleared_by)} for x in stamped_ledger
     ]
     existing_debt = {(x.signal, x.episode_id) for x in prior.technical_debt}
-    debts = list(prior.technical_debt)
-    for row in official_ledger:
+    debts = []
+    for old in prior.technical_debt:
+        current = next((x for x in stamped_ledger if x.key == old.signal and x.episode_id == old.episode_id), None)
+        debts.append(old if current is None or current.status == "open" else DebtV1(**{**_dump(old), "settled_round": round}))
+    for row in stamped_ledger:
         if row.status != "open" or (row.key, row.episode_id) in existing_debt:
             continue
         if row.cheapest_fix_when_raised is not None and row.cheapest_fix_when_raised > 0:
             debts.append(DebtV1(signal=row.key, episode_id=row.episode_id, capability=row.capability, opened_round=row.first_shown_round, amount=int(row.cheapest_fix_when_raised), settled_round=None))
     new_data["technical_debt"] = [_dump(x) for x in debts]
+    exposures = list(prior.unpriced_signal_exposures)
+    priced_keys = {(x.signal, x.episode_id) for x in debts if x.settled_round is None}
+    for index, exposure in enumerate(exposures):
+        current = next((x for x in stamped_ledger if x.key == exposure.signal and x.episode_id == exposure.episode_id), None)
+        if exposure.settled_round is None and current is not None and current.status != "open":
+            exposures[index] = UnpricedSignalExposureV1(**{**_dump(exposure), "settled_round": round})
+    for row in stamped_ledger:
+        if row.status == "open" and (row.key, row.episode_id) not in priced_keys and not any(x.signal == row.key and x.episode_id == row.episode_id for x in exposures):
+            exposures.append(UnpricedSignalExposureV1(signal=row.key, episode_id=row.episode_id, opened_round=row.first_shown_round, settled_round=None, reason="unassessed_initial_repair"))
+    new_data["unpriced_signal_exposures"] = [_dump(x) for x in exposures]
     new_data["action_history"] = [_dump(x) for x in list(prior.action_history) + list(prepared.actions)]
     new_data["response_history"] = [_dump(x) for x in list(prior.response_history) + list(prepared.responses)]
     prior_signals = {x.key: x for x in official_ledger}
@@ -282,12 +354,17 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
         prevented=prevented_rows,
     )
     new_data["event_history"] = [_dump(x) for x in list(prior.event_history) + [history_row]]
+    new_data["repair_assessment_history"] = list(prior.repair_assessment_history) + assessments
     new_data["cost_ledger"] = [_dump(x) for x in all_charges] + [_dump(x) for x in prior.cost_ledger]
     new_data["available_funds_by_round"] = list(prior.available_funds_by_round) + [prepared.capital_remaining]
-    new_data["tco_forecasts"] = [_dump(x) for x in list(prior.tco_forecasts) + _tco(pack, prior, prepared)]
+    tco_rows = _tco(pack, prior, prepared)
+    new_data["tco_forecasts"] = [_dump(x) for x in list(prior.tco_forecasts) + tco_rows]
     state = CheckpointStateV1.model_validate(new_data)
     final_score = score_team(pack.casepack, team_state)
     scorecard, scorecard_meta = rolled_scorecard(pack, final_score, fired_records)
-    result = {"round": round, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "suppressed_events": [_dump(x) for x in suppressed], "financials": {"capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve}}
-    preview = _preview(pack, prior, prepared)
+    priced_total = sum(x.amount for x in state.technical_debt if x.settled_round is None)
+    capital_attributed = sum(-x.capital_delta for x in state.cost_ledger if x.capital_delta < 0 and x.capability is not None)
+    debt_ratio = priced_total / (priced_total + capital_attributed) if priced_total + capital_attributed else 0.0
+    result = {"round": round, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "suppressed_events": [_dump(x) for x in suppressed], "tco": _tco_evidence(pack, prior, prepared, tco_rows), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures), "debt_ratio": debt_ratio}, "financials": {"capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve}}
+    preview = _preview(pack, prior, prepared, assessments)
     return TransitionV1(state=state, result=result, preview=preview)
