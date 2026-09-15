@@ -12,9 +12,10 @@ from typing import Any, Iterable
 
 from app.engine.ledger import evaluate
 from app.engine.metrics import metric_value
+from app.engine import events as event_engine
 from app.engine.state import StaffPool, StakeholderDecisionAlignment
 
-from .consequences import _canonical, prepare_effects, resource_view
+from .consequences import _canonical, prepare_effects, resource_view, _ledger_rows
 from .accounting import forecast_operating
 from .projection import project_team_state
 from .types import (
@@ -62,6 +63,24 @@ def _catalogue_commands(pack: RuntimePackV1, state: CheckpointStateV1, rule_key:
             add("set_policy", policy=policy.key, selected=selected)
     for tier in sorted(pack.casepack.platform.support_tiers, key=lambda x: x.key):
         add("set_support", tier=tier.key, covered_assets=sorted(key for key, value in state.assets.items() if value.source_kind == "catalog"))
+    catalogs = {item.key: item for item in pack.casepack.catalog}
+    for src_id, src_asset in sorted(state.assets.items()):
+        if src_asset.source_kind != "catalog":
+            continue
+        src = catalogs.get(src_asset.source_key)
+        if src is None:
+            continue
+        for dst_id, dst_asset in sorted(state.assets.items()):
+            if src_id == dst_id or dst_asset.source_kind != "catalog":
+                continue
+            dst = catalogs.get(dst_asset.source_key)
+            if dst is None:
+                continue
+            for dependency in dst.must_be_fed_by:
+                if not any(owner.entity == dependency.entity for owner in src.owns_entities):
+                    continue
+                for tier in sorted(pack.casepack.platform.integration_tiers, key=lambda x: x.key):
+                    add("connect", src=src_id, dst=dst_id, kind="integration", entity=dependency.entity, tier=tier.key)
     return commands
 
 
@@ -81,6 +100,7 @@ def assess_repairs(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iter
     team = project_team_state(pack, prepared.state, round, prepared.resources, staff, alignments, actions=prepared.actions, funds=[prepared.capital_remaining], debt_ratios={}, signals=())
     results: list[RepairAssessmentV1] = []
     prior_by_signal = {row.key: row for row in prior.signal_ledger}
+    prior_engine_ledger = _ledger_rows(prior.signal_ledger)
     for rule in sorted(pack.casepack.watch_rules, key=lambda x: x.key):
         raised = evaluate(rule, team, pack.casepack)
         latest = prior_by_signal.get(rule.key)
@@ -88,6 +108,7 @@ def assess_repairs(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iter
             results.append(_assessment(round, rule.key, digest, merged_digest, [], []))
             continue
         candidates: list[RepairWitnessV1] = []
+        uncredited: list[RepairWitnessV1] = []
         excluded: list[RepairExcludedV1] = []
         # The bounded v1 catalogue includes legal effectful training and
         # process choices for currently live catalog assets.  It is finite,
@@ -119,6 +140,9 @@ def assess_repairs(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iter
                 candidate_staff = StaffPool(staff_fte=float(candidate_prepared.organisation.staff.capacity), load_fte=float(candidate_prepared.organisation.staff.load))
                 candidate_align = tuple(StakeholderDecisionAlignment(stakeholder=x.stakeholder, alignment=float(x.value), cares_about=tuple(x.cares_about)) for x in candidate_prepared.organisation.stakeholder_alignments)
                 candidate_team = project_team_state(pack, candidate_prepared.state, round, candidate_resources, candidate_staff, candidate_align, actions=candidate_prepared.actions, funds=[candidate_prepared.capital_remaining], debt_ratios={}, signals=())
+                if prepared.responses and any(not event_engine._satisfiable(next(event for event in pack.casepack.events if event.key == response.event), candidate_team, pack.casepack, prior_engine_ledger) for response in prepared.responses if response.effect == "prevent_current_round"):
+                    excluded.append(RepairExcludedV1(candidate_key=_digest([command.model_dump(mode="python")]), reason="held_response_ineligible"))
+                    continue
                 after = evaluate(rule, candidate_team, pack.casepack)
                 if raised is None or after is not None:
                     excluded.append(RepairExcludedV1(candidate_key=_digest([command.model_dump(mode="python")]), reason="metric_not_repaired" if raised is not None else "baseline_not_raised"))
@@ -133,7 +157,8 @@ def assess_repairs(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iter
                 forecast = [OperatingForecastV1.model_validate({key: max(0, value) for key, value in row.items()}) for row in raw_forecast]
                 affordable = candidate_prepared.capital_remaining >= 0 and all(row["closing"] >= 0 for row in raw_forecast)
                 candidate_metric = after[1] if isinstance(after, tuple) else False
-                candidates.append(RepairWitnessV1(candidate_key=candidate_key, commands=[command], capital_cost=max(0, candidate_prepared.capital_spend - prepared.capital_spend), effective_round=round, affordable=affordable, operating_forecast=forecast, baseline_metric=raised[1] if isinstance(raised, tuple) else bool(raised), candidate_metric=candidate_metric, emitted_action_ids=[item.id for item in matching], credit_eligible=bool(matching) and affordable, assumptions="empty_future_decisions"))
+                witness = RepairWitnessV1(candidate_key=candidate_key, commands=[command], capital_cost=max(0, candidate_prepared.capital_spend - prepared.capital_spend), effective_round=round, affordable=affordable, operating_forecast=forecast, baseline_metric=raised[1] if isinstance(raised, tuple) else bool(raised), candidate_metric=candidate_metric, emitted_action_ids=[item.id for item in matching], credit_eligible=bool(matching) and affordable, assumptions="empty_future_decisions")
+                (candidates if witness.credit_eligible else uncredited).append(witness) if matching else excluded.append(RepairExcludedV1(candidate_key=candidate_key, reason="no_in_game_effect"))
         # The remaining approved families are enumerated even when they cannot
         # repair this watch.  Their failed verification is retained as an
         # explicit exclusion rather than silently dropping the catalogue row.
@@ -153,28 +178,32 @@ def assess_repairs(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iter
                 candidate_staff = StaffPool(staff_fte=float(candidate_prepared.organisation.staff.capacity), load_fte=float(candidate_prepared.organisation.staff.load))
                 candidate_align = tuple(StakeholderDecisionAlignment(stakeholder=x.stakeholder, alignment=float(x.value), cares_about=tuple(x.cares_about)) for x in candidate_prepared.organisation.stakeholder_alignments)
                 candidate_team = project_team_state(pack, candidate_prepared.state, round, candidate_prepared.resources, candidate_staff, candidate_align, actions=candidate_prepared.actions, funds=[candidate_prepared.capital_remaining], debt_ratios={}, signals=())
+                if prepared.responses and any(not event_engine._satisfiable(next(event for event in pack.casepack.events if event.key == response.event), candidate_team, pack.casepack, prior_engine_ledger) for response in prepared.responses if response.effect == "prevent_current_round"):
+                    excluded.append(RepairExcludedV1(candidate_key=candidate_key, reason="held_response_ineligible"))
+                    continue
                 after = evaluate(rule, candidate_team, pack.casepack)
                 matching = [action for action in candidate_prepared.actions if action.record.action_type in rule.cleared_by and action.record.locked_round == round]
                 if raised is not None and after is None and matching:
                     raw_forecast = forecast_operating(pack, prior.operating_reserve, candidate_prepared.state, round)
                     forecast = [OperatingForecastV1.model_validate({key: max(0, value) for key, value in row.items()}) for row in raw_forecast]
                     affordable = candidate_prepared.capital_remaining >= 0 and all(row["closing"] >= 0 for row in raw_forecast)
-                    candidates.append(RepairWitnessV1(candidate_key=candidate_key, commands=[command], capital_cost=max(0, candidate_prepared.capital_spend - prepared.capital_spend), effective_round=round, affordable=affordable, operating_forecast=forecast, baseline_metric=raised[1], candidate_metric=metric_value(rule, candidate_team, pack.casepack), emitted_action_ids=[item.id for item in matching], credit_eligible=affordable, assumptions="empty_future_decisions"))
+                    witness = RepairWitnessV1(candidate_key=candidate_key, commands=[command], capital_cost=max(0, candidate_prepared.capital_spend - prepared.capital_spend), effective_round=round, affordable=affordable, operating_forecast=forecast, baseline_metric=raised[1], candidate_metric=metric_value(rule, candidate_team, pack.casepack), emitted_action_ids=[item.id for item in matching], credit_eligible=affordable, assumptions="empty_future_decisions")
+                    (candidates if witness.credit_eligible else uncredited).append(witness)
                 else:
                     excluded.append(RepairExcludedV1(candidate_key=candidate_key, reason="metric_not_repaired" if raised is not None else "baseline_not_raised"))
             except SimulationError as exc:
                 excluded.append(RepairExcludedV1(candidate_key=candidate_key, reason=exc.code if exc.code in {"not_found", "invalid_input", "invalid_reference", "conflicting_commands", "unaffordable", "revision_conflict", "locked", "round_state", "pack_mismatch", "scope_exists", "unsupported_operation", "arrival_after_game_end", "invalid_output"} else "invalid_input"))
         candidates.sort(key=lambda item: (item.capital_cost, item.candidate_key))
-        results.append(_assessment(round, rule.key, digest, merged_digest, candidates, excluded))
+        results.append(_assessment(round, rule.key, digest, merged_digest, candidates, excluded, uncredited))
     return results
 
 
-def _assessment(round: int, signal: str, digest: str, merged_digest: str, candidates: list[RepairWitnessV1], excluded: list[RepairExcludedV1]) -> RepairAssessmentV1:
+def _assessment(round: int, signal: str, digest: str, merged_digest: str, candidates: list[RepairWitnessV1], excluded: list[RepairExcludedV1], uncredited: list[RepairWitnessV1] | None = None) -> RepairAssessmentV1:
     eligible = [x for x in candidates if x.credit_eligible]
-    return RepairAssessmentV1(round=round, signal=signal, status="verified" if eligible else "unassessed", reason=None if eligible else "bounded_catalogue_no_verified_repair", initial_state_digest=digest, merged_sheet_digest=merged_digest, candidates=candidates, repaired_but_uncredited=[], excluded=excluded)
+    return RepairAssessmentV1(round=round, signal=signal, status="verified" if eligible else "unassessed", reason=None if eligible else "bounded_catalogue_no_verified_repair", initial_state_digest=digest, merged_sheet_digest=merged_digest, candidates=candidates, repaired_but_uncredited=uncredited or [], excluded=excluded)
 
 
 def repair_assessments_for_engine(pack: RuntimePackV1, assessments: Iterable[RepairAssessmentV1]) -> dict[str, Any]:
     """Convert public history rows to the engine's compact assessment seam."""
-    from app.engine.state import RepairAssessment
-    return {row.signal: RepairAssessment(signal=row.signal, checked_round=row.round, candidates=tuple()) for row in assessments}
+    from app.engine.state import RepairAssessment, RepairCandidate
+    return {row.signal: RepairAssessment(signal=row.signal, checked_round=row.round, candidates=tuple(RepairCandidate(candidate_key=item.candidate_key, capital_cost=item.capital_cost, effective_round=item.effective_round, affordable=item.affordable) for item in row.candidates if item.credit_eligible)) for row in assessments}
