@@ -1,7 +1,7 @@
 # M2 dispatch record — first bounded packet
 
-Date: 2026-09-15  
-Supervisor base: `652c28b` (`build/north-star-foundation`)  
+Date: 2026-09-15
+Supervisor base: `c95892b` (`build/north-star-foundation`)
 Milestone: M2 — real platform context
 
 ## Boundary
@@ -12,6 +12,13 @@ depends on. It does not implement instance guards (2.2), scheduling (2.3), auth
 (2.4), casepack registration (2.5), instructor UI, or changes to the audited
 simulation transition service.
 
+The historical 2.x specs were reconciled at `handoffs/recovery/m2-spec-reconciliation.md`.
+The builder is blocked on the supervisor's identity amendment until
+`handoffs/recovery/m2-contract-amendment.md` is committed. In particular, the
+canonical instance primary key is `simulation_instance.instance_id`, and the
+canonical pack identity is `(pack_key, pack_version)`; the historical
+`scenario_id`/`scenario_version` wording is not used.
+
 The current M1 tree has 19 runtime tables: the 16 legacy round-state tables and
 `simulation_run_v1`, `simulation_sheet_v1`, and `simulation_checkpoint_v1`.
 Their `instance_id` values are non-null integers but deliberately have no
@@ -21,7 +28,7 @@ actual table list is frozen.
 
 ## Exact base and allowed paths
 
-The builder starts from `652c28b`. The allowed implementation paths are:
+The builder starts from `c95892b`. The allowed implementation paths are:
 
 * `backend/app/models/platform.py` (new hierarchy and minimal `User` model)
 * `backend/app/services/platform.py` (new thin CRUD services)
@@ -29,6 +36,7 @@ The builder starts from `652c28b`. The allowed implementation paths are:
 * `backend/alembic/versions/20260915_0004_platform_hierarchy.py` (new migration)
 * `backend/alembic/env.py` (register the new model metadata)
 * `backend/app/main.py` (include the platform router)
+* `backend/app/seed/demo.py` (add the deterministic `--cohort` hierarchy seed)
 * `backend/tests/test_platform_hierarchy.py` (new focused tests and planted
   invariant checks)
 * `handoffs/2.1-hierarchy/dod.md` (builder evidence only)
@@ -44,8 +52,10 @@ Implement the five-level hierarchy and the minimal `User` FK target from the
 2.1 spec: integer primary keys; one instance per section; `settings` JSON;
 `status` in `setup|active|paused|completed`; team rows carrying both
 `section_id` and `instance_id`; enrollment uniqueness per user/section and
-nullable team assignment. Keep `scenario_id` and `scenario_version` as plain
-pack identity fields; resolution belongs to 2.5.
+nullable team assignment. Resolution belongs to 2.5. The corrected contract uses
+`pack_key` and `pack_version` on the instance, with `instance_id` as its primary
+key. The cohort seed is structural and may use pack keys without resolving or
+validating them; registry binding belongs to 2.5.
 
 Services must provide create/read operations and narrow deletion rules. A
 section cannot silently erase live runtime state. Routes are intentionally

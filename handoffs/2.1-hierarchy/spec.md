@@ -3,6 +3,12 @@
 **Authored under** `SPEC_PROTOCOL.md` v1.2 · **Author:** Claude · **Date:** 2026-07-26
 **Phase:** 2 · **Depends on:** 0.2 (merged) · **Blocks:** 2.2, 2.3, 2.4, 2.5, all of Phase 5
 
+**M2 amendment (2026-09-15):** follow
+[`handoffs/recovery/m2-contract-amendment.md`](../recovery/m2-contract-amendment.md)
+for canonical `simulation_instance.instance_id`, `(pack_key, pack_version)`,
+the User foundation, route surface, and cohort seed. The historical
+`scenario_id`/`scenario_version` names are retired.
+
 > The multi-cohort backbone. Two sections must be able to run **different casepacks
 > simultaneously** with zero data leakage. BECSR retrofitted this and left a standing note;
 > we build it once, correctly.
@@ -28,13 +34,13 @@ lacks (it was built for a one-shot consulting project, so it has no round state 
 ## 1. Purpose and scope
 
 **In scope:** the five-level hierarchy as SQLAlchemy models + Alembic migration; CRUD
-services; the `SimulationInstance` with `scenario_id`, `current_round`, `total_rounds`,
+services; the `SimulationInstance` with `pack_key`, `pack_version`, `current_round`, `total_rounds`,
 `status`, and a `settings` JSONB for per-cohort overrides.
 
 **Out of scope:**
 - Round scheduling — deadlines, auto-lock, auto-advance (2.3)
 - Auth and route protection (2.4)
-- Casepack loading (2.5); `scenario_id` is a plain string here
+- Casepack loading (2.5); `pack_key` and `pack_version` are opaque strings here
 - Instructor UI (Phase 5)
 - Backfilling or migrating any existing data — this repo has none
 
@@ -43,7 +49,7 @@ services; the `SimulationInstance` with `scenario_id`, `current_round`, `total_r
 ## 2. Project-specific statements
 
 **Scoring factors touched:** none. Structural.
-**Casepack keys read:** none. `scenario_id` stores a `pack_key` string; resolution is 2.5.
+**Casepack keys read:** none. `pack_key` and `pack_version` are opaque strings; resolution is 2.5.
 **Instance scoping:** this packet *creates* `simulation_instance`. Tables here
 (`course`, `section`, `enrollment`) are **above** the instance and correctly carry no
 `instance_id`; `team` carries both `section_id` and `instance_id`.
@@ -74,7 +80,8 @@ One implementation satisfying every invariant simultaneously:
 Alembic revision creates, in dependency order:
     course        (no instance_id — above the instance)
     section       FK course_id, unique(course_id, section_code)
-    simulation_instance  FK section_id UNIQUE, scenario_id VARCHAR,
+    simulation_instance  PK instance_id, FK section_id UNIQUE, pack_key VARCHAR,
+                         pack_version VARCHAR,
                          current_round INT default 0, total_rounds INT default 6,
                          status VARCHAR, settings JSONB
     team          FK section_id, FK instance_id, both NOT NULL
@@ -100,7 +107,7 @@ Course              id · course_code · course_name · academic_year · semeste
 Section             id · course_id FK · section_code · section_name
                     max_teams · team_size_min · team_size_max · is_active
                     UNIQUE(course_id, section_code)
-SimulationInstance  id · section_id FK UNIQUE · scenario_id · scenario_version
+SimulationInstance  instance_id PK · section_id FK UNIQUE · pack_key · pack_version
                     current_round · total_rounds · status · settings JSONB
                     started_at · completed_at
 Team                id · section_id FK · instance_id FK · name · created_by
@@ -118,7 +125,7 @@ JSONB list defaulting to `[1..12]`, and the trimmed syllabus is a config change 
 `enrollment_service`. Thin, no game logic (`GOVERNANCE` — service-first, but this packet
 has no game logic to hold).
 
-`instance_service.create(section_id, scenario_id, total_rounds)` — creating an instance for
+`instance_service.create(section_id, pack_key, pack_version, total_rounds)` — creating an instance for
 a section that already has one raises a 409 through 0.2's `IntegrityError` handler.
 
 ### 5.3 Deletion behaviour
@@ -179,7 +186,8 @@ silently.
    instance is refused with a naming message.
 3. **API routes**, unprotected for now (2.4 adds guards). *Verify:* create course → section
    → instance → team → enrol a user, end to end via `curl`, output pasted.
-4. **Two-section fixture** — two sections under one course, different `scenario_id` values.
+4. **Two-section fixture** — two sections under one course, distinct opaque
+   `(pack_key, pack_version)` values. Registry validation belongs to 2.5.
    *Verify:* both exist independently; this is the fixture 2.2's canary will use.
 
 ---

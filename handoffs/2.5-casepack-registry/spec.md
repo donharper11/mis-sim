@@ -3,6 +3,12 @@
 **Authored under** `SPEC_PROTOCOL.md` v1.2 · **Author:** Claude · **Date:** 2026-07-26
 **Phase:** 2 · **Depends on:** 1.1, 1.2, 2.1 · **Blocks:** 5.1, 5.6, 6.1
 
+**M2 amendment (2026-09-15):** follow
+[`handoffs/recovery/m2-contract-amendment.md`](../recovery/m2-contract-amendment.md)
+for the canonical instance identity and registry-to-M1 pack/digest seam. The
+historical `scenario_id`/`scenario_version` wording below is retired in favor
+of `(pack_key, pack_version)`.
+
 > 1.1 parses a pack from disk. This makes packs **available to the platform**: registered,
 > versioned, validated on registration, and bound to an instance — so two sections can run
 > different verticals at once.
@@ -14,8 +20,8 @@
 **Read in full:**
 - `handoffs/1.1-casepack-schema/spec.md` §5 (pack layout), §8 phase 3 (the loader)
 - `handoffs/1.2-validator/spec.md` §5 (severities, exit codes, `--json` mode)
-- `handoffs/2.1-hierarchy/spec.md` §5.1 (`simulation_instance.scenario_id`,
-  `scenario_version`, `settings`)
+- `handoffs/2.1-hierarchy/spec.md` §5.1 (`simulation_instance.pack_key`,
+  `pack_version`, `settings`)
 - `CONTRACTS.md` — casepack identifiers (`pack_key` stable forever, `pack_version` semver;
   engine never branches on `pack_key`)
 - `GOVERNANCE.md` §4.6, §5 (the validator gate)
@@ -46,8 +52,8 @@ to a pack version; the read API 5.1 and 5.6 will call.
 **Casepack-identity branching:** none. Registration is generic over `pack_key` — I1. This
 is a direct rehearsal of the Phase 6 gate.
 **Instance scoping:** `casepack` rows are **platform-level, not instance-scoped** — one
-registered pack serves many instances. `simulation_instance.scenario_id` +
-`scenario_version` is the binding. Explicit, because it is the one table in Phase 2 that
+registered pack serves many instances. `simulation_instance.pack_key` +
+`pack_version` is the binding. Explicit, because it is the one table in Phase 2 that
 correctly has no `instance_id`.
 **Business-language check:** registration output is instructor-facing; it reports pack
 display names, never directory paths.
@@ -178,7 +184,7 @@ A registry exercised with one pack is not exercised.
 | 1 | 1.1 merged; loader parses a pack directory | `[V]` | `python -m app.casepack.loader packs/riverside_grocery` | no exception |
 | 2 | 1.2 merged; validator exits non-zero on ERROR | `[V]` | `validate_casepack backend/tests/fixtures/packs/<broken>; echo $?` | 1 |
 | 3 | 1.2 exposes `--json` | `[V]` | `validate_casepack --json packs/riverside_grocery \| python -m json.tool` | valid JSON |
-| 4 | 2.1 merged; `simulation_instance` has `scenario_id` and `scenario_version` | `[V]` | `psql -c "\d simulation_instance"` | both columns |
+| 4 | 2.1 merged; `simulation_instance` has `pack_key` and `pack_version` | `[V]` | `psql -c "\d simulation_instance"` | both columns |
 | 5 | **Nothing out of scope reads packs from disk directly** *(§4.2)* | `[V]` | `grep -rn "packs/" backend/app --include=*.py \| grep -v "casepack/"` | zero — proves routing all access through the registry breaks nothing |
 | 6 | Riverside validates clean | `[V]` | `validate_casepack packs/riverside_grocery; echo $?` | 0 |
 | 7 | A second pack exists to test multi-pack | `[A]` | `ls packs/` | **likely only Riverside → build a minimal synthetic second pack as a fixture; report** |

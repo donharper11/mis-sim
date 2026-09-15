@@ -3,6 +3,12 @@
 **Authored under** `SPEC_PROTOCOL.md` v1.2 · **Author:** Claude · **Date:** 2026-07-26
 **Phase:** 2 · **Depends on:** 2.1, 1.6 · **Blocks:** every later packet that reads state
 
+**M2 amendment (2026-09-15):** follow
+[`handoffs/recovery/m2-contract-amendment.md`](../recovery/m2-contract-amendment.md)
+for the canonical `simulation_instance.instance_id` target and the complete
+19-table runtime inventory. The historical 13-table list is incomplete and is
+not a build allowlist.
+
 > 1.6 created runtime tables with `instance_id` as an unconstrained integer because
 > `simulation_instance` did not yet exist. This packet closes the loop: adds the foreign
 > keys, and builds the standing canary that proves two cohorts cannot see each other.
@@ -66,7 +72,7 @@ path gains a guard.
 ```
 1  Alembic revision: for each runtime table in 1.6 §5.1,
    ALTER TABLE … ADD CONSTRAINT fk_<t>_instance
-   FOREIGN KEY (instance_id) REFERENCES simulation_instance(id) ON DELETE RESTRICT
+   FOREIGN KEY (instance_id) REFERENCES simulation_instance(instance_id) ON DELETE RESTRICT
 
 2  backend/app/repo/base.py:
        class ScopedRepo:
