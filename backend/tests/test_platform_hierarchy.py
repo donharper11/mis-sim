@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.models.base import Base
 from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
+from app.seed.demo import seed_cohort
 from app.services.platform import (
     CourseService,
     EnrollmentService,
@@ -115,3 +116,22 @@ def test_platform_services_do_not_reference_runtime_tables():
     source = Path(__file__).parents[1] / "app" / "services" / "platform.py"
     text = source.read_text()
     assert not any(name in text for name in ("arch_node", "round_result", "decision_line", "signal", "simulation_run_v1"))
+
+
+def test_cohort_seed_builds_two_scoped_sections():
+    async def run():
+        engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all, tables=[x.__table__ for x in (User, Course, Section, SimulationInstance, Team, Enrollment)])
+        factory = async_sessionmaker(engine, expire_on_commit=False)
+        async with factory() as session:
+            cohort = await seed_cohort(session)
+            assert len(cohort["sections"]) == 2
+            assert len(cohort["instances"]) == 2
+            assert len(cohort["teams"]) == 4
+            assert len(cohort["enrollments"]) == 16
+            assert {row.pack_key for row in cohort["instances"]} == {"pack_alpha", "pack_beta"}
+            assert all(isinstance(row.team_id, int) for row in cohort["enrollments"])
+        await engine.dispose()
+
+    asyncio.run(run())

@@ -204,7 +204,7 @@ async def seed_cohort(session) -> dict:
                 session,
                 section.id,
                 student.id,
-                team_id=teams[-2 + (student_number > 4)],
+                team_id=teams[-2 + (student_number > 4)].id,
             )
             enrollments.append(enrollment)
     await session.commit()
