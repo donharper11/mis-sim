@@ -25,6 +25,11 @@ EXPECTED_ROUNDS = list(range(1, 7))
 EXPECTED_TABLE_COUNT = 19
 
 
+def expected_models(round_models, simulation_models):
+    """Return the historical 16 plus the three versioned simulation tables."""
+    return (*round_models.ALL_TABLES, *simulation_models.ALL_TABLES)
+
+
 class VerificationError(RuntimeError):
     pass
 
@@ -82,8 +87,8 @@ def require_empty_database(engine, database: str) -> str:
 def verify_schema(engine, models) -> list[str]:
     from app.simulation import models as simulation_models
 
-    expected_models = (*models.ALL_TABLES, *simulation_models.ALL_TABLES)
-    expected = {model.__tablename__ for model in expected_models}
+    models_for_schema = expected_models(models, simulation_models)
+    expected = {model.__tablename__ for model in models_for_schema}
     if len(expected) != EXPECTED_TABLE_COUNT:
         raise VerificationError(f"expected {EXPECTED_TABLE_COUNT} runtime table models; found {len(expected)}")
     inspector = inspect(engine)
@@ -99,6 +104,9 @@ def verify_schema(engine, models) -> list[str]:
 
 
 def verify_results(session, models, instance_id: int, team_id: int) -> dict:
+    from app.simulation import models as simulation_models
+
+    models_for_schema = expected_models(models, simulation_models)
     result = models.RoundResult
     rows = session.scalars(select(result).where(
         result.instance_id == instance_id, result.team_id == team_id,
@@ -112,7 +120,7 @@ def verify_results(session, models, instance_id: int, team_id: int) -> dict:
         ) or not payload.get("capabilities") or not payload.get("financials"):
             raise VerificationError(f"round {row.round}: incomplete or incorrectly scoped persisted payload")
     counts = {}
-    for model in expected_models:
+    for model in models_for_schema:
         counts[model.__tablename__] = session.scalar(select(func.count()).select_from(model).where(
             model.instance_id == instance_id, model.team_id == team_id,
         ))
