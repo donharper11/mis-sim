@@ -2,7 +2,6 @@ version: 1
 catalog:
   pos_system_2011:
     purchasable_placements:
-    - on_prem
     - cloud
     - saas
     capacity_by_capability:
@@ -46,7 +45,6 @@ catalog:
       full_suite: 1.0
   accounting_package:
     purchasable_placements:
-    - on_prem
     - cloud
     - saas
     capacity_by_capability:
@@ -189,7 +187,7 @@ catalog:
       advanced: 1.0
 services:
   client_network:
-    serves: &id001
+    serves:
     - order_fulfilment
     - store_operations
     - financial_reporting
@@ -219,7 +217,14 @@ services:
         storage_gb: 0
     max_units: 1
   compute_pool:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -242,7 +247,14 @@ services:
         storage_gb: 0
     max_units: 8
   storage_pool:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -265,7 +277,14 @@ services:
         storage_gb: 10000
     max_units: 8
   backup_recovery:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -288,7 +307,14 @@ services:
         storage_gb: 0
     max_units: 1
   failover_cluster:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -311,7 +337,14 @@ services:
         storage_gb: 0
     max_units: 1
   central_sign_on:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -334,7 +367,14 @@ services:
         storage_gb: 0
     max_units: 1
   intrusion_detection:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -357,7 +397,14 @@ services:
         storage_gb: 0
     max_units: 1
   threat_detection:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -380,7 +427,14 @@ services:
         storage_gb: 0
     max_units: 1
   integration_api:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -403,7 +457,14 @@ services:
         storage_gb: 0
     max_units: 1
   end_user_email:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -426,7 +487,14 @@ services:
         storage_gb: 0
     max_units: 1
   data_platform:
-    serves: *id001
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     availability: 0.99
     service_life_rounds: 6
     capacity_by_capability:
@@ -761,20 +829,20 @@ accounting:
       staff_load: 0.0
     failover:
       capex_source: none
-      opex: 3100
+      opex: 0
       staff_load: 0.0
     basic:
-      capex_source: none
-      opex: 3100
-      staff_load: 0.0
+      capex_source: integration_tier
+      opex: 1000
+      staff_load: 0.2
     advanced:
-      capex_source: none
-      opex: 3100
-      staff_load: 0.0
+      capex_source: integration_tier
+      opex: 2000
+      staff_load: 0.1
     vendor_managed:
-      capex_source: none
-      opex: 3100
-      staff_load: 0.0
+      capex_source: integration_tier
+      opex: 3000
+      staff_load: 0.05
   cancellation: sunk
   platform_capability: firm_infrastructure
   decision_attribution_version: 1
@@ -794,7 +862,7 @@ accounting:
 preferences:
   rules:
   - stakeholder: senior_management
-    cares_about: &id002
+    cares_about:
     - order_fulfilment
     - store_operations
     - financial_reporting
@@ -844,7 +912,14 @@ preferences:
       weight: 0.72
       source_note: "master spec \xA76 frozen v1 view"
   - stakeholder: employees
-    cares_about: *id002
+    cares_about:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     views:
     - metric: training_coverage
       ideal: 1
@@ -884,7 +959,14 @@ preferences:
       weight: 0.4
       source_note: "master spec \xA76 frozen v1 view"
   - stakeholder: it_department
-    cares_about: *id002
+    cares_about:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     views:
     - metric: staff_load_ratio
       ideal: 0
@@ -907,7 +989,14 @@ preferences:
       weight: 0.64
       source_note: "master spec \xA76 frozen v1 view"
   - stakeholder: hr
-    cares_about: *id002
+    cares_about:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     views:
     - metric: training_coverage
       ideal: 1
@@ -927,7 +1016,14 @@ preferences:
       weight: 0.6
       source_note: "master spec \xA76 frozen v1 view"
   - stakeholder: investor
-    cares_about: *id002
+    cares_about:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     views:
     - metric: cost_posture
       ideal: 0
@@ -951,7 +1047,14 @@ preferences:
       weight: 0.8
       source_note: "master spec \xA76 frozen v1 view"
   - stakeholder: vendor
-    cares_about: *id002
+    cares_about:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
     views:
     - metric: integration_tier
       ideal: vendor_managed
@@ -971,56 +1074,282 @@ preferences:
       source_note: "master spec \xA76 frozen v1 view"
   dispositions:
   - source_path: /preferences/catalog/defaults_by_archetype/c_suite/ideal_cost_posture
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/1/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/c_suite/ideal_reliability
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/1
+    - /preferences/rules/3/views/0
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/c_suite/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/finance/ideal_cost_posture
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/1/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/finance/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/employees/ideal_training_coverage
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/employees/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/operations/ideal_reliability
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/1
+    - /preferences/rules/3/views/0
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/operations/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/it/ideal_staff_load
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/it/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/hr/ideal_training_coverage
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/hr/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/marketing/ideal_customer_data
     disposition: context_m4
@@ -1031,28 +1360,142 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/investor/ideal_cost_posture
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/1/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/investor/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/customer/ideal_availability
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/1
+    - /preferences/rules/3/views/0
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/customer/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/vendor/ideal_integration
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/4
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/vendor/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/catalog/defaults_by_archetype/security_auditor/ideal_security
     disposition: context_m4
@@ -1119,8 +1562,13 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/c_suite/ideal_placement
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/2
+    - /preferences/rules/1/views/1
+    - /preferences/rules/3/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/c_suite/cloud_weight
     disposition: context_m4
@@ -1131,12 +1579,50 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/c_suite/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/finance/ideal_placement
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/2
+    - /preferences/rules/1/views/1
+    - /preferences/rules/3/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/finance/cloud_weight
     disposition: context_m4
@@ -1147,12 +1633,50 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/finance/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/employees/ideal_placement
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/2
+    - /preferences/rules/1/views/1
+    - /preferences/rules/3/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/employees/cloud_weight
     disposition: context_m4
@@ -1163,12 +1687,50 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/employees/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/operations/ideal_placement
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/2
+    - /preferences/rules/1/views/1
+    - /preferences/rules/3/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/operations/cloud_weight
     disposition: context_m4
@@ -1181,15 +1743,56 @@ preferences:
   - source_path: /preferences/platform/defaults_by_archetype/operations/ideal_availability
     disposition: live_v1
     runtime_views:
-    - /preferences/rules/operations/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/3/views/0
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/operations/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/it/ideal_placement
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/2
+    - /preferences/rules/1/views/1
+    - /preferences/rules/3/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/it/cloud_weight
     disposition: context_m4
@@ -1200,16 +1803,56 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/it/ideal_staff_load
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/it/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/hr/ideal_placement
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/2
+    - /preferences/rules/1/views/1
+    - /preferences/rules/3/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/hr/cloud_weight
     disposition: context_m4
@@ -1220,12 +1863,50 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/hr/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/marketing/ideal_placement
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/2
+    - /preferences/rules/1/views/1
+    - /preferences/rules/3/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/6/views/0
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/marketing/cloud_weight
     disposition: context_m4
@@ -1236,32 +1917,179 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/marketing/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/investor/ideal_cost_posture
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/1/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/investor/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/customer/ideal_availability
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/1
+    - /preferences/rules/3/views/0
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/customer/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/vendor/ideal_integration
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/4
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/vendor/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/platform/defaults_by_archetype/security_auditor/ideal_identity_access
     disposition: context_m4
@@ -1332,144 +2160,594 @@ preferences:
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/support_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/support_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/integration_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/operations/by_decision/integration_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/4
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/employees/weight
     disposition: context_m4
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/employees/by_decision/support_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/employees/by_decision/support_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/weight
     disposition: context_m4
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/by_decision/support_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/by_decision/support_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/by_decision/integration_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/it/by_decision/integration_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/4
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/weight
     disposition: context_m4
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/support_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/support_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/integration_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/finance/by_decision/integration_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/4
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/weight
     disposition: context_m4
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/support_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/support_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/integration_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/c_suite/by_decision/integration_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/4
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/weight
     disposition: context_m4
     runtime_views: []
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/integration_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/integration_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/4
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/support_tier/ideal_tier
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/3
+    - /preferences/rules/1/views/2
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/4/views/3
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/services/defaults_by_archetype/vendor/by_decision/support_tier/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/operations/ideal_training_coverage
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/operations/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/employees/ideal_training_coverage
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/employees/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/hr/ideal_training_coverage
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/hr/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/finance/ideal_cost_posture
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/1/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/finance/weight
-    disposition: context_m4
-    runtime_views: []
+    disposition: live_v1
+    runtime_views:
+    - /preferences/rules/0/views/0
+    - /preferences/rules/0/views/1
+    - /preferences/rules/0/views/2
+    - /preferences/rules/0/views/3
+    - /preferences/rules/0/views/4
+    - /preferences/rules/1/views/0
+    - /preferences/rules/1/views/1
+    - /preferences/rules/1/views/2
+    - /preferences/rules/1/views/3
+    - /preferences/rules/2/views/0
+    - /preferences/rules/2/views/1
+    - /preferences/rules/2/views/2
+    - /preferences/rules/3/views/0
+    - /preferences/rules/3/views/1
+    - /preferences/rules/3/views/2
+    - /preferences/rules/3/views/3
+    - /preferences/rules/3/views/4
+    - /preferences/rules/4/views/0
+    - /preferences/rules/4/views/1
+    - /preferences/rules/4/views/2
+    - /preferences/rules/4/views/3
+    - /preferences/rules/4/views/4
+    - /preferences/rules/5/views/0
+    - /preferences/rules/5/views/1
+    - /preferences/rules/6/views/0
+    - /preferences/rules/7/views/0
+    - /preferences/rules/7/views/1
+    - /preferences/rules/8/views/0
+    - /preferences/rules/8/views/1
+    - /preferences/rules/9/views/0
+    - /preferences/rules/9/views/1
+    - /preferences/rules/9/views/2
+    - /preferences/rules/9/views/3
     reason: source leaf retained; v1 metric has no unit-consistent interpretation
   - source_path: /preferences/training/defaults_by_archetype/it/ideal_change_volume
     disposition: context_m4
@@ -1498,46 +2776,1450 @@ preferences:
 response_disposition:
   inventory_audit_question:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Temporary review support prevents this round''s audit disruption. TODO: calibrate M1/M4'
   warehouse_rollout_gap:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Temporary floor support prevents this round''s rollout disruption. TODO: calibrate M1/M4'
   pos_support_ending:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Temporary support cover prevents this round''s outage consequence. TODO: calibrate M1/M4'
   ransomware_on_finance:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Contingency response prevents this round''s financial-system disruption. TODO: calibrate M1/M4'
   crm_data_exposed:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Incident containment prevents this round''s exposure consequence. TODO: calibrate M1/M4'
   phishing_on_staff_accounts:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'An urgent briefing prevents this round''s phishing consequence. TODO: calibrate M1/M4'
   privacy_regulator_letter:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'A compliance response prevents this round''s enforcement consequence. TODO: calibrate M1/M4'
   financial_audit_deadline_missed:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Deadline assistance prevents this round''s reporting consequence. TODO: calibrate M1/M4'
   unlogged_system_change:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'A change review prevents this round''s uncontrolled-change consequence. TODO: calibrate M1/M4'
   checkout_queues_lengthen:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Temporary queue cover prevents this round''s checkout consequence. TODO: calibrate M1/M4'
   service_backlog_builds:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Temporary surge support prevents this round''s backlog consequence. TODO: calibrate M1/M4'
   supplier_portal_request:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'Assisted stock responses prevent this round''s supplier consequence. TODO: calibrate M1/M4'
   analytics_request_from_board:
     fund_effect: prevent_current_round
-    explanation: funded response prevents this round
+    explanation: 'A commissioned report prevents this round''s board-request consequence. TODO: calibrate M1/M4'
 provenance:
-  /:
+  /catalog/pos_system_2011/capacity_by_capability/store_operations:
     source: AUTHORED
-    note: "TODO: calibrate \u2014 owner M1/M4"
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/pos_system_2011/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/pos_system_2011/capacity_multiplier_by_config/modernised:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/pos_system_2011/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/pos_system_2011/opex_multiplier_by_config/modernised:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_mgmt_v42/capacity_by_capability/order_fulfilment:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_mgmt_v42/capacity_by_capability/store_operations:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_mgmt_v42/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_mgmt_v42/capacity_multiplier_by_config/forecasting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_mgmt_v42/capacity_multiplier_by_config/full_suite:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_mgmt_v42/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_mgmt_v42/opex_multiplier_by_config/forecasting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_mgmt_v42/opex_multiplier_by_config/full_suite:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/centraline_im7/capacity_by_capability/order_fulfilment:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/centraline_im7/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/centraline_im7/capacity_multiplier_by_config/forecasting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/centraline_im7/capacity_multiplier_by_config/full_suite:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/centraline_im7/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/centraline_im7/opex_multiplier_by_config/forecasting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/centraline_im7/opex_multiplier_by_config/full_suite:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/accounting_package/capacity_by_capability/financial_reporting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/accounting_package/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/accounting_package/capacity_multiplier_by_config/reporting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/accounting_package/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/accounting_package/opex_multiplier_by_config/reporting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/store_spreadsheets/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/store_spreadsheets/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/next_gen_firewall/capacity_by_capability/firm_infrastructure:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/next_gen_firewall/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/next_gen_firewall/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/customer_database/capacity_by_capability/customer_insight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/customer_database/capacity_by_capability/service:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/customer_database/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/customer_database/capacity_multiplier_by_config/segmentation:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/customer_database/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/customer_database/opex_multiplier_by_config/segmentation:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/analytics_workspace/capacity_by_capability/customer_insight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/analytics_workspace/capacity_by_capability/financial_reporting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/analytics_workspace/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/analytics_workspace/capacity_multiplier_by_config/predictive:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/analytics_workspace/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/analytics_workspace/opex_multiplier_by_config/predictive:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/ecommerce_site/capacity_by_capability/marketing_sales:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/ecommerce_site/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/ecommerce_site/capacity_multiplier_by_config/loyalty:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/ecommerce_site/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/ecommerce_site/opex_multiplier_by_config/loyalty:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/service_desk/capacity_by_capability/service:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/service_desk/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/service_desk/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_db_cluster/capacity_by_capability/order_fulfilment:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_db_cluster/capacity_by_capability/store_operations:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_db_cluster/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_db_cluster/capacity_multiplier_by_config/clustered:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_db_cluster/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/order_db_cluster/opex_multiplier_by_config/clustered:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/store_back_office_pc/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/store_back_office_pc/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/nosql_database/capacity_by_capability/order_fulfilment:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/nosql_database/capacity_by_capability/customer_insight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/nosql_database/capacity_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/nosql_database/capacity_multiplier_by_config/replicated:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/nosql_database/opex_multiplier_by_config/core:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/nosql_database/opex_multiplier_by_config/replicated:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/erp_suite/capacity_by_capability/financial_reporting:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/erp_suite/capacity_by_capability/order_fulfilment:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/erp_suite/capacity_multiplier_by_config/basic:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/erp_suite/capacity_multiplier_by_config/mid:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/erp_suite/capacity_multiplier_by_config/advanced:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/erp_suite/opex_multiplier_by_config/basic:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/erp_suite/opex_multiplier_by_config/mid:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /catalog/erp_suite/opex_multiplier_by_config/advanced:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/client_network/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compute_pool/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/storage_pool/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/backup_recovery/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/failover_cluster/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/central_sign_on/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/intrusion_detection/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/threat_detection/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/integration_api/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/end_user_email/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/data_platform/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/transactions/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/transactions/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/transactions/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/transactions/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/transactions/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/transactions/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sku_count/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sku_count/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sku_count/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sku_count/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sku_count/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sku_count/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/reporting_periods/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/reporting_periods/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/reporting_periods/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/reporting_periods/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/reporting_periods/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/reporting_periods/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/customer_records/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/customer_records/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/customer_records/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/customer_records/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/customer_records/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/customer_records/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/records/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/records/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/records/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/records/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/records/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/records/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/visits/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/visits/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/visits/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/visits/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/visits/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/visits/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/orders/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/orders/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/orders/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/orders/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/orders/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/orders/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/stores/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/stores/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/stores/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/stores/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/stores/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/stores/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sites/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sites/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sites/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sites/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sites/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/sites/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/tickets/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/tickets/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/tickets/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/tickets/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/tickets/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /drivers/tickets/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/training_retention:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/resistance_retention:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/arrival_shock:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/strategy_shock:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/resistance_ceiling:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/adoption_adjustment:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/sponsor_present:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/sponsor_absent:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/staff_floor:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/starting_wage_per_fte:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/placement_staff_multiplier/on_prem:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/placement_staff_multiplier/cloud:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/placement_staff_multiplier/saas:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/hiring_options/it_generalist/fte:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/hiring_options/it_generalist/wage_per_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/hiring_options/it_generalist/lead_time_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/communication_options/change_champions/cost:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/communication_options/change_champions/resistance_reduction:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/communication_options/knowledge_portal/cost:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/communication_options/knowledge_portal/resistance_reduction:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/communication_options/feedback_loops/cost:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/communication_options/feedback_loops/resistance_reduction:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/units/finance/initial_resistance:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/units/firm/initial_resistance:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/units/it/initial_resistance:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/units/marketing_sales/initial_resistance:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/units/service/initial_resistance:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/units/store_operations/initial_resistance:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /people/units/warehouse/initial_resistance:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/0/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/0/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/1/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/1/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/2/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/2/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/3/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/3/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/4/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/4/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/5/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/5/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/6/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/6/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/7/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/7/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/8/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/8/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/9/units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/assets/9/installed_round:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/training_fraction:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /initial/adoption:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/opening_capital:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/opening_operating:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/operating_allowances/0:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/operating_allowances/1:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/operating_allowances/2:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/operating_allowances/3:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/operating_allowances/4:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/operating_allowances/5:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/network/opex:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/network/staff_load:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/failover/opex:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/failover/staff_load:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/basic/opex:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/basic/staff_load:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/advanced/opex:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/advanced/staff_load:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/vendor_managed/opex:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/connection_terms/vendor_managed/staff_load:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/decision_attribution_version:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/action_attribution_version:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/tco_capex_fraction:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/process_partial_fraction:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/0/views/0/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/0/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/0/views/1/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/0/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/0/views/2/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/0/views/3/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/0/views/4/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/1/views/0/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/1/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/1/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/1/views/2/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/1/views/3/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/2/views/0/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/2/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/2/views/1/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/2/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/2/views/2/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/3/views/0/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/3/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/3/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/3/views/2/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/3/views/2/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/3/views/3/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/3/views/4/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/4/views/0/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/4/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/4/views/1/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/4/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/4/views/2/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/4/views/3/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/4/views/4/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/5/views/0/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/5/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/5/views/1/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/5/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/6/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/7/views/0/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/7/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/7/views/1/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/7/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/8/views/0/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/8/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/8/views/1/ideal:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/8/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/9/views/0/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/9/views/1/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/9/views/2/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /preferences/rules/9/views/3/weight:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
 units:
-  /: mixed_runtime_content
+  /catalog/pos_system_2011/capacity_by_capability/store_operations: store_day
+  /catalog/pos_system_2011/capacity_multiplier_by_config/core: fraction
+  /catalog/pos_system_2011/capacity_multiplier_by_config/modernised: fraction
+  /catalog/pos_system_2011/opex_multiplier_by_config/core: fraction
+  /catalog/pos_system_2011/opex_multiplier_by_config/modernised: fraction
+  /catalog/order_mgmt_v42/capacity_by_capability/order_fulfilment: orders
+  /catalog/order_mgmt_v42/capacity_by_capability/store_operations: store_day
+  /catalog/order_mgmt_v42/capacity_multiplier_by_config/core: fraction
+  /catalog/order_mgmt_v42/capacity_multiplier_by_config/forecasting: fraction
+  /catalog/order_mgmt_v42/capacity_multiplier_by_config/full_suite: fraction
+  /catalog/order_mgmt_v42/opex_multiplier_by_config/core: fraction
+  /catalog/order_mgmt_v42/opex_multiplier_by_config/forecasting: fraction
+  /catalog/order_mgmt_v42/opex_multiplier_by_config/full_suite: fraction
+  /catalog/centraline_im7/capacity_by_capability/order_fulfilment: orders
+  /catalog/centraline_im7/capacity_multiplier_by_config/core: fraction
+  /catalog/centraline_im7/capacity_multiplier_by_config/forecasting: fraction
+  /catalog/centraline_im7/capacity_multiplier_by_config/full_suite: fraction
+  /catalog/centraline_im7/opex_multiplier_by_config/core: fraction
+  /catalog/centraline_im7/opex_multiplier_by_config/forecasting: fraction
+  /catalog/centraline_im7/opex_multiplier_by_config/full_suite: fraction
+  /catalog/accounting_package/capacity_by_capability/financial_reporting: reports
+  /catalog/accounting_package/capacity_multiplier_by_config/core: fraction
+  /catalog/accounting_package/capacity_multiplier_by_config/reporting: fraction
+  /catalog/accounting_package/opex_multiplier_by_config/core: fraction
+  /catalog/accounting_package/opex_multiplier_by_config/reporting: fraction
+  /catalog/store_spreadsheets/capacity_multiplier_by_config/core: fraction
+  /catalog/store_spreadsheets/opex_multiplier_by_config/core: fraction
+  /catalog/next_gen_firewall/capacity_by_capability/firm_infrastructure: sites
+  /catalog/next_gen_firewall/capacity_multiplier_by_config/core: fraction
+  /catalog/next_gen_firewall/opex_multiplier_by_config/core: fraction
+  /catalog/customer_database/capacity_by_capability/customer_insight: customer_records
+  /catalog/customer_database/capacity_by_capability/service: tickets
+  /catalog/customer_database/capacity_multiplier_by_config/core: fraction
+  /catalog/customer_database/capacity_multiplier_by_config/segmentation: fraction
+  /catalog/customer_database/opex_multiplier_by_config/core: fraction
+  /catalog/customer_database/opex_multiplier_by_config/segmentation: fraction
+  /catalog/analytics_workspace/capacity_by_capability/customer_insight: customer_records
+  /catalog/analytics_workspace/capacity_by_capability/financial_reporting: reports
+  /catalog/analytics_workspace/capacity_multiplier_by_config/core: fraction
+  /catalog/analytics_workspace/capacity_multiplier_by_config/predictive: fraction
+  /catalog/analytics_workspace/opex_multiplier_by_config/core: fraction
+  /catalog/analytics_workspace/opex_multiplier_by_config/predictive: fraction
+  /catalog/ecommerce_site/capacity_by_capability/marketing_sales: campaigns
+  /catalog/ecommerce_site/capacity_multiplier_by_config/core: fraction
+  /catalog/ecommerce_site/capacity_multiplier_by_config/loyalty: fraction
+  /catalog/ecommerce_site/opex_multiplier_by_config/core: fraction
+  /catalog/ecommerce_site/opex_multiplier_by_config/loyalty: fraction
+  /catalog/service_desk/capacity_by_capability/service: tickets
+  /catalog/service_desk/capacity_multiplier_by_config/core: fraction
+  /catalog/service_desk/opex_multiplier_by_config/core: fraction
+  /catalog/order_db_cluster/capacity_by_capability/order_fulfilment: orders
+  /catalog/order_db_cluster/capacity_by_capability/store_operations: store_day
+  /catalog/order_db_cluster/capacity_multiplier_by_config/core: fraction
+  /catalog/order_db_cluster/capacity_multiplier_by_config/clustered: fraction
+  /catalog/order_db_cluster/opex_multiplier_by_config/core: fraction
+  /catalog/order_db_cluster/opex_multiplier_by_config/clustered: fraction
+  /catalog/store_back_office_pc/capacity_multiplier_by_config/core: fraction
+  /catalog/store_back_office_pc/opex_multiplier_by_config/core: fraction
+  /catalog/nosql_database/capacity_by_capability/order_fulfilment: orders
+  /catalog/nosql_database/capacity_by_capability/customer_insight: customer_records
+  /catalog/nosql_database/capacity_multiplier_by_config/core: fraction
+  /catalog/nosql_database/capacity_multiplier_by_config/replicated: fraction
+  /catalog/nosql_database/opex_multiplier_by_config/core: fraction
+  /catalog/nosql_database/opex_multiplier_by_config/replicated: fraction
+  /catalog/erp_suite/capacity_by_capability/financial_reporting: reports
+  /catalog/erp_suite/capacity_by_capability/order_fulfilment: orders
+  /catalog/erp_suite/capacity_multiplier_by_config/basic: fraction
+  /catalog/erp_suite/capacity_multiplier_by_config/mid: fraction
+  /catalog/erp_suite/capacity_multiplier_by_config/advanced: fraction
+  /catalog/erp_suite/opex_multiplier_by_config/basic: fraction
+  /catalog/erp_suite/opex_multiplier_by_config/mid: fraction
+  /catalog/erp_suite/opex_multiplier_by_config/advanced: fraction
+  /services/client_network/availability: fraction
+  /services/client_network/service_life_rounds: rounds
+  /services/client_network/supply_by_placement/on_prem/compute: compute_units
+  /services/client_network/supply_by_placement/on_prem/storage_gb: GB
+  /services/client_network/supply_by_placement/cloud/compute: compute_units
+  /services/client_network/supply_by_placement/cloud/storage_gb: GB
+  /services/client_network/supply_by_placement/saas/compute: compute_units
+  /services/client_network/supply_by_placement/saas/storage_gb: GB
+  /services/client_network/max_units: count
+  /services/compute_pool/availability: compute_units
+  /services/compute_pool/service_life_rounds: compute_units
+  /services/compute_pool/supply_by_placement/on_prem/compute: compute_units
+  /services/compute_pool/supply_by_placement/on_prem/storage_gb: GB
+  /services/compute_pool/supply_by_placement/cloud/compute: compute_units
+  /services/compute_pool/supply_by_placement/cloud/storage_gb: GB
+  /services/compute_pool/supply_by_placement/saas/compute: compute_units
+  /services/compute_pool/supply_by_placement/saas/storage_gb: GB
+  /services/compute_pool/max_units: compute_units
+  /services/storage_pool/availability: GB
+  /services/storage_pool/service_life_rounds: GB
+  /services/storage_pool/supply_by_placement/on_prem/compute: GB
+  /services/storage_pool/supply_by_placement/on_prem/storage_gb: GB
+  /services/storage_pool/supply_by_placement/cloud/compute: GB
+  /services/storage_pool/supply_by_placement/cloud/storage_gb: GB
+  /services/storage_pool/supply_by_placement/saas/compute: GB
+  /services/storage_pool/supply_by_placement/saas/storage_gb: GB
+  /services/storage_pool/max_units: GB
+  /services/backup_recovery/availability: fraction
+  /services/backup_recovery/service_life_rounds: rounds
+  /services/backup_recovery/supply_by_placement/on_prem/compute: compute_units
+  /services/backup_recovery/supply_by_placement/on_prem/storage_gb: GB
+  /services/backup_recovery/supply_by_placement/cloud/compute: compute_units
+  /services/backup_recovery/supply_by_placement/cloud/storage_gb: GB
+  /services/backup_recovery/supply_by_placement/saas/compute: compute_units
+  /services/backup_recovery/supply_by_placement/saas/storage_gb: GB
+  /services/backup_recovery/max_units: count
+  /services/failover_cluster/availability: fraction
+  /services/failover_cluster/service_life_rounds: rounds
+  /services/failover_cluster/supply_by_placement/on_prem/compute: compute_units
+  /services/failover_cluster/supply_by_placement/on_prem/storage_gb: GB
+  /services/failover_cluster/supply_by_placement/cloud/compute: compute_units
+  /services/failover_cluster/supply_by_placement/cloud/storage_gb: GB
+  /services/failover_cluster/supply_by_placement/saas/compute: compute_units
+  /services/failover_cluster/supply_by_placement/saas/storage_gb: GB
+  /services/failover_cluster/max_units: count
+  /services/central_sign_on/availability: fraction
+  /services/central_sign_on/service_life_rounds: rounds
+  /services/central_sign_on/supply_by_placement/on_prem/compute: compute_units
+  /services/central_sign_on/supply_by_placement/on_prem/storage_gb: GB
+  /services/central_sign_on/supply_by_placement/cloud/compute: compute_units
+  /services/central_sign_on/supply_by_placement/cloud/storage_gb: GB
+  /services/central_sign_on/supply_by_placement/saas/compute: compute_units
+  /services/central_sign_on/supply_by_placement/saas/storage_gb: GB
+  /services/central_sign_on/max_units: count
+  /services/intrusion_detection/availability: fraction
+  /services/intrusion_detection/service_life_rounds: rounds
+  /services/intrusion_detection/supply_by_placement/on_prem/compute: compute_units
+  /services/intrusion_detection/supply_by_placement/on_prem/storage_gb: GB
+  /services/intrusion_detection/supply_by_placement/cloud/compute: compute_units
+  /services/intrusion_detection/supply_by_placement/cloud/storage_gb: GB
+  /services/intrusion_detection/supply_by_placement/saas/compute: compute_units
+  /services/intrusion_detection/supply_by_placement/saas/storage_gb: GB
+  /services/intrusion_detection/max_units: count
+  /services/threat_detection/availability: fraction
+  /services/threat_detection/service_life_rounds: rounds
+  /services/threat_detection/supply_by_placement/on_prem/compute: compute_units
+  /services/threat_detection/supply_by_placement/on_prem/storage_gb: GB
+  /services/threat_detection/supply_by_placement/cloud/compute: compute_units
+  /services/threat_detection/supply_by_placement/cloud/storage_gb: GB
+  /services/threat_detection/supply_by_placement/saas/compute: compute_units
+  /services/threat_detection/supply_by_placement/saas/storage_gb: GB
+  /services/threat_detection/max_units: count
+  /services/integration_api/availability: fraction
+  /services/integration_api/service_life_rounds: rounds
+  /services/integration_api/supply_by_placement/on_prem/compute: compute_units
+  /services/integration_api/supply_by_placement/on_prem/storage_gb: GB
+  /services/integration_api/supply_by_placement/cloud/compute: compute_units
+  /services/integration_api/supply_by_placement/cloud/storage_gb: GB
+  /services/integration_api/supply_by_placement/saas/compute: compute_units
+  /services/integration_api/supply_by_placement/saas/storage_gb: GB
+  /services/integration_api/max_units: count
+  /services/end_user_email/availability: fraction
+  /services/end_user_email/service_life_rounds: rounds
+  /services/end_user_email/supply_by_placement/on_prem/compute: compute_units
+  /services/end_user_email/supply_by_placement/on_prem/storage_gb: GB
+  /services/end_user_email/supply_by_placement/cloud/compute: compute_units
+  /services/end_user_email/supply_by_placement/cloud/storage_gb: GB
+  /services/end_user_email/supply_by_placement/saas/compute: compute_units
+  /services/end_user_email/supply_by_placement/saas/storage_gb: GB
+  /services/end_user_email/max_units: count
+  /services/data_platform/availability: fraction
+  /services/data_platform/service_life_rounds: rounds
+  /services/data_platform/supply_by_placement/on_prem/compute: compute_units
+  /services/data_platform/supply_by_placement/on_prem/storage_gb: GB
+  /services/data_platform/supply_by_placement/cloud/compute: compute_units
+  /services/data_platform/supply_by_placement/cloud/storage_gb: GB
+  /services/data_platform/supply_by_placement/saas/compute: compute_units
+  /services/data_platform/supply_by_placement/saas/storage_gb: GB
+  /services/data_platform/max_units: count
+  /drivers/transactions/0: transactions/round
+  /drivers/transactions/1: transactions/round
+  /drivers/transactions/2: transactions/round
+  /drivers/transactions/3: transactions/round
+  /drivers/transactions/4: transactions/round
+  /drivers/transactions/5: transactions/round
+  /drivers/sku_count/0: sku_count/round
+  /drivers/sku_count/1: sku_count/round
+  /drivers/sku_count/2: sku_count/round
+  /drivers/sku_count/3: sku_count/round
+  /drivers/sku_count/4: sku_count/round
+  /drivers/sku_count/5: sku_count/round
+  /drivers/reporting_periods/0: reporting_periods/round
+  /drivers/reporting_periods/1: reporting_periods/round
+  /drivers/reporting_periods/2: reporting_periods/round
+  /drivers/reporting_periods/3: reporting_periods/round
+  /drivers/reporting_periods/4: reporting_periods/round
+  /drivers/reporting_periods/5: reporting_periods/round
+  /drivers/customer_records/0: customer_records/round
+  /drivers/customer_records/1: customer_records/round
+  /drivers/customer_records/2: customer_records/round
+  /drivers/customer_records/3: customer_records/round
+  /drivers/customer_records/4: customer_records/round
+  /drivers/customer_records/5: customer_records/round
+  /drivers/records/0: records/round
+  /drivers/records/1: records/round
+  /drivers/records/2: records/round
+  /drivers/records/3: records/round
+  /drivers/records/4: records/round
+  /drivers/records/5: records/round
+  /drivers/visits/0: visits/round
+  /drivers/visits/1: visits/round
+  /drivers/visits/2: visits/round
+  /drivers/visits/3: visits/round
+  /drivers/visits/4: visits/round
+  /drivers/visits/5: visits/round
+  /drivers/orders/0: orders/round
+  /drivers/orders/1: orders/round
+  /drivers/orders/2: orders/round
+  /drivers/orders/3: orders/round
+  /drivers/orders/4: orders/round
+  /drivers/orders/5: orders/round
+  /drivers/stores/0: stores/round
+  /drivers/stores/1: stores/round
+  /drivers/stores/2: stores/round
+  /drivers/stores/3: stores/round
+  /drivers/stores/4: stores/round
+  /drivers/stores/5: stores/round
+  /drivers/sites/0: sites/round
+  /drivers/sites/1: sites/round
+  /drivers/sites/2: sites/round
+  /drivers/sites/3: sites/round
+  /drivers/sites/4: sites/round
+  /drivers/sites/5: sites/round
+  /drivers/tickets/0: tickets/round
+  /drivers/tickets/1: tickets/round
+  /drivers/tickets/2: tickets/round
+  /drivers/tickets/3: tickets/round
+  /drivers/tickets/4: tickets/round
+  /drivers/tickets/5: tickets/round
+  /people/training_retention: fraction
+  /people/resistance_retention: fraction
+  /people/arrival_shock: fraction
+  /people/strategy_shock: fraction
+  /people/resistance_ceiling: fraction
+  /people/adoption_adjustment: fraction
+  /people/sponsor_present: fraction
+  /people/sponsor_absent: fraction
+  /people/staff_floor: fraction
+  /people/starting_wage_per_fte: dollars
+  /people/placement_staff_multiplier/on_prem: fraction
+  /people/placement_staff_multiplier/cloud: fraction
+  /people/placement_staff_multiplier/saas: fraction
+  /people/hiring_options/it_generalist/fte: FTE
+  /people/hiring_options/it_generalist/wage_per_round: dollars
+  /people/hiring_options/it_generalist/lead_time_rounds: rounds
+  /people/communication_options/change_champions/cost: dollars
+  /people/communication_options/change_champions/resistance_reduction: fraction
+  /people/communication_options/knowledge_portal/cost: dollars
+  /people/communication_options/knowledge_portal/resistance_reduction: fraction
+  /people/communication_options/feedback_loops/cost: dollars
+  /people/communication_options/feedback_loops/resistance_reduction: fraction
+  /people/units/finance/initial_resistance: fraction
+  /people/units/firm/initial_resistance: fraction
+  /people/units/it/initial_resistance: fraction
+  /people/units/marketing_sales/initial_resistance: fraction
+  /people/units/service/initial_resistance: fraction
+  /people/units/store_operations/initial_resistance: fraction
+  /people/units/warehouse/initial_resistance: fraction
+  /initial/assets/0/units: count
+  /initial/assets/0/installed_round: rounds
+  /initial/assets/1/units: count
+  /initial/assets/1/installed_round: rounds
+  /initial/assets/2/units: count
+  /initial/assets/2/installed_round: rounds
+  /initial/assets/3/units: count
+  /initial/assets/3/installed_round: rounds
+  /initial/assets/4/units: count
+  /initial/assets/4/installed_round: rounds
+  /initial/assets/5/units: count
+  /initial/assets/5/installed_round: rounds
+  /initial/assets/6/units: count
+  /initial/assets/6/installed_round: rounds
+  /initial/assets/7/units: count
+  /initial/assets/7/installed_round: rounds
+  /initial/assets/8/units: count
+  /initial/assets/8/installed_round: rounds
+  /initial/assets/9/units: count
+  /initial/assets/9/installed_round: rounds
+  /initial/training_fraction: fraction
+  /initial/adoption: fraction
+  /accounting/opening_capital: dollars
+  /accounting/opening_operating: count
+  /accounting/operating_allowances/0: dollars
+  /accounting/operating_allowances/1: dollars
+  /accounting/operating_allowances/2: dollars
+  /accounting/operating_allowances/3: dollars
+  /accounting/operating_allowances/4: dollars
+  /accounting/operating_allowances/5: dollars
+  /accounting/connection_terms/network/opex: dollars
+  /accounting/connection_terms/network/staff_load: FTE
+  /accounting/connection_terms/failover/opex: dollars
+  /accounting/connection_terms/failover/staff_load: FTE
+  /accounting/connection_terms/basic/opex: dollars
+  /accounting/connection_terms/basic/staff_load: FTE
+  /accounting/connection_terms/advanced/opex: dollars
+  /accounting/connection_terms/advanced/staff_load: FTE
+  /accounting/connection_terms/vendor_managed/opex: dollars
+  /accounting/connection_terms/vendor_managed/staff_load: FTE
+  /accounting/decision_attribution_version: count
+  /accounting/action_attribution_version: count
+  /accounting/tco_capex_fraction: fraction
+  /accounting/process_partial_fraction: fraction
+  /preferences/rules/0/views/0/ideal: fraction
+  /preferences/rules/0/views/0/weight: fraction
+  /preferences/rules/0/views/1/ideal: fraction
+  /preferences/rules/0/views/1/weight: fraction
+  /preferences/rules/0/views/2/weight: fraction
+  /preferences/rules/0/views/3/weight: fraction
+  /preferences/rules/0/views/4/weight: fraction
+  /preferences/rules/1/views/0/ideal: fraction
+  /preferences/rules/1/views/0/weight: fraction
+  /preferences/rules/1/views/1/weight: fraction
+  /preferences/rules/1/views/2/weight: fraction
+  /preferences/rules/1/views/3/weight: fraction
+  /preferences/rules/2/views/0/ideal: fraction
+  /preferences/rules/2/views/0/weight: fraction
+  /preferences/rules/2/views/1/ideal: fraction
+  /preferences/rules/2/views/1/weight: fraction
+  /preferences/rules/2/views/2/weight: fraction
+  /preferences/rules/3/views/0/ideal: fraction
+  /preferences/rules/3/views/0/weight: fraction
+  /preferences/rules/3/views/1/weight: fraction
+  /preferences/rules/3/views/2/ideal: fraction
+  /preferences/rules/3/views/2/weight: fraction
+  /preferences/rules/3/views/3/weight: fraction
+  /preferences/rules/3/views/4/weight: fraction
+  /preferences/rules/4/views/0/ideal: fraction
+  /preferences/rules/4/views/0/weight: fraction
+  /preferences/rules/4/views/1/ideal: fraction
+  /preferences/rules/4/views/1/weight: fraction
+  /preferences/rules/4/views/2/weight: fraction
+  /preferences/rules/4/views/3/weight: fraction
+  /preferences/rules/4/views/4/weight: fraction
+  /preferences/rules/5/views/0/ideal: fraction
+  /preferences/rules/5/views/0/weight: fraction
+  /preferences/rules/5/views/1/ideal: fraction
+  /preferences/rules/5/views/1/weight: fraction
+  /preferences/rules/6/views/0/weight: fraction
+  /preferences/rules/7/views/0/ideal: fraction
+  /preferences/rules/7/views/0/weight: fraction
+  /preferences/rules/7/views/1/ideal: fraction
+  /preferences/rules/7/views/1/weight: fraction
+  /preferences/rules/8/views/0/ideal: fraction
+  /preferences/rules/8/views/0/weight: fraction
+  /preferences/rules/8/views/1/ideal: fraction
+  /preferences/rules/8/views/1/weight: fraction
+  /preferences/rules/9/views/0/weight: fraction
+  /preferences/rules/9/views/1/weight: fraction
+  /preferences/rules/9/views/2/weight: fraction
+  /preferences/rules/9/views/3/weight: fraction

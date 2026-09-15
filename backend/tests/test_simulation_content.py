@@ -4,6 +4,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+import shutil
+import tempfile
+
+import yaml
 
 import pytest
 
@@ -69,3 +73,52 @@ def test_checkpoint_shape_rejects_unknown_fields_and_bad_join():
     with pytest.raises(ValueError): CheckpointStateV1.model_validate(unknown)
     bad = deepcopy(base); bad["primary"] = {"order_fulfilment": "foreign_asset"}
     with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
+    bad = deepcopy(base); bad["staff_hires"] = [{"unknown": 1}]
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
+    bad = deepcopy(base); bad["cost_ledger"] = [{"arbitrary": "x"}]
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
+    bad = deepcopy(base); bad["strategy"] = ""
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
+    bad = deepcopy(base); bad["strategy_declared_round"] = -1
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
+
+
+def test_operation_specific_nullability_and_strict_runtime_numbers():
+    for op, fields in [
+        ("replace_application", {"asset": None, "placement": "cloud", "config": "core"}),
+        ("replace_service", {"asset": None, "placement": "cloud", "units": 1}),
+        ("train", {"asset": None, "option": "full"}),
+        ("set_process", {"asset": None, "choice": "partial"}),
+    ]:
+        with pytest.raises(ValueError): CommandV1.model_validate({"key": "bad_null", "op": op, **fields})
+
+
+def test_runtime_negative_cross_reference_and_registry_probes():
+    def run_mutation(mutator):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "pack"
+            shutil.copytree(PACK, target)
+            runtime_path = target / "runtime.yaml"
+            raw = yaml.safe_load(runtime_path.read_text())
+            mutator(raw)
+            runtime_path.write_text(yaml.safe_dump(raw, sort_keys=False))
+            with pytest.raises(SimulationError): load_runtime_pack(target)
+
+    def missing_capacity(raw):
+        raw["catalog"]["pos_system_2011"]["capacity_by_capability"].pop("store_operations")
+        raw["provenance"].pop("/catalog/pos_system_2011/capacity_by_capability/store_operations")
+        raw["units"].pop("/catalog/pos_system_2011/capacity_by_capability/store_operations")
+    run_mutation(missing_capacity)
+    run_mutation(lambda raw: raw["units"].update({"/does/not/exist": "fraction"}))
+    run_mutation(lambda raw: raw.update({"generated_defaults": False}))
+
+
+def test_bound_pack_views_and_digest_are_immutable():
+    pack = load_runtime_pack(PACK)
+    digest = pack.pack_digest
+    pack.runtime.catalog["forged"] = pack.runtime.catalog["pos_system_2011"]
+    pack.casepack.catalog.append(pack.casepack.catalog[0])
+    assert len(pack.runtime.catalog) == 14
+    assert len(pack.casepack.catalog) == 14
+    assert pack.pack_digest == digest
+    with pytest.raises(Exception): pack.pack_digest = "a" * 64

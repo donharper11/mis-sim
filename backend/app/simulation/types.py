@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 import re
+import copy
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator, model_validator
@@ -52,7 +53,7 @@ NULLABLE_COMMAND_FIELDS = {"primary_for", "entity", "tier", "owner", "sponsor", 
 
 
 class StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+    model_config = ConfigDict(extra="forbid", strict=True, validate_assignment=True)
 
 
 def _key(value: str, limit: int = 64) -> str:
@@ -131,11 +132,14 @@ class CommandV1(StrictModel):
         unexpected = self.model_fields_set - (set(fields) | {"key", "op"})
         if unexpected:
             raise ValueError(f"fields not allowed for {self.op}: {sorted(unexpected)}")
+        nullable = {"primary_for", "entity", "tier", "owner", "sponsor"}
+        if self.op == "set_primary":
+            nullable.add("asset")
         for field in fields:
             if field not in self.model_fields_set:
                 raise ValueError(f"{self.op} requires {field}")
             value = getattr(self, field)
-            if value is None and field not in NULLABLE_COMMAND_FIELDS:
+            if value is None and field not in nullable:
                 raise ValueError(f"{self.op}.{field} cannot be null")
         if self.placement is not None and self.placement not in PLACEMENTS:
             raise ValueError("invalid placement")
@@ -388,6 +392,17 @@ class RuntimePackV1(StrictModel):
     pack_digest: StrictStr = Field(pattern=HEX64_RE.pattern)
     canonical_bytes: bytes
 
+    model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+
+    def __getattribute__(self, name: str):
+        # Do not expose mutable aliases to the bound semantic inputs.  Later
+        # packets receive detached copies; the digest and bound content remain
+        # unchanged if a caller mutates a returned view.
+        value = super().__getattribute__(name)
+        if name in {"casepack", "runtime"}:
+            return copy.deepcopy(value)
+        return value
+
 
 class PackIdentityV1(StrictModel):
     key: str
@@ -529,28 +544,83 @@ class ActionEnvelopeV1(StrictModel):
     record: ActionRecordV1
 
 
+class HiringOrderV1(StrictModel):
+    id: str; option: str; ordered_round: StrictInt; remaining_lead: StrictInt
+    status: Literal["pending", "arrived", "cancelled"]; arrival_round: StrictInt | None
+
+
+class StaffHireV1(StrictModel):
+    order_id: str; option: str; arrival_round: StrictInt
+
+
+class DebtV1(StrictModel):
+    signal: str; episode_id: StrictInt; capability: str; opened_round: StrictInt
+    amount: StrictInt; settled_round: StrictInt | None
+
+
+class SignalV1(StrictModel):
+    key: str; episode_id: StrictInt; capability: str; metric: str; metric_kind: str
+    value: float; severity: Literal["warning", "critical"]
+    status: Literal["open", "cleared", "fired"]
+    first_shown_round: StrictInt; cleared_round: StrictInt | None; fire_round: StrictInt | None
+    cleared_by: list[str]; was_actionable: bool; cheapest_fix_when_raised: StrictInt | None
+
+
+class EventHistoryV1(StrictModel):
+    round: StrictInt; fired: list[dict[str, Any]]; suppressed: list[dict[str, Any]]; prevented: list[dict[str, Any]]
+
+
+class ResponseV1(StrictModel):
+    round: StrictInt; key: str; event: str; option: str; rationale_tag: str
+    cost: StrictInt; effect: Literal["prevent_current_round", "none"]
+
+
+class TcoV1(StrictModel):
+    asset_id: str; ordered_round: StrictInt; selected_categories: list[str]
+    forecast: StrictInt; forecast_horizon_round: StrictInt; estimates: dict[str, StrictInt]
+
+
+class RepairAssessmentV1(StrictModel):
+    round: StrictInt; signal: str; original_watch_rule_index: StrictInt
+    candidates: list[dict[str, Any]]; uncredited: list[dict[str, Any]]; excluded: list[dict[str, Any]]
+
+
+class UnpricedSignalExposureV1(StrictModel):
+    signal: str; episode_id: StrictInt; capability: str; reason: Literal["unpriced", "unassessed"]
+
+
 class CheckpointStateV1(StrictModel):
     strategy: str; strategy_declared_round: StrictInt
     assets: dict[str, AssetV1]; connections: dict[str, ConnectionV1]
-    projects: dict[str, ProjectV1]; hiring_orders: dict[str, dict[str, Any]]
-    staff_hires: list[dict[str, Any]]; support: SupportV1
+    projects: dict[str, ProjectV1]; hiring_orders: dict[str, HiringOrderV1]
+    staff_hires: list[StaffHireV1]; support: SupportV1
     rollouts: dict[str, RolloutV1]; unit_resistance: dict[str, float]
     governance: dict[str, GovernanceStateV1]; primary: dict[str, str | None]
     policies: dict[str, PolicyStateV1]; capital_balance: StrictInt; operating_reserve: StrictInt
-    cost_ledger: list[dict[str, Any]]; technical_debt: list[dict[str, Any]]
-    signal_ledger: list[dict[str, Any]]; action_history: list[ActionEnvelopeV1]
-    available_funds_by_round: list[StrictInt]; event_history: list[dict[str, Any]]
-    response_history: list[dict[str, Any]]; tco_forecasts: list[dict[str, Any]]
-    repair_assessment_history: list[dict[str, Any]]; unpriced_signal_exposures: list[dict[str, Any]]
+    cost_ledger: list[CostEntryV1]; technical_debt: list[DebtV1]
+    signal_ledger: list[SignalV1]; action_history: list[ActionEnvelopeV1]
+    available_funds_by_round: list[StrictInt]; event_history: list[EventHistoryV1]
+    response_history: list[ResponseV1]; tco_forecasts: list[TcoV1]
+    repair_assessment_history: list[RepairAssessmentV1]; unpriced_signal_exposures: list[UnpricedSignalExposureV1]
 
     @model_validator(mode="after")
     def validate_state(self) -> "CheckpointStateV1":
+        if not KEY_RE.fullmatch(self.strategy) or not self.strategy_declared_round >= 0:
+            raise ValueError("invalid strategy or declared round")
         if any(k != v.id for k, v in self.assets.items()):
             raise ValueError("asset map key must equal asset id")
+        if any(not KEY_RE.fullmatch(k) for k in self.assets) or any(v.units <= 0 or v.installed_round < 0 for v in self.assets.values()):
+            raise ValueError("invalid asset identity or units")
         if any(k != v.id for k, v in self.projects.items()):
             raise ValueError("project map key must equal project id")
+        if any(not KEY_RE.fullmatch(k) for k in self.projects):
+            raise ValueError("invalid project identity")
         if any(v is not None and v not in self.assets for v in self.primary.values()):
             raise ValueError("primary references unknown asset")
+        if set(self.primary) - set(CAPABILITIES):
+            raise ValueError("primary references unknown capability")
+        if any(not 0 <= value <= 1 or not math.isfinite(value) for value in self.unit_resistance.values()):
+            raise ValueError("unit resistance out of range")
         for key, project in self.projects.items():
             if project.asset_id not in self.assets and project.status not in {"cancelled", "abandoned"}:
                 raise ValueError("project references unknown asset")

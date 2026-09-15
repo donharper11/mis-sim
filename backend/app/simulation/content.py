@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -14,9 +15,25 @@ from app.casepack.loader import load_casepack
 from app.casepack.validate import validate_pack_dir
 from app.casepack.models import Casepack
 from .types import (
-    COMMAND_CATEGORIES, CheckpointStateV1, CommandV1, RuntimeContentV1, RuntimePackV1,
+    COMMAND_CATEGORIES, PLACEMENTS, CheckpointStateV1, CommandV1, RuntimeContentV1, RuntimePackV1,
     SheetPatchV1, SimulationError,
 )
+
+RESPONSE_EXPLANATIONS = {
+    "inventory_audit_question": "Temporary review support prevents this round's audit disruption.",
+    "warehouse_rollout_gap": "Temporary floor support prevents this round's rollout disruption.",
+    "pos_support_ending": "Temporary support cover prevents this round's outage consequence.",
+    "ransomware_on_finance": "Contingency response prevents this round's financial-system disruption.",
+    "crm_data_exposed": "Incident containment prevents this round's exposure consequence.",
+    "phishing_on_staff_accounts": "An urgent briefing prevents this round's phishing consequence.",
+    "privacy_regulator_letter": "A compliance response prevents this round's enforcement consequence.",
+    "financial_audit_deadline_missed": "Deadline assistance prevents this round's reporting consequence.",
+    "unlogged_system_change": "A change review prevents this round's uncontrolled-change consequence.",
+    "checkout_queues_lengthen": "Temporary queue cover prevents this round's checkout consequence.",
+    "service_backlog_builds": "Temporary surge support prevents this round's backlog consequence.",
+    "supplier_portal_request": "Assisted stock responses prevent this round's supplier consequence.",
+    "analytics_request_from_board": "A commissioned report prevents this round's board-request consequence.",
+}
 
 
 class _UniqueLoader(yaml.SafeLoader):
@@ -89,7 +106,7 @@ def _default_runtime(pack: Casepack) -> dict[str, Any]:
     catalog: dict[str, Any] = {}
     for key, item in catalogs.items():
         catalog[key] = {
-            "purchasable_placements": [str(x.value) for x in item.deployment_modes],
+            "purchasable_placements": [str(x.value) for x in item.deployment_modes if not (key in {"pos_system_2011", "accounting_package"} and x.value == "on_prem")],
             "capacity_by_capability": ceiling[key],
             "capacity_multiplier_by_config": {k: v.compute_multiplier for k, v in item.config_tiers.items()},
             "opex_multiplier_by_config": {k: 1.0 for k in item.config_tiers},
@@ -131,7 +148,7 @@ def _default_runtime(pack: Casepack) -> dict[str, Any]:
     primary.update(order_fulfilment="initial_order_mgmt_v42", store_operations="initial_pos_system_2011", financial_reporting="initial_accounting_package")
     units = sorted({x.people_affected.org_unit for x in pack.catalog})
     preferences = _preference_content(pack)
-    return {
+    raw = {
         "version": 1, "catalog": catalog, "services": services_out, "drivers": drivers,
         "people": {"training_retention": .9, "resistance_retention": .9, "arrival_shock": .1, "strategy_shock": .1,
                     "resistance_ceiling": .9, "adoption_adjustment": .35, "sponsor_present": 1.0, "sponsor_absent": .75,
@@ -144,18 +161,22 @@ def _default_runtime(pack: Casepack) -> dict[str, Any]:
                      "process_with_option": "partial", "process_without_option": "unchanged", "primary": primary,
                      "governance": {key: {"owner": None, "sponsor": None} for key in capkeys}},
         "accounting": {"opening_capital": 0, "opening_operating": 0, "operating_allowances": [100000] * 6,
-                        "connection_terms": {k: {"capex_source": "none", "opex": 0 if k == "network" else 3100, "staff_load": 0.0} for k in ["network", "failover", "basic", "advanced", "vendor_managed"]},
+                        "connection_terms": {
+                            "network": {"capex_source": "none", "opex": 0, "staff_load": 0.0},
+                            "failover": {"capex_source": "none", "opex": 0, "staff_load": 0.0},
+                            "basic": {"capex_source": "integration_tier", "opex": 1000, "staff_load": .2},
+                            "advanced": {"capex_source": "integration_tier", "opex": 2000, "staff_load": .1},
+                            "vendor_managed": {"capex_source": "integration_tier", "opex": 3000, "staff_load": .05},
+                        },
                         "cancellation": "sunk", "platform_capability": "firm_infrastructure", "decision_attribution_version": 1, "action_attribution_version": 1,
                         "tco_estimators": {k: "one_round_opex" for k in ["training", "integration", "lifecycle", "capacity", "data_migration", "policy", "process_redesign", "maintenance", "backup"]},
                         "tco_capex_fraction": .1, "process_partial_fraction": .5},
         "preferences": preferences,
-        "response_disposition": {event.key: {"fund_effect": "prevent_current_round", "explanation": "funded response prevents this round"} for event in pack.events},
-        # A root pointer is a valid contract ancestor pointer and covers every
-        # generated numeric descendant.  Later authored supplements can replace
-        # it with more specific source/unit pointers without changing the DTO.
-        "provenance": {"/": {"source": "AUTHORED", "note": "TODO: calibrate — owner M1/M4"}},
-        "units": {"/": "mixed_runtime_content"},
+        "response_disposition": {event.key: {"fund_effect": "prevent_current_round", "explanation": RESPONSE_EXPLANATIONS[event.key] + " TODO: calibrate M1/M4"} for event in pack.events},
+        "provenance": {}, "units": {},
     }
+    raw["provenance"], raw["units"] = _build_registries(raw, pack)
+    return raw
 
 
 def _numeric_paths(value: Any, path: str = "") -> list[str]:
@@ -168,6 +189,49 @@ def _numeric_paths(value: Any, path: str = "") -> list[str]:
     elif isinstance(value, list):
         for index, item in enumerate(value): paths += _numeric_paths(item, f"{path}/{index}")
     return paths
+
+
+def _build_registries(raw: dict[str, Any], pack: Casepack | None = None) -> tuple[dict[str, Any], dict[str, str]]:
+    provenance: dict[str, Any] = {}
+    units: dict[str, str] = {}
+    skip = {"/provenance", "/units"}
+    def walk(value: Any, path: str):
+        if any(path == item or path.startswith(item + "/") for item in skip):
+            return
+        if isinstance(value, bool):
+            return
+        if isinstance(value, (int, float)) and path != "/version":
+            lower = path.lower()
+            if "/catalog/" in lower and "/capacity_by_capability/" in lower and pack is not None:
+                capability = path.rsplit("/", 1)[-1]
+                unit = next((item.demand_unit for item in pack.capabilities if item.key == capability), "count")
+            elif "/driver" in lower:
+                unit = f"{path.split('/')[2]}/round"
+            elif "storage" in lower:
+                unit = "GB"
+            elif "compute" in lower:
+                unit = "compute_units"
+            elif any(word in lower for word in ("fraction", "retention", "shock", "adoption", "resistance", "multiplier", "weight", "sponsor", "floor")):
+                unit = "fraction"
+            elif any(word in lower for word in ("cost", "opex", "capex", "wage", "allowance", "balance", "capital", "forecast", "spend", "amount", "price")):
+                unit = "dollars"
+            elif any(word in lower for word in ("round", "lead", "life", "installed", "ordered", "arrival")):
+                unit = "rounds"
+            elif any(word in lower for word in ("load", "fte")):
+                unit = "FTE"
+            elif any(word in lower for word in ("capacity", "availability", "ideal")):
+                unit = "fraction"
+            else:
+                unit = "count"
+            provenance[path] = {"source": "AUTHORED", "note": "TODO: calibrate M1/M4 — owner M1/M4"}
+            units[path] = unit
+            return
+        if isinstance(value, dict):
+            for key, child in value.items(): walk(child, f"{path}/{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value): walk(child, f"{path}/{index}")
+    walk(raw, "")
+    return provenance, units
 
 
 def _preference_content(pack: Casepack) -> dict[str, Any]:
@@ -203,11 +267,41 @@ def _preference_content(pack: Casepack) -> dict[str, Any]:
         leaves(raw.get("overrides", []), f"/preferences/{name}/overrides")
     if len(dispositions) != 131:
         raise SimulationError("invalid_output", "preferences.dispositions", {"expected": 131, "actual": len(dispositions)})
-    # Mark the supported source family explicitly; all remaining rows retain the
-    # context/M4 disposition above and are therefore still visible and auditable.
+    # Mark source leaves whose units have an approved v1 metric.  Unsupported
+    # risk/visibility ideals and raw overrides remain explicit M4 context rows.
+    supported_ideal = {"ideal_cost_posture", "ideal_reliability", "ideal_training_coverage", "ideal_staff_load", "ideal_availability", "ideal_integration", "ideal_placement", "ideal_tier"}
+    supported_weights: set[str] = set()
+    for name, pref in pack.preferences.items():
+        if name == "policies": continue
+        data = pref.model_dump(mode="json", exclude_none=False).get("defaults_by_archetype", {})
+        def inspect(value: Any, path: str):
+            if not isinstance(value, dict): return
+            keys = set(value)
+            if keys & supported_ideal:
+                if "weight" in keys: supported_weights.add(f"/preferences/{name}/defaults_by_archetype/{path}/weight")
+                for child, nested in value.items():
+                    if child == "by_decision" and isinstance(nested, dict):
+                        for decision, decision_value in nested.items():
+                            if isinstance(decision_value, dict) and "ideal_tier" in decision_value and "weight" in decision_value:
+                                supported_weights.add(f"/preferences/{name}/defaults_by_archetype/{path}/by_decision/{decision}/weight")
+            for child, nested in value.items():
+                if isinstance(nested, dict): inspect(nested, f"{path}/{child}" if path else child)
+        for archetype, value in data.items(): inspect(value, archetype)
     for row in dispositions:
-        if "/preferences/platform/defaults_by_archetype/operations/ideal_availability" in row["source_path"]:
-            row["disposition"] = "live_v1"; row["runtime_views"] = ["/preferences/rules/operations/views/0"]
+        path = row["source_path"]
+        leaf = path.rsplit("/", 1)[-1]
+        if "/overrides/" not in path and (leaf in supported_ideal or path in supported_weights):
+            row["disposition"] = "live_v1"
+            metric = {
+                "ideal_cost_posture": "cost_posture", "ideal_reliability": "asset_reliability",
+                "ideal_training_coverage": "training_coverage", "ideal_staff_load": "staff_load_ratio",
+                "ideal_availability": "asset_reliability", "ideal_integration": "integration_tier",
+                "ideal_placement": "platform_placement", "ideal_tier": "support_tier",
+            }.get(leaf)
+            if metric is None and "integration_tier" in path:
+                metric = "integration_tier"
+            pointers = [f"/preferences/rules/{index}/views/{view_index}" for index, rule in enumerate(view_rows) for view_index, view in enumerate(rule["views"]) if metric is None or view["metric"] == metric]
+            row["runtime_views"] = pointers or ["/preferences/rules/0/views/0"]
     return {"rules": view_rows, "dispositions": dispositions}
 
 
@@ -216,9 +310,22 @@ def _registries(raw: dict[str, Any]) -> None:
     numeric = set(_numeric_paths(raw)) - {"/version"}
     provenance = raw.get("provenance", {})
     units = raw.get("units", {})
-    # Root/subtree pointers are allowed by the contract; accepting the root only
-    # would make omissions invisible, so every numeric leaf must have a matching
-    # exact pointer or a declared ancestor.
+    def all_paths(value: Any, path: str = "") -> set[str]:
+        found = {path}
+        if isinstance(value, dict):
+            for key, child in value.items(): found |= all_paths(child, f"{path}/{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value): found |= all_paths(child, f"{path}/{index}")
+        return found
+    paths = all_paths(raw) - {"", "/provenance", "/units"}
+    if "/" in provenance or "/" in units:
+        raise SimulationError("invalid_input", "provenance", {"reason": "root catch-all pointer is forbidden"})
+    for pointer in (*provenance.keys(), *units.keys()):
+        if pointer not in paths:
+            raise SimulationError("invalid_input", pointer, {"reason": "unknown registry pointer"})
+    allowed_units = {"fraction", "FTE", "GB", "compute_units", "dollars", "rounds", "count", "orders", "store_day", "reports", "customer_records", "campaigns", "tickets", "sites"}
+    if any(not isinstance(unit, str) or not unit.strip() or (unit not in allowed_units and not re.fullmatch(r"[a-z][a-z0-9_]*/round", unit)) for unit in units.values()):
+        raise SimulationError("invalid_input", "units", {"reason": "invalid numeric dimension"})
     for path in numeric:
         if not any(path == pointer or path.startswith(pointer.rstrip("/") + "/") for pointer in provenance):
             raise SimulationError("invalid_input", path, {"reason": "missing provenance"})
@@ -253,8 +360,8 @@ def _validate_against_casepack(pack: Casepack, runtime: RuntimeContentV1) -> Non
             raise SimulationError("invalid_input", f"catalog/{key}", {"reason": "config coverage mismatch"})
         if not set(row.purchasable_placements) <= {x.value for x in source.deployment_modes}:
             raise SimulationError("invalid_input", f"catalog/{key}/purchasable_placements")
-        if not set(row.capacity_by_capability) <= set(capabilities):
-            raise SimulationError("invalid_input", f"catalog/{key}/capacity_by_capability", {"reason": "unknown capability"})
+        if set(row.capacity_by_capability) != set(source.serves):
+            raise SimulationError("invalid_input", f"catalog/{key}/capacity_by_capability", {"reason": "capacity must cover every served capability exactly"})
         if any(value is not None and value <= 0 for value in row.capacity_by_capability.values()):
             raise SimulationError("invalid_input", f"catalog/{key}/capacity_by_capability", {"reason": "capacity must be positive or null"})
     for key, row in runtime.services.items():
@@ -266,6 +373,12 @@ def _validate_against_casepack(pack: Casepack, runtime: RuntimeContentV1) -> Non
             raise SimulationError("invalid_input", f"services/{key}/capacity_by_capability", {"reason": "capability coverage mismatch"})
         if row.max_units <= 0 or row.max_units > 8:
             raise SimulationError("invalid_input", f"services/{key}/max_units", {"reason": "unit ceiling must be 1..8"})
+    expected_hiring = {"it_generalist"}
+    expected_communication = {"change_champions", "knowledge_portal", "feedback_loops"}
+    if set(runtime.people.hiring_options) != expected_hiring or set(runtime.people.communication_options) != expected_communication:
+        raise SimulationError("invalid_input", "people", {"reason": "unknown or missing option key"})
+    if set(runtime.people.placement_staff_multiplier) != PLACEMENTS:
+        raise SimulationError("invalid_input", "people/placement_staff_multiplier", {"reason": "placement map mismatch"})
     asset_ids = {asset.id for asset in runtime.initial.assets}
     if len(asset_ids) != len(runtime.initial.assets):
         raise SimulationError("invalid_input", "initial.assets", {"reason": "duplicate asset id"})
@@ -280,9 +393,39 @@ def _validate_against_casepack(pack: Casepack, runtime: RuntimeContentV1) -> Non
             raise SimulationError("invalid_reference", f"initial.assets/{asset.id}/config")
         if asset.source_kind == "service" and asset.config is not None:
             raise SimulationError("invalid_input", f"initial.assets/{asset.id}/config", {"reason": "service config must be null"})
+    edge_ids: set[str] = set(); edge_shapes: set[tuple[str, str, str, str | None]] = set()
+    entities = {entity.key for entity in pack.entities}
+    integration_tiers = {tier.key for tier in pack.platform.integration_tiers}
+    catalog_sources = set(catalogs)
     for edge in runtime.initial.connections:
         if edge.src not in asset_ids or edge.dst not in asset_ids or edge.src == edge.dst:
             raise SimulationError("invalid_reference", f"initial.connections/{edge.id}")
+        if edge.id in edge_ids:
+            raise SimulationError("invalid_input", f"initial.connections/{edge.id}", {"reason": "duplicate connection id"})
+        edge_ids.add(edge.id)
+        shape = (min(edge.src, edge.dst), max(edge.src, edge.dst), edge.kind, edge.entity)
+        if shape in edge_shapes:
+            raise SimulationError("invalid_input", f"initial.connections/{edge.id}", {"reason": "duplicate topology/entity edge"})
+        edge_shapes.add(shape)
+        if edge.kind in {"network", "failover"}:
+            if edge.entity is not None or edge.tier is not None:
+                raise SimulationError("invalid_input", f"initial.connections/{edge.id}", {"reason": "network/failover entity and tier must be null"})
+            if edge.kind == "failover":
+                endpoint_sources = {next(a.source_key for a in runtime.initial.assets if a.id == edge.src), next(a.source_key for a in runtime.initial.assets if a.id == edge.dst)}
+                if not any("failover" in catalogs.get(source, services.get(source)).roles_filled for source in endpoint_sources):
+                    raise SimulationError("invalid_reference", f"initial.connections/{edge.id}", {"reason": "failover endpoint role required"})
+        else:
+            if edge.entity is None or edge.tier not in integration_tiers:
+                raise SimulationError("invalid_reference", f"initial.connections/{edge.id}", {"reason": "integration requires entity and tier"})
+            source_asset = next(a for a in runtime.initial.assets if a.id == edge.src)
+            receiver_asset = next(a for a in runtime.initial.assets if a.id == edge.dst)
+            if source_asset.source_kind != "catalog" or receiver_asset.source_kind != "catalog":
+                raise SimulationError("invalid_reference", f"initial.connections/{edge.id}", {"reason": "integration endpoints must be catalog assets"})
+            source_item, receiver_item = catalogs[source_asset.source_key], catalogs[receiver_asset.source_key]
+            if edge.entity not in entities or not any(item.entity == edge.entity for item in source_item.owns_entities):
+                raise SimulationError("invalid_reference", f"initial.connections/{edge.id}/entity")
+            if not any(dep.entity == edge.entity and (dep.from_capability is None or dep.from_capability in source_item.serves) for dep in receiver_item.must_be_fed_by):
+                raise SimulationError("invalid_reference", f"initial.connections/{edge.id}", {"reason": "receiver dependency mismatch"})
 
 
 def load_runtime_pack(path: str | Path) -> RuntimePackV1:
@@ -305,8 +448,6 @@ def load_runtime_pack(path: str | Path) -> RuntimePackV1:
         raise SimulationError("invalid_input", "runtime.yaml", {"reason": "yaml parse error"}) from exc
     if not isinstance(raw, dict):
         raise SimulationError("invalid_input", "runtime.yaml", {"reason": "mapping required"})
-    if raw.pop("generated_defaults", False):
-        raw = _default_runtime(pack)
     try:
         runtime = RuntimeContentV1.model_validate(raw)
         _validate_against_casepack(pack, runtime)
