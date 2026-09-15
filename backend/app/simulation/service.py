@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.round import models as round_models
 from app.round.models import RoundResult
+from app.repo.base import ScopedRepo
 
 from .consequences import quote_transition, resolve_transition
 from .content import canonical_json, normalize_patch
@@ -176,11 +177,11 @@ class SimulationService:
                 or run.pack_version != self.runtime_pack.casepack.metadata.pack_version):
             raise SimulationError("pack_mismatch", "pack_digest")
 
+    def _repo(self, session: Session, instance_id: int, team_id: int) -> ScopedRepo:
+        return ScopedRepo(session, instance_id, team_id)
+
     def _run(self, session: Session, instance_id: int, team_id: int, *, lock: bool = False) -> SimulationRunV1:
-        statement = select(SimulationRunV1).where(
-            SimulationRunV1.instance_id == instance_id,
-            SimulationRunV1.team_id == team_id,
-        )
+        statement = self._repo(session, instance_id, team_id).select(SimulationRunV1)
         if lock:
             statement = statement.with_for_update()
         run = session.execute(statement).scalar_one_or_none()
@@ -190,7 +191,7 @@ class SimulationService:
         return run
 
     def _checkpoint(self, session: Session, instance_id: int, team_id: int, round: int) -> SimulationCheckpointV1:
-        row = session.get(SimulationCheckpointV1, (instance_id, team_id, round))
+        row = self._repo(session, instance_id, team_id).get(SimulationCheckpointV1, (instance_id, team_id, round))
         if row is None:
             raise SimulationError("invalid_output", "checkpoint")
         if row.pack_digest != self.runtime_pack.pack_digest:
@@ -204,7 +205,7 @@ class SimulationService:
         return row
 
     def _sheet(self, session: Session, instance_id: int, team_id: int, round: int) -> SimulationSheetV1:
-        sheet = session.get(SimulationSheetV1, (instance_id, team_id, round))
+        sheet = self._repo(session, instance_id, team_id).get(SimulationSheetV1, (instance_id, team_id, round))
         if sheet is None:
             raise SimulationError("invalid_output", "sheet")
         return sheet
@@ -243,9 +244,7 @@ class SimulationService:
                 # versioned run.  Every table is queried with the complete scope.
                 all_models = (*round_models.ALL_TABLES, SimulationRunV1, SimulationSheetV1, SimulationCheckpointV1)
                 for model in all_models:
-                    if session.execute(select(model).where(
-                        model.instance_id == instance_id, model.team_id == team_id,
-                    )).first() is not None:
+                    if session.execute(self._repo(session, instance_id, team_id).select(model)).first() is not None:
                         raise SimulationError("scope_exists", "instance_id")
                 state = initialize_state(self.runtime_pack, strategy_key)
                 run = SimulationRunV1(
@@ -371,7 +370,7 @@ class SimulationService:
                 checkpoint = self._checkpoint(session, instance_id, team_id, round)
                 if checkpoint.sheet_revision != locked_revision:
                     raise SimulationError("revision_conflict", "revision")
-                result = session.get(RoundResult, (instance_id, team_id, round))
+                result = self._repo(session, instance_id, team_id).get(RoundResult, (instance_id, team_id, round))
                 if result is None:
                     raise SimulationError("invalid_output", "round_result")
                 return deepcopy(result.payload)
@@ -402,7 +401,7 @@ class SimulationService:
                 pack_digest=self.runtime_pack.pack_digest, sheet_revision=locked_revision,
                 state=_state_payload(state), state_digest=_state_digest(state),
             ))
-            existing_result = session.get(RoundResult, (instance_id, team_id, round))
+            existing_result = self._repo(session, instance_id, team_id).get(RoundResult, (instance_id, team_id, round))
             if existing_result is not None:
                 raise SimulationError("round_state", "round")
             session.add(RoundResult(instance_id=instance_id, team_id=team_id, round=round, payload=result))

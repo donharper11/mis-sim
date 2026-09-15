@@ -26,6 +26,7 @@ from app.engine import events as events_mod
 from app.engine import ledger as ledger_mod
 from app.engine.score import score_team
 from app.round import models as m
+from app.repo.base import ScopedRepo
 from app.round import snapshot as snap
 
 #: CONTRACTS.md decision_line.category enum (12 values) -- validation step 1.
@@ -50,18 +51,19 @@ class RoundRunner:
         self.pack = pack
         self.instance_id = instance_id
         self.team_id = team_id
+        self.repo = ScopedRepo(session, instance_id, team_id)
         self._events: dict[str, Event] = {e.key: e for e in pack.events}
 
     # -- lock / advance state machine (O1, O3) -----------------------------------------
 
     def _team_row(self) -> m.TeamStateRow:
-        row = self.session.get(m.TeamStateRow, (self.instance_id, self.team_id))
+        row = self.repo.get(m.TeamStateRow, (self.instance_id, self.team_id))
         if row is None:
             raise LockStateError("no team_state row for this instance/team")
         return row
 
     def is_locked(self, round: int) -> bool:
-        row = self.session.get(m.TeamStateRow, (self.instance_id, self.team_id))
+        row = self.repo.get(m.TeamStateRow, (self.instance_id, self.team_id))
         return row is not None and row.locked_round is not None and row.locked_round >= round
 
     def assert_writable(self, round: int) -> None:
@@ -81,7 +83,7 @@ class RoundRunner:
         row = self._team_row()
         if row.locked_round is not None and row.locked_round >= round:
             row.locked_round = round - 1 if round > 1 else None
-        rr = self.session.get(m.RoundResult, (self.instance_id, self.team_id, round))
+        rr = self.repo.get(m.RoundResult, (self.instance_id, self.team_id, round))
         if rr is not None:
             self.session.delete(rr)  # invalidate, never edit (O1); delete is not an UPDATE (I6)
         if row.advanced_round is not None and row.advanced_round >= round:
@@ -100,7 +102,7 @@ class RoundRunner:
         categories = {ln["category"] for ln in lines}
         for cat in categories:
             existing = self.session.scalars(
-                snap._scoped(m.DecisionLineRow, self.instance_id, self.team_id, round)
+                self.repo.select(m.DecisionLineRow).where(m.DecisionLineRow.round == round)
                 .where(m.DecisionLineRow.category == cat)
             ).all()
             for e in existing:
@@ -119,7 +121,7 @@ class RoundRunner:
 
     def _validate_sheet(self, round: int) -> None:
         lines = self.session.scalars(
-            snap._scoped(m.DecisionLineRow, self.instance_id, self.team_id, round)
+            self.repo.select(m.DecisionLineRow).where(m.DecisionLineRow.round == round)
         ).all()
         for line in lines:
             if line.category not in DECISION_CATEGORIES:
@@ -156,13 +158,13 @@ class RoundRunner:
         """Lead-time purchases become real nodes only at their arrival_round (O2): not in the
         graph early, which would inflate capacity."""
         arrivals = self.session.scalars(
-            snap._scoped(m.InFlightRow, self.instance_id, self.team_id)
+            self.repo.select(m.InFlightRow)
             .where(m.InFlightRow.arrival_round == round, m.InFlightRow.materialised == False)  # noqa: E712
         ).all()
         for order in arrivals:
             payload = dict(order.node_payload or {})
             exists = self.session.scalars(
-                snap._scoped(m.ArchNodeRow, self.instance_id, self.team_id, round)
+                self.repo.select(m.ArchNodeRow).where(m.ArchNodeRow.round == round)
                 .where(m.ArchNodeRow.key == order.key)
             ).first()
             if exists is None and payload:
@@ -184,7 +186,7 @@ class RoundRunner:
 
     def _recompute_opex(self, round: int) -> int:
         nodes = self.session.scalars(
-            snap._scoped(m.ArchNodeRow, self.instance_id, self.team_id, round)
+            self.repo.select(m.ArchNodeRow).where(m.ArchNodeRow.round == round)
         ).all()
         return sum(int(n.opex_contribution) for n in nodes)  # SUM, never += (I7)
 
@@ -192,7 +194,7 @@ class RoundRunner:
 
     def _already_fired(self) -> frozenset[str]:
         prior = self.session.scalars(
-            snap._scoped(m.RoundResult, self.instance_id, self.team_id)
+            self.repo.select(m.RoundResult)
         ).all()
         fired: set[str] = set()
         for rr in prior:
@@ -232,7 +234,7 @@ class RoundRunner:
 
     def _tco_variance(self, round: int) -> list[dict]:
         rows = self.session.scalars(
-            snap._scoped(m.TcoForecastRow, self.instance_id, self.team_id, round)
+            self.repo.select(m.TcoForecastRow).where(m.TcoForecastRow.round == round)
         ).all()
         return [{"item": r.item, "forecast": int(r.forecast), "actual": int(r.actual)} for r in rows]
 
@@ -456,7 +458,7 @@ class RoundRunner:
     def _write_result(self, round: int, payload: dict) -> None:
         """Write the immutable RoundResult. Re-running a round produces a NEW row only after the
         old one is invalidated by ``unlock`` (O1); an existing row is never UPDATEd (I6, decision 2)."""
-        existing = self.session.get(m.RoundResult, (self.instance_id, self.team_id, round))
+        existing = self.repo.get(m.RoundResult, (self.instance_id, self.team_id, round))
         if existing is not None:
             raise LockStateError(
                 f"round {round} already has an immutable RoundResult; unlock to invalidate it (O1)"

@@ -180,6 +180,7 @@ Before any module lands:
 □  Screenshots attached, each with the command that produced its data
 □  Auth canary passed (if browser-gated)
 □  Instance-isolation canary passed (if state-touching)
+□  M2 2.2 scope canary and schema guard passed (`backend/tests/test_instance_isolation.py`, `backend/tests/check_instance_scope_schema.py`)
 □  Casepack validator clean
 □  `make check` green — pytest + every check_*.py + fixture matrix (no guard runs only by hand)
 □  Every new invariant/check shown to FAIL on a planted defect (SPEC_PROTOCOL §4.3)

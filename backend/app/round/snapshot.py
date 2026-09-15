@@ -25,12 +25,13 @@ from app.engine.state import (
 )
 from app.round import models as m
 from app.round.actions import action_record
+from app.repo.base import ScopedRepo
 
 
 def _scoped(model, instance_id: int, team_id: int, round: int | None = None):
     """A select scoped to one instance/team (and optionally one round) -- the single place a
     ``select(`` is written, and it names ``instance_id`` so I4's grep passes (invariant I4)."""
-    stmt = select(model).where(model.instance_id == instance_id, model.team_id == team_id)
+    stmt = ScopedRepo(None, instance_id, team_id).select(model)
     if round is not None:
         stmt = stmt.where(model.round == round)
     return stmt
@@ -128,7 +129,7 @@ def build_team_state(
     """Assemble the immutable ``TeamState`` the engines score, from the round's persisted estate
     plus the four round-evolution inputs (spec section 5.1a, decision 9). ``signals`` is the
     projected ledger, supplied by the resolution order at step 10 (empty at the raw step-9 pass)."""
-    ts_row = session.get(m.TeamStateRow, (instance_id, team_id))
+    ts_row = ScopedRepo(session, instance_id, team_id).get(m.TeamStateRow, (instance_id, team_id))
     strategy = ts_row.declared_strategy if ts_row else pack.metadata.initial_state.declared_strategy
 
     nodes = tuple(
