@@ -29,11 +29,13 @@ def project_team_state(
 ) -> TeamState:
     """Build a detached scorer snapshot from the authoritative checkpoint."""
     casepack = pack.casepack
-    if round < 1 or round > casepack.metadata.rounds: raise SimulationError("round_state", "round")
+    if not isinstance(round, int) or isinstance(round, bool) or round < 1 or round > casepack.metadata.rounds:
+        raise SimulationError("round_state", "round")
     catalogs = {x.key: x for x in casepack.catalog}; services = {x.key: x for x in casepack.platform.services}
     nodes: list[ArchNode] = []; deployments: list[DeploymentState] = []
     for key, asset in state.assets.items():
-        if asset.retired_round is not None and asset.retired_round <= round: continue
+        if (asset.retired_round is not None and asset.retired_round <= round) or asset.installed_round > round:
+            continue
         source = catalogs.get(asset.source_key) or services.get(asset.source_key)
         if source is None: raise SimulationError("invalid_reference", f"assets/{key}")
         runtime_row = resources.by_asset.get(key, {})
@@ -49,22 +51,37 @@ def project_team_state(
     policies = tuple(PolicyDecisionState(policy=key, selected=value.selected, actively_decided=value.actively_decided) for key, value in sorted(state.policies.items()))
     action_records = tuple(ActionRecord(action_type=x.record.action_type, locked_round=x.record.locked_round, capability=x.record.capability, target_key=x.record.target_key, cost=x.record.cost) for x in actions)
     decision_records = tuple(decisions)
-    grants = tuple(entity_access) if entity_access else _entity_access(casepack, nodes, edges)
+    grants = tuple(entity_access) if entity_access else _entity_access(casepack, nodes, edges, state.connections, {key: asset.source_key for key, asset in state.assets.items()})
     return TeamState(round=round, declared_strategy=state.strategy, nodes=tuple(nodes), edges=edges, deployments=tuple(deployments), org_units=org_units, governance=governance, staff=staff, signals=tuple(signals), decisions=decision_records, stakeholder_alignments=tuple(stakeholder_alignments), policy_decisions=policies, action_history=action_records, available_funds_by_round=tuple(funds), debt_ratio_by_capability=debt_ratios, entity_access=grants, repair_assessments=tuple(repair_assessments) if repair_assessments else None)
 
 
-def _entity_access(casepack: Casepack, nodes: list[ArchNode], edges: tuple[ArchEdge, ...]) -> tuple[EntityAccess, ...]:
+def _entity_access(
+    casepack: Casepack,
+    nodes: list[ArchNode],
+    edges: tuple[ArchEdge, ...],
+    connections: dict[str, Any] | None = None,
+    asset_sources: dict[str, str] | None = None,
+) -> tuple[EntityAccess, ...]:
     by_key = {node.key: node for node in nodes}; grants: set[EntityAccess] = set()
     catalog = {x.key: x for x in casepack.catalog}; services = {x.key: x for x in casepack.platform.services}
+    asset_sources = asset_sources or {}
     for edge in edges:
         if edge.kind != "integration": continue
         source_node, receiver_node = by_key.get(edge.src), by_key.get(edge.dst)
         if source_node is None or receiver_node is None: continue
         source_entities = dict(source_node.owns_entities)
         for receiver_cap in receiver_node.serves:
-            receiver_source = catalog.get(receiver_node.key.split("initial_", 1)[-1]) or catalog.get(receiver_node.key)
+            receiver_source = catalog.get(asset_sources.get(receiver_node.key, receiver_node.key.split("initial_", 1)[-1]))
             if receiver_source is None: continue
             for dependency in receiver_source.must_be_fed_by:
-                if dependency.entity not in source_entities or dependency.from_capability not in source_node.serves: continue
-                grants.add(EntityAccess(connection=next((e.src + "_" + e.dst for e in edges if e.src == edge.src and e.dst == edge.dst), edge.src + "_" + edge.dst), source=edge.src, receiver=edge.dst, capability=receiver_cap, entity=dependency.entity))
+                if dependency.entity not in source_entities: continue
+                if dependency.from_capability is not None and dependency.from_capability not in source_node.serves: continue
+                connection_id = next(
+                    (key for key, value in (connections or {}).items()
+                     if (value.src if hasattr(value, "src") else value.get("src")) == edge.src
+                     and (value.dst if hasattr(value, "dst") else value.get("dst")) == edge.dst
+                     and (value.kind if hasattr(value, "kind") else value.get("kind")) == edge.kind),
+                    f"{edge.src}_{edge.dst}",
+                )
+                grants.add(EntityAccess(connection=connection_id, source=edge.src, receiver=edge.dst, capability=receiver_cap, entity=dependency.entity))
     return tuple(sorted(grants, key=lambda x: (x.connection, x.source, x.receiver, x.capability, x.entity)))

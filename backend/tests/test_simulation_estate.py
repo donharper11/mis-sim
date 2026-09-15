@@ -99,3 +99,53 @@ def test_resource_strictness_mutation_guard():
     assert all(math.isfinite(row["factor"]) and 0 <= row["factor"] <= 1 for row in view.by_placement.values())
     with pytest.raises(SimulationError): _round6(float("nan"))
     with pytest.raises(SimulationError): _round6(-1.0)
+
+
+def test_pending_cancel_never_materializes_or_projects():
+    pack = _pack(); prior = initialize_state(pack, "cost_leadership")
+    buy = CommandV1(key="warehouse", op="buy_application", catalog="centraline_im7", placement="saas", config="core", primary_for=None, tco_categories=[])
+    pending = reduce_estate(pack, prior, [buy], 1)
+    pending_state = _apply(prior, pending)
+    assert "r1_warehouse" not in {node.key for node in project_team_state(pack, pending_state, 1, resource_projection(pack, pending_state.assets, pending_state.connections, pending_state.policies, 1), StaffPool(1.0, 0.0)).nodes}
+    cancelled = reduce_estate(pack, pending_state, [CommandV1(key="cancel", op="cancel_order", order="r1_warehouse")], 2)
+    assert "r1_warehouse" not in cancelled.assets
+    assert "r1_warehouse" not in resource_projection(pack, cancelled.assets, cancelled.connections, prior.policies, 2).by_asset
+
+
+def test_replacement_noop_preserves_rollout_and_blocks_retirement_until_cancelled():
+    pack = _pack(); prior = initialize_state(pack, "cost_leadership")
+    noop = CommandV1(key="same", op="replace_application", asset="initial_pos_system_2011", placement="on_prem", config="core")
+    no_change = reduce_estate(pack, prior, [noop], 1)
+    assert not no_change.charge_entries and "r1_same" not in no_change.projects
+    replace = CommandV1(key="upgrade", op="replace_application", asset="initial_pos_system_2011", placement="cloud", config="core")
+    pending = reduce_estate(pack, prior, [replace], 1)
+    pending_state = _apply(prior, pending)
+    with pytest.raises(SimulationError):
+        reduce_estate(pack, pending_state, [CommandV1(key="retire", op="retire_asset", asset="initial_pos_system_2011")], 1)
+    arrived = reduce_estate(pack, pending_state, [], 2)
+    assert arrived.rollouts["initial_pos_system_2011"] == prior.rollouts["initial_pos_system_2011"]
+
+
+def test_policy_load_and_retirement_take_effect_at_their_round():
+    pack = _pack(); prior = initialize_state(pack, "cost_leadership")
+    policies = dict(prior.policies); policies["access_logging"] = policies["access_logging"].model_copy(update={"selected": "full_audit_trail"})
+    view = resource_projection(pack, prior.assets, prior.connections, policies, 1)
+    assert view.policy_load == 0.08 and round(view.total_load, 6) == 3.78
+    retired = reduce_estate(pack, prior, [CommandV1(key="retire", op="retire_asset", asset="initial_pos_system_2011")], 2)
+    before = resource_projection(pack, retired.assets, retired.connections, prior.policies, 1)
+    after = resource_projection(pack, retired.assets, retired.connections, prior.policies, 2)
+    assert "initial_pos_system_2011" in before.by_asset and "initial_pos_system_2011" not in after.by_asset
+    assert before.integration_load >= after.integration_load
+
+
+def test_projection_round_identity_and_acquisition_validation_are_closed():
+    pack = _pack(); state = initialize_state(pack, "cost_leadership")
+    view = resource_projection(pack, state.assets, state.connections, state.policies, 1)
+    for bad_round in (True, 1.0):
+        with pytest.raises(SimulationError): project_team_state(pack, state, bad_round, view, StaffPool(1.0, 0.0))
+    projected = project_team_state(pack, state, 1, view, StaffPool(1.0, 0.0))
+    assert {grant.connection for grant in projected.entity_access} <= set(state.connections)
+    with pytest.raises(SimulationError):
+        reduce_estate(pack, state, [CommandV1(key="bad", op="buy_application", catalog="missing", placement="saas", config="core", primary_for=None, tco_categories=[])], 1)
+    with pytest.raises(SimulationError):
+        reduce_estate(pack, state, [CommandV1(key="too_many", op="buy_service", service="compute_pool", placement="cloud", units=9)], 1)

@@ -25,7 +25,13 @@ def resource_projection(pack: RuntimePackV1, assets: dict[str, Any], connections
     catalogs = {x.key: x for x in casepack.catalog}; services = {x.key: x for x in casepack.platform.services}; caps = [x.key for x in casepack.capabilities]
     by_placement = {placement: {"compute_supply": 0.0, "storage_supply_gb": 0.0, "compute_draw": 0.0, "storage_draw_gb": 0.0, "factor": 1.0} for placement in ("on_prem", "cloud", "saas")}
     by_asset: dict[str, dict[str, Any]] = {}
-    live = {key: (value.model_dump() if hasattr(value, "model_dump") else value) for key, value in assets.items() if (value.retired_round if hasattr(value, "retired_round") else value.get("retired_round")) is None and (value.installed_round if hasattr(value, "installed_round") else value.get("installed_round", 0)) <= round}
+    live = {
+        key: (value.model_dump() if hasattr(value, "model_dump") else value)
+        for key, value in assets.items()
+        if ((value.retired_round if hasattr(value, "retired_round") else value.get("retired_round")) is None
+            or (value.retired_round if hasattr(value, "retired_round") else value.get("retired_round")) > round)
+        and (value.installed_round if hasattr(value, "installed_round") else value.get("installed_round", 0)) <= round
+    }
     for key, asset in live.items():
         source = catalogs.get(asset["source_key"]) or services.get(asset["source_key"])
         if source is None: raise SimulationError("invalid_reference", f"assets/{key}")
@@ -62,9 +68,22 @@ def resource_projection(pack: RuntimePackV1, assets: dict[str, Any], connections
     tiers = {x.key: x for x in casepack.platform.integration_tiers}
     for edge_value in connections.values():
         edge = edge_value.model_dump() if hasattr(edge_value, "model_dump") else edge_value
-        if edge.get("retired_round") is not None or edge.get("kind") != "integration": continue
+        if ((edge.get("retired_round") is not None and edge.get("retired_round") <= round)
+                or edge.get("kind") != "integration"):
+            continue
         term = runtime.accounting.connection_terms[edge["tier"]]
         integration_load += term.staff_load; integration_opex += term.opex
-    total_load = sum(float(row["staff_load"]) for row in by_asset.values()) + integration_load
+    policy_load = 0.0
+    policy_by_key = {policy.key: policy for policy in casepack.policies}
+    for key, value in policies.items():
+        selected = value.selected if hasattr(value, "selected") else value.get("selected")
+        policy = policy_by_key.get(key)
+        if policy is None or selected not in policy.options or len(policy.options) <= 1:
+            continue
+        intensity = policy.options.index(selected) / (len(policy.options) - 1)
+        effect = policy.effects.get("staff_load", 0.0)
+        policy_load += float(effect) * intensity
+    policy_load = _round6(policy_load)
+    total_load = sum(float(row["staff_load"]) for row in by_asset.values()) + integration_load + policy_load
     total_opex = sum(int(row["opex"]) for row in by_asset.values()) + integration_opex
-    return ResourceViewV1(by_placement=by_placement, by_asset=by_asset, integration_load=_round6(integration_load), policy_load=0.0, total_load=_round6(total_load), total_opex=total_opex)
+    return ResourceViewV1(by_placement=by_placement, by_asset=by_asset, integration_load=_round6(integration_load), policy_load=policy_load, total_load=_round6(total_load), total_opex=total_opex)

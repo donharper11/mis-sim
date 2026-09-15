@@ -81,8 +81,20 @@ def initialize_state(pack: RuntimePackV1, strategy_key: str) -> CheckpointStateV
 def _price(casepack: Casepack, source_key: str, placement: str, config: str | None, units: int) -> tuple[int, int]:
     catalogs, services = _source_maps(casepack)
     source = catalogs.get(source_key) or services.get(source_key)
-    mode = source.deployment_modes[next(k for k in source.deployment_modes if k.value == placement)] if source_key in catalogs else source.placement_options[next(k for k in source.placement_options if k.value == placement)]
-    multiplier = source.config_tiers[config].capex_multiplier if source_key in catalogs else 1.0
+    if source is None:
+        raise SimulationError("invalid_reference", "source", {"source": source_key})
+    modes = source.deployment_modes if source_key in catalogs else source.placement_options
+    mode = next((value for key, value in modes.items() if key.value == placement), None)
+    if mode is None:
+        raise SimulationError("invalid_reference", "placement", {"source": source_key, "placement": placement})
+    if source_key in catalogs:
+        if config is None or config not in source.config_tiers:
+            raise SimulationError("invalid_reference", "config", {"source": source_key, "config": config})
+        multiplier = source.config_tiers[config].capex_multiplier
+    else:
+        if config is not None:
+            raise SimulationError("invalid_input", "config", {"source": source_key})
+        multiplier = 1.0
     return _money(mode.capex * multiplier * units), mode.lead_time_rounds
 
 
@@ -100,6 +112,17 @@ def _find_project(state: dict[str, Any], order_id: str) -> tuple[str, dict[str, 
     if project is None:
         raise SimulationError("invalid_reference", "order", {"order": order_id})
     return order_id, project
+
+
+def _remove_unmaterialized_asset(state: dict[str, Any], project: dict[str, Any]) -> None:
+    """Cancellation/abandonment is sunk, but a pending new asset never existed."""
+    if project.get("replacement_target") is None:
+        asset_id = project["asset_id"]
+        state["assets"].pop(asset_id, None)
+        state["rollouts"].pop(asset_id, None)
+        for capability, selected in state["primary"].items():
+            if selected == asset_id:
+                state["primary"][capability] = None
 
 
 def reduce_estate(pack: RuntimePackV1, prior: CheckpointStateV1, commands: tuple[CommandV1, ...] | list[CommandV1], round: int) -> EstateDeltaV1:
@@ -133,6 +156,7 @@ def reduce_estate(pack: RuntimePackV1, prior: CheckpointStateV1, commands: tuple
             if project["status"] not in {"pending", "paused"}:
                 raise SimulationError("invalid_input", f"project/{order}")
             project["status"] = "abandoned"; expired.append(project["asset_id"])
+            _remove_unmaterialized_asset(state, project)
     for order, command in ((c.order, c) for c in commands if c.op == "cancel_order"):
         _key, project = _find_project(state, order)
         order_row = state["hiring_orders"].get(order)
@@ -140,10 +164,14 @@ def reduce_estate(pack: RuntimePackV1, prior: CheckpointStateV1, commands: tuple
             raise SimulationError("invalid_input", f"order/{order}")
         project["status"] = "cancelled"
         if order_row is not None: order_row["status"] = "cancelled"
+        _remove_unmaterialized_asset(state, project)
     for project_id, project in list(state["projects"].items()):
         if project["status"] == "paused" and round >= casepack.metadata.rounds - project["remaining_lead"] + 1 and project_id not in lifecycle:
             project["status"] = "abandoned"; expired.append(project["asset_id"])
+            _remove_unmaterialized_asset(state, project)
         if project["status"] != "pending": continue
+        # An order created in this round is not advanced until the next round.
+        if project["ordered_round"] >= round: continue
         if project_id in lifecycle and lifecycle[project_id].choice == "continue":
             pass
         if project["remaining_lead"] > 0:
@@ -160,8 +188,11 @@ def reduce_estate(pack: RuntimePackV1, prior: CheckpointStateV1, commands: tuple
                 }
             source = _asset_source(casepack, AssetV1.model_validate(state["assets"][asset_id]))
             if project["source_kind"] == "catalog":
-                trained = 0
-                state["rollouts"][asset_id] = {"trained_count": trained, "adoption": 0.0, "process": "unchanged", "ever_trained": False, "lifecycle": "active"}
+                # A replacement keeps the physical asset's rollout continuity.  New
+                # acquisitions begin at zero and are trained by the later organisation
+                # packet.
+                if project["replacement_target"] is None:
+                    state["rollouts"][asset_id] = {"trained_count": 0, "adoption": 0.0, "process": "unchanged", "ever_trained": False, "lifecycle": "active"}
             effects.append(EffectCandidateV1(effect_kind="replacement" if project["replacement_target"] else "arrival", source_round=project["ordered_round"], source_command=project_id.split("_", 1)[-1], effect_round=round, asset_id=asset_id, target_key=asset_id, capabilities=list(source.serves), cost=project["paid_capex"], action_type="scale_node" if project["replacement_target"] else "add_node"))
 
     # New acquisitions and replacements are committed after lifecycle resolution.
@@ -170,12 +201,31 @@ def reduce_estate(pack: RuntimePackV1, prior: CheckpointStateV1, commands: tuple
         if command.op.startswith("replace"):
             target = state["assets"].get(command.asset)
             if target is None or target.get("retired_round") is not None: raise SimulationError("invalid_reference", "asset", {"asset": command.asset})
+            if any(project.get("replacement_target") == target["id"] and project.get("status") in {"pending", "paused"} for project in state["projects"].values()):
+                raise SimulationError("conflicting_commands", "replacement", {"asset": target["id"]})
             source_key = target["source_key"]; source_kind = target["source_kind"]; asset_id = target["id"]; replacement_target = asset_id
             placement = command.placement; config = command.config if source_kind == "catalog" else None; units = command.units or target["units"]
+            if placement == target["placement"] and config == target.get("config") and units == target["units"]:
+                continue
         elif command.op == "buy_application":
             source_key = command.catalog; source_kind = "catalog"; asset_id = f"r{round}_{command.key}"; replacement_target = None; placement = command.placement; config = command.config; units = 1
         else:
             source_key = command.service; source_kind = "service"; asset_id = f"r{round}_{command.key}"; replacement_target = None; placement = command.placement; config = None; units = command.units
+        catalogs, services = _source_maps(casepack)
+        source = catalogs.get(source_key) if source_kind == "catalog" else services.get(source_key)
+        if source is None:
+            raise SimulationError("invalid_reference", "source", {"source": source_key})
+        if source_kind == "catalog":
+            if placement not in {key.value for key in source.deployment_modes}:
+                raise SimulationError("invalid_reference", "placement", {"source": source_key, "placement": placement})
+            if config not in source.config_tiers:
+                raise SimulationError("invalid_reference", "config", {"source": source_key, "config": config})
+        else:
+            if placement not in {key.value for key in source.placement_options}:
+                raise SimulationError("invalid_reference", "placement", {"source": source_key, "placement": placement})
+            max_units = runtime.services[source_key].max_units
+            if units > max_units:
+                raise SimulationError("invalid_input", "units", {"source": source_key, "max_units": max_units})
         if source_kind == "catalog" and source_key in {a["source_key"] for a in state["assets"].values() if a.get("retired_round") is None and a["id"] != replacement_target}:
             raise SimulationError("conflicting_commands", "source", {"source": source_key})
         price, lead = _price(casepack, source_key, placement, config, units)
@@ -203,6 +253,10 @@ def reduce_estate(pack: RuntimePackV1, prior: CheckpointStateV1, commands: tuple
         if command.op == "retire_asset":
             asset = state["assets"].get(command.asset)
             if asset is None or asset.get("retired_round") is not None: raise SimulationError("invalid_reference", "asset", {"asset": command.asset})
+            if asset.get("installed_round", 0) > round:
+                raise SimulationError("invalid_input", "asset", {"reason": "pending asset"})
+            if any(project.get("replacement_target") == command.asset and project.get("status") in {"pending", "paused"} for project in state["projects"].values()):
+                raise SimulationError("conflicting_commands", "replacement", {"asset": command.asset})
             asset["retired_round"] = round; retired.append(command.asset)
             for connection in state["connections"].values():
                 if connection["src"] in {command.asset} or connection["dst"] == command.asset: connection["retired_round"] = round
