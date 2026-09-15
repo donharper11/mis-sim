@@ -98,9 +98,18 @@ def _price(casepack: Casepack, source_key: str, placement: str, config: str | No
     return _money(mode.capex * multiplier * units), mode.lead_time_rounds
 
 
-def _asset_source(casepack: Casepack, asset: AssetV1) -> Any:
-    catalogs, services = _source_maps(casepack)
-    return catalogs.get(asset.source_key) or services.get(asset.source_key)
+def _asset_source(pack: RuntimePackV1, asset: AssetV1) -> Any:
+    catalogs, services = _source_maps(pack.casepack)
+    source = catalogs.get(asset.source_key) or services.get(asset.source_key)
+    if asset.source_kind == "service" and source is not None:
+        # Platform service economics/roles come from the casepack; runtime
+        # carries the capability projection used by estate effects.
+        return (source, pack.runtime.services[asset.source_key])
+    return source
+
+
+def _serves(pack: RuntimePackV1, source_key: str, source: Any) -> list[str]:
+    return list(source.serves) if hasattr(source, "serves") else list(pack.runtime.services[source_key].serves)
 
 
 def _copy_state(prior: CheckpointStateV1) -> dict[str, Any]:
@@ -186,14 +195,16 @@ def reduce_estate(pack: RuntimePackV1, prior: CheckpointStateV1, commands: tuple
                     "id": asset_id, "source_kind": project["source_kind"], "source_key": project["source_key"],
                     "placement": project["placement"], "config": project["config"], "units": project["units"], "installed_round": round, "retired_round": None,
                 }
-            source = _asset_source(casepack, AssetV1.model_validate(state["assets"][asset_id]))
+            source = _asset_source(pack, AssetV1.model_validate(state["assets"][asset_id]))
+            source_model = source[0] if isinstance(source, tuple) else source
+            source_key = state["assets"][asset_id]["source_key"]
             if project["source_kind"] == "catalog":
                 # A replacement keeps the physical asset's rollout continuity.  New
                 # acquisitions begin at zero and are trained by the later organisation
                 # packet.
                 if project["replacement_target"] is None:
                     state["rollouts"][asset_id] = {"trained_count": 0, "adoption": 0.0, "process": "unchanged", "ever_trained": False, "lifecycle": "active"}
-            effects.append(EffectCandidateV1(effect_kind="replacement" if project["replacement_target"] else "arrival", source_round=project["ordered_round"], source_command=project_id.split("_", 1)[-1], effect_round=round, asset_id=asset_id, target_key=asset_id, capabilities=list(source.serves), cost=project["paid_capex"], action_type="scale_node" if project["replacement_target"] else "add_node"))
+                effects.append(EffectCandidateV1(effect_kind="replacement" if project["replacement_target"] else "arrival", source_round=project["ordered_round"], source_command=project_id.split("_", 1)[-1], effect_round=round, asset_id=asset_id, target_key=asset_id, capabilities=_serves(pack, source_key, source_model), cost=project["paid_capex"], action_type="scale_node" if project["replacement_target"] else "add_node"))
 
     # New acquisitions and replacements are committed after lifecycle resolution.
     for command in commands:
@@ -283,7 +294,9 @@ def reduce_estate(pack: RuntimePackV1, prior: CheckpointStateV1, commands: tuple
                 catalogs, services = _source_maps(casepack); source = catalogs.get(src["source_key"]) or services.get(src["source_key"]); receiver = catalogs.get(dst["source_key"])
                 if receiver is None or not any(x.entity == command.entity for x in source.owns_entities) or not any(x.entity == command.entity and (x.from_capability is None or x.from_capability in source.serves) for x in receiver.must_be_fed_by): raise SimulationError("invalid_reference", "connection")
             state["connections"][edge_key] = {"id": edge_key, "src": command.src, "dst": command.dst, "kind": command.kind, "entity": command.entity, "tier": command.tier, "created_round": round, "retired_round": None}
-            if command.kind == "integration": effects.append(EffectCandidateV1(effect_kind="integration", source_round=round, source_command=command.key, effect_round=round, asset_id=command.dst, target_key=edge_key, capabilities=list((_source_maps(casepack)[0].get(dst["source_key"]) or _source_maps(casepack)[1].get(dst["source_key"])).serves), cost=0, action_type="add_service_tier"))
+            if command.kind == "integration":
+                target_source = catalogs.get(dst["source_key"]) or services.get(dst["source_key"])
+                effects.append(EffectCandidateV1(effect_kind="integration", source_round=round, source_command=command.key, effect_round=round, asset_id=command.dst, target_key=edge_key, capabilities=_serves(pack, dst["source_key"], target_source), cost=0, action_type="add_service_tier"))
     return EstateDeltaV1(
         assets=state["assets"], connections=state["connections"], projects=state["projects"],
         hiring_orders=state["hiring_orders"], staff_hires=state["staff_hires"],
