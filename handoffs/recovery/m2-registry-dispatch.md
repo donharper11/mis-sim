@@ -18,6 +18,7 @@ The builder may add or modify only:
 - `backend/packs/m2_isolation_fixture/**`
 - `backend/app/casepack/validate.py`
 - `backend/app/casepack/validate_messages.yaml`
+- `handoffs/1.2-validator/spec.md`
 - `backend/tests/fixtures/packs/broken_E19/**`
 - `backend/tests/test_casepack_registry.py`
 - `backend/tests/check_casepack_registry_schema.py`
@@ -28,8 +29,9 @@ The builder may add or modify only:
 
 The builder must not modify auth, scheduling, frontend, engine/scoring, transition logic,
 the 19-table runtime scope migration, existing casepack content, or unrelated tests/docs.
-The validator follow-up is limited to the E19 numeric-range diagnostic and its named fixture
-matrix updates.
+The validator follow-up is limited to the E19 numeric-range diagnostic, its authoritative
+1.2 code-register entry, and the named fixture matrix updates. The existing code-set guard
+must remain strict; do not exempt E19 from comparison.
 
 ## Acceptance commands
 
