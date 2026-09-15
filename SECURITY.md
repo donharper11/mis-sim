@@ -84,3 +84,14 @@ worse (**with evidence**), why the residual risk is acceptable in this applicati
 configuration, and the trigger that reopens it.
 
 If you cannot write the trigger, the risk is not understood well enough to accept.
+
+## AR-002 · Login brute-force protection is deferred
+
+| | |
+|---|---|
+| **Risk** | `/api/auth/login` and `/api/auth/staff-login` have no rate limiting in M2.4. |
+| **Accepted** | 2026-09-15 · M2.4 auth dispatch; cohort is behind institutional network access. |
+| **Re-check** | Before any internet-facing deployment. |
+
+This is deliberately outside the bounded M2.4 implementation. Reopen the row before
+exposing the API publicly and add a tested abuse-control boundary then.

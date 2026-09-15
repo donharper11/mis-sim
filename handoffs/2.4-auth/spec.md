@@ -4,10 +4,11 @@
 **Phase:** 2 · **Depends on:** 2.1 · **Blocks:** every browser-gated packet from 3.1 onward
 
 **M2 amendment (2026-09-15):** follow
-[`handoffs/recovery/m2-contract-amendment.md`](../recovery/m2-contract-amendment.md)
+[`handoffs/recovery/m2-auth-amendment.md`](../recovery/m2-auth-amendment.md)
 for the User/Enrollment foundation, canonical `instance_id`, staff section
-context, and M2-owned login surface. This packet remains blocked until those
-route and token decisions are expanded into its dispatch contract.
+context, token claims, guarded route surface, secret configuration, and the
+M2-owned login surface. Its dispatch boundary is
+[`handoffs/recovery/m2-auth-dispatch.md`](../recovery/m2-auth-dispatch.md).
 
 > 0.2 shipped an auth stub returning 501. This replaces it. The pattern is ported from
 > mis-tutor, which is proven in a live cohort — with one addition it lacks: **section and
