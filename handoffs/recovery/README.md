@@ -218,3 +218,10 @@ the supervisor and integrated with its review/register update at `54c1ead`.
 record concrete transition failures and D1–D10 contract decisions. No M1 interface has
 passed spec review. The next assignment is its Heavy decision/atomic-transition contract;
 M1's five bounded stages remain those in the north star. M1–M6 remain unfinished.
+## M3 continuation — 3.2 authenticated shell accepted
+
+Packet 3.2 adds the authenticated root shell, instance-scoped schedule read, sidebar/top bar,
+round context, and honest loading/error states. The current body intentionally remains a
+placeholder for packet 3.3's dashboard. Lint/build, nine auth regressions, and the mocked
+1024px browser/API probe pass. Evidence is in `docs/frontend-shell.md` and
+`handoffs/recovery/m3-3.2-dod.md`; packet 3.3 now owns the live dashboard read surface.

@@ -6,10 +6,12 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session
 from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
+from app.models.scheduling import RoundSchedule
 from app.api.deps import authorize_course, authorize_section, get_current_instance, get_current_user, require_instructor, require_instructor_or_ta
 from app.services.platform import (
     CourseService,
@@ -111,6 +113,20 @@ class InstanceOut(RowOut):
     completed_at: datetime | None
 
 
+class ScheduleOut(RowOut):
+    id: int
+    instance_id: int
+    round_number: int
+    start_at: datetime
+    deadline: datetime
+    auto_advance: bool
+    grace_period_minutes: int
+    decisions_locked: bool
+    lock_reason: str | None
+    locked_at: datetime | None
+    advanced_at: datetime | None
+
+
 class TeamOut(RowOut):
     id: int
     section_id: int
@@ -202,6 +218,18 @@ async def read_instance(instance: SimulationInstance = Depends(get_current_insta
         return instance
     except Exception as exc:
         raise _error(exc) from exc
+
+
+@router.get("/instances/{instance_id}/schedule", response_model=ScheduleOut | None)
+async def read_current_schedule(
+    instance: SimulationInstance = Depends(get_current_instance),
+    session: AsyncSession = Depends(get_session),
+):
+    round_number = max(instance.current_round, 1)
+    return await session.scalar(select(RoundSchedule).where(
+        RoundSchedule.instance_id == instance.instance_id,
+        RoundSchedule.round_number == round_number,
+    ))
 
 
 @router.post("/instances/{instance_id}/teams", response_model=TeamOut, status_code=201)

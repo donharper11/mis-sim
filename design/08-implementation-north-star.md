@@ -234,4 +234,6 @@ tree passes 682 tests and all guards. M2 is accepted; M3 is the next product mil
 
 M3 packet 3.1 is now accepted at the frontend boundary: the shared component library and
 development gallery pass lint/build, semantic-token checks, and the browser interaction probe.
-Packet 3.2 is the next step and owns the authenticated live shell and instance data seam.
+Packet 3.2 is now accepted: the authenticated root shell reads identity, instance, and
+schedule context through scoped API routes and leaves unavailable capital/estate values
+honest. Packet 3.3 now owns the live dashboard read surface.
