@@ -3,11 +3,11 @@
 **Authored under** `SPEC_PROTOCOL.md` v1.2 · **Author:** Claude · **Date:** 2026-07-26
 **Phase:** 2 · **Depends on:** 1.1, 1.2, 2.1 · **Blocks:** 5.1, 5.6, 6.1
 
-**M2 amendment (2026-09-15):** follow
-[`handoffs/recovery/m2-contract-amendment.md`](../recovery/m2-contract-amendment.md)
-for the canonical instance identity and registry-to-M1 pack/digest seam. The
-historical `scenario_id`/`scenario_version` wording below is retired in favor
-of `(pack_key, pack_version)`.
+**M2 amendment (2026-09-15):** this historical contract is superseded for dispatch by
+[`../recovery/m2-registry-amendment.md`](../recovery/m2-registry-amendment.md) and
+[`../recovery/m2-registry-dispatch.md`](../recovery/m2-registry-dispatch.md).
+The canonical instance identity and pack tuple remain those in
+[`../recovery/m2-contract-amendment.md`](../recovery/m2-contract-amendment.md).
 
 > 1.1 parses a pack from disk. This makes packs **available to the platform**: registered,
 > versioned, validated on registration, and bound to an instance — so two sections can run
