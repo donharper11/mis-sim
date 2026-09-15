@@ -80,6 +80,19 @@ now runs through `SimulationService`; evidence covers 16 games, 96 persisted rep
 fresh-scope determinism, causal cross-effects and hash-seed stability. [P6 audit](../../findings/recovery-games-2026-09-15.md).
 M1 is complete; subsequent work belongs to M2 and the later product milestones.
 
+## M2 continuation — 2.1 hierarchy accepted
+
+The M2 pre-dispatch reconciliation and identity amendment are recorded in
+[`m2-spec-reconciliation.md`](m2-spec-reconciliation.md) and
+[`m2-contract-amendment.md`](m2-contract-amendment.md). Packet 2.1 then landed
+at `5d6b573` after the scoped-read and cohort-seed corrections; the independent
+successor audit passed at [`recovery-m2-hierarchy-2026-09-15.md`](../../findings/recovery-m2-hierarchy-2026-09-15.md).
+It adds the six-table identity hierarchy, opaque pack tuple, unprotected CRUD
+seam, deterministic two-section cohort seed, and declared async SQLite test
+driver. The focused packet has five passing tests; the combined tree has 662
+pytest tests and all guards green. M2 packets 2.2, 2.3, 2.4, and 2.5 remain
+separately blocked on their amended contracts and have not been started.
+
 ## First-wave acceptance and cleanup
 
 - Reporting candidate `f858b8a` was independently accepted by `report_auditor`, then

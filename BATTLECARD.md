@@ -80,7 +80,8 @@ Historical scorer fixtures remain useful regression evidence; they are not that 
    proof, complete calibration visibility, explicit scorecard units and owned gaps.
 2. **M1 — decision-driven simulation:** typed commands, actual state transitions, atomic
    advance/retry semantics, organisational evolution, accounting and decision-only playthroughs.
-3. **M2 — platform:** hierarchy, guarded scope/auth, pack versions and scheduling. A login
+3. **M2 — platform:** hierarchy, guarded scope/auth, pack versions and scheduling. Packet 2.1
+   hierarchy is accepted (`5d6b573`); the remaining packets are not started. A login
    surface is included before the browser auth canary; a minimal second pack proves isolation.
 4. **M3 — first playable browser loop:** required input controls, student review/debrief and
    instructor advance, through six rounds on real state.

@@ -213,3 +213,10 @@ transition contract, then independently reviewed before estate/organisation buil
 **M1 is complete after audited P6 integration.** Broader product work begins at M2; the
 decision-driven simulation boundary is now the maintained foundation.
 Main and remote publication remain untouched.
+
+**M2 has started.** The pre-dispatch platform reconciliation and identity amendment are
+committed at `376d54c`; packet 2.1 (hierarchy, identity foundation, unprotected CRUD seam,
+and deterministic cohort seed) was accepted at `5d6b573` after independent audit
+(`b140f91`). The combined tree passes 662 tests and all guards. Instance scoping, registry,
+auth/login, and scheduling remain separate M2 packets with amended contracts; none is
+implicitly included in 2.1.
