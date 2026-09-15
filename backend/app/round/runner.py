@@ -102,7 +102,7 @@ class RoundRunner:
         categories = {ln["category"] for ln in lines}
         for cat in categories:
             existing = self.session.scalars(
-                self.repo.select(m.DecisionLineRow).where(m.DecisionLineRow.round == round)
+                self.repo.select(m.DecisionLineRow, m.DecisionLineRow.instance_id == self.instance_id).where(m.DecisionLineRow.round == round)
                 .where(m.DecisionLineRow.category == cat)
             ).all()
             for e in existing:
@@ -121,7 +121,7 @@ class RoundRunner:
 
     def _validate_sheet(self, round: int) -> None:
         lines = self.session.scalars(
-            self.repo.select(m.DecisionLineRow).where(m.DecisionLineRow.round == round)
+            self.repo.select(m.DecisionLineRow, m.DecisionLineRow.instance_id == self.instance_id).where(m.DecisionLineRow.round == round)
         ).all()
         for line in lines:
             if line.category not in DECISION_CATEGORIES:
@@ -158,13 +158,13 @@ class RoundRunner:
         """Lead-time purchases become real nodes only at their arrival_round (O2): not in the
         graph early, which would inflate capacity."""
         arrivals = self.session.scalars(
-            self.repo.select(m.InFlightRow)
+            self.repo.select(m.InFlightRow, m.InFlightRow.instance_id == self.instance_id)
             .where(m.InFlightRow.arrival_round == round, m.InFlightRow.materialised == False)  # noqa: E712
         ).all()
         for order in arrivals:
             payload = dict(order.node_payload or {})
             exists = self.session.scalars(
-                self.repo.select(m.ArchNodeRow).where(m.ArchNodeRow.round == round)
+                self.repo.select(m.ArchNodeRow, m.ArchNodeRow.instance_id == self.instance_id).where(m.ArchNodeRow.round == round)
                 .where(m.ArchNodeRow.key == order.key)
             ).first()
             if exists is None and payload:
@@ -186,7 +186,7 @@ class RoundRunner:
 
     def _recompute_opex(self, round: int) -> int:
         nodes = self.session.scalars(
-            self.repo.select(m.ArchNodeRow).where(m.ArchNodeRow.round == round)
+            self.repo.select(m.ArchNodeRow, m.ArchNodeRow.instance_id == self.instance_id).where(m.ArchNodeRow.round == round)
         ).all()
         return sum(int(n.opex_contribution) for n in nodes)  # SUM, never += (I7)
 
@@ -194,7 +194,7 @@ class RoundRunner:
 
     def _already_fired(self) -> frozenset[str]:
         prior = self.session.scalars(
-            self.repo.select(m.RoundResult)
+            self.repo.select(m.RoundResult, m.RoundResult.instance_id == self.instance_id)
         ).all()
         fired: set[str] = set()
         for rr in prior:
@@ -234,7 +234,7 @@ class RoundRunner:
 
     def _tco_variance(self, round: int) -> list[dict]:
         rows = self.session.scalars(
-            self.repo.select(m.TcoForecastRow).where(m.TcoForecastRow.round == round)
+            self.repo.select(m.TcoForecastRow, m.TcoForecastRow.instance_id == self.instance_id).where(m.TcoForecastRow.round == round)
         ).all()
         return [{"item": r.item, "forecast": int(r.forecast), "actual": int(r.actual)} for r in rows]
 
