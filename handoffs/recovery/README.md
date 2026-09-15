@@ -102,8 +102,21 @@ guarded round/simulation reads, and migration-backed two-instance isolation
 evidence. Independent audit PASS is recorded in
 [`recovery-m2-scoping-2026-09-15.md`](../../findings/recovery-m2-scoping-2026-09-15.md).
 The final cumulative gate is **663 passed**, all guards green, including the
-round instance-scope guard. M2 packets 2.3, 2.4, and 2.5 remain separately
-blocked on their amended contracts and have not been started.
+round instance-scope guard.
+
+## M2 continuation — 2.5 casepack registry accepted
+
+Packet 2.5 was amended and dispatched from `9789504`/`443d606` against the
+runtime `RuntimePackV1` boundary and the complete validator contract. Final
+candidate `67a034d` adds the metadata-only immutable casepack registry,
+validated runtime resolution and digest-pinned instance binding, a copied
+runtime-capable isolation fixture, and the field-aware numeric `E19` validator
+closure. Independent audit PASS is recorded in
+[`recovery-m2-registry-2026-09-15.md`](../../findings/recovery-m2-registry-2026-09-15.md).
+The final gate is **666 passed**, all guards green, all 45 validator fixtures
+green, and fresh migration/cohort evidence records two distinct registered
+pack bindings. M2 packets 2.3 scheduling and 2.4 auth/login remain separately
+blocked on their amended contracts; neither is included in 2.5.
 
 ## First-wave acceptance and cleanup
 

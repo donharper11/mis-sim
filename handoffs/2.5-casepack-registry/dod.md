@@ -11,7 +11,7 @@ Implementation is bounded by `handoffs/recovery/m2-registry-amendment.md` and
 | Error, duplicate, path, cache and digest negatives | `test_casepack_registry.py` | PASS |
 | Numeric E19 diagnostics and no E00 collapse | `broken_E19`, fixture matrix | PASS |
 | Operations rule documented | `docs/casepack-operations.md` | PASS |
-| Full repository gate and independent audit | supervisor evidence | pending |
+| Full repository gate and independent audit | `findings/recovery-m2-registry-2026-09-15.md`; `make check` | PASS — candidate `67a034d`; 666 passed, all guards green |
 
 The copied isolation pack is a distinct fixture tuple, not a substantive Phase 6
 vertical. Auth, scheduling, UI, and pack authoring remain out of scope.

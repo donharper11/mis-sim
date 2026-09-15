@@ -221,5 +221,8 @@ and deterministic cohort seed) was accepted at `5d6b573` after independent audit
 scoping is accepted at `da339c5` after independent audit; it covers the complete 19-table
 runtime inventory, restrictive instance FKs with orphan preflight, the mandatory
 `ScopedRepo` read boundary, and two-instance isolation. The combined tree now passes 663
-tests and all guards. Registry, auth/login, and scheduling remain separate M2 packets with
-amended contracts; none is implicitly included in 2.2.
+tests and all guards. Packet 2.5 casepack registry is accepted at `67a034d` after
+independent audit; it registers validated runtime-capable tuples, verifies semantic
+digests, and pins instance bindings. The combined tree now passes 666 tests and all
+guards. Auth/login and scheduling remain separate M2 packets with amended contracts;
+neither is implicitly included in 2.5.
