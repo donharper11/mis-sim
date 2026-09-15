@@ -1,0 +1,45 @@
+capabilities:
+  appointment_booking: Appointment Booking
+  clinical_records: Clinical Records
+roles:
+  booking_app: Booking system
+  records_app: Clinical records system
+  record_store: Clinical record store
+  client_access: Practice access
+  network_path: Network path
+sidebar:
+  dashboard: Dashboard
+  strategy: Strategy
+  platform: Platform
+  components: Components
+  rollout: Rollout
+  services: Services
+  people: People
+  challenges: Challenges
+  review: Review
+strategies:
+  low_cost_care: Low-Cost Care
+  continuity_of_care: Continuity of Care
+stakeholders:
+  stakeholder_practice_owner: Practice Owner
+  stakeholder_practice_finance: Practice Finance
+  stakeholder_clinical_team: Clinical Team
+  stakeholder_pet_owner: Pet Owner
+events:
+  event_saturday_overflow: We turned away eleven animals on Saturday because the diary had nothing left before Tuesday.
+  event_reminder_backlog: The reminder letters are four weeks behind and the Saturday list is filling from word of mouth instead.
+  event_records_on_paper: Half my consults are still written up on paper at nine at night, and nobody at the other practices can see them.
+  event_vaccination_recall: The recall list pulled from the system missed a whole month of boosters because those notes were never entered.
+  event_out_of_hours_overflow: The out-of-hours clinic took thirty-one daytime appointments last week because the four practices had nothing free.
+  event_duplicate_client_records: The Kelly household is in the system four times, once for every practice they have ever walked into.
+  event_weekend_phone_bookings: Saturday's phone bookings are on a paper pad behind reception and two of them were never typed in at all.
+policies:
+  client_record_retention: Client record retention
+  access_review: Access review
+misc:
+  role_practice_ownership: Practice Ownership
+  role_finance_office: Finance Office
+  role_clinical_operations: Clinical Operations
+  role_client_household: Client Household
+  redesign_front_desk: Redesign the front desk booking routine
+  redesign_consult_notes: Redesign how consultation notes are written up

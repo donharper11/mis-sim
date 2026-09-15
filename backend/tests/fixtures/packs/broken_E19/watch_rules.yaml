@@ -1,0 +1,14 @@
+- key: book_cap_01
+  capability: appointment_booking
+  metric: capacity_utilisation
+  warn_above: 0.80
+  critical_above: 0.95
+  cleared_by: [scale_node, add_node, move_to_cloud]
+  provenance: {source: AUTHORED, note: "Saturday morning is the busiest hour of the week; the diary saturates before anything else does"}
+- key: rec_adopt_01
+  capability: clinical_records
+  metric: unfinished_notes_rate
+  warn_above: 0.50
+  critical_above: 0.75
+  cleared_by: [add_training, redesign_process, fund_response]
+  provenance: {source: AUTHORED, note: "the system is bought; the question is what share of consultations never gets written up in it"}

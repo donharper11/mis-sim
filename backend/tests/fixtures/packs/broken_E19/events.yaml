@@ -1,0 +1,98 @@
+- key: saturday_overflow
+  preconditions:
+    - {type: signal_open, signal: book_cap_01, severity: critical}
+  strategy_affinity: [low_cost_care]
+  from_persona: practice_manager
+  body_key: event_saturday_overflow
+  outcomes:
+    revenue_loss: 18000
+    scorecard: {customer: -6, internal_process: -3}
+  options:
+    - {key: fund, tags: [capacity_risk], cost: 9000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance: {source: AUTHORED, note: "the capacity signal turning into turned-away animals"}
+- key: reminder_backlog
+  preconditions:
+    - {type: signal_open, signal: book_cap_01, severity: warning}
+  strategy_affinity: [low_cost_care, continuity_of_care]
+  from_persona: practice_manager
+  body_key: event_reminder_backlog
+  outcomes:
+    revenue_loss: 4000
+    scorecard: {financial: -2}
+  options:
+    - {key: fund, tags: [capacity_risk, strategic_priority], cost: 5000}
+    - {key: defer, tags: [insufficient_information], cost: 0}
+    - {key: reject, tags: [cost_containment], cost: 0}
+  provenance: {source: AUTHORED, note: "the same signal one step earlier, so a team that acts on the warning avoids the overflow"}
+- key: records_left_on_paper
+  preconditions:
+    - {type: signal_open, signal: rec_adopt_01, severity: warning}
+  strategy_affinity: [continuity_of_care]
+  from_persona: lead_vet
+  body_key: event_records_on_paper
+  outcomes:
+    revenue_loss: 0
+    scorecard: {internal_process: -5, learning_growth: -4}
+  options:
+    - {key: fund, tags: [strategic_priority], cost: 8000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance: {source: AUTHORED, note: "the rollout gap stated by the people it lands on, not by a metric"}
+- key: vaccination_recall_missed
+  preconditions:
+    - {type: signal_open, signal: rec_adopt_01, severity: critical}
+  strategy_affinity: [continuity_of_care, low_cost_care]
+  from_persona: lead_vet
+  body_key: event_vaccination_recall
+  outcomes:
+    revenue_loss: 22000
+    scorecard: {customer: -7, internal_process: -4}
+  options:
+    - {key: fund, tags: [compliance, strategic_priority], cost: 11000}
+    - {key: defer, tags: [insufficient_information], cost: 0}
+    - {key: reject, tags: [cost_containment], cost: 0}
+  provenance: {source: AUTHORED, note: "what unwritten notes actually cost: the recall list is wrong and animals miss a booster"}
+- key: out_of_hours_overflow
+  preconditions:
+    - {type: demand_exceeds_capacity, capability: appointment_booking, ratio: 1.05}
+  strategy_affinity: [low_cost_care, continuity_of_care]
+  from_persona: practice_manager
+  body_key: event_out_of_hours_overflow
+  outcomes:
+    revenue_loss: 12000
+    scorecard: {customer: -4, internal_process: -2}
+  options:
+    - {key: fund, tags: [capacity_risk], cost: 7000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance: {source: AUTHORED, note: "the out-of-hours clinic takes the overflow the four practices cannot; it is the first place a full diary is felt"}
+- key: duplicate_client_records
+  preconditions:
+    - {type: adoption_below, capability: clinical_records, ratio: 0.60}
+  strategy_affinity: [low_cost_care, continuity_of_care]
+  from_persona: lead_vet
+  body_key: event_duplicate_client_records
+  outcomes:
+    revenue_loss: 3000
+    scorecard: {internal_process: -4, customer: -3}
+  options:
+    - {key: fund, tags: [strategic_priority], cost: 6000}
+    - {key: defer, tags: [insufficient_information], cost: 0}
+    - {key: reject, tags: [cost_containment], cost: 0}
+  provenance: {source: AUTHORED, note: "when notes are not entered, the same household is created again at the next practice; both strategies pay for it, one in cost and one in continuity"}
+- key: weekend_phone_bookings
+  preconditions:
+    - {type: signal_open, signal: book_cap_01, severity: warning}
+  strategy_affinity: [low_cost_care, continuity_of_care]
+  from_persona: practice_manager
+  body_key: event_weekend_phone_bookings
+  outcomes:
+    revenue_loss: 5000
+    scorecard: {financial: -2, customer: -2}
+  options:
+    - {key: fund, tags: [capacity_risk, strategic_priority], cost: 4000}
+    - {key: defer, tags: [cost_containment], cost: 0}
+    - {key: reject, tags: [not_aligned_with_strategy], cost: 0}
+  provenance: {source: AUTHORED, note: "once the diary is tight the weekend calls are written on paper and typed in on Monday, if at all"}

@@ -82,6 +82,7 @@ MATRIX: dict[str, tuple[set[str], set[str], int]] = {
     # the whole point of E18 is that no closed vocabulary collapses to the unreadable-pack
     # path any more -- the class E15/E17/E29 each fixed one instance of.
     "broken_E18": ({"E18"}, {"E00"}, 1),
+    "broken_E19": ({"E19"}, {"E00"}, 1),
     # ---- 1.2-RA-001: obligation references -----------------------------------------
     "broken_E24": ({"E24"}, set(), 1),
     "broken_E25": ({"E25"}, set(), 1),
@@ -301,6 +302,7 @@ def check_i5(targets: list[Path]) -> list[str]:
 # finding must locate the field an author should edit, so the code alone is not enough -- a
 # malformed default reported against `options` sends the author to the wrong place.
 FIELD_LOCATORS: list[tuple[str, str, str]] = [
+    ("broken_E19", "E19", ".employees"),
     ("broken_E15", "E15", ".options"),
     ("broken_E15_default", "E15", ".default"),
     ("broken_E26", "E26", ".permissive_value"),

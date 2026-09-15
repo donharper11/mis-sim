@@ -560,6 +560,7 @@ def check_precondition_vocab_raw(raw: dict[str, Any], source: PackSource) -> lis
 #: fields report `literal_error`, `StrEnum` fields report `enum`. Both carry the offending
 #: input and the expected set in the error record, which is all E18 needs.
 _CLOSED_VOCAB_ERRORS = frozenset({"literal_error", "enum"})
+_NUMERIC_RANGE_ERRORS = frozenset({"greater_than", "greater_than_equal", "less_than", "less_than_equal", "multiple_of"})
 
 
 def _readable_field(loc: tuple[Any, ...], raw: dict[str, Any]) -> str:
@@ -607,7 +608,8 @@ def check_closed_vocab_load(
         return []
     findings: list[Finding] = []
     for error in validation_error.errors():
-        if error.get("type") not in _CLOSED_VOCAB_ERRORS:
+        error_type = error.get("type")
+        if error_type not in _CLOSED_VOCAB_ERRORS | _NUMERIC_RANGE_ERRORS:
             continue
         loc = tuple(error.get("loc", ()))
         if not loc:
@@ -624,19 +626,13 @@ def check_closed_vocab_load(
         leaf = str(loc[-1])
         value = error.get("input")
         allowed = str((error.get("ctx") or {}).get("expected") or error.get("msg", ""))
-        findings.append(
-            make_finding(
-                "E18",
-                relative,
-                field,
-                line=source.token_line(relative, str(value)),
-                path=field,
-                field_leaf=leaf,
-                value=_show(value),
-                allowed=allowed,
-                file=relative,
-            )
-        )
+        if error_type in _NUMERIC_RANGE_ERRORS:
+            limit = (error.get("ctx") or {}).get("gt", (error.get("ctx") or {}).get("ge", (error.get("ctx") or {}).get("lt", (error.get("ctx") or {}).get("le"))))
+            operator = {"greater_than": ">", "greater_than_equal": ">=", "less_than": "<", "less_than_equal": "<=", "multiple_of": "multiple of"}.get(str(error_type), "within")
+            numeric_allowed = f"{operator} {limit}" if limit is not None else allowed
+            findings.append(make_finding("E19", relative, field, line=source.token_line(relative, str(value)), path=field, field_leaf=leaf, value=_show(value), allowed=numeric_allowed, file=relative))
+        else:
+            findings.append(make_finding("E18", relative, field, line=source.token_line(relative, str(value)), path=field, field_leaf=leaf, value=_show(value), allowed=allowed, file=relative))
     return findings
 
 

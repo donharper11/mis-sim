@@ -1,0 +1,9 @@
+defaults_by_archetype:
+  operations: {ideal_training_coverage: high, weight: 0.9}
+  employees: {ideal_training_coverage: high, weight: 0.9}
+  hr: {ideal_training_coverage: high, weight: 0.8}
+  finance: {ideal_cost_posture: medium, weight: 0.6}
+  it: {ideal_change_volume: medium, weight: 0.7}
+overrides:
+  - {item: centraline_im7, archetype: operations, ideal_value: 100, weight: 1.0}
+provenance: {source: HARVESTED, note: "mis_lite change management tables reworked into training preferences"}

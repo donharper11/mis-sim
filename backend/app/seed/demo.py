@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 from pathlib import Path
+from sqlalchemy import inspect
 
 from app.casepack.loader import load_casepack
 from app.casepack.models import Casepack
@@ -22,6 +23,7 @@ from app.engine.state import TeamState
 from app.database import async_session
 from app.models.platform import User
 from app.services.platform import CourseService, EnrollmentService, InstanceService, SectionService, TeamService
+from app.casepack.registry import register_casepack
 
 #: scenario name -> (pack directory relative to backend/, seed builder module path)
 _SCENARIOS: dict[str, tuple[str, str]] = {
@@ -164,6 +166,18 @@ def _run_full() -> int:
 
 async def seed_cohort(session) -> dict:
     """Create the deterministic two-section platform cohort used by M2 canaries."""
+    has_registry = await session.run_sync(lambda sync: "casepack" in inspect(sync.get_bind()).get_table_names())
+    if has_registry:
+        await session.run_sync(
+            lambda sync: [
+                register_casepack(sync, _BACKEND_ROOT / "packs" / name)
+                for name in ("riverside_grocery", "m2_isolation_fixture")
+            ]
+        )
+        pack_tuples = (("riverside_grocery", "0.1.0"), ("m2_isolation_fixture", "0.1.1"))
+    else:
+        # Isolated pre-registry unit fixtures retain their historical synthetic IDs.
+        pack_tuples = (("pack_alpha", "1.0.0"), ("pack_beta", "1.0.0"))
     instructor = User(student_id=None, name="M2 Instructor", email="m2.instructor@example.edu", role="instructor")
     session.add(instructor)
     await session.flush()
@@ -179,9 +193,7 @@ async def seed_cohort(session) -> dict:
     instances = []
     teams = []
     enrollments = []
-    for index, (code, pack_key, pack_version) in enumerate(
-        (("A", "pack_alpha", "1.0.0"), ("B", "pack_beta", "1.0.0")), start=1
-    ):
+    for index, (code, (pack_key, pack_version)) in enumerate(zip(("A", "B"), pack_tuples), start=1):
         section = await SectionService.create(session, course.id, section_code=code, section_name=f"Section {code}")
         instance = await InstanceService.create(
             session, section.id, pack_key=pack_key, pack_version=pack_version, total_rounds=6, settings={}
@@ -227,6 +239,27 @@ def _run_cohort() -> int:
     return 0
 
 
+def _run_packs() -> int:
+    async def run() -> None:
+        async with async_session() as session:
+            await session.run_sync(
+                lambda sync: [
+                    register_casepack(sync, _BACKEND_ROOT / "packs" / name)
+                    for name in ("riverside_grocery", "m2_isolation_fixture")
+                ]
+            )
+            await session.commit()
+            rows = (await session.scalars(select(Casepack))).all()
+            for row in rows:
+                print(f"pack {row.pack_key}@{row.pack_version} digest={row.pack_digest}")
+
+    from sqlalchemy import select
+    from app.models.platform import Casepack
+
+    asyncio.run(run())
+    return 0
+
+
 def _main() -> int:
     parser = argparse.ArgumentParser(prog="app.seed.demo")
     parser.add_argument("--scenario", default="riverside_r3", help="scenario name, e.g. riverside_r3")
@@ -239,12 +272,15 @@ def _main() -> int:
         help="seed and run the full six-round game into the database (spec section 5.5)",
     )
     parser.add_argument("--cohort", action="store_true", help="seed the deterministic two-section platform cohort")
+    parser.add_argument("--packs", action="store_true", help="register the two runtime-capable demo packs")
     args = parser.parse_args()
 
     if args.full:
         return _run_full()
     if args.cohort:
         return _run_cohort()
+    if args.packs:
+        return _run_packs()
 
     pack, state = load_scenario(args.scenario)
     print(_describe(args.scenario, pack, state))

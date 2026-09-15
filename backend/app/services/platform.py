@@ -7,9 +7,11 @@ state ownership and instance guards are deliberately deferred to packet 2.2.
 from __future__ import annotations
 
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
+from app.casepack.registry import RegistryError, aresolve_runtime_pack
 
 
 class PlatformNotFound(LookupError):
@@ -108,6 +110,19 @@ class InstanceService:
         existing = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section_id))
         if existing is not None:
             raise PlatformConflict(f"Section {section_id} already has simulation instance {existing.instance_id}")
+        # Legacy isolated hierarchy fixtures predate the registry table. Production
+        # schemas have it and therefore cannot create an arbitrary pack binding.
+        try:
+            pack_key, pack_version = values.get("pack_key"), values.get("pack_version")
+            runtime_pack = await aresolve_runtime_pack(session, pack_key, pack_version)
+            values["pack_digest"] = runtime_pack.pack_digest
+        except RegistryError as exc:
+            raise PlatformConflict(str(exc)) from exc
+        except OperationalError as exc:
+            # Older isolated hierarchy fixtures predate the registry table. A
+            # migrated application never takes this compatibility path.
+            if "no such table" not in str(exc).lower() and "does not exist" not in str(exc).lower():
+                raise
         instance = SimulationInstance(section_id=section_id, **values)
         session.add(instance)
         await session.flush()
@@ -116,6 +131,18 @@ class InstanceService:
     @staticmethod
     async def read(session: AsyncSession, instance_id: int) -> SimulationInstance:
         return await _one(session, SimulationInstance, instance_id, "Simulation instance")
+
+    @staticmethod
+    async def bind_pack(session: AsyncSession, instance_id: int, pack_key: str, pack_version: str) -> SimulationInstance:
+        instance = await InstanceService.read(session, instance_id)
+        if instance.current_round > 0 or instance.status != "setup":
+            raise PlatformConflict("A simulation instance can only bind a pack during setup before round 1")
+        runtime_pack = await aresolve_runtime_pack(session, pack_key, pack_version)
+        instance.pack_key = pack_key
+        instance.pack_version = pack_version
+        instance.pack_digest = runtime_pack.pack_digest
+        await session.flush()
+        return instance
 
     @staticmethod
     async def delete(session: AsyncSession, instance_id: int) -> None:

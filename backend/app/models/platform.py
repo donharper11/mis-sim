@@ -85,6 +85,7 @@ class SimulationInstance(Base):
     section_id: Mapped[int] = mapped_column(ForeignKey("section.id", ondelete="CASCADE"), nullable=False)
     pack_key: Mapped[str] = mapped_column(String(128), nullable=False)
     pack_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    pack_digest: Mapped[str | None] = mapped_column(String(64), nullable=True)
     current_round: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     total_rounds: Mapped[int] = mapped_column(Integer, nullable=False, default=6)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="setup")
@@ -138,6 +139,33 @@ class Enrollment(Base):
     user: Mapped[User] = relationship(foreign_keys=[user_id])
     section: Mapped[Section] = relationship(back_populates="enrollments", foreign_keys=[section_id], overlaps="enrollments,team")
     team: Mapped[Team | None] = relationship(back_populates="enrollments", foreign_keys=[team_id], overlaps="enrollments,section")
+
+
+class Casepack(Base):
+    """Platform metadata for an immutable, validated runtime pack."""
+
+    __tablename__ = "casepack"
+    __table_args__ = (
+        UniqueConstraint("pack_key", "pack_version", name="uq_casepack_key_version"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    pack_key: Mapped[str] = mapped_column(String(128), nullable=False)
+    pack_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    pack_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    schema_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    display_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    vertical: Mapped[str] = mapped_column(String(128), nullable=False)
+    rounds: Mapped[int] = mapped_column(Integer, nullable=False)
+    path: Mapped[str] = mapped_column(String(1024), nullable=False)
+    validation_json: Mapped[dict] = mapped_column(JSON, nullable=False)
+    registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    registered_by: Mapped[int | None] = mapped_column(ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+
+
+# Descriptive alias used by registry callers that want to distinguish the row from
+# the typed casepack object loaded from disk.
+CasepackRecord = Casepack
 
 
 ALL_TABLES = (User, Course, Section, SimulationInstance, Team, Enrollment)

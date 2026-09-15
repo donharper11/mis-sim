@@ -1,0 +1,14 @@
+- key: inventory_accuracy
+  requires_entities:
+    - {entity: inventory, min_level_of_detail: sku_location}
+  provenance: {source: PINNED, note: "0.4 challenge from auditors"}
+- key: customer_order_detail
+  requires_entities:
+    - {entity: order, min_level_of_detail: order_line}
+    - {entity: customer, min_level_of_detail: household}
+  provenance: {source: PINNED, note: "0.4 component detail data copy"}
+- key: transaction_cost
+  requires_entities:
+    - {entity: sale, min_level_of_detail: individual_transaction}
+    - {entity: ledger, min_level_of_detail: account_period}
+  provenance: {source: HARVESTED, note: "mis_lite cost leadership metric adapted"}

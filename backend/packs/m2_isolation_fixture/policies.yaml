@@ -1,0 +1,155 @@
+# CG-4 -- six information-policy switches, each with its stated cost.
+#
+# RE-KEYED, and the decision is deliberate. The three switches this pack carried were keyed
+# by MECHANISM -- `encrypt_customer_data`, `compliance_audit`, `access_review` -- against
+# the six DIMENSIONS the information-policy design settled on: collection · retention ·
+# access · logging · egress · staff monitoring. Three reasons the keys move:
+#
+#  1. A mechanism is one way to satisfy a policy, not the policy. "Encrypt customer data"
+#     is an implementation of a data-egress position; a team that instead stops the export
+#     has met the same obligation by another route, and a mechanism-keyed switch cannot
+#     express that.
+#  2. `obligation_rules.yaml` reads `policy` + `permissive_value` (1.5 section 5.4). A
+#     permissive value only exists for a dimension: retention can be `indefinite`, an
+#     "access review" cannot. Mechanism keys make CG-5 unauthorable.
+#  3. Only one of the three -- `access_review` -- covered any of the six at all, so keeping
+#     them would have meant six switches of which three were duplicates.
+#
+# Nothing outside this file and `labels.yaml` referenced the old keys (checked across the
+# repo; the only other hits are 1.2's own test fixture packs, which are separate packs).
+#
+# Every switch carries a cost, because a switch with no cost is a morality quiz rather than
+# a trade-off. Each also carries at least one effect that is NOT in the firm's favour --
+# collection limits shrink what analytics can see, monitoring costs staff trust -- for the
+# same reason.
+
+# VALUE VOCABULARIES -- `options` and `default`, added by the 1.3 follow-up.
+#
+# `PolicyOption.options` and `.default` landed in 1.1 rework-3 and no pack used them. Until
+# they are declared, `obligation_rules.yaml`'s `permissive_value` is a string pointing at
+# nothing and the whole privacy layer is inert (design/07 section 3.5).
+#
+# Each switch gets three states: the permissive value that obligation_rules already names,
+# a middle position, and the most restrictive one. Three because two is a morality quiz
+# and five is a menu; the middle position is where most real firms sit, and a student who
+# picks it should be able to see that it satisfies some stakeholders and not others.
+#
+# `options` IS ORDINAL: least constrained at index 0, most constrained last, per
+# design/07 section 3.5b (ruled 2026-08-18). All six lists below are authored that way, so
+# alignment against a stakeholder's ideal is a distance, not an exact match. On
+# `staff_monitoring` the ordinal "more constrained" end means the firm watches its OWN
+# people more, not that it handles data more tightly -- its permissive end is the
+# low-surveillance end. That is design/07 section 3.5a's point, stated here in the pack.
+#
+# `default` is the permissive value on all six, and the reason is stated per switch below
+# rather than assumed. In every case it is the state the case is actually in today, which
+# is what makes never opening the screen cost something instead of being an opt-in.
+
+- key: data_collection
+  category: information_policy
+  cost: 20000
+  effects: {privacy_risk: -0.20, customer_trust: 0.10, analytics_reach: -0.15}
+  options: [everything_by_default, purpose_limited, minimal]
+  default: everything_by_default
+  # Default is the permissive value. A firm that has never asked what it is entitled to
+  # collect is collecting what the tills and the loyalty scheme happen to produce, which
+  # is `everything_by_default` by another name. `purpose_limited` is the middle position
+  # -- collect what a named purpose needs -- and `minimal` is the transaction and nothing
+  # else.
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite data_governance_policies row 2, Data Classification Standards
+      (cost_value 20000). What the firm collects and why it is entitled to.
+      TODO: calibrate -- the effect vector is authored; mis_lite carries cost only.
+
+- key: data_retention
+  category: information_policy
+  cost: 15000
+  effects: {privacy_risk: -0.20, storage_cost: -0.05, analytics_reach: -0.10}
+  options: [indefinite, standard_period, minimal]
+  default: indefinite
+  # Default is the permissive value, and it is the one the case actually describes:
+  # nobody has ever deleted anything, so the history goes back to 2011. `standard_period`
+  # is a defined and enforced period; `minimal` keeps a record only while it is in use.
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite data_governance_policies row 1, Data Retention Policy (cost_value 15000)
+      carried exactly. Left unset, records are kept indefinitely -- the permissive value
+      `customer_pii_retention` in obligation_rules.yaml reads.
+      TODO: calibrate -- effect vector authored.
+
+- key: data_access
+  category: information_policy
+  cost: 9000
+  effects: {privacy_risk: -0.10, recovery_confidence: 0.10, staff_load: 0.05}
+  options: [open_to_all_staff, role_based, need_to_know]
+  default: open_to_all_staff
+  # Default is the permissive value: 0.4's security screen shows four separate logins and
+  # no access position behind them, so in practice a login is a key to everything the
+  # system holds. `role_based` ties access to the job; `need_to_know` grants it per person
+  # and per request.
+  provenance:
+    source: AUTHORED
+    note: >-
+      Carried forward from the `access_review` switch 1.1 authored, at its cost, re-keyed
+      to the dimension it was covering. 0.4 security screen: "4 separate logins".
+      TODO: calibrate -- 9000 is inherited, not measured.
+
+- key: access_logging
+  category: information_policy
+  cost: 30000
+  effects: {compliance_risk: -0.30, privacy_risk: -0.10, staff_load: 0.08}
+  options: [unlogged, sampled, full_audit_trail]
+  default: unlogged
+  # Default is the permissive value -- 0.4 states it in plain words, "no record of who
+  # views customer data". `sampled` records a proportion, which is what a firm this size
+  # can usually afford to review; `full_audit_trail` records every read.
+  provenance:
+    source: HARVESTED
+    note: >-
+      mis_lite data_governance_policies row 3, Audit and Reporting Standards
+      (cost_value 30000). This is the switch the 0.4 security screen names in plain
+      words -- "no record of who views customer data".
+      TODO: calibrate -- effect vector authored.
+
+- key: data_egress
+  category: information_policy
+  cost: 12000
+  effects: {privacy_risk: -0.15, integration_friction: 0.10, partner_reach: -0.10}
+  options: [unrestricted, approved_destinations, no_export]
+  default: unrestricted
+  # Default is the permissive value. Extracts already move -- to suppliers, to marketing,
+  # into the store spreadsheets -- with nothing governing where they may go.
+  # `approved_destinations` names the list; `no_export` keeps data inside the systems that
+  # hold it, and costs the firm the supplier portal it has been asked for.
+  provenance:
+    source: AUTHORED
+    note: >-
+      What may leave the firm's systems -- extracts to suppliers, marketing lists, a
+      supplier portal. mis_lite's nearest row is it_infrastructure_addons_master row 3,
+      Data Encryption Policy (cost_value 1500), and it was NOT carried across: 1500 buys
+      encryption in transit, not a position on what may be sent at all, and using it would
+      state a cost the source does not support.
+      TODO: calibrate -- 12000 is authored judgement.
+
+- key: staff_monitoring
+  category: information_policy
+  cost: 7000
+  effects: {insider_risk: -0.25, employee_trust: -0.20, staff_load: 0.05}
+  options: [untracked, aggregate_only, individual_activity]
+  default: untracked
+  # Default is the permissive value, and this is the switch where saying so matters most,
+  # because `untracked` is the LOW-surveillance end. Leaving it there is not a neutral
+  # act: it arms `phishing_on_staff_accounts` through `staff_activity_untracked`. Moving
+  # off it costs `employee_trust`. `aggregate_only` reports at team level; the pack takes
+  # no position on which of the three is right.
+  provenance:
+    source: AUTHORED
+    note: >-
+      What the firm records about its own people. No mis_lite source: the prior build had
+      no employee-privacy dimension at all. The effect vector is the only one here where
+      the two named effects pull in opposite directions, which is the point -- this is the
+      switch that is not free even when it works.
+      TODO: calibrate -- cost and effects are authored judgement.

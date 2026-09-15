@@ -1,0 +1,19 @@
+defaults_by_archetype:
+  c_suite: {ideal_cost_posture: low, ideal_reliability: 0.98, weight: 0.8}
+  finance: {ideal_cost_posture: low, weight: 0.9}
+  employees: {ideal_training_coverage: high, weight: 0.7}
+  operations: {ideal_reliability: 0.99, weight: 0.8}
+  it: {ideal_staff_load: low, weight: 0.7}
+  hr: {ideal_training_coverage: high, weight: 0.7}
+  marketing: {ideal_customer_data: high, weight: 0.6}
+  investor: {ideal_cost_posture: low, weight: 0.8}
+  customer: {ideal_availability: high, weight: 0.8}
+  vendor: {ideal_integration: high, weight: 0.7}
+  security_auditor: {ideal_security: high, weight: 0.9}
+  regulator: {ideal_compliance: high, weight: 0.9}
+  general_public: {ideal_privacy: high, weight: 0.8}
+  media: {ideal_incident_visibility: low, weight: 0.6}
+overrides:
+  - {item: order_mgmt_v42, archetype: operations, ideal_value: 85, weight: 1.0}
+  - {item: customer_database, archetype: marketing, ideal_value: 80, weight: 0.9}
+provenance: {source: AUTHORED, note: "archetype-default mechanism required by design/04 G6"}

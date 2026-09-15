@@ -4,7 +4,7 @@
 **Spec version:** v1.6 · **Amended:** 2026-08-22 — findings CU-001/CU-002/CU-003: `E18` closes the closed-vocabulary E00-collapse class; the E29 behaviours are enumerated and made variant-visible; the label-routing narrowing is guarded
 **Previously amended:** v1.5, 2026-08-21 — readiness closeout added exact precondition-shape code `E29` and pack-relative W08
 **Previously:** v1.4, 2026-08-21 — obligation and policy coverage; v1.3, 2026-08-18 — `W08` added; v1.2, 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
-**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E18` · `E20`–`E29` · `W01`–`W08` · `I3` · `I8`
+**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E20` · `E21`–`E29` · `W01`–`W08` · `I3` · `I8`
 **Phase:** 1 · **Depends on:** **1.1 as approved** · **Blocks:** 1.3, 6.1
 
 > An unvalidated pack does not fail loudly — it runs and scores wrongly, and you find out
@@ -219,6 +219,9 @@ E18  any closed model vocabulary (a Literal or StrEnum field) set outside its
 ### 5.2 Coherence checks — ERROR
 
 ```
+E19  a numeric field outside its declared model range — it names the source file and field
+      and reports the bound that was violated, without collapsing into E00
+
 E20  a capability with no watch rule CARRYING AT LEAST ONE THRESHOLD — it can
      never raise a signal, so it is invisible to responsiveness scoring and
      effectively unmanaged                                      WIDENED v1.2

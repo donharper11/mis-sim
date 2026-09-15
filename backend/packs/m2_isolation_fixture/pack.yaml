@@ -1,0 +1,114 @@
+pack_key: m2_isolation_fixture
+pack_version: 0.1.1
+schema_version: 1
+display_name: M2 Isolation Fixture
+vertical: grocery_retail
+rounds: 6
+company:
+  employees: 620
+  sites: 8
+  revenue_musd: 140
+  founded: 1987
+  narrative: Riverside Grocers operates eight regional stores and a central warehouse while modernising order handling, inventory visibility, and reporting.
+budget:
+  capex_per_round: [400000, 260000, 220000, 220000, 200000, 200000]
+  opening_opex: 47000
+initial_state:
+  round: 3
+  declared_strategy: cost_leadership
+  declared_strategy_round: 2
+  budget:
+    round: 3
+    # CG-6. THIS FIGURE IS DERIVED, NOT AUTHORED. It is
+    #   review.capital_available (220000) - review.capital_committed (174000) = 46000,
+    # and review.capital_committed is itself the sum of the seven review area lines below.
+    # The authored facts in this block are `budget.capex_per_round` and `review.lines[]`;
+    # every capital figure after them is arithmetic on those two.
+    #
+    # It was 44000, against a derivation of 46000, and no $2,000 item exists anywhere in
+    # the round-3 blocks -- the two numbers were authored independently and one was stale.
+    # E14 now enforces the derivation with zero tolerance.
+    #
+    # THE SECOND HOME IS NOW ELIMINATED. 1.3 could not do it: both fields were REQUIRED by
+    # models.py, so removing either made the pack unloadable, and making one optional or
+    # derived is a schema change that spec section 1 put out of 1.3's scope. 1.3 reported it
+    # rather than improvising (finding 1.3-001 / CG-6). The catch-up rework of 2026-08-21
+    # made the schema change: the review block below no longer carries this figure, and this
+    # line is the round's single authored home for it. E14 still enforces it against
+    # capital_available - capital_committed with zero tolerance.
+    capital_remaining: 46000
+    capital_available: 220000
+    run_rate: 58300
+  scorecard:
+    financial: 61
+    customer: 48
+    internal_process: 39
+    learning_growth: 27
+  needs_attention:
+    - order system near capacity
+    - warehouse system deployed with no implementation support
+  unit_responses:
+    - unit: warehouse
+      people: 34
+      running: [centraline_im7]
+      implemented: [no_training, process_unchanged, no_communication]
+      responding: [adoption_22, picking_20_minutes_slower]
+      contributing: outbound_logistics
+      contribution_pct: 25
+    - unit: store_operations
+      people: 140
+      running: [order_mgmt_v42, pos_system_2011, store_spreadsheets]
+      implemented: [partial_training, picking_process_partly_redesigned]
+      responding: [adoption_61, spreadsheets_still_daily]
+      contributing: operations
+      contribution_pct: 44
+    - unit: finance
+      people: 8
+      running: [accounting_package]
+      implemented: [fully_trained, process_redesigned, communicated]
+      responding: [adoption_94]
+      contributing: firm_infrastructure
+      contribution_pct: 81
+  value_chain_coverage:
+    inbound_logistics: 1/4
+    operations: 2/4
+    outbound_logistics: 4/5
+    marketing_sales: 5/5
+    service: 0/4
+    firm_infrastructure: 3/4
+    human_resources: ok
+    technology: none
+    procurement: 0/3
+  open_signals: 3
+  inbox_waiting: 3
+  people:
+    staff_fte: 2.0
+    load_fte: 3.4
+    overcommitted_pct: 170
+    platform_load: 1.9
+    application_load: 1.5
+  review:
+    lines:
+      - {area: platform, changes: 1 change, capital: 0, run_rate_effect: 0}
+      - {area: components, changes: 2 changes, capital: 98000, run_rate_effect: 3900}
+      - {area: rollout, changes: 1 change, capital: 34000, run_rate_effect: 0}
+      - {area: services, changes: 1 change, capital: 30000, run_rate_effect: 0}
+      - {area: people, changes: 0 changes, capital: 0, run_rate_effect: 0}
+      - {area: governance, changes: 2 assignments, capital: 0, run_rate_effect: 0}
+      - {area: challenges, changes: 2 responses, capital: 12000, run_rate_effect: 0}
+    # Also derived: capital_committed is the sum of the seven area lines above
+    # (0 + 98000 + 34000 + 30000 + 0 + 0 + 12000), and capital_available is
+    # budget.capex_per_round[round 3]. What is left over is available minus committed, and
+    # this block no longer authors it -- see the CG-6 note on budget.capital_remaining above,
+    # which is now the only authored home for that figure.
+    capital_committed: 174000
+    capital_available: 220000
+    run_rate_after: 62200
+    run_rate_before: 58300
+    warnings:
+      - capacity added to order fulfilment with no training
+      - two open signals received no action
+      - customer insight carries strategy weight with no spend
+  provenance:
+    source: PINNED
+    note: handoffs/0.4-mockups-remaining/spec.md section 5.4
