@@ -5,14 +5,14 @@ Implementation is bounded by `handoffs/recovery/m2-auth-amendment.md` and
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| Reversible User/auth migration including `last_active_at` | fresh Alembic upgrade → downgrade → upgrade | pending |
-| JWT claims, type validation, bearer 401s, inactive/deleted-user refusal | `test_auth.py`, `test_auth_guards.py` | pending |
-| Equal unknown-user/wrong-password response and multiple-enrollment selection | focused auth tests | pending |
-| Student/TA/instructor/admin route matrix and cross-instance 403 | guarded API tests | pending |
-| No plaintext passwords or unvalidated query/body instance context | `check_auth_invariants.py` | pending |
-| Secret configuration and non-local seed refusal | invariant check and seed probe | pending |
-| Seeded `/login` → authenticated `/api/auth/me` same-host browser canary | Playwright/browser evidence | pending |
-| Existing isolation canary and full repository gate | `check_instance_isolation.py`; `make check` | pending |
+| Reversible User/auth migration including `last_active_at` | fresh Alembic upgrade → downgrade → upgrade | PASS |
+| JWT claims, type validation, bearer 401s, inactive/deleted-user refusal | `test_auth.py`, `test_auth_guards.py` | PASS |
+| Equal unknown-user/wrong-password response and multiple-enrollment selection | focused auth tests | PASS |
+| Student/TA/instructor/admin route matrix and cross-instance 403 | guarded API tests | PASS |
+| No plaintext passwords or unvalidated query/body instance context | `check_auth_invariants.py` | PASS |
+| Secret configuration and non-local seed refusal | invariant check and seed probe | PASS |
+| Seeded `/login` → authenticated `/api/auth/me` same-host browser canary | Playwright/browser evidence | PASS — student `/me` 200; cross-instance GET 403 |
+| Existing isolation canary and full repository gate | `check_instance_isolation.py`; `make check` | PASS — candidate `d89d5b6`; 675 passed, all guards green |
 
 The packet does not implement scheduling, runtime-table changes, engine/scoring behavior,
 casepack registry behavior, or UI beyond the minimal login surface.

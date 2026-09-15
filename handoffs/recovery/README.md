@@ -115,8 +115,20 @@ closure. Independent audit PASS is recorded in
 [`recovery-m2-registry-2026-09-15.md`](../../findings/recovery-m2-registry-2026-09-15.md).
 The final gate is **666 passed**, all guards green, all 45 validator fixtures
 green, and fresh migration/cohort evidence records two distinct registered
-pack bindings. M2 packets 2.3 scheduling and 2.4 auth/login remain separately
-blocked on their amended contracts; neither is included in 2.5.
+pack bindings. M2 packet 2.3 scheduling remains separately blocked on its amended
+contract; it is not included in 2.5.
+
+## M2 continuation — 2.4 auth and login accepted
+
+Packet 2.4 was amended and dispatched from `a74adc8` after independent contract
+review. Final successor `d89d5b6` adds bcrypt/JWT authentication, live-user and
+section/instance authorization, guarded hierarchy routes, deterministic seeded
+accounts, required secret provisioning, and the M2-owned design-token login
+surface. Independent audit PASS is recorded in
+[`recovery-m2-auth-2026-09-15.md`](../../findings/recovery-m2-auth-2026-09-15.md).
+The final gate is **675 passed**, all guards green, and the same-host browser
+canary logged in a seeded student, read `/api/auth/me`, and received 403 for a
+different section's instance. M2 packet 2.3 scheduling remains next.
 
 ## First-wave acceptance and cleanup
 

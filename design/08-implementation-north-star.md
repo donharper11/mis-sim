@@ -224,5 +224,7 @@ runtime inventory, restrictive instance FKs with orphan preflight, the mandatory
 tests and all guards. Packet 2.5 casepack registry is accepted at `67a034d` after
 independent audit; it registers validated runtime-capable tuples, verifies semantic
 digests, and pins instance bindings. The combined tree now passes 666 tests and all
-guards. Auth/login and scheduling remain separate M2 packets with amended contracts;
-neither is implicitly included in 2.5.
+guards. Packet 2.4 auth/login is accepted at `d89d5b6` after independent audit; it
+adds live-user JWT authorization, guarded hierarchy routes, seeded accounts, and the
+M2 login surface. The combined tree now passes 675 tests and all guards. Scheduling
+remains the separate M2 packet with its amended contract; it is not included in 2.4.
