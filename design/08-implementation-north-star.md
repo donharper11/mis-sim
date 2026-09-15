@@ -259,6 +259,7 @@ through the revision-checked `SimulationService.lock` boundary. Focused API, fro
 lint/build, and the 1024px browser probe pass; Debrief remains as M3.8.
 Packet 3.8 is now implemented as the read-only Debrief report: it projects immutable
 `RoundResult` payloads, preserves score and causal evidence, and provides a plain-text
-download. Focused API, frontend lint/build, and the 1024px browser probe pass. The eight
-M3 screen packets are complete locally; the seeded six-round browser loop and Phase 4
-minimum controls remain before pilot readiness.
+download. The six minimum Phase 4 control families and instructor round-control action are
+also wired through the typed runtime seam. The seeded six-round browser loop passed on a
+disposable cohort: both teams completed six rounds and twelve immutable results were
+persisted. Production launch remains gated by the audit in `docs/m3-launch-readiness-audit.md`.

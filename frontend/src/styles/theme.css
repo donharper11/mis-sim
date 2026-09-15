@@ -303,6 +303,25 @@ select {
   }
 }
 
+.controls-page { display: grid; gap: var(--space-xl); }
+.controls-description { max-width: 760px; color: var(--text-secondary); margin: var(--space-md) 0 0; }
+.controls-panel { background: var(--surface-card); border: 1px solid var(--border-default); padding: var(--space-xl); display: grid; gap: var(--space-lg); }
+.controls-panel h2 { margin: 0; font-size: 18px; }
+.controls-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg); }
+.controls-option-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+.controls-card { border: 1px solid var(--border-default); padding: var(--space-lg); background: var(--surface-sunken); display: grid; gap: var(--space-md); }
+.controls-card h3 { margin: 0; font-size: 16px; }
+.controls-card p { margin: 0; color: var(--text-muted); font-size: 13px; }
+.controls-field { display: grid; gap: var(--space-sm); color: var(--text-secondary); font-size: 13px; }
+.controls-field select { min-height: 38px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--input-text); padding: 0 var(--space-md); }
+.controls-field select:focus { outline: 2px solid var(--border-focus); outline-offset: 1px; }
+.controls-actions { display: flex; align-items: center; gap: var(--space-lg); }
+.controls-empty { background: var(--surface-card); border: 1px solid var(--border-default); padding: var(--space-3xl); }
+.controls-empty h2 { margin-top: 0; }
+@media (max-width: 720px) {
+  .controls-grid, .controls-option-grid { grid-template-columns: 1fr; }
+}
+
 .login-page { display: grid; place-items: center; min-height: 100vh; }
 .login-card { width: min(100%, 28rem); padding: var(--space-2xl); background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius); }
 .login-card form, .login-card label { display: grid; gap: var(--space-sm); }

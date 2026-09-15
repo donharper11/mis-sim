@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { NavLink } from "react-router-dom";
-const decisionItems = ["Strategy", "Platform", "Components", "Rollout", "Security", "Services", "People"];
+const decisionItems = ["Strategy", "Platform", "Components", "Rollout", "Security", "Services", "People", "Governance"];
 const resultItems = ["Dashboard", "Challenges", "Review", "Debrief"];
 
 function NavItem({ label, active, to }) {
@@ -23,11 +23,11 @@ export default function AppShell({ me, instance, schedule, dashboard, activePath
         {me?.name && <div className="product-shell__user">{me.name}</div>}
         <nav aria-label="Main navigation">
           <div className="product-shell__nav-group">
-            {resultItems.map((item) => <NavItem key={item} label={item} to={item === "Dashboard" ? "/" : item === "Review" ? "/review" : item === "Debrief" ? "/debrief" : undefined} active={(item === "Dashboard" && activePath === "/") || (item === "Review" && activePath === "/review") || (item === "Debrief" && activePath === "/debrief")} />)}
+            {resultItems.map((item) => <NavItem key={item} label={item} to={item === "Dashboard" ? "/" : item === "Challenges" ? "/challenges" : item === "Review" ? "/review" : item === "Debrief" ? "/debrief" : undefined} active={(item === "Dashboard" && activePath === "/") || (item === "Challenges" && activePath === "/challenges") || (item === "Review" && activePath === "/review") || (item === "Debrief" && activePath === "/debrief")} />)}
           </div>
           <div className="product-shell__nav-label">Decisions</div>
           <div className="product-shell__nav-group">
-            {decisionItems.map((item) => <NavItem key={item} label={item} to={item === "Platform" ? "/platform" : item === "Components" ? "/components" : item === "Rollout" ? "/rollout" : undefined} active={(item === "Platform" && activePath === "/platform") || (item === "Components" && activePath === "/components") || (item === "Rollout" && activePath === "/rollout")} />)}
+            {decisionItems.map((item) => <NavItem key={item} label={item} to={item === "Strategy" ? "/strategy" : item === "Platform" ? "/platform" : item === "Components" ? "/components" : item === "Rollout" ? "/rollout" : item === "Security" ? "/security" : item === "Services" ? "/services" : item === "People" ? "/people" : item === "Governance" ? "/governance" : undefined} active={activePath === `/${item.toLowerCase()}`} />)}
           </div>
         </nav>
       </aside>

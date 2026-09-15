@@ -4,18 +4,19 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, is_dataclass
+from collections.abc import Iterator
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Iterator
+from dataclasses import asdict, is_dataclass
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.repo.base import ScopedRepo
 from app.round import models as round_models
 from app.round.models import RoundResult
-from app.repo.base import ScopedRepo
 
 from .consequences import quote_transition, resolve_transition
 from .content import canonical_json, normalize_patch
@@ -26,11 +27,11 @@ from .types import (
     CheckpointStateV1,
     CommandV1,
     PackIdentityV1,
+    RuntimePackV1,
     RunViewV1,
     SheetPatchV1,
     SheetViewV1,
     SimulationError,
-    RuntimePackV1,
 )
 
 
@@ -139,12 +140,12 @@ class SimulationService:
         self.runtime_pack = runtime_pack
 
     @contextmanager
-    def _transaction(self) -> Iterator[Session]:
+    def _transaction(self, *, immediate: bool = True) -> Iterator[Session]:
         connection = self.engine.connect()
         # SQLite has no row-level locks.  BEGIN IMMEDIATE gives the service the
         # same serialized mutation boundary used by PostgreSQL's run-row lock.
         transaction = None
-        if self.engine.dialect.name == "sqlite":
+        if self.engine.dialect.name == "sqlite" and immediate:
             connection.exec_driver_sql("BEGIN IMMEDIATE")
         else:
             transaction = connection.begin()
@@ -292,7 +293,7 @@ class SimulationService:
 
     def read(self, instance_id: int, team_id: int) -> RunViewV1:
         instance_id, team_id = self._scope(instance_id, team_id)
-        with self._transaction() as session:
+        with self._transaction(immediate=False) as session:
             run = self._run(session, instance_id, team_id)
             return self._view(session, run)
 
