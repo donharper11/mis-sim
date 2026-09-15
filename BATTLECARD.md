@@ -48,7 +48,8 @@ contract passed independent Heavy review at `bee3977`, closing the four returned
 and runtime validation passed independent audit at `e4f4757` and is integrated in the
 current recovery branch. [P1 audit](findings/recovery-content-types-2026-09-15.md). P2
 estate passed independent audit at `b4bfec9` and is now integrated. [P2 audit](findings/recovery-estate-2026-09-15.md).
-P3 organisation is now the next gated handoff; consequences, persistence and games remain unbuilt.
+P3 organisation passed independent audit at `2c42f24` and is now integrated. [P3 audit](findings/recovery-organisation-2026-09-15.md).
+P4 consequences is now the next gated handoff; persistence and games remain unbuilt.
 
 ## The important unfinished boundary
 

@@ -62,9 +62,13 @@ the zero-error Riverside validator. [P1 audit](../../findings/recovery-content-t
 P2 estate passed independent audit at `b4bfec9` and is integrated in the current recovery
 branch. It supplies initial estate/lifecycle, resource and physical projection behavior;
 the packet passed `628` full-gate tests, all guards and the zero-error Riverside validator.
-[P2 audit](../../findings/recovery-estate-2026-09-15.md). P3 organisation is now the next
-dispatchable packet. M1 remains unfinished until organisation, consequences, persistence
-and decision-only game packets pass their independent audits.
+[P2 audit](../../findings/recovery-estate-2026-09-15.md). P3 organisation passed independent
+audit at `2c42f24` and is integrated in the current recovery branch. It supplies pure
+training/process/communication/adoption/staff/governance/policy and preference transitions;
+the packet passed `635` full-gate tests, all guards and the zero-error Riverside validator.
+[P3 audit](../../findings/recovery-organisation-2026-09-15.md). P4 consequences is now the
+next dispatchable packet. M1 remains unfinished until consequences, persistence and
+decision-only game packets pass their independent audits.
 
 ## First-wave acceptance and cleanup
 
