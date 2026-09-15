@@ -1,0 +1,70 @@
+"""P2 projection into the existing pure engine TeamState."""
+
+from __future__ import annotations
+
+from typing import Any, Iterable
+
+from app.casepack.models import Casepack
+from app.engine.state import (
+    ActionRecord, ArchEdge, ArchNode, DecisionState, DeploymentState, EntityAccess,
+    GovernanceState, OrgUnitState, PolicyDecisionState, SignalState, StaffPool, TeamState,
+)
+from .types import CheckpointStateV1, ResourceViewV1, RuntimePackV1, SimulationError
+
+
+def project_team_state(
+    pack: RuntimePackV1,
+    state: CheckpointStateV1,
+    round: int,
+    resources: ResourceViewV1,
+    staff: StaffPool,
+    stakeholder_alignments: Iterable[Any] = (),
+    decisions: Iterable[Any] = (),
+    actions: Iterable[Any] = (),
+    funds: Iterable[int] = (),
+    debt_ratios: dict[str, float] | None = None,
+    signals: Iterable[SignalState] = (),
+    entity_access: Iterable[EntityAccess] = (),
+    repair_assessments: Iterable[Any] = (),
+) -> TeamState:
+    """Build a detached scorer snapshot from the authoritative checkpoint."""
+    casepack = pack.casepack
+    if round < 1 or round > casepack.metadata.rounds: raise SimulationError("round_state", "round")
+    catalogs = {x.key: x for x in casepack.catalog}; services = {x.key: x for x in casepack.platform.services}
+    nodes: list[ArchNode] = []; deployments: list[DeploymentState] = []
+    for key, asset in state.assets.items():
+        if asset.retired_round is not None and asset.retired_round <= round: continue
+        source = catalogs.get(asset.source_key) or services.get(asset.source_key)
+        if source is None: raise SimulationError("invalid_reference", f"assets/{key}")
+        runtime_row = resources.by_asset.get(key, {})
+        capacities = runtime_row.get("capacity_by_capability")
+        nodes.append(ArchNode(key=key, roles_filled=tuple(source.roles_filled), availability=(source.availability if asset.source_kind == "catalog" else pack.runtime.services[source.key].availability), installed_round=asset.installed_round, service_life_rounds=source.service_life_rounds if asset.source_kind == "catalog" else pack.runtime.services[source.key].service_life_rounds, serves=tuple(source.serves if asset.source_kind == "catalog" else pack.runtime.services[source.key].serves), owns_entities=tuple((item.entity, item.level_of_detail) for item in source.owns_entities), placement=asset.placement, capacity_by_capability=capacities, base_rto_hours=getattr(source, "base_rto_hours", None)))
+        if asset.source_kind == "catalog":
+            rollout = state.rollouts.get(key)
+            people = source.people_affected
+            if rollout is not None: deployments.append(DeploymentState(key=key, catalog_key=asset.source_key, org_unit=people.org_unit, people_affected=people.count, trained_count=rollout.trained_count, process=rollout.process, adoption=rollout.adoption, ever_trained=rollout.ever_trained, serves=tuple(source.serves), is_primary_for=next((cap for cap, selected in state.primary.items() if selected == key), None), initiated=True, abandoned=rollout.lifecycle == "abandoned"))
+    edges = tuple(ArchEdge(src=edge.src, dst=edge.dst, kind=edge.kind) for edge in state.connections.values() if edge.retired_round is None or edge.retired_round > round)
+    org_units = tuple(OrgUnitState(key=key, resistance=value) for key, value in sorted(state.unit_resistance.items()))
+    governance = tuple(GovernanceState(capability=key, owner_assigned=value.owner is not None, sponsor_assigned=value.sponsor is not None) for key, value in sorted(state.governance.items()))
+    policies = tuple(PolicyDecisionState(policy=key, selected=value.selected, actively_decided=value.actively_decided) for key, value in sorted(state.policies.items()))
+    action_records = tuple(ActionRecord(action_type=x.record.action_type, locked_round=x.record.locked_round, capability=x.record.capability, target_key=x.record.target_key, cost=x.record.cost) for x in actions)
+    decision_records = tuple(decisions)
+    grants = tuple(entity_access) if entity_access else _entity_access(casepack, nodes, edges)
+    return TeamState(round=round, declared_strategy=state.strategy, nodes=tuple(nodes), edges=edges, deployments=tuple(deployments), org_units=org_units, governance=governance, staff=staff, signals=tuple(signals), decisions=decision_records, stakeholder_alignments=tuple(stakeholder_alignments), policy_decisions=policies, action_history=action_records, available_funds_by_round=tuple(funds), debt_ratio_by_capability=debt_ratios, entity_access=grants, repair_assessments=tuple(repair_assessments) if repair_assessments else None)
+
+
+def _entity_access(casepack: Casepack, nodes: list[ArchNode], edges: tuple[ArchEdge, ...]) -> tuple[EntityAccess, ...]:
+    by_key = {node.key: node for node in nodes}; grants: set[EntityAccess] = set()
+    catalog = {x.key: x for x in casepack.catalog}; services = {x.key: x for x in casepack.platform.services}
+    for edge in edges:
+        if edge.kind != "integration": continue
+        source_node, receiver_node = by_key.get(edge.src), by_key.get(edge.dst)
+        if source_node is None or receiver_node is None: continue
+        source_entities = dict(source_node.owns_entities)
+        for receiver_cap in receiver_node.serves:
+            receiver_source = catalog.get(receiver_node.key.split("initial_", 1)[-1]) or catalog.get(receiver_node.key)
+            if receiver_source is None: continue
+            for dependency in receiver_source.must_be_fed_by:
+                if dependency.entity not in source_entities or dependency.from_capability not in source_node.serves: continue
+                grants.add(EntityAccess(connection=next((e.src + "_" + e.dst for e in edges if e.src == edge.src and e.dst == edge.dst), edge.src + "_" + edge.dst), source=edge.src, receiver=edge.dst, capability=receiver_cap, entity=dependency.entity))
+    return tuple(sorted(grants, key=lambda x: (x.connection, x.source, x.receiver, x.capability, x.entity)))
