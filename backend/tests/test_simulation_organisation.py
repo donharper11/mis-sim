@@ -30,7 +30,7 @@ def _org_estate(state, rollouts=None, *, arrived_ids=()):
 
 def _apply_org(state, delta):
     payload = state.model_dump(mode="python")
-    for key in ("rollouts", "unit_resistance", "governance", "primary", "policies", "support"):
+    for key in ("rollouts", "unit_resistance", "governance", "primary", "policies", "support", "hiring_orders", "staff_hires"):
         payload[key] = getattr(delta, key)
     payload["strategy"] = delta.strategy
     payload["strategy_declared_round"] = delta.strategy_declared_round
@@ -61,6 +61,9 @@ def test_process_prices_fit_and_repeated_state_are_deterministic():
     assert redesigned.charge_entries[0].capital_delta == -12000
     repeated = reduce_organisation(pack, _apply_org(state, redesigned), _org_estate(_apply_org(state, redesigned), redesigned.rollouts), [CommandV1(key="repeat", op="set_process", asset="initial_pos_system_2011", choice="redesigned")], 2)
     assert not repeated.charge_entries and not repeated.effect_candidates
+    reverted = reduce_organisation(pack, _apply_org(state, redesigned), _org_estate(_apply_org(state, redesigned), redesigned.rollouts), [CommandV1(key="revert", op="set_process", asset="initial_pos_system_2011", choice="unchanged")], 2)
+    assert reverted.rollouts["initial_pos_system_2011"].process == "unchanged"
+    assert not reverted.charge_entries and not reverted.effect_candidates
 
 
 def test_service_arrival_has_no_end_user_shock_and_communication_is_scoped():
@@ -79,6 +82,8 @@ def test_staff_support_governance_primary_and_strategy_change():
     assert hire.staff.capacity == 2.0 and hire.staff.load == 3.7
     support = reduce_organisation(pack, state, state, [CommandV1(key="support", op="set_support", tier="basic", covered_assets=["initial_pos_system_2011"])], 1)
     assert support.support.tier == "basic" and support.staff.capacity > 2.0
+    assert any(entry.kind == "support" and entry.operating_delta == -20000 for entry in support.charge_entries)
+    assert any(effect.effect_kind == "support" for effect in support.effect_candidates)
     assigned = reduce_organisation(pack, state, state, [
         CommandV1(key="assign", op="assign", capability="store_operations", owner="operations", sponsor="senior_management"),
         CommandV1(key="primary", op="set_primary", capability="store_operations", asset="initial_pos_system_2011"),
@@ -90,6 +95,32 @@ def test_staff_support_governance_primary_and_strategy_change():
     assert assigned.strategy == "focus_strategy" and assigned.charge_entries[-1].capital_delta == -80000
     with pytest.raises(SimulationError):
         reduce_organisation(pack, state, state, [CommandV1(key="bad", op="assign", capability="store_operations", owner="vendor", sponsor=None)], 1)
+    with pytest.raises(SimulationError):
+        reduce_organisation(pack, state, state, [
+            CommandV1(key="a1", op="assign", capability="store_operations", owner="operations", sponsor=None),
+            CommandV1(key="a2", op="assign", capability="store_operations", owner="finance", sponsor=None),
+        ], 1)
+
+
+def test_hiring_orders_and_wages_carry_through_typed_org_delta():
+    pack = _pack(); state = initialize_state(pack, "cost_leadership")
+    ordered = reduce_organisation(pack, state, state, [CommandV1(key="hire", op="hire", option="it_generalist")], 1)
+    assert ordered.hiring_orders["r1_hire"].status == "pending"
+    assert not ordered.staff_hires
+    round2_state = _apply_org(state, ordered)
+    round2_estate = _org_estate(round2_state, ordered.rollouts)
+    arrived = reduce_organisation(pack, round2_state, round2_estate, [], 2)
+    assert arrived.hiring_orders["r1_hire"].status == "arrived"
+    assert arrived.staff_hires[0].order_id == "r1_hire"
+    assert any(entry.kind == "wages" and entry.operating_delta == -31000 for entry in arrived.charge_entries)
+    cancelled = reduce_organisation(pack, round2_state, round2_estate, [CommandV1(key="cancel", op="cancel_order", order="r1_hire")], 1)
+    assert cancelled.hiring_orders["r1_hire"].status == "cancelled"
+    assert not cancelled.staff_hires
+    with pytest.raises(SimulationError):
+        reduce_organisation(pack, state, state, [
+            CommandV1(key="p1", op="set_primary", capability="store_operations", asset="initial_pos_system_2011"),
+            CommandV1(key="p2", op="set_primary", capability="store_operations", asset="initial_pos_system_2011"),
+        ], 1)
 
 
 def test_policy_activity_and_preference_views_are_authored_and_bounded():

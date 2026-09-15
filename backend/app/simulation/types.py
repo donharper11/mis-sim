@@ -529,6 +529,7 @@ class EstateDeltaV1(StrictModel):
 class OrgDeltaV1(StrictModel):
     rollouts: dict[str, RolloutV1]; unit_resistance: dict[str, float]; governance: dict[str, GovernanceStateV1]
     primary: dict[str, str | None]; policies: dict[str, PolicyStateV1]; support: SupportV1
+    hiring_orders: dict[str, HiringOrderV1]; staff_hires: list[StaffHireV1]
     strategy: str; strategy_declared_round: StrictInt; staff: StaffPoolV1
     communication: dict[str, str]; charge_entries: list[CostEntryV1]; stakeholder_alignments: list[StakeholderDecisionAlignmentV1]
     effect_candidates: list[EffectCandidateV1]

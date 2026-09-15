@@ -16,7 +16,7 @@ from app.casepack.models import Casepack
 from .resources import resource_projection
 from .types import (
     AssetV1, CheckpointStateV1, CommandV1, CostEntryV1, EffectCandidateV1,
-    GovernanceStateV1, OrgDeltaV1, PolicyStateV1, RolloutV1, RuntimePackV1,
+    GovernanceStateV1, HiringOrderV1, OrgDeltaV1, PolicyStateV1, RolloutV1, RuntimePackV1,
     SimulationError, StaffPoolV1, StaffHireV1, StakeholderDecisionAlignmentV1,
     SupportV1,
 )
@@ -77,12 +77,18 @@ def _asset_source(casepack: Casepack, asset: dict[str, Any]) -> Any:
     return source
 
 
-def _cost(round: int, kind: str, source: str, amount: int, *, asset: str | None = None,
-          capability: str | None = None, category: str | None = None) -> CostEntryV1:
+def _cost(round: int, kind: str, source: str, amount: int = 0, *, asset: str | None = None,
+          capability: str | None = None, category: str | None = None,
+          operating_amount: int = 0) -> CostEntryV1:
     return CostEntryV1(
         round=round, kind=kind, source=source, asset=asset, capability=capability,
-        category=category, capital_delta=-int(amount), operating_delta=0,
+        category=category, capital_delta=-int(amount), operating_delta=-int(operating_amount),
     )
+
+
+def _wage(round: int, order_id: str, amount: int) -> CostEntryV1:
+    return CostEntryV1(round=round, kind="wages", source=order_id, category="wages",
+                       capital_delta=0, operating_delta=-int(amount))
 
 
 def _effect(kind: str, command: CommandV1, round: int, asset_id: str | None,
@@ -233,8 +239,8 @@ def reduce_organisation(
         rollout["ever_trained"] = bool(rollout["ever_trained"] or rollout["trained_count"] > 0)
 
     # Apply incoming hiring orders independently of estate lifecycle orders.
-    hiring_orders = {key: _dump(value) for key, value in state["hiring_orders"].items()}
-    staff_hires = [_dump(value) for value in state["staff_hires"]]
+    hiring_orders = {key: _dump(value) for key, value in estate_data.get("hiring_orders", state["hiring_orders"]).items()}
+    staff_hires = [_dump(value) for value in estate_data.get("staff_hires", state["staff_hires"])]
     for order in hiring_orders.values():
         if order["status"] == "pending" and order["ordered_round"] < round:
             order["remaining_lead"] = max(0, order["remaining_lead"] - 1)
@@ -266,6 +272,15 @@ def reduce_organisation(
         else:
             hiring_orders[order_id] = {"id": order_id, "option": command.option, "ordered_round": round, "remaining_lead": option.lead_time_rounds, "status": "pending", "arrival_round": round + option.lead_time_rounds}
 
+    # Each arrived hire creates a real recurring operating liability.  P4 can
+    # reconcile the entry by its stable order identity and round.
+    for hire in staff_hires:
+        if hire["arrival_round"] <= round:
+            option = runtime.people.hiring_options.get(hire["option"])
+            if option is None:
+                raise SimulationError("invalid_reference", "option", {"option": hire["option"]})
+            charge_entries.append(_wage(round, hire["order_id"], option.wage_per_round))
+
     # Support is held until explicitly changed.  Coverage survives only while its
     # assets remain live; an empty scope receives no capacity credit.
     support_commands = [command for command in commands if command.op == "set_support"]
@@ -285,6 +300,13 @@ def reduce_organisation(
             if asset_id not in assets or not _active(assets[asset_id], round):
                 raise SimulationError("invalid_reference", "covered_assets", {"asset": asset_id})
         support = {"tier": tier, "covered_assets": sorted(covered)}
+        if tier is not None:
+            tier_row = next(item for item in casepack.platform.support_tiers if item.key == tier)
+            charge_entries.append(_cost(round, "support", command.key, category="support", operating_amount=tier_row.cost))
+            support_caps: list[str] = []
+            for asset_id in covered:
+                support_caps.extend(_asset_source(casepack, assets[asset_id]).serves)
+            effects.append(_effect("support", command, round, None, tier, support_caps, tier_row.cost, "add_service_tier"))
     else:
         support["covered_assets"] = [asset_id for asset_id in support.get("covered_assets", []) if asset_id in assets and _active(assets[asset_id], round)]
 
@@ -305,11 +327,15 @@ def reduce_organisation(
             selected_strategy = next(item for item in casepack.strategies if item.key == selected)
             charge_entries.append(_cost(round, "strategy", strategy_commands[0].key, selected_strategy.reopen_cost, category="strategy"))
 
+    seen_assignments: set[str] = set()
     for command in commands:
         if command.op != "assign":
             continue
         if command.capability not in capabilities:
             raise SimulationError("invalid_reference", "capability", {"capability": command.capability})
+        if command.capability in seen_assignments:
+            raise SimulationError("conflicting_commands", "assign", {"capability": command.capability})
+        seen_assignments.add(command.capability)
         owner = stakeholders.get(command.owner) if command.owner is not None else None
         sponsor = stakeholders.get(command.sponsor) if command.sponsor is not None else None
         if owner is not None and owner.stakeholder_type != "internal":
@@ -323,6 +349,8 @@ def reduce_organisation(
         governance[command.capability] = {"owner": command.owner, "sponsor": command.sponsor}
 
     primary_commands = [command for command in commands if command.op == "set_primary"]
+    if len({command.capability for command in primary_commands}) != len(primary_commands):
+        raise SimulationError("conflicting_commands", "primary")
     for command in primary_commands:
         if command.capability not in capabilities:
             raise SimulationError("invalid_reference", "capability", {"capability": command.capability})
@@ -401,10 +429,12 @@ def reduce_organisation(
                 price = source.process_option.cost if source.process_option else 0
             else:
                 price = 0
+            improves = PROCESS_FIT[choice] > PROCESS_FIT[rollout["process"]]
             rollout["process"] = choice
             if price:
                 charge_entries.append(_cost(round, "process", command.key, price, asset=command.asset, capability=source.serves[0] if source.serves else None, category="process_redesign"))
-            effects.append(_effect("process", command, round, command.asset, command.asset, list(source.serves), price, "redesign_process"))
+            if improves:
+                effects.append(_effect("process", command, round, command.asset, command.asset, list(source.serves), price, "redesign_process"))
 
     # Communication changes only the named unit for this round.
     for command in commands:
@@ -473,6 +503,8 @@ def reduce_organisation(
         primary={key: primary.get(key) for key in sorted(primary)},
         policies={key: PolicyStateV1.model_validate(value) for key, value in sorted(policies.items())},
         support=SupportV1.model_validate(support), strategy=strategy,
+        hiring_orders={key: HiringOrderV1.model_validate(value) for key, value in sorted(hiring_orders.items())},
+        staff_hires=[StaffHireV1.model_validate(value) for value in sorted(staff_hires, key=lambda item: (item["arrival_round"], item["order_id"]))],
         strategy_declared_round=strategy_round, staff=staff,
         communication=dict(sorted(communication.items())),
         charge_entries=sorted(charge_entries, key=lambda item: (item.round, item.kind, item.source)),
