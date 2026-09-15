@@ -1,0 +1,1206 @@
+[
+  {
+    "archetype": "balanced",
+    "rounds": [
+      {
+        "accepted": {
+          "replace_categories": {
+            "application": [
+              {
+                "catalog": "centraline_im7",
+                "config": "core",
+                "key": "warehouse",
+                "op": "buy_application",
+                "placement": "saas",
+                "primary_for": null,
+                "tco_categories": [
+                  "integration",
+                  "training"
+                ]
+              }
+            ],
+            "communication": [
+              {
+                "key": "champions",
+                "op": "communicate",
+                "option": "change_champions",
+                "org_unit": "store_operations"
+              }
+            ],
+            "event_response": [
+              {
+                "event": "unlogged_system_change",
+                "key": "prevent_change",
+                "op": "respond",
+                "option": "fund",
+                "rationale_tag": "compliance"
+              },
+              {
+                "event": "phishing_on_staff_accounts",
+                "key": "prevent_phishing",
+                "op": "respond",
+                "option": "fund",
+                "rationale_tag": "strategic_priority"
+              },
+              {
+                "event": "ransomware_on_finance",
+                "key": "prevent_ransom",
+                "op": "respond",
+                "option": "fund",
+                "rationale_tag": "compliance"
+              }
+            ],
+            "governance": [
+              {
+                "capability": "order_fulfilment",
+                "key": "owner_order",
+                "op": "assign",
+                "owner": "operations",
+                "sponsor": "senior_management"
+              }
+            ],
+            "platform_service": [
+              {
+                "key": "identity",
+                "op": "buy_service",
+                "placement": "on_prem",
+                "service": "central_sign_on",
+                "units": 1
+              }
+            ],
+            "policy": [
+              {
+                "key": "policy_access_logging",
+                "op": "set_policy",
+                "policy": "access_logging",
+                "selected": "unlogged"
+              },
+              {
+                "key": "policy_data_access",
+                "op": "set_policy",
+                "policy": "data_access",
+                "selected": "open_to_all_staff"
+              },
+              {
+                "key": "policy_data_collection",
+                "op": "set_policy",
+                "policy": "data_collection",
+                "selected": "everything_by_default"
+              },
+              {
+                "key": "policy_data_egress",
+                "op": "set_policy",
+                "policy": "data_egress",
+                "selected": "unrestricted"
+              },
+              {
+                "key": "policy_data_retention",
+                "op": "set_policy",
+                "policy": "data_retention",
+                "selected": "indefinite"
+              },
+              {
+                "key": "policy_staff_monitoring",
+                "op": "set_policy",
+                "policy": "staff_monitoring",
+                "selected": "untracked"
+              }
+            ],
+            "process_redesign": [
+              {
+                "asset": "initial_order_mgmt_v42",
+                "choice": "redesigned",
+                "key": "process_order",
+                "op": "set_process"
+              }
+            ],
+            "training": [
+              {
+                "asset": "initial_order_mgmt_v42",
+                "key": "train_order",
+                "op": "train",
+                "option": "full"
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {
+            "communication": [
+              {
+                "key": "champions",
+                "op": "communicate",
+                "option": "change_champions",
+                "org_unit": "warehouse"
+              }
+            ],
+            "governance": [
+              {
+                "asset": "r1_warehouse",
+                "capability": "order_fulfilment",
+                "key": "primary_order",
+                "op": "set_primary"
+              }
+            ],
+            "integration": [
+              {
+                "dst": "r1_identity",
+                "entity": null,
+                "key": "identity_network",
+                "kind": "network",
+                "op": "connect",
+                "src": "initial_client_network",
+                "tier": null
+              },
+              {
+                "dst": "r1_warehouse",
+                "entity": "product",
+                "key": "warehouse_feed",
+                "kind": "integration",
+                "op": "connect",
+                "src": "initial_pos_system_2011",
+                "tier": "basic"
+              },
+              {
+                "dst": "r1_warehouse",
+                "entity": null,
+                "key": "warehouse_network",
+                "kind": "network",
+                "op": "connect",
+                "src": "initial_client_network",
+                "tier": null
+              }
+            ],
+            "process_redesign": [
+              {
+                "asset": "r1_warehouse",
+                "choice": "redesigned",
+                "key": "process_warehouse",
+                "op": "set_process"
+              }
+            ],
+            "training": [
+              {
+                "asset": "r1_warehouse",
+                "key": "train_warehouse",
+                "op": "train",
+                "option": "full"
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {
+            "application": [
+              {
+                "catalog": "customer_database",
+                "config": "core",
+                "key": "customer",
+                "op": "buy_application",
+                "placement": "saas",
+                "primary_for": null,
+                "tco_categories": [
+                  "data_migration",
+                  "policy",
+                  "training"
+                ]
+              }
+            ],
+            "policy": [
+              {
+                "key": "policy_access_logging",
+                "op": "set_policy",
+                "policy": "access_logging",
+                "selected": "unlogged"
+              },
+              {
+                "key": "policy_data_access",
+                "op": "set_policy",
+                "policy": "data_access",
+                "selected": "open_to_all_staff"
+              },
+              {
+                "key": "policy_data_collection",
+                "op": "set_policy",
+                "policy": "data_collection",
+                "selected": "everything_by_default"
+              },
+              {
+                "key": "policy_data_egress",
+                "op": "set_policy",
+                "policy": "data_egress",
+                "selected": "unrestricted"
+              },
+              {
+                "key": "policy_data_retention",
+                "op": "set_policy",
+                "policy": "data_retention",
+                "selected": "indefinite"
+              },
+              {
+                "key": "policy_staff_monitoring",
+                "op": "set_policy",
+                "policy": "staff_monitoring",
+                "selected": "untracked"
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {
+            "governance": [
+              {
+                "capability": "customer_insight",
+                "key": "owner_customer",
+                "op": "assign",
+                "owner": "marketing",
+                "sponsor": "senior_management"
+              },
+              {
+                "asset": "r3_customer",
+                "capability": "customer_insight",
+                "key": "primary_customer",
+                "op": "set_primary"
+              }
+            ],
+            "integration": [
+              {
+                "dst": "r3_customer",
+                "entity": "sale",
+                "key": "customer_feed",
+                "kind": "integration",
+                "op": "connect",
+                "src": "initial_pos_system_2011",
+                "tier": "basic"
+              },
+              {
+                "dst": "r3_customer",
+                "entity": null,
+                "key": "customer_network",
+                "kind": "network",
+                "op": "connect",
+                "src": "initial_client_network",
+                "tier": null
+              }
+            ],
+            "training": [
+              {
+                "asset": "r3_customer",
+                "key": "train_customer",
+                "op": "train",
+                "option": "full"
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {
+            "communication": [
+              {
+                "key": "feedback",
+                "op": "communicate",
+                "option": "feedback_loops",
+                "org_unit": "marketing_sales"
+              }
+            ],
+            "process_redesign": [
+              {
+                "asset": "r3_customer",
+                "choice": "redesigned",
+                "key": "process_customer",
+                "op": "set_process"
+              }
+            ],
+            "training": [
+              {
+                "asset": "r1_warehouse",
+                "key": "train_warehouse",
+                "op": "train",
+                "option": "basic"
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {
+            "policy": [
+              {
+                "key": "policy_access_logging",
+                "op": "set_policy",
+                "policy": "access_logging",
+                "selected": "unlogged"
+              },
+              {
+                "key": "policy_data_access",
+                "op": "set_policy",
+                "policy": "data_access",
+                "selected": "open_to_all_staff"
+              },
+              {
+                "key": "policy_data_collection",
+                "op": "set_policy",
+                "policy": "data_collection",
+                "selected": "everything_by_default"
+              },
+              {
+                "key": "policy_data_egress",
+                "op": "set_policy",
+                "policy": "data_egress",
+                "selected": "unrestricted"
+              },
+              {
+                "key": "policy_data_retention",
+                "op": "set_policy",
+                "policy": "data_retention",
+                "selected": "indefinite"
+              },
+              {
+                "key": "policy_staff_monitoring",
+                "op": "set_policy",
+                "policy": "staff_monitoring",
+                "selected": "untracked"
+              }
+            ],
+            "training": [
+              {
+                "asset": "r3_customer",
+                "key": "train_customer",
+                "op": "train",
+                "option": "full"
+              },
+              {
+                "asset": "initial_order_mgmt_v42",
+                "key": "train_order",
+                "op": "train",
+                "option": "full"
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      }
+    ]
+  },
+  {
+    "archetype": "all_tech_no_org",
+    "rounds": [
+      {
+        "accepted": {
+          "replace_categories": {
+            "application": [
+              {
+                "catalog": "centraline_im7",
+                "config": "core",
+                "key": "warehouse",
+                "op": "buy_application",
+                "placement": "saas",
+                "primary_for": null,
+                "tco_categories": [
+                  "integration",
+                  "training"
+                ]
+              }
+            ],
+            "event_response": [
+              {
+                "event": "unlogged_system_change",
+                "key": "prevent_change",
+                "op": "respond",
+                "option": "fund",
+                "rationale_tag": "compliance"
+              },
+              {
+                "event": "phishing_on_staff_accounts",
+                "key": "prevent_phishing",
+                "op": "respond",
+                "option": "fund",
+                "rationale_tag": "strategic_priority"
+              },
+              {
+                "event": "ransomware_on_finance",
+                "key": "prevent_ransom",
+                "op": "respond",
+                "option": "fund",
+                "rationale_tag": "compliance"
+              }
+            ],
+            "platform_service": [
+              {
+                "key": "identity",
+                "op": "buy_service",
+                "placement": "on_prem",
+                "service": "central_sign_on",
+                "units": 1
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {
+            "governance": [
+              {
+                "asset": "r1_warehouse",
+                "capability": "order_fulfilment",
+                "key": "primary_order",
+                "op": "set_primary"
+              }
+            ],
+            "integration": [
+              {
+                "dst": "r1_identity",
+                "entity": null,
+                "key": "identity_network",
+                "kind": "network",
+                "op": "connect",
+                "src": "initial_client_network",
+                "tier": null
+              },
+              {
+                "dst": "r1_warehouse",
+                "entity": "product",
+                "key": "warehouse_feed",
+                "kind": "integration",
+                "op": "connect",
+                "src": "initial_pos_system_2011",
+                "tier": "basic"
+              },
+              {
+                "dst": "r1_warehouse",
+                "entity": null,
+                "key": "warehouse_network",
+                "kind": "network",
+                "op": "connect",
+                "src": "initial_client_network",
+                "tier": null
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {
+            "application": [
+              {
+                "catalog": "customer_database",
+                "config": "core",
+                "key": "customer",
+                "op": "buy_application",
+                "placement": "saas",
+                "primary_for": null,
+                "tco_categories": [
+                  "data_migration",
+                  "policy",
+                  "training"
+                ]
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {
+            "governance": [
+              {
+                "asset": "r3_customer",
+                "capability": "customer_insight",
+                "key": "primary_customer",
+                "op": "set_primary"
+              }
+            ],
+            "integration": [
+              {
+                "dst": "r3_customer",
+                "entity": "sale",
+                "key": "customer_feed",
+                "kind": "integration",
+                "op": "connect",
+                "src": "initial_pos_system_2011",
+                "tier": "basic"
+              },
+              {
+                "dst": "r3_customer",
+                "entity": null,
+                "key": "customer_network",
+                "kind": "network",
+                "op": "connect",
+                "src": "initial_client_network",
+                "tier": null
+              }
+            ]
+          },
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      }
+    ]
+  },
+  {
+    "archetype": "do_nothing",
+    "rounds": [
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      }
+    ]
+  },
+  {
+    "archetype": "overspender",
+    "rounds": [
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": {
+          "replace_categories": {
+            "staffing": [
+              {
+                "key": "hire_0",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_1",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_10",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_11",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_12",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_13",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_14",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_15",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_16",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_17",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_18",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_19",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_2",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_20",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_21",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_22",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_23",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_24",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_25",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_26",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_27",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_28",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_29",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_3",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_30",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_31",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_32",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_33",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_34",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_35",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_36",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_37",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_38",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_39",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_4",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_40",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_41",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_42",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_43",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_44",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_45",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_46",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_47",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_48",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_49",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_5",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_50",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_51",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_52",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_53",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_54",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_55",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_56",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_57",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_58",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_59",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_6",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_60",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_61",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_62",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_63",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_64",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_65",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_66",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_67",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_68",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_69",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_7",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_70",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_71",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_72",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_73",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_74",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_75",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_76",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_77",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_78",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_79",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_8",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_80",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_81",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_82",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_83",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_84",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_85",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_86",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_87",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_88",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_89",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_9",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_90",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_91",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_92",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_93",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_94",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_95",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_96",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_97",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_98",
+                "op": "hire",
+                "option": "it_generalist"
+              },
+              {
+                "key": "hire_99",
+                "op": "hire",
+                "option": "it_generalist"
+              }
+            ]
+          },
+          "version": 1
+        },
+        "expected_error": "unaffordable"
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      },
+      {
+        "accepted": {
+          "replace_categories": {},
+          "version": 1
+        },
+        "attempt": null,
+        "expected_error": null
+      }
+    ]
+  }
+]
