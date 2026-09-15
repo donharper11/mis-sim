@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import DevTokens from "./pages/DevTokens.jsx";
+import Login from "./pages/Login.jsx";
 
 function NotFound() {
   return (
@@ -16,10 +17,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/_dev/tokens" element={<DevTokens />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
 }
-

@@ -11,10 +11,10 @@
 check:
 	@cd backend && fail=0; \
 	echo "== pytest =="; \
-	PYTHONPATH=. python3 -m pytest -q || fail=1; \
+    SECRET_KEY=$${SECRET_KEY:-mis-sim-test-only-secret} PYTHONPATH=. python3 -m pytest -q || fail=1; \
 	for c in tests/check_*.py; do \
 	  echo "== $$c =="; \
-	  PYTHONPATH=. python3 "$$c" || fail=1; \
+      SECRET_KEY=$${SECRET_KEY:-mis-sim-test-only-secret} PYTHONPATH=. python3 "$$c" || fail=1; \
 	done; \
 	if [ $$fail -ne 0 ]; then echo; echo "make check: FAILED"; exit 1; fi; \
 	echo; echo "make check: all guards green"

@@ -20,6 +20,7 @@ services:
       context: ./backend
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://mis_sim:mis_sim@db:5432/mis_sim}
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set}
     ports:
       - "${API_PORT:-8000}:8000"
     healthcheck:
@@ -32,4 +33,3 @@ services:
 
 volumes:
   postgres_data:
-

@@ -1,4 +1,4 @@
-"""Unprotected M2 hierarchy CRUD routes; authentication arrives in packet 2.4."""
+"""Authenticated M2 hierarchy CRUD routes."""
 
 from __future__ import annotations
 
@@ -9,7 +9,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session
-from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team
+from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
+from app.api.deps import authorize_course, authorize_section, get_current_instance, get_current_user, require_instructor, require_instructor_or_ta
 from app.services.platform import (
     CourseService,
     DeletionBlocked,
@@ -34,7 +35,7 @@ class CourseIn(BaseModel):
     course_name: str
     academic_year: str
     semester: str
-    instructor_id: int
+    instructor_id: int | None = None
     active_chapters: list[int] = Field(default_factory=lambda: list(range(1, 13)))
     is_active: bool = True
 
@@ -60,9 +61,8 @@ class InstanceIn(BaseModel):
 
 
 class TeamIn(BaseModel):
-    section_id: int
+    section_id: int | None = None
     name: str
-    created_by: int | None = None
 
 
 class EnrollmentIn(BaseModel):
@@ -138,9 +138,13 @@ def _error(exc: Exception) -> HTTPException:
 
 
 @router.post("/courses", response_model=CourseOut, status_code=201)
-async def create_course(payload: CourseIn, session: AsyncSession = Depends(get_session)):
+async def create_course(payload: CourseIn, session: AsyncSession = Depends(get_session), current_user: User = Depends(require_instructor)):
     try:
-        row = await CourseService.create(session, **payload.model_dump())
+        values = payload.model_dump()
+        values["instructor_id"] = current_user.id if current_user.role == "instructor" else values["instructor_id"]
+        if values["instructor_id"] is None:
+            raise PlatformConflict("Admin course creation requires instructor_id")
+        row = await CourseService.create(session, **values)
         await session.commit()
         return row
     except Exception as exc:
@@ -149,16 +153,18 @@ async def create_course(payload: CourseIn, session: AsyncSession = Depends(get_s
 
 
 @router.get("/courses/{course_id}", response_model=CourseOut)
-async def read_course(course_id: int, session: AsyncSession = Depends(get_session)):
+async def read_course(course_id: int, session: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user)):
     try:
+        await authorize_course(session, current_user, course_id)
         return await CourseService.read(session, course_id)
     except Exception as exc:
         raise _error(exc) from exc
 
 
 @router.post("/courses/{course_id}/sections", response_model=SectionOut, status_code=201)
-async def create_section(course_id: int, payload: SectionIn, session: AsyncSession = Depends(get_session)):
+async def create_section(course_id: int, payload: SectionIn, session: AsyncSession = Depends(get_session), current_user: User = Depends(require_instructor)):
     try:
+        course = await authorize_course(session, current_user, course_id)
         row = await SectionService.create(session, course_id, **payload.model_dump())
         await session.commit()
         return row
@@ -168,16 +174,18 @@ async def create_section(course_id: int, payload: SectionIn, session: AsyncSessi
 
 
 @router.get("/sections/{section_id}", response_model=SectionOut)
-async def read_section(section_id: int, session: AsyncSession = Depends(get_session)):
+async def read_section(section_id: int, session: AsyncSession = Depends(get_session), current_user: User = Depends(get_current_user)):
     try:
+        await authorize_section(session, current_user, section_id)
         return await SectionService.read(session, section_id)
     except Exception as exc:
         raise _error(exc) from exc
 
 
 @router.post("/sections/{section_id}/instance", response_model=InstanceOut, status_code=201)
-async def create_instance(section_id: int, payload: InstanceIn, session: AsyncSession = Depends(get_session)):
+async def create_instance(section_id: int, payload: InstanceIn, session: AsyncSession = Depends(get_session), current_user: User = Depends(require_instructor)):
     try:
+        await authorize_section(session, current_user, section_id)
         row = await InstanceService.create(session, section_id, **payload.model_dump())
         await session.commit()
         return row
@@ -187,17 +195,19 @@ async def create_instance(section_id: int, payload: InstanceIn, session: AsyncSe
 
 
 @router.get("/instances/{instance_id}", response_model=InstanceOut)
-async def read_instance(instance_id: int, session: AsyncSession = Depends(get_session)):
+async def read_instance(instance: SimulationInstance = Depends(get_current_instance)):
     try:
-        return await InstanceService.read(session, instance_id)
+        return instance
     except Exception as exc:
         raise _error(exc) from exc
 
 
 @router.post("/instances/{instance_id}/teams", response_model=TeamOut, status_code=201)
-async def create_team(instance_id: int, payload: TeamIn, session: AsyncSession = Depends(get_session)):
+async def create_team(instance_id: int, payload: TeamIn, session: AsyncSession = Depends(get_session), instance: SimulationInstance = Depends(get_current_instance), current_user: User = Depends(require_instructor_or_ta)):
     try:
-        row = await TeamService.create(session, instance_id, **payload.model_dump())
+        values = payload.model_dump()
+        values.pop("section_id", None)
+        row = await TeamService.create(session, instance_id, instance.section_id, created_by=current_user.id, **values)
         await session.commit()
         return row
     except Exception as exc:
@@ -206,8 +216,9 @@ async def create_team(instance_id: int, payload: TeamIn, session: AsyncSession =
 
 
 @router.post("/sections/{section_id}/enrollments", response_model=EnrollmentOut, status_code=201)
-async def create_enrollment(section_id: int, payload: EnrollmentIn, session: AsyncSession = Depends(get_session)):
+async def create_enrollment(section_id: int, payload: EnrollmentIn, session: AsyncSession = Depends(get_session), current_user: User = Depends(require_instructor)):
     try:
+        await authorize_section(session, current_user, section_id)
         row = await EnrollmentService.create(session, section_id, **payload.model_dump())
         await session.commit()
         return row

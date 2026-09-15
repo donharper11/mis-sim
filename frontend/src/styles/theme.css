@@ -302,3 +302,13 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+.login-page { display: grid; place-items: center; min-height: 100vh; }
+.login-card { width: min(100%, 28rem); padding: var(--space-2xl); background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius); }
+.login-card form, .login-card label { display: grid; gap: var(--space-sm); }
+.login-card form { gap: var(--space-lg); }
+.login-card input { padding: var(--space-sm); border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text); }
+.login-card button { padding: var(--space-sm) var(--space-md); cursor: pointer; }
+.login-mode, .section-choices { display: flex; gap: var(--space-sm); margin: var(--space-lg) 0; }
+.login-mode .active { font-weight: 600; border-bottom: 2px solid var(--accent-1); }
+.login-error { color: var(--status-danger-text); }

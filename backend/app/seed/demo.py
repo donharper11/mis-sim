@@ -15,13 +15,15 @@ from __future__ import annotations
 import argparse
 import asyncio
 from pathlib import Path
-from sqlalchemy import inspect
+from sqlalchemy import inspect, select
+from sqlalchemy.engine import make_url
 
 from app.casepack.loader import load_casepack
 from app.casepack.models import Casepack
 from app.engine.state import TeamState
 from app.database import async_session
-from app.models.platform import User
+from app.models.platform import Course, Enrollment, Section, User
+from app.services.auth import hash_password
 from app.services.platform import CourseService, EnrollmentService, InstanceService, SectionService, TeamService
 from app.casepack.registry import register_casepack
 
@@ -223,10 +225,54 @@ async def seed_cohort(session) -> dict:
     return {"course": course, "sections": sections, "instances": instances, "teams": teams, "enrollments": enrollments}
 
 
-def _run_cohort() -> int:
+def _local_database(url: str) -> bool:
+    parsed = make_url(url)
+    if parsed.get_backend_name() == "sqlite":
+        return True
+    return (parsed.host or "").lower() in {"localhost", "127.0.0.1", "::1", "db"}
+
+
+async def seed_users(session, cohort: dict | None = None) -> dict:
+    """Create or update deterministic development accounts without emitting secrets."""
+    from app.config import settings
+    if not _local_database(settings.DATABASE_URL):
+        raise RuntimeError("--users refuses non-local DATABASE_URL")
+    if cohort is None:
+        cohort = await seed_cohort(session)
+    accounts = []
+    for index in range(1, 17):
+        student_id = f"M2-{1 if index <= 8 else 2}{index if index <= 8 else index - 8:02d}"
+        email = f"m2.student.{1 if index <= 8 else 2}.{index if index <= 8 else index - 8}@example.edu"
+        user = await session.scalar(select(User).where(User.student_id == student_id))
+        if user is None:
+            user = User(student_id=student_id, name=f"M2 Student {index}", email=email, role="student")
+            session.add(user)
+        user.password_hash = hash_password("StudentPass!2026")
+        user.is_active = True
+        accounts.append(user)
+    for email, name, role, password in (
+        ("m2.instructor.a@example.edu", "M2 Instructor A", "instructor", "InstructorPass!2026"),
+        ("m2.instructor.b@example.edu", "M2 Instructor B", "instructor", "InstructorPass!2026"),
+        ("m2.admin@example.edu", "M2 Administrator", "admin", "AdminPass!2026"),
+    ):
+        user = await session.scalar(select(User).where(User.email == email))
+        if user is None:
+            user = User(name=name, email=email, role=role)
+            session.add(user)
+        user.password_hash = hash_password(password)
+        user.is_active = True
+        accounts.append(user)
+    await session.flush()
+    return {"cohort": cohort, "users": accounts}
+
+
+def _run_cohort(with_users: bool = False) -> int:
     async def run() -> None:
         async with async_session() as session:
             cohort = await seed_cohort(session)
+            if with_users:
+                await seed_users(session, cohort)
+                await session.commit()
             print(
                 f"cohort course={cohort['course'].course_code} sections={len(cohort['sections'])} "
                 f"instances={len(cohort['instances'])} teams={len(cohort['teams'])} "
@@ -273,12 +319,13 @@ def _main() -> int:
     )
     parser.add_argument("--cohort", action="store_true", help="seed the deterministic two-section platform cohort")
     parser.add_argument("--packs", action="store_true", help="register the two runtime-capable demo packs")
+    parser.add_argument("--users", action="store_true", help="seed deterministic development auth accounts (requires --cohort)")
     args = parser.parse_args()
 
     if args.full:
         return _run_full()
-    if args.cohort:
-        return _run_cohort()
+    if args.cohort or args.users:
+        return _run_cohort(with_users=args.users)
     if args.packs:
         return _run_packs()
 

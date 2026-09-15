@@ -27,6 +27,12 @@ and carries the standing note *"No data should ever leak between sections."*
 
 **Verify:** `GOVERNANCE.md §5` instance-isolation canary.
 
+## Authenticated bearer token
+
+**Canonical:** JWT claims `{sub: string user.id, role: global User.role, section_id: integer|null, instance_id: integer|null, iat: integer, exp: integer}`. Every request validates the claims, then performs a live active-user lookup. Student and staff context is checked against the path section or instance before access.
+
+**Transport:** `Authorization: Bearer <token>`; the browser stores the token only in session storage under `mis_sim.access_token`.
+
 ---
 
 ## `placement` — PROSPECTIVE
