@@ -23,7 +23,7 @@ export default function AppShell({ me, instance, schedule, dashboard, activePath
         {me?.name && <div className="product-shell__user">{me.name}</div>}
         <nav aria-label="Main navigation">
           <div className="product-shell__nav-group">
-            {resultItems.map((item) => <NavItem key={item} label={item} to={item === "Dashboard" ? "/" : undefined} active={item === "Dashboard" && activePath === "/"} />)}
+            {resultItems.map((item) => <NavItem key={item} label={item} to={item === "Dashboard" ? "/" : item === "Review" ? "/review" : undefined} active={(item === "Dashboard" && activePath === "/") || (item === "Review" && activePath === "/review")} />)}
           </div>
           <div className="product-shell__nav-label">Decisions</div>
           <div className="product-shell__nav-group">

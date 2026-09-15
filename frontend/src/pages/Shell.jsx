@@ -7,10 +7,11 @@ import Dashboard from "./Dashboard.jsx";
 import Platform from "./Platform.jsx";
 import Components from "./Components.jsx";
 import Rollout from "./Rollout.jsx";
+import Review from "./Review.jsx";
 
 export default function Shell({ view = "dashboard" }) {
   const navigate = useNavigate();
-  const [state, setState] = useState({ status: "loading", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, rollout: null, error: "" });
+  const [state, setState] = useState({ status: "loading", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, rollout: null, review: null, error: "" });
 
   useEffect(() => {
     let active = true;
@@ -24,6 +25,7 @@ export default function Shell({ view = "dashboard" }) {
         let platform = null;
         let components = null;
         let rollout = null;
+        let review = null;
         if (me.instance_id) {
           const instanceResponse = await apiClient.get(`/instances/${me.instance_id}`);
           instance = instanceResponse.data;
@@ -43,8 +45,12 @@ export default function Shell({ view = "dashboard" }) {
             const rolloutResponse = await apiClient.get(`/instances/${me.instance_id}/rollout`);
             rollout = rolloutResponse.data;
           }
+          if (view === "review") {
+            const reviewResponse = await apiClient.get(`/instances/${me.instance_id}/review`);
+            review = reviewResponse.data;
+          }
         }
-        if (active) setState({ status: "ready", me, instance, schedule, dashboard, platform, components, rollout, error: "" });
+        if (active) setState({ status: "ready", me, instance, schedule, dashboard, platform, components, rollout, review, error: "" });
       } catch (requestError) {
         if (!active) return;
         if (requestError.response?.status === 401 || requestError.response?.status === 403) {
@@ -52,7 +58,7 @@ export default function Shell({ view = "dashboard" }) {
           navigate("/login", { replace: true });
           return;
         }
-        setState({ status: "error", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, rollout: null, error: requestError.response?.data?.detail || "The simulation context could not be loaded." });
+        setState({ status: "error", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, rollout: null, review: null, error: requestError.response?.data?.detail || "The simulation context could not be loaded." });
       }
     }
     load();
@@ -61,7 +67,7 @@ export default function Shell({ view = "dashboard" }) {
 
   if (state.status === "loading") return <main className="app-shell plain-state"><p>Loading your simulation…</p></main>;
   if (state.status === "error") return <main className="app-shell plain-state"><h1>We could not open this simulation</h1><p role="alert">{state.error}</p></main>;
-  return <AppShell me={state.me} instance={state.instance} schedule={state.schedule} dashboard={state.dashboard} activePath={view === "platform" ? "/platform" : view === "components" ? "/components" : view === "rollout" ? "/rollout" : "/"} pageTitle={view === "platform" ? "Platform" : view === "components" ? "Components" : view === "rollout" ? "Rollout" : "Dashboard"}>
-    {view === "platform" ? <Platform data={state.platform} instanceId={state.instance?.instance_id} /> : view === "components" ? <Components data={state.components} instanceId={state.instance?.instance_id} /> : view === "rollout" ? <Rollout data={state.rollout} instanceId={state.instance?.instance_id} /> : <Dashboard data={state.dashboard} />}
+  return <AppShell me={state.me} instance={state.instance} schedule={state.schedule} dashboard={state.dashboard} activePath={view === "platform" ? "/platform" : view === "components" ? "/components" : view === "rollout" ? "/rollout" : view === "review" ? "/review" : "/"} pageTitle={view === "platform" ? "Platform" : view === "components" ? "Components" : view === "rollout" ? "Rollout" : view === "review" ? "Review" : "Dashboard"}>
+    {view === "platform" ? <Platform data={state.platform} instanceId={state.instance?.instance_id} /> : view === "components" ? <Components data={state.components} instanceId={state.instance?.instance_id} /> : view === "rollout" ? <Rollout data={state.rollout} instanceId={state.instance?.instance_id} /> : view === "review" ? <Review data={state.review} instanceId={state.instance?.instance_id} /> : <Dashboard data={state.dashboard} />}
   </AppShell>;
 }

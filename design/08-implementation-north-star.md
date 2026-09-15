@@ -253,3 +253,7 @@ deployments and persisted rollout state with legacy fallback, and sends only typ
 `training`, `process_redesign`, and `communication` patches through `SimulationService`.
 Focused API, frontend lint/build, and the 1024px browser probe pass; Review & Lock and
 Debrief remain before the M3 loop is complete.
+Packet 3.7 is now implemented as the engine-backed Review & Lock surface: it groups the
+current typed sheet commands, renders preview-derived totals and warnings, and locks only
+through the revision-checked `SimulationService.lock` boundary. Focused API, frontend
+lint/build, and the 1024px browser probe pass; Debrief remains as M3.8.
