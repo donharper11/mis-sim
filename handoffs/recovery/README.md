@@ -71,8 +71,12 @@ independent audit at `f43ea7f8` and is integrated in the current recovery branch
 pure accounting, consequence/repair resolution, preview challenges, prevention, debt/TCO and
 the shared M0 scorer adapter; it passed `643` full-gate tests, all guards and the zero-error
 Riverside validator. [P4 audit](../../findings/recovery-consequences-2026-09-15.md). P5
-persistence is now the next dispatchable packet. M1 remains unfinished until persistence and
-decision-only game packets pass their independent audits.
+persistence passed independent audit at `58a75669` and is integrated in the current recovery
+branch. It supplies the three canonical simulation tables, strict 19-table migration/runtime
+verification and fresh transaction service operations; the independent PostgreSQL evidence
+completed six committed rounds. [P5 audit](../../findings/recovery-persistence-2026-09-15.md).
+P6 games is now the next dispatchable packet. M1 remains unfinished until the decision-only
+game packet passes its independent audit.
 
 ## First-wave acceptance and cleanup
 

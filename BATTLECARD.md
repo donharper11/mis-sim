@@ -52,7 +52,10 @@ P3 organisation passed independent audit at `2c42f24` and is now integrated. [P3
 P4 consequences passed independent audit at `f43ea7f8` and is now integrated. It adds
 pure accounting, consequence resolution, repairs, preview challenges, prevention, debt/TCO
 and the shared M0 scorer adapter. [P4 audit](findings/recovery-consequences-2026-09-15.md).
-P5 persistence is the next gated handoff; games remain unbuilt.
+P5 persistence passed independent audit at `58a75669` and is now integrated. It adds the
+three canonical simulation tables, strict 19-table migration verification and fresh
+transaction service operations. [P5 audit](findings/recovery-persistence-2026-09-15.md).
+P6 games is the next gated handoff.
 
 ## The important unfinished boundary
 
