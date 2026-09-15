@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 
 import pytest
+from sqlalchemy import func, select
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -12,7 +13,7 @@ from app.api import deps, platform
 from app.main import create_app
 from app.models.base import Base
 from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
-from app.seed.demo import seed_cohort
+from app.seed.demo import seed_cohort, seed_users
 from app.services.auth import create_access_token, hash_password
 
 
@@ -132,5 +133,35 @@ def test_cohort_seed_is_idempotent(tmp_path):
             second = await seed_cohort(session)
             assert len(first["sections"]) == len(second["sections"]) == 2
             assert len(second["teams"]) == 4 and len(second["enrollments"]) == 16
+        await engine.dispose()
+    asyncio.run(run())
+
+
+def test_seeded_roles_and_course_ownership_are_deterministic(tmp_path):
+    async def run():
+        engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path / 'seed-users.db'}")
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all, tables=[User.__table__, Course.__table__, Section.__table__, SimulationInstance.__table__, Team.__table__, Enrollment.__table__])
+        factory = async_sessionmaker(engine, expire_on_commit=False)
+        async with factory() as session:
+            seeded = await seed_users(session, await seed_cohort(session))
+            await session.commit()
+            await seed_users(session)
+            await session.commit()
+            counts = dict((await session.execute(select(User.role, func.count(User.id)).group_by(User.role))).all())
+            assert counts == {"student": 16, "instructor": 2, "admin": 1}
+            course = await session.scalar(select(Course).where(Course.course_code == "MIS-PLATFORM"))
+            owner = await session.scalar(select(User).where(User.email == "m2.instructor.a@example.edu"))
+            other = await session.scalar(select(User).where(User.email == "m2.instructor.b@example.edu"))
+            async def get_session():
+                yield session
+            app = create_app()
+            app.dependency_overrides[deps.get_session] = get_session
+            app.dependency_overrides[platform.get_session] = get_session
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                allowed = await client.get(f"/api/courses/{course.id}", headers={"Authorization": f"Bearer {create_access_token(user_id=owner.id, role='instructor')}"})
+                denied = await client.get(f"/api/courses/{course.id}", headers={"Authorization": f"Bearer {create_access_token(user_id=other.id, role='instructor')}"})
+                assert allowed.status_code == 200 and denied.status_code == 403
+            app.dependency_overrides.clear()
         await engine.dispose()
     asyncio.run(run())

@@ -198,7 +198,7 @@ async def seed_cohort(session) -> dict:
     else:
         # Isolated pre-registry unit fixtures retain their historical synthetic IDs.
         pack_tuples = (("pack_alpha", "1.0.0"), ("pack_beta", "1.0.0"))
-    instructor = User(student_id=None, name="M2 Instructor", email="m2.instructor@example.edu", role="instructor")
+    instructor = User(student_id=None, name="M2 Instructor A", email="m2.instructor.a@example.edu", role="instructor")
     session.add(instructor)
     await session.flush()
     course = await CourseService.create(
