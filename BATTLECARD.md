@@ -46,9 +46,9 @@ and [P0b audit](findings/recovery-production-inputs-2026-09-15.md). The correcte
 contract passed independent Heavy review at `bee3977`, closing the four returned findings.
 [Master review](handoffs/recovery/decision-evolution/master-review-2.md). P1 typed content
 and runtime validation passed independent audit at `e4f4757` and is integrated in the
-current recovery branch. [P1 audit](findings/recovery-content-types-2026-09-15.md).
-P2 estate is now the next gated handoff; organisation, consequences, persistence and
-games remain unbuilt.
+current recovery branch. [P1 audit](findings/recovery-content-types-2026-09-15.md). P2
+estate passed independent audit at `b4bfec9` and is now integrated. [P2 audit](findings/recovery-estate-2026-09-15.md).
+P3 organisation is now the next gated handoff; consequences, persistence and games remain unbuilt.
 
 ## The important unfinished boundary
 

@@ -195,7 +195,8 @@ are closed at specification level. [Master review 1](../handoffs/recovery/decisi
 and [master review 2](../handoffs/recovery/decision-evolution/master-review-2.md).
 P1 typed content and runtime binding passed independent audit at `e4f4757` and is
 integrated in the current recovery branch. [P1 audit](../findings/recovery-content-types-2026-09-15.md).
-P2 is now the next gated implementation packet; P3–P6 remain blocked behind sequential
+P2 estate passed independent audit at `b4bfec9` and is integrated. [P2 audit](../findings/recovery-estate-2026-09-15.md).
+P3 is now the next gated implementation packet; P4–P6 remain blocked behind sequential
 audited packets and may not resolve those interfaces silently.
 
 The independently reproduced
