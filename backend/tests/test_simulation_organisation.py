@@ -84,6 +84,10 @@ def test_staff_support_governance_primary_and_strategy_change():
     assert support.support.tier == "basic" and support.staff.capacity > 2.0
     assert any(entry.kind == "support" and entry.operating_delta == -20000 for entry in support.charge_entries)
     assert any(effect.effect_kind == "support" for effect in support.effect_candidates)
+    held = _apply_org(state, support)
+    repeat_support = reduce_organisation(pack, held, _org_estate(held, support.rollouts), [CommandV1(key="repeat_support", op="set_support", tier="basic", covered_assets=["initial_pos_system_2011"])], 2)
+    assert not any(entry.kind == "support" for entry in repeat_support.charge_entries)
+    assert not any(effect.effect_kind == "support" for effect in repeat_support.effect_candidates)
     assigned = reduce_organisation(pack, state, state, [
         CommandV1(key="assign", op="assign", capability="store_operations", owner="operations", sponsor="senior_management"),
         CommandV1(key="primary", op="set_primary", capability="store_operations", asset="initial_pos_system_2011"),

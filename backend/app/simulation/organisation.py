@@ -299,8 +299,11 @@ def reduce_organisation(
         for asset_id in covered:
             if asset_id not in assets or not _active(assets[asset_id], round):
                 raise SimulationError("invalid_reference", "covered_assets", {"asset": asset_id})
-        support = {"tier": tier, "covered_assets": sorted(covered)}
-        if tier is not None:
+        covered = sorted(covered)
+        held_covered = sorted(asset_id for asset_id in support.get("covered_assets", []) if asset_id in assets and _active(assets[asset_id], round))
+        unchanged = tier == support.get("tier") and covered == held_covered
+        support = {"tier": tier, "covered_assets": covered}
+        if tier is not None and not unchanged:
             tier_row = next(item for item in casepack.platform.support_tiers if item.key == tier)
             charge_entries.append(_cost(round, "support", command.key, category="support", operating_amount=tier_row.cost))
             support_caps: list[str] = []
