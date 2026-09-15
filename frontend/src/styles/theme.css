@@ -354,7 +354,7 @@ select {
 .option-card__heading { display: flex; justify-content: space-between; gap: var(--space-md); }
 .option-card__check { color: var(--action-primary); font-size: 18px; font-weight: 700; }
 .option-card__body { color: var(--text-secondary); }
-.detail-table-wrap { overflow-x: auto; }
+.detail-table-wrap { min-width: 0; max-width: 100%; overflow-x: auto; }
 .detail-table { width: 100%; border-collapse: collapse; }
 .detail-table th, .detail-table td { padding: var(--space-md); border-bottom: 1px solid var(--border-default); text-align: left; }
 .detail-table th { background: var(--surface-table-header); color: var(--text-secondary); font-size: 12px; text-transform: uppercase; }
@@ -449,6 +449,7 @@ select {
 
 .components-page { display: grid; gap: var(--space-lg); }
 .components-context, .components-toolbar, .components-table-panel, .components-detail, .components-wizard, .components-projects, .components-empty { padding: var(--space-lg); background: var(--surface-card); border: 1px solid var(--border-default); }
+.components-table-panel, .rollout-detail { min-width: 0; }
 .components-context, .components-toolbar, .components-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); }
 .components-context p, .components-panel-heading p, .components-projects p { margin: 0; }
 .components-muted { color: var(--text-muted); font-size: 13px; }
@@ -477,6 +478,10 @@ select {
 .components-projects { display: grid; gap: var(--space-sm); }
 .components-projects h2, .components-table-panel h2, .components-empty h2 { margin: 0; font-size: 18px; }
 .components-empty p { margin: var(--space-sm) 0 0; color: var(--text-secondary); }
+.rollout-page { display: grid; gap: var(--space-lg); }
+.rollout-detail { display: grid; gap: var(--space-md); padding: var(--space-lg); background: var(--surface-card); border: 1px solid var(--border-default); }
+.rollout-status { display: flex; align-items: center; gap: var(--space-md); color: var(--text-secondary); }
+.rollout-detail-actions { display: flex; justify-content: flex-end; margin-top: var(--space-sm); }
 
 @media (max-width: 720px) {
   .option-card-grid { grid-template-columns: 1fr; }

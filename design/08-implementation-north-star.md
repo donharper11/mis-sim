@@ -247,4 +247,9 @@ Packet 3.5 is now implemented as the scoped Components workbench: it reads versi
 catalog assets, projects, and rollouts with legacy estate/deployment fallback, and sends
 only typed `application`/`lifecycle` patches through `SimulationService`. Focused API,
 frontend lint/build, and the shared 1024px browser probe pass; M3.5 is accepted locally
-pending the normal integration commit and publication decision.
+at `e038f75`, pending publication.
+Packet 3.6 is now implemented as the scoped Rollout surface: it reads active catalog
+deployments and persisted rollout state with legacy fallback, and sends only typed
+`training`, `process_redesign`, and `communication` patches through `SimulationService`.
+Focused API, frontend lint/build, and the 1024px browser probe pass; Review & Lock and
+Debrief remain before the M3 loop is complete.
