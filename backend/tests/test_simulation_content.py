@@ -13,7 +13,8 @@ import pytest
 
 from app.simulation import load_runtime_pack, normalize_patch
 from app.simulation.types import (
-    CheckpointStateV1, CommandV1, SheetPatchV1, SimulationError, UnitV1, ServiceRuntimeV1, CatalogRuntimeV1,
+    AssetV1, CheckpointStateV1, CommandV1, DebtV1, ResponseV1, RolloutV1, SheetPatchV1,
+    SignalV1, SimulationError, TcoV1, UnitV1, ServiceRuntimeV1, CatalogRuntimeV1,
 )
 
 
@@ -173,6 +174,28 @@ def test_checkpoint_nested_evidence_and_map_identity_are_strict():
     with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad)
 
 
+def test_checkpoint_nested_numbers_and_key_lengths_are_bounded():
+    with pytest.raises(ValueError): RolloutV1(trained_count=0, adoption=float("nan"), process="partial", ever_trained=False, lifecycle="active")
+    with pytest.raises(ValueError): RolloutV1(trained_count=0, adoption=-1.0, process="partial", ever_trained=False, lifecycle="active")
+    signal = {
+        "key": "signal", "episode_id": 0, "capability": "service", "metric": "metric", "metric_kind": "threshold",
+        "value": float("nan"), "severity": "warning", "status": "open", "first_shown_round": 0,
+        "cleared_round": None, "fire_round": None, "cleared_by": [], "was_actionable": False,
+        "cheapest_fix_when_raised": None,
+    }
+    with pytest.raises(ValueError): SignalV1.model_validate(signal)
+    with pytest.raises(ValueError): DebtV1(signal="signal", episode_id=0, capability="service", opened_round=0, amount=-1, settled_round=None)
+    with pytest.raises(ValueError): ResponseV1(round=0, key="response", event="event", option="option", rationale_tag="tag", cost=-1, effect="none")
+    with pytest.raises(ValueError): TcoV1(asset_id="asset", ordered_round=0, selected_categories=[], forecast=-1, forecast_horizon_round=0, estimates={})
+    long_id = "a" * 65
+    with pytest.raises(ValueError): AssetV1(id=long_id, source_kind="catalog", source_key="catalog", placement="on_prem", config="core", units=1, installed_round=0, retired_round=None)
+    bad_map = {
+        "strategy": "cost_leadership", "strategy_declared_round": 0, "assets": {long_id: {}}, "connections": {}, "projects": {}, "hiring_orders": {}, "staff_hires": [],
+        "support": {"tier": None, "covered_assets": []}, "rollouts": {}, "unit_resistance": {}, "governance": {}, "primary": {}, "policies": {},
+        "capital_balance": 0, "operating_reserve": 0, "cost_ledger": [], "technical_debt": [], "signal_ledger": [], "action_history": [],
+        "available_funds_by_round": [], "event_history": [], "response_history": [], "tco_forecasts": [], "repair_assessment_history": [], "unpriced_signal_exposures": [],
+    }
+    with pytest.raises(ValueError): CheckpointStateV1.model_validate(bad_map)
 def test_bound_pack_views_and_digest_are_immutable():
     pack = load_runtime_pack(PACK)
     digest = pack.pack_digest

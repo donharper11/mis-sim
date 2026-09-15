@@ -521,28 +521,58 @@ class TransitionV1(StrictModel):
 
 
 class AssetV1(StrictModel):
-    id: str; source_kind: Literal["catalog", "service"]; source_key: str
+    id: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
+    source_kind: Literal["catalog", "service"]; source_key: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
     placement: str; config: str | None; units: StrictInt
     installed_round: StrictInt; retired_round: StrictInt | None
 
+    @model_validator(mode="after")
+    def valid_asset_numbers(self) -> "AssetV1":
+        if self.units <= 0 or self.installed_round < 0 or (self.retired_round is not None and self.retired_round < self.installed_round):
+            raise ValueError("invalid asset units or rounds")
+        return self
+
 
 class ProjectV1(StrictModel):
-    id: str; asset_id: str; source_kind: Literal["catalog", "service"]; source_key: str
+    id: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
+    asset_id: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
+    source_kind: Literal["catalog", "service"]; source_key: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
     placement: str; config: str | None; units: StrictInt; ordered_round: StrictInt
     paid_capex: StrictInt; remaining_lead: StrictInt
     status: Literal["pending", "paused", "arrived", "cancelled", "abandoned"]
     replacement_target: str | None; tco_categories: list[str]
 
+    @model_validator(mode="after")
+    def valid_project_numbers(self) -> "ProjectV1":
+        if self.units <= 0 or self.ordered_round < 0 or self.paid_capex < 0 or self.remaining_lead < 0:
+            raise ValueError("invalid project units, money or rounds")
+        return self
+
 
 class ConnectionV1(StrictModel):
-    id: str; src: str; dst: str; kind: Literal["network", "integration", "failover"]
+    id: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
+    src: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
+    dst: StrictStr = Field(min_length=1, max_length=64, pattern=KEY_RE.pattern)
+    kind: Literal["network", "integration", "failover"]
     entity: str | None; tier: str | None; created_round: StrictInt; retired_round: StrictInt | None
+
+    @model_validator(mode="after")
+    def valid_connection_rounds(self) -> "ConnectionV1":
+        if self.created_round < 0 or (self.retired_round is not None and self.retired_round < self.created_round):
+            raise ValueError("invalid connection rounds")
+        return self
 
 
 class RolloutV1(StrictModel):
     trained_count: StrictInt; adoption: float
     process: Literal["unchanged", "partial", "redesigned"]
     ever_trained: bool; lifecycle: Literal["active", "retired", "abandoned"]
+
+    @model_validator(mode="after")
+    def valid_rollout(self) -> "RolloutV1":
+        if self.trained_count < 0 or isinstance(self.adoption, bool) or not math.isfinite(self.adoption) or not 0 <= self.adoption <= 1:
+            raise ValueError("invalid rollout count or adoption")
+        return self
 
 
 class GovernanceStateV1(StrictModel):
@@ -561,25 +591,55 @@ class ActionRecordV1(StrictModel):
     action_type: str; locked_round: StrictInt; capability: str | None
     target_key: str | None; cost: StrictInt
 
+    @model_validator(mode="after")
+    def valid_action_record(self) -> "ActionRecordV1":
+        if self.locked_round < 0 or self.cost < 0:
+            raise ValueError("invalid action round or cost")
+        return self
+
 
 class ActionEnvelopeV1(StrictModel):
     id: StrictStr = Field(pattern=HEX64_RE.pattern)
     source_round: StrictInt; source_command: str; effect_round: StrictInt
     record: ActionRecordV1
 
+    @model_validator(mode="after")
+    def valid_action_rounds(self) -> "ActionEnvelopeV1":
+        if self.source_round < 0 or self.effect_round < self.source_round:
+            raise ValueError("invalid action envelope rounds")
+        return self
+
 
 class HiringOrderV1(StrictModel):
     id: str; option: str; ordered_round: StrictInt; remaining_lead: StrictInt
     status: Literal["pending", "arrived", "cancelled"]; arrival_round: StrictInt | None
 
+    @model_validator(mode="after")
+    def valid_hiring_order(self) -> "HiringOrderV1":
+        if self.ordered_round < 0 or self.remaining_lead < 0 or (self.arrival_round is not None and self.arrival_round < self.ordered_round):
+            raise ValueError("invalid hiring order rounds")
+        return self
+
 
 class StaffHireV1(StrictModel):
     order_id: str; option: str; arrival_round: StrictInt
+
+    @field_validator("arrival_round")
+    @classmethod
+    def nonnegative_arrival(cls, value: int) -> int:
+        if value < 0: raise ValueError("arrival round must be nonnegative")
+        return value
 
 
 class DebtV1(StrictModel):
     signal: str; episode_id: StrictInt; capability: str; opened_round: StrictInt
     amount: StrictInt; settled_round: StrictInt | None
+
+    @model_validator(mode="after")
+    def valid_debt(self) -> "DebtV1":
+        if self.episode_id < 0 or self.opened_round < 0 or self.amount < 0 or (self.settled_round is not None and self.settled_round < self.opened_round):
+            raise ValueError("invalid debt money or rounds")
+        return self
 
 
 class SignalV1(StrictModel):
@@ -588,6 +648,17 @@ class SignalV1(StrictModel):
     status: Literal["open", "cleared", "fired"]
     first_shown_round: StrictInt; cleared_round: StrictInt | None; fire_round: StrictInt | None
     cleared_by: list[str]; was_actionable: bool; cheapest_fix_when_raised: StrictInt | None
+
+    @model_validator(mode="after")
+    def valid_signal(self) -> "SignalV1":
+        rounds = (self.first_shown_round, self.cleared_round, self.fire_round)
+        if self.episode_id < 0 or self.first_shown_round < 0 or any(value is not None and value < self.first_shown_round for value in rounds[1:]):
+            raise ValueError("invalid signal rounds")
+        if isinstance(self.value, bool) or not math.isfinite(self.value):
+            raise ValueError("signal value must be finite")
+        if self.cheapest_fix_when_raised is not None and self.cheapest_fix_when_raised < 0:
+            raise ValueError("signal repair cost must be nonnegative")
+        return self
 
 
 class EventOutcomeV1(StrictModel):
@@ -638,10 +709,27 @@ class ResponseV1(StrictModel):
     round: StrictInt; key: str; event: str; option: str; rationale_tag: str
     cost: StrictInt; effect: Literal["prevent_current_round", "none"]
 
+    @model_validator(mode="after")
+    def valid_response(self) -> "ResponseV1":
+        if self.round < 0 or self.cost < 0:
+            raise ValueError("response round and cost must be nonnegative")
+        for value in (self.key, self.event, self.option, self.rationale_tag):
+            if not isinstance(value, str) or not 1 <= len(value) <= 64 or not KEY_RE.fullmatch(value):
+                raise ValueError("response identifiers must be bounded keys")
+        return self
+
 
 class TcoV1(StrictModel):
     asset_id: str; ordered_round: StrictInt; selected_categories: list[str]
     forecast: StrictInt; forecast_horizon_round: StrictInt; estimates: dict[str, StrictInt]
+
+    @model_validator(mode="after")
+    def valid_tco(self) -> "TcoV1":
+        if not 1 <= len(self.asset_id) <= 64 or not KEY_RE.fullmatch(self.asset_id):
+            raise ValueError("TCO asset id must be a bounded key")
+        if self.ordered_round < 0 or self.forecast < 0 or self.forecast_horizon_round < 0 or any(value < 0 for value in self.estimates.values()):
+            raise ValueError("TCO rounds and money must be nonnegative")
+        return self
 
 
 class RepairWitnessV1(StrictModel):
@@ -718,11 +806,11 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("invalid strategy or declared round")
         if any(k != v.id for k, v in self.assets.items()):
             raise ValueError("asset map key must equal asset id")
-        if any(not KEY_RE.fullmatch(k) for k in self.assets) or any(v.units <= 0 or v.installed_round < 0 for v in self.assets.values()):
+        if any(not KEY_RE.fullmatch(k) or len(k) > 64 for k in self.assets) or any(v.units <= 0 or v.installed_round < 0 for v in self.assets.values()):
             raise ValueError("invalid asset identity or units")
         if any(k != v.id for k, v in self.projects.items()):
             raise ValueError("project map key must equal project id")
-        if any(not KEY_RE.fullmatch(k) for k in self.projects):
+        if any(not KEY_RE.fullmatch(k) or len(k) > 64 for k in self.projects):
             raise ValueError("invalid project identity")
         if any(v is not None and v not in self.assets for v in self.primary.values()):
             raise ValueError("primary references unknown asset")
@@ -734,7 +822,7 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("connection map key must equal connection id")
         if any(k != v.id for k, v in self.hiring_orders.items()):
             raise ValueError("hiring order map key must equal order id")
-        if any(not KEY_RE.fullmatch(k) for k in self.connections | self.hiring_orders | self.rollouts | self.governance | self.policies | self.unit_resistance):
+        if any(not KEY_RE.fullmatch(k) or len(k) > 64 for k in self.connections | self.hiring_orders | self.rollouts | self.governance | self.policies | self.unit_resistance):
             raise ValueError("invalid checkpoint map key")
         if any(k not in self.assets for k in self.rollouts):
             raise ValueError("rollout references unknown asset")
