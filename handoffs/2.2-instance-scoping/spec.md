@@ -94,13 +94,19 @@ with another.
 
 ### 5.1 Foreign keys
 
-One migration, one `ADD CONSTRAINT` per runtime table named in 1.6 §5.1:
+The historical 13-table list in this section is superseded by the complete
+19-table inventory and direct-FK ruling in
+[`handoffs/recovery/m2-scoping-amendment.md`](../recovery/m2-scoping-amendment.md).
+One migration adds one direct `instance_id` constraint per table in that
+amended list:
 `team_state · arch_node · arch_edge · deployment_org_state · platform_service · org_unit ·
 it_staff · in_flight · decision_line · signal · debt_item · tco_forecast · round_result`.
 
-If 1.6 shipped a table not on that list, **STOP and report** — an unscoped runtime table is
-the exact defect this packet exists to prevent, and silently adding it to the list hides
-that 1.6's spec was incomplete.
+The list above is retained only as historical provenance. The actual allowlist
+also includes `governance_state`, `policy_decision`, `stakeholder_alignment`,
+`simulation_run_v1`, `simulation_sheet_v1`, and `simulation_checkpoint_v1`.
+If metadata differs from the amended 19-table list, **STOP and report** — an
+unscoped runtime table is the exact defect this packet exists to prevent.
 
 ### 5.2 The repository guard
 
@@ -143,8 +149,8 @@ An isolation canary run against empty tables proves nothing.
 
 | # | Invariant | Check | Expected |
 |---|---|---|---|
-| I1 | Every runtime table has an FK on `instance_id` | `psql -c "select conrelid::regclass, conname from pg_constraint where confrelid = 'simulation_instance'::regclass"` | one row per table in 1.6 §5.1 |
-| I2 | No bare select on a runtime model | `grep -rnE "select\((TeamState\|ArchNode\|ArchEdge\|DecisionLine\|Signal\|RoundResult\|DebtItem\|TcoForecast\|PlatformService\|OrgUnit\|ItStaff\|InFlight\|DeploymentOrgState)\)" backend/app \| grep -v "repo/base.py"` | zero |
+| I1 | Every one of the 19 runtime tables has a direct FK on `instance_id` | `psql -c "select conrelid::regclass, conname from pg_constraint where confrelid = 'simulation_instance'::regclass"` | 19 rows |
+| I2 | No unguarded runtime read remains in `app/round` or `app/simulation` | source guard covering `select()` and `session.get()` call sites | zero outside `repo/base.py` |
 | I3 | Canary passes | `pytest backend/tests/test_instance_isolation.py -q` | passed |
 | I4 | FKs are RESTRICT, not CASCADE | `psql -c "select conname, confdeltype from pg_constraint where confrelid='simulation_instance'::regclass"` | all `r` |
 | I5 | `instance_id` still non-nullable everywhere | `psql -c "select table_name from information_schema.columns where column_name='instance_id' and is_nullable='YES'"` | zero rows |
@@ -158,7 +164,7 @@ An isolation canary run against empty tables proves nothing.
 |---|---|---|---|---|
 | 1 | 2.1 merged; `simulation_instance` exists | `[V]` | `psql -c "\d simulation_instance"` | table present |
 | 2 | 1.6 merged; runtime tables exist with non-null `instance_id` | `[V]` | `psql -c "select table_name, is_nullable from information_schema.columns where column_name='instance_id'"` | all `NO` |
-| 3 | The runtime table set matches 1.6 §5.1 exactly | `[V]` | compare the query in row 2 against 1.6 §5.1's list | identical. **A difference is a STOP** |
+| 3 | The runtime table set matches the amended 19-table inventory | `[V]` | compare imported `ALL_TABLES` against `m2-scoping-amendment.md` | identical. **A difference is a STOP** |
 | 4 | **Nothing out of scope reads runtime tables directly** *(§4.2)* | `[V]` | `grep -rn "arch_node\|round_result\|decision_line" backend/app --include=*.py \| grep -v "app/round/\|app/repo/\|app/engine/"` | zero — proves the "no changes outside repo/round" claim |
 | 5 | 2.1's two-section fixture exists | `[V]` | `grep -rn "two_section" backend/tests/` | fixture present |
 | 6 | No FK on `instance_id` yet | `[V]` | the query in I1 | zero rows |
