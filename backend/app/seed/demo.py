@@ -22,7 +22,7 @@ from app.casepack.loader import load_casepack
 from app.casepack.models import Casepack
 from app.engine.state import TeamState
 from app.database import async_session
-from app.models.platform import Casepack, Course, Enrollment, Section, SimulationInstance, Team, User
+from app.models.platform import Casepack as RegistryCasepack, Course, Enrollment, Section, SimulationInstance, Team, User
 from app.services.auth import hash_password
 from app.services.platform import CourseService, EnrollmentService, InstanceService, PlatformConflict, SectionService, TeamService
 from app.casepack.registry import register_casepack
@@ -191,7 +191,7 @@ async def seed_cohort(session) -> dict:
                 ("riverside_grocery", "riverside_grocery", "0.1.0"),
                 ("m2_isolation_fixture", "m2_isolation_fixture", "0.1.1"),
             ):
-                if sync.scalar(select(Casepack).where(Casepack.pack_key == key, Casepack.pack_version == version)) is None:
+                if sync.scalar(select(RegistryCasepack).where(RegistryCasepack.pack_key == key, RegistryCasepack.pack_version == version)) is None:
                     register_casepack(sync, _BACKEND_ROOT / "packs" / name)
         await session.run_sync(ensure_packs)
         pack_tuples = (("riverside_grocery", "0.1.0"), ("m2_isolation_fixture", "0.1.1"))
@@ -313,13 +313,11 @@ def _run_packs() -> int:
                 ]
             )
             await session.commit()
-            rows = (await session.scalars(select(Casepack))).all()
+            rows = (await session.scalars(select(RegistryCasepack))).all()
             for row in rows:
                 print(f"pack {row.pack_key}@{row.pack_version} digest={row.pack_digest}")
 
     from sqlalchemy import select
-    from app.models.platform import Casepack
-
     asyncio.run(run())
     return 0
 
