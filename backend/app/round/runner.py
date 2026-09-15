@@ -465,3 +465,9 @@ class RoundRunner:
             instance_id=self.instance_id, team_id=self.team_id, round=round, payload=payload
         ))
         self.session.flush()
+
+
+def rolled_scorecard(pack, final_score, event_records: list[dict] | None = None) -> tuple[dict, dict]:
+    """Public pure adapter to the existing authoritative scorecard helper."""
+    del pack
+    return RoundRunner.__new__(RoundRunner)._rolled_scorecard(final_score, event_records)
