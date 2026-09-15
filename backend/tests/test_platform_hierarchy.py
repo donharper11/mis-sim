@@ -11,7 +11,15 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.models.base import Base
 from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
-from app.services.platform import EnrollmentService, InstanceService, PlatformConflict, SectionService, TeamService
+from app.services.platform import (
+    CourseService,
+    EnrollmentService,
+    InstanceService,
+    PlatformConflict,
+    PlatformNotFound,
+    SectionService,
+    TeamService,
+)
 
 
 @pytest.fixture()
@@ -61,7 +69,7 @@ def test_services_reject_cross_section_team_and_duplicate_enrollment():
             student = User(student_id="S1", name="Student", email="s@example.edu", role="student")
             session.add_all([instructor, student])
             await session.flush()
-            course = await __import__("app.services.platform", fromlist=["CourseService"]).CourseService.create(
+            course = await CourseService.create(
                 session, course_code="M", course_name="M", academic_year="2026", semester="A", instructor_id=instructor.id
             )
             one = await SectionService.create(session, course.id, section_code="A", section_name="A")
@@ -77,6 +85,25 @@ def test_services_reject_cross_section_team_and_duplicate_enrollment():
                 await EnrollmentService.create(session, one.id, student.id)
             with pytest.raises(PlatformConflict):
                 await EnrollmentService.create(session, two.id, student.id, team_id=team.id)
+            instance_two = await InstanceService.create(session, two.id, pack_key="pack_beta", pack_version="1.0.0")
+            team_two = await TeamService.create(session, instance_two.instance_id, two.id, name="other")
+            enrollment_two = await EnrollmentService.create(session, two.id, student.id, team_id=team_two.id)
+            assert await TeamService.read(session, team.id, section_id=one.id) == team
+            assert await TeamService.read(session, team.id, instance_id=instance.instance_id) == team
+            with pytest.raises(PlatformNotFound):
+                await TeamService.read(session, team.id, section_id=two.id)
+            with pytest.raises(PlatformNotFound):
+                await TeamService.read(session, team.id, instance_id=instance_two.instance_id)
+            assert await EnrollmentService.read(session, enrollment_two.id, section_id=two.id) == enrollment_two
+            assert await EnrollmentService.read(session, enrollment_two.id, instance_id=instance_two.instance_id) == enrollment_two
+            with pytest.raises(PlatformNotFound):
+                await EnrollmentService.read(session, enrollment_two.id, section_id=one.id)
+            with pytest.raises(PlatformNotFound):
+                await EnrollmentService.read(session, enrollment_two.id, instance_id=instance.instance_id)
+            with pytest.raises(PlatformConflict):
+                await TeamService.read(session, team.id)
+            with pytest.raises(PlatformConflict):
+                await EnrollmentService.read(session, enrollment_two.id)
         await engine.dispose()
 
     asyncio.run(run())

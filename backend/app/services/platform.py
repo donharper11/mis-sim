@@ -144,8 +144,24 @@ class TeamService:
         return team
 
     @staticmethod
-    async def read(session: AsyncSession, team_id: int) -> Team:
-        return await _one(session, Team, team_id, "Team")
+    async def read(
+        session: AsyncSession,
+        team_id: int,
+        *,
+        section_id: int | None = None,
+        instance_id: int | None = None,
+    ) -> Team:
+        if section_id is None and instance_id is None:
+            raise PlatformConflict("Team reads require section_id or instance_id scope")
+        predicates = [Team.id == team_id]
+        if section_id is not None:
+            predicates.append(Team.section_id == section_id)
+        if instance_id is not None:
+            predicates.append(Team.instance_id == instance_id)
+        row = await session.scalar(select(Team).where(*predicates))
+        if row is None:
+            raise PlatformNotFound(f"Team {team_id} was not found in the requested scope")
+        return row
 
 
 class EnrollmentService:
@@ -154,7 +170,10 @@ class EnrollmentService:
         await SectionService.read(session, section_id)
         await _one(session, User, user_id, "User")
         if team_id is not None:
-            team = await TeamService.read(session, team_id)
+            try:
+                team = await TeamService.read(session, team_id, section_id=section_id)
+            except PlatformNotFound as exc:
+                raise PlatformConflict("Enrollment team_id must belong to the enrollment section") from exc
             if team.section_id != section_id:
                 raise PlatformConflict("Enrollment team_id must belong to the enrollment section")
         existing = await session.scalar(
@@ -168,5 +187,23 @@ class EnrollmentService:
         return enrollment
 
     @staticmethod
-    async def read(session: AsyncSession, enrollment_id: int) -> Enrollment:
-        return await _one(session, Enrollment, enrollment_id, "Enrollment")
+    async def read(
+        session: AsyncSession,
+        enrollment_id: int,
+        *,
+        section_id: int | None = None,
+        instance_id: int | None = None,
+    ) -> Enrollment:
+        if section_id is None and instance_id is None:
+            raise PlatformConflict("Enrollment reads require section_id or instance_id scope")
+        predicates = [Enrollment.id == enrollment_id]
+        if section_id is not None:
+            predicates.append(Enrollment.section_id == section_id)
+        query = select(Enrollment)
+        if instance_id is not None:
+            query = query.join(SimulationInstance, SimulationInstance.section_id == Enrollment.section_id)
+            predicates.append(SimulationInstance.instance_id == instance_id)
+        row = await session.scalar(query.where(*predicates))
+        if row is None:
+            raise PlatformNotFound(f"Enrollment {enrollment_id} was not found in the requested scope")
+        return row

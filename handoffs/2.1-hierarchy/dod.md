@@ -14,3 +14,7 @@ Implemented within the dispatch allowlist:
 
 Validation commands and output are recorded in the builder handoff/commit report.
 Runtime instance guards, auth, scheduling, and pack registry remain later packets.
+
+Scope correction: `TeamService.read` and `EnrollmentService.read` require a
+`section_id` or `instance_id` predicate. Focused negative tests prove that an
+ID from another section or instance is not returned.
