@@ -1,20 +1,18 @@
 /* eslint-disable react/prop-types */
+import { NavLink } from "react-router-dom";
 const decisionItems = ["Strategy", "Platform", "Components", "Rollout", "Security", "Services", "People"];
 const resultItems = ["Dashboard", "Challenges", "Review", "Debrief"];
 
-function NavItem({ label, active }) {
-  return (
-    <span className={`app-shell__nav-item${active ? " app-shell__nav-item--active" : ""}`} aria-current={active ? "page" : undefined}>
-      {label}
-    </span>
-  );
+function NavItem({ label, active, to }) {
+  const className = `app-shell__nav-item${active ? " app-shell__nav-item--active" : ""}`;
+  return to ? <NavLink className={className} to={to} end={to === "/"}>{label}</NavLink> : <span className={className}>{label}</span>;
 }
 
 function formatMoney(value) {
   return typeof value === "number" && Number.isFinite(value) ? `$${value.toLocaleString()}` : "—";
 }
 
-export default function AppShell({ me, instance, schedule, dashboard, children }) {
+export default function AppShell({ me, instance, schedule, dashboard, activePath = "/", pageTitle = "Dashboard", children }) {
   const round = instance ? Math.max(instance.current_round, 1) : null;
   const totalRounds = instance?.total_rounds || null;
   const team = dashboard?.teams?.find((item) => item.id === dashboard.selected_team_id) || dashboard?.teams?.[0];
@@ -25,11 +23,11 @@ export default function AppShell({ me, instance, schedule, dashboard, children }
         {me?.name && <div className="product-shell__user">{me.name}</div>}
         <nav aria-label="Main navigation">
           <div className="product-shell__nav-group">
-            {resultItems.map((item) => <NavItem key={item} label={item} active={item === "Dashboard"} />)}
+            {resultItems.map((item) => <NavItem key={item} label={item} to={item === "Dashboard" ? "/" : undefined} active={item === "Dashboard" && activePath === "/"} />)}
           </div>
           <div className="product-shell__nav-label">Decisions</div>
           <div className="product-shell__nav-group">
-            {decisionItems.map((item) => <NavItem key={item} label={item} />)}
+            {decisionItems.map((item) => <NavItem key={item} label={item} to={item === "Platform" ? "/platform" : undefined} active={item === "Platform" && activePath === "/platform"} />)}
           </div>
         </nav>
       </aside>
@@ -37,7 +35,7 @@ export default function AppShell({ me, instance, schedule, dashboard, children }
         <header className="product-shell__topbar">
           <div>
             <p className="product-shell__context">{instance ? `Instance ${instance.instance_id}` : "No instance selected"}</p>
-            <h1>Dashboard</h1>
+            <h1>{pageTitle}</h1>
           </div>
           <div className="product-shell__round" aria-label={round ? `Round ${round} of ${totalRounds}` : "Round unavailable"}>
             <span className="product-shell__round-label">Round</span>

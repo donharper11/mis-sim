@@ -238,6 +238,8 @@ Packet 3.2 is now accepted: the authenticated root shell reads identity, instanc
 schedule context through scoped API routes and leaves unavailable capital/estate values
 honest. Packet 3.3 is now accepted as the live dashboard read surface: its authorized
 projection reads persisted scorecards, signals and unit-response state, filters students to
-their team, and renders missing runtime data honestly. Focused API, frontend lint/build and
-1024px browser checks pass; the repository-wide suite remains 680 passed with the existing
+their team, and renders missing runtime data honestly. Packet 3.4 is now implemented as the
+scoped Platform hosting/service surface: it reads checkpoint and estate state and sends only
+typed `platform_service` patches through `SimulationService`. Focused API, frontend lint/build
+and 1024px browser checks pass; the repository-wide suite remains 680 passed with the existing
 environment-only PostgreSQL driver/Alembic failures recorded in the packet DoD.
