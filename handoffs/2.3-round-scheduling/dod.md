@@ -5,7 +5,7 @@ Implementation is bounded by `handoffs/recovery/m2-scheduling-amendment.md` and
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| UTC-aware schedule and participant tables, restrictive FKs, unique tuple | schema guard | pending |
+| UTC-aware schedule and participant tables, persisted grace, restrictive FKs, unique tuple | schema guard | pending |
 | SimulationService boundary with registered pack/digest verification | scheduling tests | pending |
 | Fixed-time tick, lock/advance/grace/idempotency and partial retry | `test_scheduling.py` | pending |
 | CONTRACTS.md records UTC fields, explicit-time API, and DB claim semantics | contract review | pending |

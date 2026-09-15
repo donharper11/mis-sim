@@ -32,7 +32,8 @@ The migration adds:
 round_schedule
   id, instance_id FK → simulation_instance.instance_id NOT NULL,
   round_number >= 1, start_at timestamptz NOT NULL, deadline timestamptz NOT NULL,
-  auto_advance boolean NOT NULL, decisions_locked boolean NOT NULL default false,
+  auto_advance boolean NOT NULL, grace_period_minutes integer NOT NULL,
+  decisions_locked boolean NOT NULL default false,
   lock_reason nullable, locked_at nullable timestamptz,
   advanced_at nullable timestamptz,
   claim_token nullable, claim_until nullable timestamptz,
@@ -103,7 +104,9 @@ expired claim is the recovery path for process failure.
 
 Instance settings provide defaults only: positive `default_round_duration_hours`, boolean
 `auto_advance_on_deadline`, nonnegative `grace_period_minutes`, and nonnegative
-`lock_warning_minutes`. Once a row exists, its persisted values are authoritative.
+`lock_warning_minutes`. Schedule creation copies the selected grace value into
+`round_schedule.grace_period_minutes`; once a row exists, its persisted values are
+authoritative even if instance settings later change.
 
 ## Service surface and seed
 

@@ -602,7 +602,7 @@ payloads remain unchanged. The production transition and candidate generator rem
 ## Round scheduling — M2.3
 
 Schedule rows persist timezone-aware UTC `start_at` and `deadline`, immutable per-row
-`auto_advance` and grace decisions, `lock_reason` (`deadline_expired` or
+`auto_advance` and `grace_period_minutes`, `lock_reason` (`deadline_expired` or
 `instructor_locked`), and `advanced_at`. The service API accepts explicit aware UTC `at`
 values for manual lock/advance and `tick(now)`; only the CLI boundary may read the clock.
 Participant snapshots carry the schedule's `instance_id` and use composite foreign keys so
