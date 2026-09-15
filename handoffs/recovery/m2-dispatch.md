@@ -1,7 +1,7 @@
 # M2 dispatch record — first bounded packet
 
 Date: 2026-09-15
-Supervisor base: `c95892b` (`build/north-star-foundation`)
+Supervisor base: `376d54c` (`build/north-star-foundation`)
 Milestone: M2 — real platform context
 
 ## Boundary
@@ -13,8 +13,8 @@ depends on. It does not implement instance guards (2.2), scheduling (2.3), auth
 simulation transition service.
 
 The historical 2.x specs were reconciled at `handoffs/recovery/m2-spec-reconciliation.md`.
-The builder is blocked on the supervisor's identity amendment until
-`handoffs/recovery/m2-contract-amendment.md` is committed. In particular, the
+The supervisor's identity amendment is committed at this base in
+`handoffs/recovery/m2-contract-amendment.md`. In particular, the
 canonical instance primary key is `simulation_instance.instance_id`, and the
 canonical pack identity is `(pack_key, pack_version)`; the historical
 `scenario_id`/`scenario_version` wording is not used.
