@@ -193,12 +193,15 @@ and [P0b audit](../findings/recovery-production-inputs-2026-09-15.md).
 The master contract corrections passed independent Heavy review at `bee3977`; MSR-001–004
 are closed at specification level. [Master review 1](../handoffs/recovery/decision-evolution/master-review-1.md)
 and [master review 2](../handoffs/recovery/decision-evolution/master-review-2.md).
-P1 is now the next gated implementation packet. P2–P6 remain blocked behind sequential
-audited packets; no dependent builder may resolve those interfaces silently.
+P1 typed content and runtime binding passed independent audit at `e4f4757` and is
+integrated in the current recovery branch. [P1 audit](../findings/recovery-content-types-2026-09-15.md).
+P2 is now the next gated implementation packet; P3–P6 remain blocked behind sequential
+audited packets and may not resolve those interfaces silently.
 
 The independently reproduced
 [inventory](../handoffs/recovery/decision-evolution/inventory.md) identifies invalid-target
 acceptance, absent carry-forward, late duplicate-advance refusal, incomplete rewind and
 caller-committable partial writes. D1–D10 must be resolved in the Heavy decision and
 transition contract, then independently reviewed before estate/organisation builders start.
-**M1–M6 remain unfinished.** Main and remote publication remain untouched.
+**M1 remains unfinished after audited P1 integration.** P2 estate, P3 organisation,
+P4 consequences, P5 persistence and P6 games remain. Main and remote publication remain untouched.

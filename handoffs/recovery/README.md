@@ -55,9 +55,12 @@ passed, but the replay does not erase the original procedural residue.
 
 The corrected M1 master transition contract passed independent Heavy review at `bee3977`;
 MSR-001–004 are closed at specification level. [Master review](decision-evolution/master-review-2.md).
-P1 is now the next dispatchable packet. No P1 builder has started, and M1 remains unfinished
-until the typed content, estate, organisation, consequences, persistence and decision-only
-game packets pass their independent audits.
+P1 typed content and runtime binding passed independent audit at `e4f4757` and is integrated
+in the current recovery branch. It adds the strict command/runtime/checkpoint boundary and
+immutable Riverside pack binding; the packet passed `618` full-gate tests, all guards and
+the zero-error Riverside validator. [P1 audit](../../findings/recovery-content-types-2026-09-15.md).
+P2 is now the next dispatchable packet. M1 remains unfinished until the estate, organisation,
+consequences, persistence and decision-only game packets pass their independent audits.
 
 ## First-wave acceptance and cleanup
 

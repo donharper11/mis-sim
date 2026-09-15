@@ -26,7 +26,7 @@ from engine state. Stakeholder satisfaction uses realised value, not just purcha
 | Engine | Pure graph/scoring functions, policy scoring, event/precondition model, signal episodes, explanatory decompositions; audited optional capability-specific capacity/RTO inputs and deterministic paths |
 | Persistence | 16 runtime tables, instance-scoped snapshots, lock/advance, arrivals, result and ledger persistence |
 | Calibration | Four scripted archetypes × six rounds; all perspectives now visible in every round, 38 live marker sites and raw scale diagnostics; all scripts declare Cost Leadership; August ruling retained |
-| Verification | M1 P0 integration: 406 pytest tests, all guards, 44 fixtures; complete 24 historical payloads preserved across six hash seeds. M0's actual PostgreSQL migrations/16 tables/six results and all 96 reconciled BSC values remain the baseline; Riverside zero errors/warnings |
+| Verification | M1 P1 integration: 618 pytest tests, all guards, 44 fixtures; complete 24 historical payloads preserved across six hash seeds. M0's actual PostgreSQL migrations/16 tables/six results and all 96 reconciled BSC values remain the baseline; Riverside zero errors/warnings |
 | Application | React token-preview page and 404 only; auth remains 501; student/instructor workflows unbuilt |
 
 The original packet count is **11 of 47 recorded closed**. Phase 1 closure covers the
@@ -45,8 +45,10 @@ integrated on the recovery branch. [P0 audit](findings/recovery-engine-inputs-20
 and [P0b audit](findings/recovery-production-inputs-2026-09-15.md). The corrected master
 contract passed independent Heavy review at `bee3977`, closing the four returned findings.
 [Master review](handoffs/recovery/decision-evolution/master-review-2.md). P1 typed content
-and runtime validation is the next gated handoff; estate, organisation, consequences,
-persistence and games remain unbuilt.
+and runtime validation passed independent audit at `e4f4757` and is integrated in the
+current recovery branch. [P1 audit](findings/recovery-content-types-2026-09-15.md).
+P2 estate is now the next gated handoff; organisation, consequences, persistence and
+games remain unbuilt.
 
 ## The important unfinished boundary
 
