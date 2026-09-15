@@ -80,13 +80,15 @@ Historical scorer fixtures remain useful regression evidence; they are not that 
    proof, complete calibration visibility, explicit scorecard units and owned gaps.
 2. **M1 — decision-driven simulation:** typed commands, actual state transitions, atomic
    advance/retry semantics, organisational evolution, accounting and decision-only playthroughs.
-3. **M2 — platform — COMPLETE:** hierarchy, guarded scope/auth, pack versions and scheduling.
+3. **M2 — platform — COMPLETE for local/cohort scope:** hierarchy, guarded scope/auth, pack versions and scheduling.
    Packets 2.1 hierarchy, 2.2 instance scoping, 2.5 casepack registry, 2.4 auth/login, and
    2.3 scheduling are accepted (`5d6b573`, `da339c5`, `67a034d`, `d89d5b6`, `d41edb3`);
    2.2 covers all 19 runtime tables, restrictive instance FKs, orphan preflight, and
    repository-guarded reads; 2.5 registers validated runtime tuples and pins semantic
    digests; 2.4 supplies live-user guards, seeded accounts, and the login surface; 2.3
-   supplies fixed-time per-team lock/advance scheduling with database lease fencing.
+   supplies fixed-time per-team lock/advance scheduling with database lease fencing. The
+   separate-service lease-check TOCTOU risk is tracked as M2-006 before internet-facing
+   multi-worker scheduling.
 4. **M3 — first playable browser loop:** required input controls, student review/debrief and
    instructor advance, through six rounds on real state.
 5. **M4 — complete deterministic student experience:** all input capture, real producers,

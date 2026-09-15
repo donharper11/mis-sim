@@ -229,5 +229,6 @@ adds live-user JWT authorization, guarded hierarchy routes, seeded accounts, and
 M2 login surface. The combined tree then passed 675 tests and all guards. Packet 2.3
 scheduling is now accepted at `d41edb3` after its independent successor audit; it adds
 fixed-time per-team lock/advance scheduling, persisted grace, registry/digest checks, and
-database lease fencing. The combined tree passes 682 tests and all guards. M2 is complete;
-M3 is the next product milestone.
+database lease fencing. The combined tree passes 682 tests and all guards. M2 is accepted
+with the bounded M2-006 lease-check TOCTOU risk recorded in the open register; M3 is the
+next product milestone.
