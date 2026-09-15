@@ -493,6 +493,18 @@ select {
 .review-mirror ul { display: grid; gap: var(--space-sm); margin: 0; padding-left: var(--space-xl); color: var(--text-secondary); }
 .review-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); background: var(--status-info-bg); border-color: var(--status-info-marker); color: var(--status-info-text); }
 .review-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-md); }
+.debrief-page { display: grid; gap: var(--space-lg); }
+.debrief-score, .debrief-causal, .debrief-capabilities { padding: var(--space-lg); background: var(--surface-card); border: 1px solid var(--border-default); }
+.debrief-score { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-md); }
+.debrief-score div { display: grid; gap: var(--space-xs); padding: var(--space-md); background: var(--surface-sunken); border: 1px solid var(--border-default); }
+.debrief-score span { color: var(--text-muted); font-size: 12px; text-transform: capitalize; }
+.debrief-score strong { font-size: 22px; }
+.debrief-causal, .debrief-capabilities { display: grid; gap: var(--space-lg); }
+.debrief-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-md); }
+.debrief-grid article, .debrief-capability-list article { display: grid; gap: var(--space-xs); padding: var(--space-md); background: var(--surface-sunken); border: 1px solid var(--border-default); }
+.debrief-grid h3, .debrief-capabilities h2 { margin: 0; font-size: 16px; }
+.debrief-grid p, .debrief-capability-list span { margin: 0; color: var(--text-secondary); font-size: 13px; }
+.debrief-capability-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--space-md); }
 
 @media (max-width: 720px) {
   .option-card-grid { grid-template-columns: 1fr; }
@@ -513,4 +525,5 @@ select {
   .components-context, .components-toolbar, .components-panel-heading { align-items: flex-start; flex-direction: column; }
   .components-detail-grid, .components-steps { grid-template-columns: 1fr; }
   .review-banner { align-items: flex-start; flex-direction: column; }
+  .debrief-score, .debrief-grid { grid-template-columns: 1fr; }
 }

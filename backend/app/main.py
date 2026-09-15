@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
-from app.api import auth, dashboard, health, platform, runtime_components, runtime_platform, runtime_review, runtime_rollout
+from app.api import auth, dashboard, health, platform, runtime_components, runtime_debrief, runtime_platform, runtime_review, runtime_rollout
 from app.database import engine
 
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(runtime_components.router, prefix="/api")
     app.include_router(runtime_rollout.router, prefix="/api")
     app.include_router(runtime_review.router, prefix="/api")
+    app.include_router(runtime_debrief.router, prefix="/api")
 
     @app.exception_handler(IntegrityError)
     async def integrity_error_handler(request, exc: IntegrityError):

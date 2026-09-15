@@ -257,3 +257,8 @@ Packet 3.7 is now implemented as the engine-backed Review & Lock surface: it gro
 current typed sheet commands, renders preview-derived totals and warnings, and locks only
 through the revision-checked `SimulationService.lock` boundary. Focused API, frontend
 lint/build, and the 1024px browser probe pass; Debrief remains as M3.8.
+Packet 3.8 is now implemented as the read-only Debrief report: it projects immutable
+`RoundResult` payloads, preserves score and causal evidence, and provides a plain-text
+download. Focused API, frontend lint/build, and the 1024px browser probe pass. The eight
+M3 screen packets are complete locally; the seeded six-round browser loop and Phase 4
+minimum controls remain before pilot readiness.
