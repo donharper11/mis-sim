@@ -50,6 +50,20 @@ def test_edit_lock_reopen_preserves_commands_and_increments_revision(service):
     assert [item.key for item in reopened.commands] == ["buy_compute"]
 
 
+def test_persisted_commands_retain_required_nullable_fields(service):
+    service.initialize(1, 1, "cost_leadership")
+    command = CommandV1(
+        key="warehouse", op="buy_application", catalog="centraline_im7",
+        placement="saas", config="core", primary_for=None,
+        tco_categories=["integration", "training"],
+    )
+    patch = SheetPatchV1(version=1, replace_categories={"application": [command]})
+    edited = service.patch_sheet(1, 1, 1, 0, patch)
+    assert service.read(1, 1).sheet.commands[0].primary_for is None
+    locked = service.lock(1, 1, 1, edited.revision)
+    assert locked.commands[0].primary_for is None
+
+
 def test_invalid_patch_and_scope_are_atomic(service):
     service.initialize(1, 1, "cost_leadership")
     with pytest.raises(SimulationError):
@@ -69,4 +83,3 @@ def test_stale_revision_does_not_change_sheet(service):
     with pytest.raises(SimulationError, match="revision_conflict"):
         service.patch_sheet(1, 1, 1, 0, patch)
     assert service.read(1, 1).sheet.revision == 1
-

@@ -21,6 +21,7 @@ from .content import canonical_json, normalize_patch
 from .estate import initialize_state
 from .models import SimulationCheckpointV1, SimulationRunV1, SimulationSheetV1
 from .types import (
+    COMMAND_FIELDS,
     CheckpointStateV1,
     CommandV1,
     PackIdentityV1,
@@ -111,6 +112,18 @@ def _commands(raw: Any) -> tuple[CommandV1, ...]:
     if len({item.key for item in result}) != len(result):
         raise SimulationError("invalid_output", "sheet.commands")
     return result
+
+
+def _command_payload(command: CommandV1) -> dict[str, Any]:
+    """Persist exactly the fields allowed by the command operation.
+
+    Required nullable fields remain explicit (for example ``primary_for`` on
+    an application purchase), while unrelated union fields remain omitted so
+    strict reconstruction does not treat them as unexpected extras.
+    """
+    raw = command.model_dump(mode="json", exclude_none=False)
+    allowed = {"key", "op", *COMMAND_FIELDS[command.op]}
+    return {key: raw[key] for key in allowed if key in raw}
 
 
 class SimulationService:
@@ -291,7 +304,12 @@ class SimulationService:
                 )
             prior = self._state(session, instance_id, team_id, run.advanced_round)
             preview = _quote(self.runtime_pack, prior, merged, round)
-            sheet.commands = [command.model_dump(mode="json", exclude_none=True) for command in merged]
+            # CommandV1 distinguishes an explicitly supplied nullable field
+            # (for example ``primary_for: null`` on a purchase) from an
+            # omitted required field.  Preserve those nulls across the
+            # persisted sheet so the strict command boundary can reconstruct
+            # the same typed command at lock/read time.
+            sheet.commands = [_command_payload(command) for command in merged]
             sheet.revision += 1
             session.flush()
             return SheetViewV1(version=1, round=round, revision=sheet.revision, locked_revision=None, commands=list(merged), preview=preview)
