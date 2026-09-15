@@ -22,11 +22,11 @@ class FakeService:
         self.locked = []
         self.advanced = []
 
-    def lock(self, instance_id, team_id, round, expected_revision):
+    def lock(self, instance_id, team_id, round, expected_revision, *, schedule_claim=None):
         self.locked.append((instance_id, team_id, round, expected_revision))
         return SimpleNamespace(locked_revision=expected_revision)
 
-    def advance(self, instance_id, team_id, round, locked_revision):
+    def advance(self, instance_id, team_id, round, locked_revision, *, schedule_claim=None):
         self.advanced.append((instance_id, team_id, round, locked_revision))
         return {"round": round}
 

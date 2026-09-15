@@ -81,6 +81,7 @@ class SimulationError(ValueError):
         "not_found", "invalid_input", "invalid_reference", "conflicting_commands",
         "unaffordable", "revision_conflict", "locked", "round_state", "pack_mismatch",
         "scope_exists", "unsupported_operation", "arrival_after_game_end", "invalid_output",
+        "schedule_claim_lost",
     }
 
     def __init__(self, code: str, field: str = "", details: dict[str, Any] | None = None):

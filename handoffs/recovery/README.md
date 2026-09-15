@@ -138,8 +138,9 @@ and database claim fencing. Initial candidate `ca140d2` returned for warning-set
 stale-lease side effects; successor `d41edb3` corrected both. The independent audit is
 recorded in [`recovery-m2-scheduling-2026-09-16.md`](../../findings/recovery-m2-scheduling-2026-09-16.md).
 The final gate is **682 passed**, all guards green, migration reversible, and the two-instance
-cohort scheduling canary green. M2 platform packets 2.1–2.5 are accepted with the bounded
-M2-006 lease-check TOCTOU risk recorded in the open register; M3 is next.
+cohort scheduling canary green. The follow-up race fix closes M2-006 by fencing the
+production mutation transaction itself; M2 platform packets 2.1–2.5 are accepted and M3
+is next.
 
 ## First-wave acceptance and cleanup
 

@@ -3,7 +3,7 @@
 **Candidate:** `d41edb34d098a090b2b958100b07ab9b77b4c099`  
 **Dispatch basis:** `handoffs/recovery/m2-scheduling-amendment.md` and
 `handoffs/recovery/m2-scheduling-dispatch.md` at `8cc3ff1`  
-**Verdict:** **PASS WITH KNOWN LIMITATION**
+**Verdict:** **PASS**
 
 The implementation stays within the allowlist and uses the production
 `SimulationService` boundary after registered `RuntimePackV1` resolution and digest
@@ -31,11 +31,10 @@ Evidence:
 - Static scheduling guard confirms no service clock reads, no legacy `RoundRunner` import,
   the fixed-time CLI boundary, and the unavailable historical BECSR source is documented.
 
-No implementation files outside the dispatch allowlist were changed. The packet is accepted
-for M2 with the following bounded risk: because `SimulationService` owns a separate
-transaction and was explicitly out of scope, a theoretical TOCTOU window remains between
-the scheduler's pre-call claim check and the external mutation if a lease expires at exactly
-that point. The schedule-row write and lease clear remain token-fenced, and repeated service
-operations are idempotent. Close this before internet-facing multi-worker scheduling or
-when the M1 service boundary next permits an operation token. M3 remains the next product
-milestone.
+The original M2-006 concern is closed by the successor seam: `SimulationService.lock` and
+`.advance` now accept the scheduling claim and lock/verify the claim row inside their own
+mutation transaction before touching run or sheet state. A reclaiming worker therefore
+waits for the mutation transaction and then either observes the old token or is rejected;
+there is no check-to-mutation TOCTOU window. The new fence regression covers both lock and
+advance. No implementation files outside the user-authorized race fix were changed. The
+packet is accepted for M2; M3 remains the next product milestone.

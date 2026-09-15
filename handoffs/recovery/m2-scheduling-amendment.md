@@ -103,7 +103,9 @@ AND claim_token=:worker_token`; a stale worker therefore cannot clear a newer cl
 expired claim is the recovery path for process failure. Before invoking the separately
 transactional `SimulationService.lock` or `.advance`, the worker must conditionally verify
 ownership of the current claim token; a lost claim records `schedule claim lost` and does
-not invoke the production service.
+not invoke the production service. The production service receives that claim and locks and
+rechecks the schedule row inside its own mutation transaction before changing run or sheet
+state; lease reclamation therefore cannot interleave between verification and mutation.
 
 Instance settings provide defaults only: positive `default_round_duration_hours`, boolean
 `auto_advance_on_deadline`, nonnegative `grace_period_minutes`, and nonnegative

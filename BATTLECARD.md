@@ -86,9 +86,8 @@ Historical scorer fixtures remain useful regression evidence; they are not that 
    2.2 covers all 19 runtime tables, restrictive instance FKs, orphan preflight, and
    repository-guarded reads; 2.5 registers validated runtime tuples and pins semantic
    digests; 2.4 supplies live-user guards, seeded accounts, and the login surface; 2.3
-   supplies fixed-time per-team lock/advance scheduling with database lease fencing. The
-   separate-service lease-check TOCTOU risk is tracked as M2-006 before internet-facing
-   multi-worker scheduling.
+   supplies fixed-time per-team lock/advance scheduling with database lease fencing inside
+   the production mutation transaction.
 4. **M3 — first playable browser loop:** required input controls, student review/debrief and
    instructor advance, through six rounds on real state.
 5. **M4 — complete deterministic student experience:** all input capture, real producers,

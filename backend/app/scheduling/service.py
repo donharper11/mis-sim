@@ -256,7 +256,10 @@ class Scheduler:
                 self.session.commit()
                 if not self._claim_owned(schedule, token):
                     raise SchedulingError("schedule claim lost")
-                service.lock(schedule.instance_id, row.team_id, schedule.round_number, revision)
+                service.lock(
+                    schedule.instance_id, row.team_id, schedule.round_number, revision,
+                    schedule_claim=(schedule.id, token) if token is not None else None,
+                )
                 if not self._conditional_participant_update(row, token, locked_revision=revision, locked_at=at):
                     raise SchedulingError("schedule claim lost")
                 self.session.commit()
@@ -283,7 +286,10 @@ class Scheduler:
                 self.session.commit()
                 if not self._claim_owned(schedule, token):
                     raise SchedulingError("schedule claim lost")
-                service.advance(schedule.instance_id, row.team_id, schedule.round_number, row.locked_revision)
+                service.advance(
+                    schedule.instance_id, row.team_id, schedule.round_number, row.locked_revision,
+                    schedule_claim=(schedule.id, token) if token is not None else None,
+                )
                 if not self._conditional_participant_update(row, token, advanced_at=at):
                     raise SchedulingError("schedule claim lost")
                 self.session.commit()

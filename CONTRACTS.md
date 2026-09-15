@@ -44,9 +44,9 @@ production `SimulationService`. It never calls the legacy `RoundRunner`.
 `advance_now(..., at)` require an aware timestamp supplied by the caller. Only the CLI
 entrypoint may read the clock. A due schedule is claimed in the database with a unique
 worker token and a fixed 60-second lease; participant writes and lease clearing require
-that token, and production lock/advance calls are fenced by a pre-call token check. A
-competing worker returns a deterministic busy/no-op result, and an expired lease is
-reclaimable.
+that token, and production lock/advance calls lock and verify that claim inside their
+mutation transaction. A competing worker returns a deterministic busy/no-op result, and
+an expired lease is reclaimable.
 
 **Producers:** `backend/app/scheduling/service.py` and
 `backend/app/scheduling/entrypoint.py` (**M2.3**).

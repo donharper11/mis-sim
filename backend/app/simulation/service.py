@@ -177,6 +177,27 @@ class SimulationService:
                 or run.pack_version != self.runtime_pack.casepack.metadata.pack_version):
             raise SimulationError("pack_mismatch", "pack_digest")
 
+    def _verify_schedule_claim(self, session: Session, claim: tuple[int, str] | None) -> None:
+        """Fence a scheduling mutation inside this service transaction.
+
+        The scheduler owns the lease row, while this service owns the run mutation
+        transaction.  Locking and checking the lease row here makes reclamation wait
+        for the mutation transaction; a reclaimed token is rejected before any run or
+        sheet state is changed.
+        """
+        if claim is None:
+            return
+        from app.models.scheduling import RoundSchedule
+
+        schedule_id, token = claim
+        schedule = session.execute(
+            select(RoundSchedule)
+            .where(RoundSchedule.id == schedule_id, RoundSchedule.claim_token == token)
+            .with_for_update()
+        ).scalar_one_or_none()
+        if schedule is None:
+            raise SimulationError("schedule_claim_lost", "claim_token")
+
     def _repo(self, session: Session, instance_id: int, team_id: int) -> ScopedRepo:
         return ScopedRepo(session, instance_id, team_id)
 
@@ -313,9 +334,18 @@ class SimulationService:
             session.flush()
             return SheetViewV1(version=1, round=round, revision=sheet.revision, locked_revision=None, commands=list(merged), preview=preview)
 
-    def lock(self, instance_id: int, team_id: int, round: int, expected_revision: int) -> SheetViewV1:
+    def lock(
+        self,
+        instance_id: int,
+        team_id: int,
+        round: int,
+        expected_revision: int,
+        *,
+        schedule_claim: tuple[int, str] | None = None,
+    ) -> SheetViewV1:
         instance_id, team_id = self._scope(instance_id, team_id)
         with self._transaction() as session:
+            self._verify_schedule_claim(session, schedule_claim)
             run = self._run(session, instance_id, team_id, lock=True)
             if run.status == "completed" or round != run.current_round:
                 raise SimulationError("round_state", "round")
@@ -358,11 +388,20 @@ class SimulationService:
             session.flush()
             return self._sheet_view(session, run, sheet)
 
-    def advance(self, instance_id: int, team_id: int, round: int, locked_revision: int) -> dict[str, Any]:
+    def advance(
+        self,
+        instance_id: int,
+        team_id: int,
+        round: int,
+        locked_revision: int,
+        *,
+        schedule_claim: tuple[int, str] | None = None,
+    ) -> dict[str, Any]:
         instance_id, team_id = self._scope(instance_id, team_id)
         if type(round) is not int or round < 1 or type(locked_revision) is not int or locked_revision < 0:
             raise SimulationError("invalid_input", "round")
         with self._transaction() as session:
+            self._verify_schedule_claim(session, schedule_claim)
             run = self._run(session, instance_id, team_id, lock=True)
             # Older completed rounds are immutable and retryable.  The checkpoint's
             # sheet revision is the authoritative idempotency key.
