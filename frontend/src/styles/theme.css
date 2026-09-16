@@ -318,8 +318,15 @@ select {
 .controls-actions { display: flex; align-items: center; gap: var(--space-lg); }
 .controls-empty { background: var(--surface-card); border: 1px solid var(--border-default); padding: var(--space-3xl); }
 .controls-empty h2 { margin-top: 0; }
+.components-tco-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm) var(--space-lg); margin: var(--space-lg) 0; }
+.components-tco-option { display: flex; align-items: center; gap: var(--space-sm); color: var(--text-secondary); text-transform: capitalize; }
+.components-tco-option input { accent-color: var(--accent-primary); }
+.components-project-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-md) 0; border-top: 1px solid var(--border-default); }
+.components-project-row p { margin: var(--space-xs) 0 0; color: var(--text-muted); }
+.components-project-actions { display: flex; gap: var(--space-sm); }
 @media (max-width: 720px) {
-  .controls-grid, .controls-option-grid { grid-template-columns: 1fr; }
+  .controls-grid, .controls-option-grid, .components-tco-grid { grid-template-columns: 1fr; }
+  .components-project-row { align-items: flex-start; flex-direction: column; }
 }
 
 .login-page { display: grid; place-items: center; min-height: 100vh; }

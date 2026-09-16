@@ -18,10 +18,10 @@ were sent to the local FastAPI host.
 | Browser diagnostics | PASS | Clean production-build probe: zero console errors, page errors, or failed network requests across all eight routes. |
 | Frontend implementation checks | PASS | `npm run lint` and `npm run build` pass. Vite emits only the existing large-chunk warning. |
 | Focused backend checks | PASS | M3.4–M3.8 runtime API matrix remains green; new runtime modules compile and pass import/route registration checks. |
-| Repository-wide verification | OPEN | The known environment blockers remain: the sandbox lacks the Alembic executable and PostgreSQL driver required by the full migration/production suite. |
-| Production deployment audit | OPEN | No production host, migration dry run, backup/restore rehearsal, cohort load test, or push/deploy has been performed. |
+| Repository-wide verification | PASS | Fresh declared environment: `pip check` clean, 689 pytest tests passed, and every guard passed. |
+| Production deployment audit | OPEN | Local migration, backup/restore, cohort smoke, and instructor API rehearsal pass; no production host, monitoring, deployment, or push has been used. |
 
 Verdict: **M3 first-playable gate passed locally. Production launch is not yet approved.** The
-remaining work is the Phase 7 operational audit: run the declared dependency environment with
-PostgreSQL, execute migrations and the full suite, rehearse deployment and recovery, and obtain
-an instructor acceptance pass against the six-round script before publishing the build.
+remaining work is the Phase 7 deployment and pilot work: use a real host with monitoring,
+complete the student manual, and obtain an instructor acceptance pass outside the implementation
+loop before publishing the build. Detailed evidence is in `docs/phase7-operational-audit.md`.

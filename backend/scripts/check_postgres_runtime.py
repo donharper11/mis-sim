@@ -9,23 +9,33 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from pathlib import Path
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 from sqlalchemy import Integer, func, inspect, select, text
 from sqlalchemy.engine import URL, make_url
 from sqlalchemy.exc import ArgumentError, SQLAlchemyError
 
-
 BACKEND = Path(__file__).resolve().parents[1]
 DATABASE_PREFIX = "mis_sim_verify_"
 EXPECTED_ROUNDS = list(range(1, 7))
-EXPECTED_TABLE_COUNT = 19
+EXPECTED_TABLE_COUNT = 28
 
 
-def expected_models(round_models, simulation_models):
+def expected_schema_models(round_models, simulation_models, platform_models, scheduling_models):
+    """Return every table created by the current migration head."""
+    return (
+        *platform_models.ALL_TABLES,
+        platform_models.Casepack,
+        *scheduling_models.ALL_TABLES,
+        *round_models.ALL_TABLES,
+        *simulation_models.ALL_TABLES,
+    )
+
+
+def expected_runtime_models(round_models, simulation_models):
     """Return the historical 16 plus the three versioned simulation tables."""
     return (*round_models.ALL_TABLES, *simulation_models.ALL_TABLES)
 
@@ -85,9 +95,11 @@ def require_empty_database(engine, database: str) -> str:
 
 
 def verify_schema(engine, models) -> list[str]:
+    from app.models import platform as platform_models
+    from app.models import scheduling as scheduling_models
     from app.simulation import models as simulation_models
 
-    models_for_schema = expected_models(models, simulation_models)
+    models_for_schema = expected_schema_models(models, simulation_models, platform_models, scheduling_models)
     expected = {model.__tablename__ for model in models_for_schema}
     if len(expected) != EXPECTED_TABLE_COUNT:
         raise VerificationError(f"expected {EXPECTED_TABLE_COUNT} runtime table models; found {len(expected)}")
@@ -98,7 +110,7 @@ def verify_schema(engine, models) -> list[str]:
     for name in sorted(expected):
         columns = {column["name"]: column for column in inspector.get_columns(name, schema="public")}
         column = columns.get("instance_id")
-        if column is None or column["nullable"] or not isinstance(column["type"], Integer):
+        if column is not None and (column["nullable"] or not isinstance(column["type"], Integer)):
             raise VerificationError(f"{name}.instance_id must be a non-null integer")
     return sorted(expected)
 
@@ -106,7 +118,7 @@ def verify_schema(engine, models) -> list[str]:
 def verify_results(session, models, instance_id: int, team_id: int) -> dict:
     from app.simulation import models as simulation_models
 
-    models_for_schema = expected_models(models, simulation_models)
+    models_for_schema = expected_runtime_models(models, simulation_models)
     result = models.RoundResult
     rows = session.scalars(select(result).where(
         result.instance_id == instance_id, result.team_id == team_id,
@@ -130,6 +142,31 @@ def verify_results(session, models, instance_id: int, team_id: int) -> dict:
     }
 
 
+def seed_platform_context(session, pack) -> None:
+    """Create the minimum M2 hierarchy required by restrictive instance FKs."""
+    from app.models.platform import Course, Section, SimulationInstance, Team, User
+
+    session.add(User(
+        id=1, student_id="VERIFY-INSTRUCTOR", name="Verification Instructor",
+        email="verification-instructor@example.test", role="instructor", is_active=True,
+    ))
+    session.add(Course(
+        id=1, course_code="VERIFY", course_name="Verification", academic_year="2026",
+        semester="A", instructor_id=1, active_chapters=list(range(1, 13)), is_active=True,
+    ))
+    session.add(Section(
+        id=1, course_id=1, section_code="A", section_name="Verification Section",
+        max_teams=8, team_size_min=1, team_size_max=6, is_active=True,
+    ))
+    session.add(SimulationInstance(
+        instance_id=1, section_id=1, pack_key=pack.metadata.pack_key,
+        pack_version=pack.metadata.pack_version, pack_digest=None, current_round=1,
+        total_rounds=pack.metadata.rounds, status="active", settings={},
+    ))
+    session.add(Team(id=1, section_id=1, instance_id=1, name="Verification Team", created_by=1))
+    session.flush()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database-url", required=True, help="explicit empty mis_sim_verify_* database on a literal loopback address")
@@ -147,8 +184,10 @@ def main() -> int:
 
         from alembic.config import Config
         from alembic.script import ScriptDirectory
+
         from app.round import models
         from app.round.db import make_engine, session_for
+        from app.seed.demo import load_scenario
         from seeds.riverside_full import INSTANCE_ID, TEAM_ID, run_full_game
 
         engine = make_engine(database_url)
@@ -169,13 +208,15 @@ def main() -> int:
             if revisions != heads:
                 raise VerificationError(f"migration revision mismatch: {sorted(revisions)} != {sorted(heads)}")
             with session_for(database_url) as session:
-                run_full_game(session)
+                pack, _ = load_scenario("riverside_r3")
+                seed_platform_context(session, pack)
+                run_full_game(session, pack)
             # A separate session proves committed database state, not returned seed values.
             with session_for(database_url) as session:
                 summary = verify_results(session, models, INSTANCE_ID, TEAM_ID)
             summary.update({
                 "postgresql": version, "database": url.database,
-                "alembic_heads": sorted(revisions), "runtime_tables_with_instance_id": tables,
+                "alembic_heads": sorted(revisions), "migrated_tables": tables,
             })
             print(json.dumps(summary, indent=2, sort_keys=True))
             print("PASS: PostgreSQL migrations and six committed rounds verified; retain this database for audit, then use the documented scoped cleanup.")

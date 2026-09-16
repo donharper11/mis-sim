@@ -126,7 +126,7 @@ Financial scoring remains an explicitly labelled partial proxy.
    Historical gate: 6 rounds × 4 scripted teams; passed 2026-08-22
 2  Platform scaffolding   5 packets    specs require reconciliation
 3  Student core loop      8 packets    M3.1–M3.8 plus minimum controls; seeded loop passed locally
-4  Student + AI          11 packets    direction only
+4  Student + AI          11 packets    M4 first coverage slice underway
 5  Instructor console     7 packets    direction only
 6  Second casepack        2 packets    direction only
 7  Pilot readiness        3 packets    direction only

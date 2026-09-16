@@ -50,6 +50,8 @@ class ComponentChoiceOut(BaseModel):
     people: int | None = None
     placements: list[ComponentPlacementOut] = Field(default_factory=list)
     configs: list[ComponentConfigOut] = Field(default_factory=list)
+    true_cost_categories: list[str] = Field(default_factory=list)
+    decoy_cost_categories: list[str] = Field(default_factory=list)
 
 
 class ComponentAssetOut(BaseModel):
@@ -121,6 +123,8 @@ def _catalog_choice(pack: Any, item: Any) -> ComponentChoiceOut:
             bypasses_platform=mode.bypasses_platform,
         ) for key, mode in item.deployment_modes.items()],
         configs=[ComponentConfigOut(key=key, label=key.replace("_", " ").title()) for key in item.config_tiers],
+        true_cost_categories=list(item.true_cost_categories),
+        decoy_cost_categories=list(item.decoy_cost_categories),
     )
 
 
@@ -167,14 +171,14 @@ async def _read_team(session: AsyncSession, instance: SimulationInstance, team: 
 
 
 @router.get("/instances/{instance_id}/components", response_model=ComponentsOut)
-async def read_components(instance: SimulationInstance = Depends(get_current_instance), current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), team_id: int | None = Query(default=None)):
+async def read_components(instance: SimulationInstance = Depends(get_current_instance), current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), team_id: int | None = Query(default=None)):  # noqa: B008
     team = await _team_for_user(session, instance, current_user, team_id)
     pack = await _runtime_pack(session, instance)
     return ComponentsOut(instance_id=instance.instance_id, current_round=max(instance.current_round, 1), total_rounds=instance.total_rounds, team=await _read_team(session, instance, team, pack) if team is not None else None)
 
 
 @router.patch("/instances/{instance_id}/components", response_model=ComponentsOut)
-async def patch_components(payload: ComponentsPatchIn, instance: SimulationInstance = Depends(get_current_instance), current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), team_id: int | None = Query(default=None)):
+async def patch_components(payload: ComponentsPatchIn, instance: SimulationInstance = Depends(get_current_instance), current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), team_id: int | None = Query(default=None)):  # noqa: B008
     team = await _team_for_user(session, instance, current_user, team_id)
     if team is None:
         raise HTTPException(status_code=409, detail="Select a team before editing component decisions")

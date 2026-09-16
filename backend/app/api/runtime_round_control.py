@@ -44,7 +44,20 @@ async def advance_round(
         raise HTTPException(status_code=409, detail="The instance has no teams to advance")
     instance_id_value = instance.instance_id
     total_rounds = instance.total_rounds
-    target_round = max(instance.current_round, 1)
+    run_rounds: dict[int, int] = {}
+    for team_id in team_ids:
+        run = await session.get(SimulationRunV1, (instance_id_value, team_id))
+        if run is None:
+            raise HTTPException(status_code=409, detail=f"Team {team_id} is not initialized")
+        if run.status != "completed":
+            run_rounds[team_id] = run.current_round
+    active_rounds = set(run_rounds.values())
+    if len(active_rounds) > 1:
+        raise HTTPException(status_code=409, detail=f"Teams are on different rounds: {sorted(active_rounds)}")
+    # The versioned run is authoritative.  The scheduler may have advanced a run
+    # without updating the presentation-level instance pointer, so reconcile the
+    # pointer after a successful batch instead of rejecting a valid scheduled round.
+    target_round = next(iter(active_rounds), max(instance.current_round, 1))
     advanced: list[int] = []
     completed: list[int] = []
     results: list[dict[str, Any]] = []

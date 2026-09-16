@@ -277,6 +277,11 @@ class SimulationService:
                     advanced_round=0, status="draft",
                 )
                 session.add(run)
+                # The checkpoint and sheet carry composite foreign keys to the run.
+                # Flush the parent explicitly so PostgreSQL cannot order a child
+                # insert before its newly-created run row (SQLite did not expose
+                # this scheduling defect in the local loop).
+                session.flush()
                 session.add(SimulationCheckpointV1(
                     instance_id=instance_id, team_id=team_id, round=0, version=1,
                     pack_digest=self.runtime_pack.pack_digest, sheet_revision=None,

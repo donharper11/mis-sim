@@ -263,3 +263,8 @@ download. The six minimum Phase 4 control families and instructor round-control 
 also wired through the typed runtime seam. The seeded six-round browser loop passed on a
 disposable cohort: both teams completed six rounds and twelve immutable results were
 persisted. Production launch remains gated by the audit in `docs/m3-launch-readiness-audit.md`.
+The Phase 7 operational rehearsal now passes locally; its evidence is in
+`docs/phase7-operational-audit.md`. M4 has begun with the first coverage slice: component
+purchase forms now capture true/decoy TCO forecasts, and in-flight projects expose
+continue/pause/kill controls through the typed lifecycle command. Capital requests and the
+remaining authored approval rules are still explicitly open for the next M4 packet.
