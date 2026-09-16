@@ -9,10 +9,15 @@ const meta = {
   services: { title: "Services", eyebrow: "Choose the platform foundation", description: "Select firm-wide services and a deployment placement. Prices and lead times come from the casepack." },
   people: { title: "People", eyebrow: "Fund capacity and adoption", description: "Add staff capacity or communicate the change to the units that will carry it." },
   challenges: { title: "Challenges", eyebrow: "Respond to the inbox", description: "Select a response and a rationale tag. Responses are evaluated by the engine at advance." },
+  budget: { title: "Budget", eyebrow: "Make the capital case", description: "Request additional capital from the CFO with a concise, evidence-based justification." },
 };
 
 function SelectField({ label, value, options, onChange, disabled = false }) {
   return <label className="controls-field"><span>{label}</span><select value={value || ""} disabled={disabled} onChange={(event) => onChange(event.target.value)}><option value="">Choose…</option>{options.map((option) => <option key={option.key || option} value={option.key || option}>{option.label || option}</option>)}</select></label>;
+}
+
+function TextField({ label, value, onChange, type = "text", min, maxLength, placeholder, disabled = false }) {
+  return <label className="controls-field"><span>{label}</span><input type={type} value={value ?? ""} min={min} maxLength={maxLength} placeholder={placeholder} disabled={disabled} onChange={(event) => onChange(event.target.value)} /></label>;
 }
 
 export default function Controls({ data, instanceId, section }) {
@@ -45,6 +50,7 @@ export default function Controls({ data, instanceId, section }) {
       return result;
     }
     if (section === "challenges" && selected("event") && selected("option") && selected("rationale")) return [{ key: `respond_${selected("event")}`, op: "respond", event: selected("event"), option: selected("option"), rationale_tag: selected("rationale") }];
+    if (section === "budget" && selected("amount") && selected("reason").trim()) return [{ key: "capital_request", op: "request_capital", amount: Number(selected("amount")), reason: selected("reason").trim() }];
     return [];
   }
 
@@ -72,6 +78,7 @@ export default function Controls({ data, instanceId, section }) {
     {section === "services" && <section className="controls-panel"><h2>Firm-wide service request</h2><SelectField label="Service" value={selected("service")} options={view.services} onChange={(value) => { set("service", value); set("placement", ""); }} disabled={readOnly} />{service && <SelectField label="Placement" value={selected("placement")} options={service.values.map((key) => ({ key, label: key.replaceAll("_", " ") }))} onChange={(value) => set("placement", value)} disabled={readOnly} />}</section>}
     {section === "people" && <section className="controls-panel"><h2>Capacity and communication</h2><div className="controls-grid"><SelectField label="Hiring option" value={selected("hire")} options={view.hiring_options} onChange={(value) => set("hire", value)} disabled={readOnly} /><SelectField label="Unit" value={selected("unit")} options={view.people_units} onChange={(value) => set("unit", value)} disabled={readOnly} /><SelectField label="Communication" value={selected("communication")} options={view.communication_options} onChange={(value) => set("communication", value)} disabled={readOnly} /></div></section>}
     {section === "challenges" && <section className="controls-panel"><h2>Challenge response</h2><SelectField label="Inbox event" value={selected("event")} options={view.challenges} onChange={(value) => { set("event", value); set("option", ""); set("rationale", ""); }} disabled={readOnly} />{challenge && <><SelectField label="Response" value={selected("option")} options={challenge.options} onChange={(value) => { set("option", value); const choice = challenge.options.find((item) => item.key === value); set("rationale", choice?.rationale_tags?.[0] || ""); }} disabled={readOnly} />{selected("option") && <SelectField label="Rationale" value={selected("rationale")} options={(challenge.options.find((item) => item.key === selected("option"))?.rationale_tags || []).map((key) => ({ key, label: key.replaceAll("_", " ") }))} onChange={(value) => set("rationale", value)} disabled={readOnly} />}</>}</section>}
+    {section === "budget" && <section className="controls-panel"><h2>Capital request</h2><p className="components-muted">Approved requests add capital to this round and are recorded in the accounting ledger. Maximum ${Number(view.capital_request_max_amount || 0).toLocaleString()}; justification must be at least {view.capital_request_min_reason_length} characters.</p><div className="controls-grid"><TextField label="Amount" type="number" min="1" value={selected("amount")} onChange={(value) => set("amount", value)} disabled={readOnly} /><label className="controls-field"><span>Justification</span><textarea value={selected("reason")} minLength={view.capital_request_min_reason_length || undefined} maxLength={1000} placeholder="Explain the decision, evidence, and expected outcome." disabled={readOnly} onChange={(event) => set("reason", event.target.value)} /></label></div></section>}
     <section className="controls-actions"><button type="button" className="components-primary" disabled={readOnly || saving || !commands().length} onClick={save}>{saving ? "Saving…" : `Save ${current.title.toLowerCase()} decision`}</button>{error && <p className="components-error" role="alert">{error}</p>}</section>
   </div>;
 }

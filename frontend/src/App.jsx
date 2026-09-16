@@ -31,6 +31,7 @@ export default function App() {
         <Route path="/services" element={<Shell view="services" />} />
         <Route path="/people" element={<Shell view="people" />} />
         <Route path="/challenges" element={<Shell view="challenges" />} />
+        <Route path="/budget" element={<Shell view="budget" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/_dev/tokens" element={<DevTokens />} />
         <Route path="/_dev/components" element={<DevComponents />} />

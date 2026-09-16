@@ -77,6 +77,34 @@ def test_response_cost_is_capital_and_event_specific(pack, state):
     assert event.key in preview.prevented_events
 
 
+def test_capital_request_uses_authored_cfo_rules_and_persists(pack, state):
+    command = CommandV1(
+        key="capital_request",
+        op="request_capital",
+        amount=50_000,
+        reason="Fund the approved integration work and preserve delivery capacity.",
+    )
+    preview = quote_transition(pack, state, [command], 1)
+    assert preview.capital_available == pack.casepack.metadata.budget.capex_per_round[0] + 50_000
+    resolved = resolve_transition(pack, state, [command], 1)
+    request = next(row for row in resolved.state.cost_ledger if row.kind == "capital_request")
+    assert request.capital_delta == 50_000
+    assert request.category == "capital_request"
+    assert resolved.result["accounting"]["capital_request"] == 50_000
+
+
+def test_capital_request_rejects_amount_and_justification_outside_pack_rules(pack, state):
+    with pytest.raises(SimulationError, match="capital_request.amount"):
+        quote_transition(pack, state, [CommandV1(
+            key="capital_request", op="request_capital", amount=100_001,
+            reason="Fund the approved integration work and preserve delivery capacity.",
+        )], 1)
+    with pytest.raises(SimulationError, match="capital_request.reason"):
+        quote_transition(pack, state, [CommandV1(
+            key="capital_request", op="request_capital", amount=1_000, reason="Too short",
+        )], 1)
+
+
 def test_scorer_adapter_is_the_same_legacy_helper(pack, state):
     resolved = resolve_transition(pack, state, [], 1)
     assert rolled_scorecard(pack, type("Score", (), {"balanced_scorecard": type("B", (), {"financial": .5, "customer": .5, "internal_process": .5, "learning_growth": .5, "financial_partial": False})()})(), [])

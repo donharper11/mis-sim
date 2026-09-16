@@ -92,6 +92,10 @@ class ControlsOut(BaseModel):
     hiring_options: list[OptionOut] = Field(default_factory=list)
     communication_options: list[OptionOut] = Field(default_factory=list)
     challenges: list[ChallengeOut] = Field(default_factory=list)
+    capital_balance: int | None = None
+    capital_request_max_amount: int | None = None
+    capital_request_min_reason_length: int | None = None
+    capital_request_approval_rounds: list[int] = Field(default_factory=list)
     team: ControlsTeamOut | None = None
 
 
@@ -108,6 +112,7 @@ _SECTIONS = {
     "services": {"platform_service"},
     "people": {"staffing", "communication"},
     "challenges": {"event_response"},
+    "budget": {"capital_request"},
 }
 
 
@@ -191,7 +196,12 @@ async def _read_controls(session: AsyncSession, instance: SimulationInstance, te
         strategies=strategies, governance=_governance(pack, state if team is not None else {}),
         security_components=security, policies=_policies(pack, state if team is not None else {}),
         services=services, people_units=people_units, hiring_options=hiring,
-        communication_options=communication, challenges=challenges, team=current_team,
+        communication_options=communication, challenges=challenges,
+        capital_balance=(int(state.get("capital_balance")) if team is not None and state.get("capital_balance") is not None else None),
+        capital_request_max_amount=int(pack.runtime.accounting.capital_request.max_amount),
+        capital_request_min_reason_length=int(pack.runtime.accounting.capital_request.minimum_reason_length),
+        capital_request_approval_rounds=list(pack.runtime.accounting.capital_request.approval_rounds),
+        team=current_team,
     )
 
 
@@ -228,6 +238,8 @@ async def patch_controls(section: str, payload: ControlsPatchIn, instance: Simul
         categories = {"staffing": [command for command in payload.commands if command.get("op") in {"hire", "set_support"}], "communication": [command for command in payload.commands if command.get("op") == "communicate"]}
     elif section == "challenges":
         categories = {"event_response": [command for command in payload.commands if command.get("op") == "respond"]}
+    elif section == "budget":
+        categories = {"capital_request": [command for command in payload.commands if command.get("op") == "request_capital"]}
     categories = {key: value for key, value in categories.items() if value}
     try:
         patch = SheetPatchV1.model_validate({"version": payload.version, "replace_categories": categories})

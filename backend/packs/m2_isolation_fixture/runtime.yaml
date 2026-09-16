@@ -847,6 +847,10 @@ accounting:
   platform_capability: firm_infrastructure
   decision_attribution_version: 1
   action_attribution_version: 1
+  capital_request:
+    max_amount: 100000
+    minimum_reason_length: 20
+    approval_rounds: [1, 2, 3, 4, 5, 6]
   tco_estimators:
     training: full_training
     integration: basic_integration
@@ -2650,6 +2654,30 @@ provenance:
   /accounting/action_attribution_version:
     source: AUTHORED
     note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /accounting/capital_request/max_amount:
+    source: AUTHORED
+    note: "M4 CFO request ceiling"
+  /accounting/capital_request/minimum_reason_length:
+    source: AUTHORED
+    note: "M4 CFO justification threshold"
+  /accounting/capital_request/approval_rounds/0:
+    source: AUTHORED
+    note: "M4 CFO approval window"
+  /accounting/capital_request/approval_rounds/1:
+    source: AUTHORED
+    note: "M4 CFO approval window"
+  /accounting/capital_request/approval_rounds/2:
+    source: AUTHORED
+    note: "M4 CFO approval window"
+  /accounting/capital_request/approval_rounds/3:
+    source: AUTHORED
+    note: "M4 CFO approval window"
+  /accounting/capital_request/approval_rounds/4:
+    source: AUTHORED
+    note: "M4 CFO approval window"
+  /accounting/capital_request/approval_rounds/5:
+    source: AUTHORED
+    note: "M4 CFO approval window"
   /accounting/tco_capex_fraction:
     source: AUTHORED
     note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
@@ -3103,6 +3131,14 @@ units:
   /accounting/connection_terms/vendor_managed/staff_load: FTE
   /accounting/decision_attribution_version: count
   /accounting/action_attribution_version: count
+  /accounting/capital_request/max_amount: dollars
+  /accounting/capital_request/minimum_reason_length: count
+  /accounting/capital_request/approval_rounds/0: rounds
+  /accounting/capital_request/approval_rounds/1: rounds
+  /accounting/capital_request/approval_rounds/2: rounds
+  /accounting/capital_request/approval_rounds/3: rounds
+  /accounting/capital_request/approval_rounds/4: rounds
+  /accounting/capital_request/approval_rounds/5: rounds
   /accounting/tco_capex_fraction: fraction
   /accounting/process_partial_fraction: fraction
   /preferences/rules/0/views/0/ideal: fraction

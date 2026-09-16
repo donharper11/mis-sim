@@ -264,7 +264,8 @@ also wired through the typed runtime seam. The seeded six-round browser loop pas
 disposable cohort: both teams completed six rounds and twelve immutable results were
 persisted. Production launch remains gated by the audit in `docs/m3-launch-readiness-audit.md`.
 The Phase 7 operational rehearsal now passes locally; its evidence is in
-`docs/phase7-operational-audit.md`. M4 has begun with the first coverage slice: component
-purchase forms now capture true/decoy TCO forecasts, and in-flight projects expose
-continue/pause/kill controls through the typed lifecycle command. Capital requests and the
-remaining authored approval rules are still explicitly open for the next M4 packet.
+`docs/phase7-operational-audit.md`. M4 has begun with two bounded coverage slices: component
+purchase forms now capture true/decoy TCO forecasts, in-flight projects expose
+continue/pause/kill controls through the typed lifecycle command, and Budget now executes the
+pack-authored CFO capital-request contract into the accounting ledger. Challenge free-text
+quality, strategy balance, data freshness, and the full financial model remain separate M4 work.

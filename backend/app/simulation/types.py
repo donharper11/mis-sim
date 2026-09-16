@@ -315,6 +315,22 @@ class ConnectionTermsV1(StrictModel):
     staff_load: float
 
 
+class CapitalRequestRulesV1(StrictModel):
+    """Pack-authored CFO approval contract for ``request_capital``."""
+
+    max_amount: StrictInt = Field(gt=0)
+    minimum_reason_length: StrictInt = Field(ge=1, le=1000)
+    approval_rounds: list[StrictInt]
+
+    @model_validator(mode="after")
+    def valid_rounds(self) -> "CapitalRequestRulesV1":
+        if len(self.approval_rounds) != len(set(self.approval_rounds)):
+            raise ValueError("capital request approval rounds must be unique")
+        if any(round_number < 1 for round_number in self.approval_rounds):
+            raise ValueError("capital request approval rounds must be positive")
+        return self
+
+
 class AccountingV1(StrictModel):
     opening_capital: StrictInt
     opening_operating: StrictInt
@@ -324,6 +340,7 @@ class AccountingV1(StrictModel):
     platform_capability: str
     decision_attribution_version: Literal[1]
     action_attribution_version: Literal[1]
+    capital_request: CapitalRequestRulesV1
     tco_estimators: dict[str, Literal["full_training", "basic_integration", "full_process", "compute_unit", "backup_unit", "capex_fraction", "max_policy", "one_round_opex"]]
     tco_capex_fraction: float
     process_partial_fraction: float

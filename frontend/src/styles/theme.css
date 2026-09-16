@@ -315,6 +315,9 @@ select {
 .controls-field { display: grid; gap: var(--space-sm); color: var(--text-secondary); font-size: 13px; }
 .controls-field select { min-height: 38px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--input-text); padding: 0 var(--space-md); }
 .controls-field select:focus { outline: 2px solid var(--border-focus); outline-offset: 1px; }
+.controls-field input, .controls-field textarea { min-height: 38px; background: var(--input-bg); border: 1px solid var(--input-border); color: var(--input-text); padding: var(--space-sm) var(--space-md); font: inherit; }
+.controls-field textarea { min-height: 120px; resize: vertical; }
+.controls-field input:focus, .controls-field textarea:focus { outline: 2px solid var(--border-focus); outline-offset: 1px; }
 .controls-actions { display: flex; align-items: center; gap: var(--space-lg); }
 .controls-empty { background: var(--surface-card); border: 1px solid var(--border-default); padding: var(--space-3xl); }
 .controls-empty h2 { margin-top: 0; }

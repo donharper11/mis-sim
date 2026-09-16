@@ -15,7 +15,7 @@ from .types import CostEntryV1, RuntimePackV1, SimulationError
 
 
 COST_KINDS = {
-    "capital_grant", "operating_allowance", "acquisition", "integration",
+    "capital_grant", "capital_request", "operating_allowance", "acquisition", "integration",
     "training", "process", "communication", "policy", "strategy", "response",
     "asset_opex", "integration_opex", "wages", "support", "event_loss",
 }

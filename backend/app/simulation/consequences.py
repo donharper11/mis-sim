@@ -148,6 +148,26 @@ def _response_entries(pack: RuntimePackV1, commands: tuple[CommandV1, ...], roun
     return entries, responses, prevented
 
 
+def _capital_request_entries(pack: RuntimePackV1, commands: tuple[CommandV1, ...], round: int) -> list[CostEntryV1]:
+    """Apply the authored, deterministic CFO approval contract."""
+    requests = [command for command in commands if command.op == "request_capital"]
+    if not requests:
+        return []
+    if len(requests) > 1:
+        raise SimulationError("conflicting_commands", "capital_request")
+    command = requests[0]
+    rules = pack.runtime.accounting.capital_request
+    amount = int(command.amount or 0)
+    reason = (command.reason or "").strip()
+    if round not in rules.approval_rounds:
+        raise SimulationError("invalid_input", "capital_request.round", {"round": round})
+    if amount > rules.max_amount:
+        raise SimulationError("unaffordable", "capital_request.amount", {"maximum": rules.max_amount})
+    if len(reason) < rules.minimum_reason_length:
+        raise SimulationError("invalid_input", "capital_request.reason", {"minimum_length": rules.minimum_reason_length})
+    return [entry(round, "capital_request", command.key, capital=amount, category="capital_request")]
+
+
 @dataclass(frozen=True)
 class PreparedEffects:
     pack: RuntimePackV1
@@ -178,11 +198,12 @@ def prepare_effects(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Ite
     organisation = reduce_organisation(pack, prior, estate, cmds, round)
     base_state = _state_merge(prior, estate, organisation, [])
     response_charges, responses, prevented = _response_entries(pack, cmds, round)
+    request_charges = _capital_request_entries(pack, cmds, round)
     rec = recurring_entries(pack, base_state, round)
     grant, allowance = grant_and_allowance(pack, round)
-    charges = tuple([grant, allowance, *estate.charge_entries, *organisation.charge_entries, *response_charges, *rec])
+    charges = tuple([grant, allowance, *request_charges, *estate.charge_entries, *organisation.charge_entries, *response_charges, *rec])
     capital_delta, operating_delta = totals(charges)
-    capital_available = int(prior.capital_balance) + int(grant.capital_delta)
+    capital_available = int(prior.capital_balance) + sum(int(x.capital_delta) for x in (grant, *request_charges) if x.capital_delta > 0)
     capital_spend = -sum(x.capital_delta for x in charges if x.capital_delta < 0)
     capital_remaining = capital_available - capital_spend
     operating_runrate = -sum(x.operating_delta for x in rec)
@@ -420,7 +441,7 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     prevented_evidence = [_dump(x) for x in history_row.prevented]
     round_entries = [_dump(x) for x in all_charges]
     event_loss = -sum(x.operating_delta for x in event_costs)
-    accounting = {"opening_capital": prior.capital_balance, "opening_operating": prior.operating_reserve, "capital_grant": next((x.capital_delta for x in all_charges if x.kind == "capital_grant"), 0), "operating_allowance": next((x.operating_delta for x in all_charges if x.kind == "operating_allowance"), 0), "capital_spend": -sum(x.capital_delta for x in all_charges if x.capital_delta < 0), "opex_runrate": prepared.operating_runrate, "event_loss": event_loss, "closing_capital": state.capital_balance, "closing_operating": state.operating_reserve, "cost_entries": round_entries, "unallocated_operating": -sum(x.operating_delta for x in all_charges if x.operating_delta < 0 and x.kind in {"wages", "support", "response"}), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures)}}
+    accounting = {"opening_capital": prior.capital_balance, "opening_operating": prior.operating_reserve, "capital_grant": next((x.capital_delta for x in all_charges if x.kind == "capital_grant"), 0), "capital_request": sum(x.capital_delta for x in all_charges if x.kind == "capital_request"), "operating_allowance": next((x.operating_delta for x in all_charges if x.kind == "operating_allowance"), 0), "capital_spend": -sum(x.capital_delta for x in all_charges if x.capital_delta < 0), "opex_runrate": prepared.operating_runrate, "event_loss": event_loss, "closing_capital": state.capital_balance, "closing_operating": state.operating_reserve, "cost_entries": round_entries, "unallocated_operating": -sum(x.operating_delta for x in all_charges if x.operating_delta < 0 and x.kind in {"wages", "support", "response"}), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures)}}
     changed_rollouts = [{"key": key, **_dump(value)} for key, value in state.rollouts.items() if prior.rollouts.get(key) != value]
     changed_policies = [{"key": key, **_dump(value)} for key, value in state.policies.items() if prior.policies.get(key) != value]
     changed_assignments = [{"key": key, **_dump(value)} for key, value in state.governance.items() if prior.governance.get(key) != value]

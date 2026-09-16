@@ -11,7 +11,7 @@ import Review from "./Review.jsx";
 import Debrief from "./Debrief.jsx";
 import Controls from "./Controls.jsx";
 
-const controlViews = new Set(["strategy", "governance", "security", "services", "people", "challenges"]);
+const controlViews = new Set(["strategy", "governance", "security", "services", "people", "challenges", "budget"]);
 
 export default function Shell({ view = "dashboard" }) {
   const navigate = useNavigate();

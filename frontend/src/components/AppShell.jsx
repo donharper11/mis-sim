@@ -28,6 +28,7 @@ export default function AppShell({ me, instance, schedule, dashboard, activePath
           <div className="product-shell__nav-label">Decisions</div>
           <div className="product-shell__nav-group">
             {decisionItems.map((item) => <NavItem key={item} label={item} to={item === "Strategy" ? "/strategy" : item === "Platform" ? "/platform" : item === "Components" ? "/components" : item === "Rollout" ? "/rollout" : item === "Security" ? "/security" : item === "Services" ? "/services" : item === "People" ? "/people" : item === "Governance" ? "/governance" : undefined} active={activePath === `/${item.toLowerCase()}`} />)}
+            <NavItem label="Budget" to="/budget" active={activePath === "/budget"} />
           </div>
         </nav>
       </aside>
