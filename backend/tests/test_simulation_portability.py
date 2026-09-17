@@ -15,7 +15,7 @@ import pytest
 import yaml
 
 from app.simulation import load_runtime_pack
-from app.simulation.types import CheckpointStateV1, SimulationError
+from app.simulation.types import CheckpointStateV1, RuntimePackV1, SimulationError
 
 
 PACK = Path(__file__).parents[1] / "packs" / "riverside_grocery"
@@ -96,3 +96,16 @@ def test_checkpoint_capability_references_bind_to_supplied_pack_vocabulary():
     assert state.primary == {"banking_operations": None}
     with pytest.raises(ValueError):
         CheckpointStateV1.model_validate(base, context={"capabilities": ("customer_operations",)})
+    with pytest.raises(ValueError):
+        CheckpointStateV1.model_validate(base)
+
+    # RuntimePackV1 is the production binding seam: its current pack
+    # vocabulary is passed into DTO validation rather than using the fallback.
+    loaded = load_runtime_pack(PACK)
+    bound = RuntimePackV1(
+        casepack=type("SyntheticCasepack", (), {"capabilities": [type("Capability", (), {"key": "banking_operations"})()]})(),
+        runtime=loaded.runtime,
+        pack_digest="a" * 64,
+        canonical_bytes=b"",
+    )
+    assert bound.validate_state(base).primary == {"banking_operations": None}

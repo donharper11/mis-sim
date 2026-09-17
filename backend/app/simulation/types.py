@@ -1003,10 +1003,13 @@ class CheckpointStateV1(StrictModel):
         # Capability names belong to the bound casepack.  The state DTO keeps
         # only the structural key contract; callers that have a loaded pack
         # pass its capability keys as Pydantic validation context.
-        allowed_capabilities = None
+        # Legacy callers (service/consequences) validate a DTO without pack
+        # context, so retain the Riverside vocabulary as a safe fallback.  A
+        # loaded RuntimePackV1 supplies the current pack's vocabulary here.
+        allowed_capabilities = set(CAPABILITIES)
         if info.context and "capabilities" in info.context:
             allowed_capabilities = set(info.context["capabilities"])
-        if allowed_capabilities is not None and (set(self.primary) - allowed_capabilities):
+        if set(self.primary) - allowed_capabilities:
             raise ValueError("primary references unknown capability")
         if any(not 0 <= value <= 1 or not math.isfinite(value) for value in self.unit_resistance.values()):
             raise ValueError("unit resistance out of range")
@@ -1020,7 +1023,7 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("rollout references unknown asset")
         if any(self.assets[k].source_kind != "catalog" for k in self.rollouts):
             raise ValueError("rollouts are only valid for catalog assets")
-        if allowed_capabilities is not None and any(k not in allowed_capabilities for k in self.governance | self.primary):
+        if any(k not in allowed_capabilities for k in self.governance | self.primary):
             raise ValueError("governance/primary capability key is unknown")
         if any(not KEY_RE.fullmatch(k) or len(k) > 64 for k in self.governance | self.primary):
             raise ValueError("invalid capability key")
