@@ -24,6 +24,7 @@ class DebriefRoundOut(BaseModel):
     scorecard: dict[str, Any] = Field(default_factory=dict)
     score: dict[str, Any] = Field(default_factory=dict)
     events: list[dict[str, Any]] = Field(default_factory=list)
+    responses: list[dict[str, Any]] = Field(default_factory=list)
     prevented_events: list[dict[str, Any]] = Field(default_factory=list)
     state_changes: dict[str, Any] = Field(default_factory=dict)
     financials: dict[str, Any] = Field(default_factory=dict)
@@ -59,6 +60,7 @@ def _round_payload(row: RoundResult, pack: Any | None) -> DebriefRoundOut:
     return DebriefRoundOut(
         round=row.round, scorecard=dict(scorecard) if isinstance(scorecard, Mapping) else {}, score=dict(score),
         events=[dict(event) for event in events if isinstance(event, Mapping)],
+        responses=[dict(response) for response in (payload.get("responses") or []) if isinstance(response, Mapping)],
         prevented_events=[dict(event) for event in (payload.get("prevented_events") or []) if isinstance(event, Mapping)],
         state_changes=dict(state_changes), financials=dict(payload.get("financials") or {}),
         technical_debt=dict(payload.get("technical_debt") or {}),
@@ -91,6 +93,8 @@ def _report_text(report: DebriefOut) -> str:
         lines.extend(f"  {key.replace('_', ' ').title()}: {value}" for key, value in item.scorecard.items())
         lines.append(f"  Firm score: {item.score.get('firm_score', '—')}")
         lines.append("Events: " + (", ".join(str(event.get("label", event.get("key", ""))) for event in item.events) if item.events else "none"))
+        if item.responses:
+            lines.append("Challenge responses: " + ", ".join(f"{response.get('event', '')}/{response.get('option', '')}" for response in item.responses))
         changes = item.state_changes
         lines.append("Arrived: " + (", ".join(changes.get("arrived", [])) if changes.get("arrived") else "none"))
         lines.append("Rollout changes: " + str(len(changes.get("changed_rollouts", []))))

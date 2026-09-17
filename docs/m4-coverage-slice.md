@@ -11,8 +11,9 @@ field-coverage register without changing the typed runtime boundary.
 | Over-forecast penalty (FC-6) | The purchase flow explicitly asks “What else will this cost?” and the existing engine compares the selection with actual TCO evidence in Debrief. | Full backend suite and guards pass; TCO remains typed through `CommandV1`. |
 | Follow-through (FC-2) | In-flight component projects expose Continue/Pause/Kill actions through the existing `project` lifecycle command. | The command is accepted by the existing lifecycle reducer and is revision/lock checked by `SimulationService`. |
 | Capital request (FC-7) | Budget now exposes the pack-authored CFO contract: one request per round, a maximum amount, a minimum justification length, and explicit approval rounds. Approved requests add a typed `capital_request` ledger entry and are included in capital availability, Review, and Debrief accounting. | Both shipped runtime packs load with provenance; consequence tests cover approval, persistence, amount bounds, and justification bounds. |
+| Challenge rationale note (G2 safe path) | Challenge responses accept an optional bounded free-text note, persist it in response history and round results, and expose it in Debrief. The optional LLM modifier remains unimplemented and non-blocking. | Command, consequence, and frontend lint/build checks cover capture and persistence. |
 
-The remaining M4 coverage gaps are deliberately open: challenge free-text rationale quality,
+The remaining M4 coverage gaps are deliberately open: LLM-based challenge rationale scoring,
 exhaustive strategy playthrough balance, data-freshness producers, and the full financial model.
-The capital-request contract is now explicit and executable; these other gaps still require
-separate pack and product decisions.
+The capital-request contract and the safe ungraded rationale-note path are now explicit and
+executable; these other gaps still require separate pack and product decisions.

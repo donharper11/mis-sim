@@ -35,7 +35,7 @@ def _dump(value: Any) -> Any:
 def _command_payload(raw: dict[str, Any]) -> dict[str, Any]:
     op = raw.get("op")
     allowed = {"key", "op", *COMMAND_FIELDS[op]} if op in COMMAND_FIELDS else set(raw)
-    return {key: raw[key] for key in allowed if key in raw}
+    return {key: raw[key] for key in allowed if key in raw and not (key == "note" and raw[key] is None)}
 
 
 def _canonical(value: Any) -> bytes:
@@ -141,7 +141,7 @@ def _response_entries(pack: RuntimePackV1, commands: tuple[CommandV1, ...], roun
         cost = int(option.cost) if command.option == "fund" else 0
         effect = pack.runtime.response_disposition.get(event.key)
         effect_name = effect.fund_effect if (command.option == "fund" and effect is not None) else "none"
-        responses.append(ResponseV1(round=round, key=command.key, event=event.key, option=command.option, rationale_tag=command.rationale_tag, cost=cost, effect=effect_name))
+        responses.append(ResponseV1(round=round, key=command.key, event=event.key, option=command.option, rationale_tag=command.rationale_tag, note=command.note.strip() if command.note else None, cost=cost, effect=effect_name))
         if effect_name == "prevent_current_round":
             prevented.add(event.key)
             entries.append(entry(round, "response", command.key, capital=-cost, category="response"))
@@ -446,6 +446,6 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     changed_policies = [{"key": key, **_dump(value)} for key, value in state.policies.items() if prior.policies.get(key) != value]
     changed_assignments = [{"key": key, **_dump(value)} for key, value in state.governance.items() if prior.governance.get(key) != value]
     state_changes = {"arrived": sorted(prepared.arrivals), "retired": sorted(prepared.retirements), "expired": sorted(prepared.expiries), "changed_rollouts": changed_rollouts, "changed_policies": changed_policies, "changed_assignments": changed_assignments, "resource_view": _dump(prepared.resources), "entity_access": [_dump(x) for x in team_state.entity_access or ()]}
-    result = {"simulation_version": 1, "round": round, "pack_identity": {"key": pack.casepack.metadata.pack_key, "version": pack.casepack.metadata.pack_version, "digest": pack.pack_digest}, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "suppressed_events": [{"key": x.event_key, "reason": x.reason, "capability": x.capability} for x in suppressed], "prevented_events": prevented_evidence, "accounting": accounting, "state_changes": state_changes, "tco": _tco_evidence(pack, prior, prepared, tco_rows), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures), "debt_ratio": debt_ratio}, "financials": {"capital_spend": accounting["capital_spend"], "opex_runrate": prepared.operating_runrate, "debt": priced_total, "capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve}}
+    result = {"simulation_version": 1, "round": round, "pack_identity": {"key": pack.casepack.metadata.pack_key, "version": pack.casepack.metadata.pack_version, "digest": pack.pack_digest}, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "responses": [_dump(x) for x in prepared.responses], "suppressed_events": [{"key": x.event_key, "reason": x.reason, "capability": x.capability} for x in suppressed], "prevented_events": prevented_evidence, "accounting": accounting, "state_changes": state_changes, "tco": _tco_evidence(pack, prior, prepared, tco_rows), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures), "debt_ratio": debt_ratio}, "financials": {"capital_spend": accounting["capital_spend"], "opex_runrate": prepared.operating_runrate, "debt": priced_total, "capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve}}
     preview = _preview(pack, prior, prepared, assessments)
     return TransitionV1(state=state, result=result, preview=preview)

@@ -125,7 +125,7 @@ def _command_payload(command: CommandV1) -> dict[str, Any]:
     """
     raw = command.model_dump(mode="json", exclude_none=False)
     allowed = {"key", "op", *COMMAND_FIELDS[command.op]}
-    return {key: raw[key] for key in allowed if key in raw}
+    return {key: raw[key] for key in allowed if key in raw and not (key == "note" and raw[key] is None)}
 
 
 class SimulationService:

@@ -33,6 +33,16 @@ def test_strict_twelve_command_categories_and_no_coercion():
         CommandV1.model_validate({"key": "hire_it", "op": "hire", "option": "it_generalist", "units": True})
     with pytest.raises(ValueError):
         CommandV1.model_validate({"key": "bad", "op": "request_capital", "amount": 1, "reason": ""})
+    response = CommandV1.model_validate({
+        "key": "fund_event", "op": "respond", "event": "inventory_audit_question",
+        "option": "fund", "rationale_tag": "capacity_risk", "note": "The open signal shows this is a current operating risk.",
+    })
+    assert response.note.startswith("The open signal")
+    with pytest.raises(ValueError):
+        CommandV1.model_validate({
+            "key": "fund_event", "op": "respond", "event": "inventory_audit_question",
+            "option": "fund", "rationale_tag": "capacity_risk", "note": "x" * 2001,
+        })
 
 
 def test_patch_categories_merge_and_empty_clear():

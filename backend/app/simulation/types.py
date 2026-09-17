@@ -46,10 +46,10 @@ COMMAND_FIELDS: dict[str, tuple[str, ...]] = {
     "assign": ("capability", "owner", "sponsor"),
     "set_primary": ("capability", "asset"), "declare_strategy": ("strategy",),
     "set_policy": ("policy", "selected"),
-    "respond": ("event", "option", "rationale_tag"),
+    "respond": ("event", "option", "rationale_tag", "note"),
     "request_capital": ("amount", "reason"),
 }
-NULLABLE_COMMAND_FIELDS = {"primary_for", "entity", "tier", "owner", "sponsor", "asset"}
+NULLABLE_COMMAND_FIELDS = {"primary_for", "entity", "tier", "owner", "sponsor", "asset", "note"}
 
 
 class StrictModel(BaseModel):
@@ -123,6 +123,7 @@ class CommandV1(StrictModel):
     selected: str | None = None
     event: str | None = None
     rationale_tag: str | None = None
+    note: str | None = None
     amount: StrictInt | None = None
     reason: str | None = None
 
@@ -139,10 +140,12 @@ class CommandV1(StrictModel):
         unexpected = self.model_fields_set - (set(fields) | {"key", "op"})
         if unexpected:
             raise ValueError(f"fields not allowed for {self.op}: {sorted(unexpected)}")
-        nullable = {"primary_for", "entity", "tier", "owner", "sponsor"}
+        nullable = {"primary_for", "entity", "tier", "owner", "sponsor", "note"}
         if self.op == "set_primary":
             nullable.add("asset")
         for field in fields:
+            if field == "note" and field not in self.model_fields_set:
+                continue
             if field not in self.model_fields_set:
                 raise ValueError(f"{self.op} requires {field}")
             value = getattr(self, field)
@@ -156,6 +159,8 @@ class CommandV1(StrictModel):
             raise ValueError("amount must be positive")
         if self.reason is not None and (not self.reason.strip() or len(self.reason) > 1000):
             raise ValueError("reason must be nonempty and at most 1000 characters")
+        if self.note is not None and len(self.note) > 2000:
+            raise ValueError("note must be at most 2000 characters")
         if self.op == "connect" and self.kind not in {"network", "integration", "failover"}:
             raise ValueError("invalid connection kind")
         if self.op == "project" and self.choice not in {"continue", "pause", "kill"}:
@@ -168,7 +173,7 @@ class CommandV1(StrictModel):
             if len(set(self.tco_categories)) != len(self.tco_categories):
                 raise ValueError("duplicate tco category")
         for name, value in self.__dict__.items():
-            if name in {"key", "op", "reason"} or value is None:
+            if name in {"key", "op", "reason", "note"} or value is None:
                 continue
             if isinstance(value, str):
                 _key(value)
@@ -802,7 +807,7 @@ class EventHistoryV1(StrictModel):
 
 
 class ResponseV1(StrictModel):
-    round: StrictInt; key: str; event: str; option: str; rationale_tag: str
+    round: StrictInt; key: str; event: str; option: str; rationale_tag: str; note: str | None = None
     cost: StrictInt; effect: Literal["prevent_current_round", "none"]
 
     @model_validator(mode="after")
@@ -812,6 +817,8 @@ class ResponseV1(StrictModel):
         for value in (self.key, self.event, self.option, self.rationale_tag):
             if not isinstance(value, str) or not 1 <= len(value) <= 64 or not KEY_RE.fullmatch(value):
                 raise ValueError("response identifiers must be bounded keys")
+        if self.note is not None and len(self.note) > 2000:
+            raise ValueError("response note must be at most 2000 characters")
         return self
 
 

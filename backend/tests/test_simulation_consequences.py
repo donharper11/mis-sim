@@ -77,6 +77,18 @@ def test_response_cost_is_capital_and_event_specific(pack, state):
     assert event.key in preview.prevented_events
 
 
+def test_response_note_is_persisted_in_history_and_result(pack, state):
+    event = pack.casepack.events[0]
+    option = next(item for item in event.options if item.key == "fund")
+    command = CommandV1(
+        key="fund_event", op="respond", event=event.key, option="fund",
+        rationale_tag=option.tags[0], note="The open signal shows this is a current operating risk.",
+    )
+    resolved = resolve_transition(pack, state, [command], 1)
+    assert resolved.state.response_history[-1].note == command.note
+    assert resolved.result["responses"][0]["note"] == command.note
+
+
 def test_capital_request_uses_authored_cfo_rules_and_persists(pack, state):
     command = CommandV1(
         key="capital_request",
