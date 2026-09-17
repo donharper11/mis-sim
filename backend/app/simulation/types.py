@@ -816,9 +816,51 @@ class EventHistoryV1(StrictModel):
     round: StrictInt; fired: list[EventEvidenceV1]; suppressed: list[SuppressionV1]; prevented: list[PreventionEvidenceV1]
 
 
+class RationaleReviewV1(StrictModel):
+    """Instructor-visible rationale review metadata.
+
+    The engine never applies this modifier to a score. A future approved evaluator
+    may return a bounded review through the adapter; unavailable or disabled review
+    always degrades to the neutral modifier.
+    """
+
+    status: Literal["not_scored", "scored", "unavailable"]
+    quality: float | None = None
+    modifier: float = 1.0
+    provider: StrictStr
+    model: StrictStr | None = None
+    latency_ms: float | None = None
+    cost_usd: float | None = None
+    reason: StrictStr | None = None
+
+    @model_validator(mode="after")
+    def valid_review(self) -> "RationaleReviewV1":
+        numeric = (
+            (self.quality, "quality"), (self.modifier, "modifier"),
+            (self.latency_ms, "latency_ms"), (self.cost_usd, "cost_usd"),
+        )
+        for value, name in numeric:
+            if value is not None and (isinstance(value, bool) or not math.isfinite(value)):
+                raise ValueError(f"rationale {name} must be finite")
+        if self.quality is not None and not 0.0 <= self.quality <= 1.0:
+            raise ValueError("rationale quality must be between 0 and 1")
+        if not 0.9 <= self.modifier <= 1.1:
+            raise ValueError("rationale modifier must be between 0.9 and 1.1")
+        if self.latency_ms is not None and self.latency_ms < 0:
+            raise ValueError("rationale latency cannot be negative")
+        if self.cost_usd is not None and self.cost_usd < 0:
+            raise ValueError("rationale cost cannot be negative")
+        if self.status == "scored" and self.quality is None:
+            raise ValueError("scored rationale review requires quality")
+        if self.status != "scored" and self.modifier != 1.0:
+            raise ValueError("unscored rationale review must remain neutral")
+        return self
+
+
 class ResponseV1(StrictModel):
     round: StrictInt; key: str; event: str; option: str; rationale_tag: str; note: str | None = None
     cost: StrictInt; effect: Literal["prevent_current_round", "none"]
+    rationale_review: RationaleReviewV1 | None = None
 
     @model_validator(mode="after")
     def valid_response(self) -> "ResponseV1":

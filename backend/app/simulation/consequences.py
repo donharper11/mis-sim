@@ -21,6 +21,7 @@ from .accounting import entry, forecast_operating, grant_and_allowance, recurrin
 from .estate import reduce_estate
 from .organisation import reduce_organisation
 from .projection import project_team_state
+from .rationale import review_rationale
 from .types import (
     ActionEnvelopeV1, ActionRecordV1, CheckpointStateV1, CommandV1, COMMAND_FIELDS, CostEntryV1,
     DebtV1, EventEvidenceV1, EventHistoryV1, PreviewV1, ResponseV1, RuntimePackV1,
@@ -143,7 +144,15 @@ def _response_entries(pack: RuntimePackV1, commands: tuple[CommandV1, ...], roun
         cost = int(option.cost) if command.option == "fund" else 0
         effect = pack.runtime.response_disposition.get(event.key)
         effect_name = effect.fund_effect if (command.option == "fund" and effect is not None) else "none"
-        responses.append(ResponseV1(round=round, key=command.key, event=event.key, option=command.option, rationale_tag=command.rationale_tag, note=command.note.strip() if command.note else None, cost=cost, effect=effect_name))
+        responses.append(ResponseV1(
+            round=round, key=command.key, event=event.key, option=command.option,
+            rationale_tag=command.rationale_tag, note=command.note.strip() if command.note else None,
+            cost=cost, effect=effect_name,
+            rationale_review=review_rationale(
+                note=command.note, event=event.key, option=command.option,
+                rationale_tag=command.rationale_tag, option_tags=option.tags,
+            ),
+        ))
         if effect_name == "prevent_current_round":
             prevented.add(event.key)
             entries.append(entry(round, "response", command.key, capital=-cost, category="response"))

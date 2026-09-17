@@ -30,8 +30,27 @@ rounds leave actionable signals unanswered and several strategy/archetype pairs 
 zero Management sub-factors. No strategy winner or pedagogical balance claim should
 be made from this matrix yet.
 
-The next M4 calibration task is to author a small set of strategy-distinguishing
+That first matrix identified the need for a small set of strategy-distinguishing
 plans that deliberately exercise signal response, policy discipline, and portfolio
-mix while preserving the negative controls. The matrix harness and the missing
-decision producer are now ready for that calibration; no scoring constants were
-changed to force a spread.
+mix while preserving the negative controls. The calibrated pass below addresses
+that need through authored plan choices; no scoring constants were changed to
+force a spread.
+
+## Calibrated coherent-plan pass
+
+The plan calibration profile was then run once for each declared strategy while retaining the
+three negative controls in their original fixture form. It adds explicit policy decisions every
+round, supports all five initially live catalog assets that can serve the order/store paths, and
+uses strategy-specific customer-system placement.
+
+| Declared strategy | Calibrated balanced firm-score curve (R1–R6) |
+|---|---|
+| cost leadership | 0.134310, 0.090002, 0.000000, 0.061365, 0.065001, 0.052429 |
+| differentiation | 0.000000, 0.031028, 0.000000, 0.000000, 0.076481, 0.066443 |
+| customer/supplier intimacy | 0.000000, 0.054818, 0.000000, 0.000000, 0.046517, 0.035878 |
+| focus strategy | 0.046672, 0.031388, 0.000000, 0.056006, 0.070744, 0.058472 |
+
+This is a better calibration instrument: later-round Management values are no longer universally
+zero, and the strategy curves separate. Round 3 remains zero while the on-order customer system
+is in lead time; that is an authored transition consequence, not a scoring override. The pass is
+still a human review input, not an automatic balance claim.

@@ -270,5 +270,6 @@ continue/pause/kill controls through the typed lifecycle command, and Budget now
 pack-authored CFO capital-request contract into the accounting ledger, challenge responses now
 preserve a bounded ungraded decision note, and round results now carry explicit data-freshness
 producer evidence. M4 now also exposes authored capture/storage settings, consumes freshness
-in Technology, and emits a ledger-backed modern financial model. The optional LLM rationale
-modifier and exhaustive strategy-balance review remain separate M4 work.
+in Technology, emits a ledger-backed modern financial model, and carries a governed rationale
+review seam with a neutral disabled default. The strategy harness now has a bounded coherent-plan
+calibration profile; the human pedagogical balance review remains separate from numeric checks.

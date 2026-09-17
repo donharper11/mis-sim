@@ -63,7 +63,7 @@ All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-r
 | Follow-through | Governance › continue / pause / kill in-flight | `project.status_history` | catalog `duration_rounds` | ✅ |
 | Deployed-but-never-trained | *(none — cross-check)* | `deployment` × `deployment_org_state` | — | 🔵 |
 | Decision rationale consistency | Challenges › Fund/Defer/Reject + rationale tag | `inbox_response.rationale_tag` | `event.option[].tags` | ✅ |
-| Rationale quality (±10% modifier) | Challenges › free-text box | `inbox_response.note` | rubric prompt | ⚠️ **see G2** |
+| Rationale quality (±10% modifier) | Challenges › free-text box | `inbox_response.note` + bounded `rationale_review` metadata | rubric prompt | ✅ governed adapter; default neutral and unscored |
 | Policy alignment | Security/Policy › the six information-policy switches | `policy_decision.selected` (runtime; producer 1.6/2.x) | `policies[].options` (ordinal) + `preferences/policies.yaml` archetype ideals | ✅ *(scored 2026-08-21, 1.4 closeout §5.3a)* |
 | Policy discipline (active decisions) | Security/Policy › committing each switch | `policy_decision.actively_decided` (runtime; producer 1.6/2.x) | `policies[]` with options; floor `0.25` | ✅ *(scored 2026-08-21, 1.4 closeout decision 7)* |
 

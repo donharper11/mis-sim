@@ -105,6 +105,8 @@ def test_response_note_is_persisted_in_history_and_result(pack, state):
     resolved = resolve_transition(pack, state, [command], 1)
     assert resolved.state.response_history[-1].note == command.note
     assert resolved.result["responses"][0]["note"] == command.note
+    assert resolved.result["responses"][0]["rationale_review"]["status"] == "not_scored"
+    assert resolved.result["responses"][0]["rationale_review"]["modifier"] == 1.0
 
 
 def test_capital_request_uses_authored_cfo_rules_and_persists(pack, state):

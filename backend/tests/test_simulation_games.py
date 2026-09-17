@@ -10,7 +10,7 @@ from app.models.base import Base
 from app.round import models as round_models
 from app.simulation import models as simulation_models
 from app.simulation.content import load_runtime_pack
-from app.simulation.games import ARCHETYPES, decision_plan, run_game
+from app.simulation.games import ARCHETYPES, calibrated_strategy_plan, decision_plan, run_game
 from app.simulation.types import SheetPatchV1
 
 
@@ -89,3 +89,14 @@ def test_overspender_refusal_falls_back_without_leaking_commands(pack, engine):
 
 def test_do_nothing_fixture_is_empty_for_all_rounds(pack):
     assert all(not patch.replace_categories for patch in decision_plan("do_nothing", pack, "focus_strategy"))
+
+
+def test_strategy_calibration_changes_only_the_coherent_plan(pack):
+    calibrated = calibrated_strategy_plan("balanced", pack, "differentiation")
+    assert len(calibrated[1].replace_categories["training"]) > len(
+        decision_plan("balanced", pack, "differentiation")[1].replace_categories["training"]
+    )
+    assert len(calibrated[1].replace_categories["policy"]) == len(pack.casepack.policies)
+    assert calibrated[2].replace_categories["application"][0].placement == "on_prem"
+    for archetype in ("all_tech_no_org", "do_nothing", "overspender"):
+        assert calibrated_strategy_plan(archetype, pack, "differentiation") == decision_plan(archetype, pack, "differentiation")

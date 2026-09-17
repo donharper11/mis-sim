@@ -14,11 +14,21 @@ from pathlib import Path
 from typing import Any
 
 from .service import SimulationService
-from .types import SheetPatchV1, SimulationError, RuntimePackV1
+from .types import COMMAND_FIELDS, SheetPatchV1, SimulationError, RuntimePackV1
 
 
 ARCHETYPES = ("balanced", "all_tech_no_org", "do_nothing", "overspender")
 ORG_OPERATIONS = {"train", "set_process", "communicate", "assign", "set_policy", "hire"}
+
+# M4 calibration profiles deliberately affect only the coherent plan. The three
+# negative controls remain the exact checked-in fixture so their penalties stay
+# interpretable. These are plan choices, not scoring constants.
+STRATEGY_PLAN_PROFILES: dict[str, dict[str, Any]] = {
+    "cost_leadership": {"customer_placement": "cloud", "focus": "order_fulfilment"},
+    "differentiation": {"customer_placement": "on_prem", "focus": "customer_insight"},
+    "customer_supplier_intimacy": {"customer_placement": "cloud", "focus": "customer_insight"},
+    "focus_strategy": {"customer_placement": "on_prem", "focus": "order_fulfilment"},
+}
 
 
 def _command(key: str, op: str, **fields: Any) -> dict[str, Any]:
@@ -84,6 +94,73 @@ def decision_plan(archetype: str, pack: RuntimePackV1, strategy: str | None = No
     return [SheetPatchV1.model_validate(row["accepted"]) for row in rows]
 
 
+_fixture_decision_plan = decision_plan
+
+
+def _command_payload(command: Any) -> dict[str, Any]:
+    """Keep only the typed operation fields while retaining explicit nulls."""
+    raw = command.model_dump(mode="python", exclude_none=False)
+    allowed = {"key", "op", *COMMAND_FIELDS[command.op]}
+    return {
+        key: value for key, value in raw.items()
+        if key in allowed and (value is not None or key in command.model_fields_set)
+    }
+
+
+def calibrated_strategy_plan(
+    archetype: str, pack: RuntimePackV1, strategy: str
+) -> list[SheetPatchV1]:
+    """Return the bounded M4 plan-calibration variant.
+
+    The authored fixture remains the source for every plan. For the coherent plan,
+    calibration adds explicit policy decisions in rounds that otherwise leave the
+    switches untouched, trains the small live order-data cluster, and varies the
+    customer-system placement by declared strategy. This gives the Management term
+    a real decision pattern to review without changing engine formulas or weakening
+    the negative controls.
+    """
+    plans = _fixture_decision_plan(archetype, pack, strategy)
+    if archetype != "balanced":
+        return plans
+    profile = STRATEGY_PLAN_PROFILES[strategy]
+    policy_defaults = {
+        "access_logging": "unlogged", "data_access": "open_to_all_staff",
+        "data_collection": "everything_by_default", "data_egress": "unrestricted",
+        "data_retention": "indefinite", "staff_monitoring": "untracked",
+    }
+    calibrated: list[SheetPatchV1] = []
+    for round_number, patch in enumerate(plans, 1):
+        categories = {
+            category: [_command_payload(command) for command in commands]
+            for category, commands in patch.replace_categories.items()
+        }
+        policy_rows = categories.setdefault("policy", [])
+        selected_policies = {row.get("policy") for row in policy_rows}
+        for policy, selected in policy_defaults.items():
+            if policy not in selected_policies:
+                policy_rows.append({
+                    "key": f"calibrate_{round_number}_{policy}", "op": "set_policy",
+                    "policy": policy, "selected": selected,
+                })
+        if round_number == 2:
+            categories.setdefault("training", []).extend([
+                {"key": "calibrate_order_data", "op": "train", "asset": "initial_order_db_cluster", "option": "full"},
+                {"key": "calibrate_pos", "op": "train", "asset": "initial_pos_system_2011", "option": "full"},
+                {"key": "calibrate_accounting", "op": "train", "asset": "initial_accounting_package", "option": "full"},
+                {"key": "calibrate_spreadsheets", "op": "train", "asset": "initial_store_spreadsheets", "option": "full"},
+                {"key": "calibrate_backoffice", "op": "train", "asset": "initial_store_back_office_pc", "option": "full"},
+            ])
+        if round_number == 3:
+            application_rows = categories.setdefault("application", [])
+            customer = next((row for row in application_rows if row.get("key") == "customer"), None)
+            if customer is not None:
+                customer["placement"] = profile["customer_placement"]
+        calibrated.append(SheetPatchV1.model_validate({
+            "version": 1, "replace_categories": categories,
+        }))
+    return calibrated
+
+
 def _assert_finite(value: Any) -> None:
     if isinstance(value, bool):
         return
@@ -116,7 +193,16 @@ def _empty_patch() -> SheetPatchV1:
     })
 
 
-def run_game(engine, pack: RuntimePackV1, archetype: str, strategy: str, instance_id: int, team_id: int) -> list[dict]:
+def run_game(
+    engine,
+    pack: RuntimePackV1,
+    archetype: str,
+    strategy: str,
+    instance_id: int,
+    team_id: int,
+    *,
+    plans: list[SheetPatchV1] | None = None,
+) -> list[dict]:
     """Run six typed decision rounds through the production service.
 
     The caller supplies an already migrated engine.  This function never creates
@@ -129,7 +215,7 @@ def run_game(engine, pack: RuntimePackV1, archetype: str, strategy: str, instanc
         raise SimulationError("invalid_reference", "strategy", {"strategy": strategy})
     service = SimulationService(engine, pack)
     service.initialize(instance_id, team_id, strategy)
-    plans = decision_plan(archetype, pack, strategy)
+    plans = plans if plans is not None else decision_plan(archetype, pack, strategy)
     reports: list[dict] = []
     for round, raw_patch in enumerate(plans, 1):
         if archetype == "overspender" and round == 1:
@@ -163,7 +249,14 @@ def run_game(engine, pack: RuntimePackV1, archetype: str, strategy: str, instanc
     return reports
 
 
-def run_strategy_matrix(engine, pack: RuntimePackV1, instance_start: int = 1000, archetypes: tuple[str, ...] = ARCHETYPES) -> list[dict[str, Any]]:
+def run_strategy_matrix(
+    engine,
+    pack: RuntimePackV1,
+    instance_start: int = 1000,
+    archetypes: tuple[str, ...] = ARCHETYPES,
+    *,
+    calibrated: bool = True,
+) -> list[dict[str, Any]]:
     """Exercise every declared strategy against every decision archetype.
 
     This is an evidence-producing playthrough, not a balance gate: the returned
@@ -176,10 +269,14 @@ def run_strategy_matrix(engine, pack: RuntimePackV1, instance_start: int = 1000,
     instance_id = instance_start
     for strategy in strategies:
         for archetype in archetypes:
-            reports = run_game(engine, execution_pack, archetype, strategy, instance_id, 1)
+            plans = calibrated_strategy_plan(archetype, execution_pack, strategy) if calibrated else None
+            reports = run_game(
+                engine, execution_pack, archetype, strategy, instance_id, 1, plans=plans
+            )
             rows.append({
                 "strategy": strategy,
                 "archetype": archetype,
+                "plan_profile": dict(STRATEGY_PLAN_PROFILES[strategy]) if archetype == "balanced" else None,
                 "rounds": [
                     {"round": report["round"], "firm_score": report["score"].get("firm_score", 0.0), "scorecard": report.get("scorecard", {})}
                     for report in reports
