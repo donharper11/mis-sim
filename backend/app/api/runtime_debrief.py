@@ -29,6 +29,7 @@ class DebriefRoundOut(BaseModel):
     prevented_events: list[dict[str, Any]] = Field(default_factory=list)
     state_changes: dict[str, Any] = Field(default_factory=dict)
     financials: dict[str, Any] = Field(default_factory=dict)
+    financial_model: dict[str, Any] = Field(default_factory=dict)
     technical_debt: dict[str, Any] = Field(default_factory=dict)
     tco: list[dict[str, Any]] = Field(default_factory=list)
 
@@ -65,6 +66,7 @@ def _round_payload(row: RoundResult, pack: Any | None) -> DebriefRoundOut:
         data_freshness=dict(payload.get("data_freshness") or {}),
         prevented_events=[dict(event) for event in (payload.get("prevented_events") or []) if isinstance(event, Mapping)],
         state_changes=dict(state_changes), financials=dict(payload.get("financials") or {}),
+        financial_model=dict(payload.get("financial_model") or {}),
         technical_debt=dict(payload.get("technical_debt") or {}),
         tco=[dict(item) for item in (payload.get("tco") or []) if isinstance(item, Mapping)],
     )
@@ -102,6 +104,9 @@ def _report_text(report: DebriefOut) -> str:
         lines.append("Rollout changes: " + str(len(changes.get("changed_rollouts", []))))
         lines.append(f"Capital spend: {item.financials.get('capital_spend', '—')}")
         lines.append(f"Run-rate: {item.financials.get('opex_runrate', '—')}")
+        lines.append(f"Revenue basis: {item.financial_model.get('revenue', '—')}")
+        lines.append(f"Operating margin: {item.financial_model.get('operating_margin', '—')}")
+        lines.append(f"Financial model score: {item.financial_model.get('score', '—')}")
         lines.append(f"Technical debt: {item.technical_debt.get('closing', '—')}")
         lines.append("")
     return "\n".join(lines)

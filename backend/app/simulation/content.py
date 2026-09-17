@@ -149,7 +149,11 @@ def _default_runtime(pack: Casepack) -> dict[str, Any]:
     units = sorted({x.people_affected.org_unit for x in pack.catalog})
     preferences = _preference_content(pack)
     raw = {
-        "version": 1, "catalog": catalog, "services": services_out, "drivers": drivers,
+        "version": 1, "catalog": catalog, "services": services_out,
+        "capture_storage": {
+            "data_platform": {"capture_enabled": True, "storage_rounds": 2},
+        },
+        "drivers": drivers,
         "people": {"training_retention": .9, "resistance_retention": .9, "arrival_shock": .1, "strategy_shock": .1,
                     "resistance_ceiling": .9, "adoption_adjustment": .35, "sponsor_present": 1.0, "sponsor_absent": .75,
                     "staff_floor": .25, "starting_wage_per_fte": 31000,
@@ -364,6 +368,8 @@ def _validate_against_casepack(pack: Casepack, runtime: RuntimeContentV1) -> Non
             raise SimulationError("invalid_input", f"drivers/{driver}", {"reason": "wrong round length"})
     if set(runtime.response_disposition) != {x.key for x in pack.events}:
         raise SimulationError("invalid_input", "response_disposition", {"reason": "event key mismatch"})
+    if set(runtime.capture_storage) - set(services):
+        raise SimulationError("invalid_reference", "capture_storage", {"reason": "unknown service"})
     # Preference dispositions are a one-to-one inventory of every authored
     # scalar source leaf, while runtime pointers must resolve to real v1 views.
     expected_paths: list[str] = []

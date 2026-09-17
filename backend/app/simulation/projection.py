@@ -6,7 +6,8 @@ from typing import Any, Iterable
 
 from app.casepack.models import Casepack
 from app.engine.state import (
-    ActionRecord, ArchEdge, ArchNode, DecisionState, DeploymentState, EntityAccess,
+    ActionRecord, ArchEdge, ArchNode, DataFreshnessState, DecisionState, DeploymentState, EntityAccess,
+    FinancialModelState,
     GovernanceState, OrgUnitState, PolicyDecisionState, SignalState, StaffPool, TeamState,
 )
 from .types import CheckpointStateV1, ResourceViewV1, RuntimePackV1, SimulationError
@@ -26,6 +27,8 @@ def project_team_state(
     signals: Iterable[SignalState] = (),
     entity_access: Iterable[EntityAccess] = (),
     repair_assessments: Iterable[Any] = (),
+    data_freshness: DataFreshnessState | None = None,
+    financial_model: FinancialModelState | None = None,
 ) -> TeamState:
     """Build a detached scorer snapshot from the authoritative checkpoint."""
     casepack = pack.casepack
@@ -52,7 +55,7 @@ def project_team_state(
     action_records = tuple(ActionRecord(action_type=x.record.action_type, locked_round=x.record.locked_round, capability=x.record.capability, target_key=x.record.target_key, cost=x.record.cost) for x in actions)
     decision_records = tuple(decisions)
     grants = tuple(entity_access) if entity_access else _entity_access(casepack, nodes, edges, state.connections, {key: asset.source_key for key, asset in state.assets.items()})
-    return TeamState(round=round, declared_strategy=state.strategy, nodes=tuple(nodes), edges=edges, deployments=tuple(deployments), org_units=org_units, governance=governance, staff=staff, signals=tuple(signals), decisions=decision_records, stakeholder_alignments=tuple(stakeholder_alignments), policy_decisions=policies, action_history=action_records, available_funds_by_round=tuple(funds), debt_ratio_by_capability=debt_ratios, entity_access=grants, repair_assessments=tuple(repair_assessments) if repair_assessments else None)
+    return TeamState(round=round, declared_strategy=state.strategy, nodes=tuple(nodes), edges=edges, deployments=tuple(deployments), org_units=org_units, governance=governance, staff=staff, signals=tuple(signals), decisions=decision_records, stakeholder_alignments=tuple(stakeholder_alignments), policy_decisions=policies, action_history=action_records, available_funds_by_round=tuple(funds), debt_ratio_by_capability=debt_ratios, entity_access=grants, repair_assessments=tuple(repair_assessments) if repair_assessments else None, data_freshness=data_freshness, financial_model=financial_model)
 
 
 def _entity_access(

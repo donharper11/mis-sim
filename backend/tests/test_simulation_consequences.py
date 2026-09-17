@@ -34,7 +34,7 @@ def test_empty_round_quotes_authored_allowance_and_initial_liabilities(pack, sta
     assert preview.operating_forecast[0].recurring == 78_200
 
 
-def test_round_result_produces_data_freshness_evidence_without_scoring_it(pack, state):
+def test_round_result_produces_and_scores_data_freshness_evidence(pack, state):
     resolved = resolve_transition(pack, state, [], 1)
     freshness = resolved.result["data_freshness"]
     assert freshness["round"] == 1
@@ -42,6 +42,14 @@ def test_round_result_produces_data_freshness_evidence_without_scoring_it(pack, 
     assert freshness["entities"]
     assert {row["status"] for row in freshness["entities"]} <= {"fresh", "produced_unserved", "unavailable"}
     assert resolved.result["state_changes"]["data_freshness"] == freshness
+    scored = resolved.result["score"]["capabilities"][0]
+    assert scored["evidence"]["tech"]["data_adequacy"]["freshness"]["coverage"] == freshness["coverage"]
+    assert scored["sub_factors"]["tech"]["data_adequacy"] <= freshness["coverage"]
+    model = resolved.result["financial_model"]
+    assert model["revenue"] > 0
+    assert 0 <= model["operating_margin"] <= 1
+    assert resolved.result["scorecard_meta"]["financial_partial"] is False
+    assert resolved.result["scorecard_meta"]["base"]["financial"] == model["score"]
 
 
 def test_quote_and_resolve_are_detached_and_reconcile_balances(pack, state):

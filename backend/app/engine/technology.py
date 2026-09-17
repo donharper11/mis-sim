@@ -122,6 +122,14 @@ def technology(pack: Casepack, state: TeamState, cap_key: str) -> TechResult:
         evidence["capacity"] = {"bottleneck": bottleneck, "demand": demand}
 
     data_adequacy, data_detail = _data_adequacy(pack, state, cap_key)
+    if state.data_freshness is not None:
+        raw_adequacy = data_adequacy
+        data_adequacy = min(data_adequacy, state.data_freshness.coverage)
+        data_detail["freshness"] = {
+            "coverage": state.data_freshness.coverage,
+            "statuses": {entity: status for entity, status in state.data_freshness.statuses},
+            "raw_data_adequacy": raw_adequacy,
+        }
     currency, currency_detail = _currency(state, cap_key)
 
     sub_factors = {

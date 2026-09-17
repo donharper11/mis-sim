@@ -20,6 +20,7 @@ function PlatformService({ asset }) {
       <p>{placementNames[asset.placement] || asset.placement} · {asset.status}</p>
       {asset.utilisation_pct !== null && <><span className="platform-label">Capacity used</span><strong>{Math.round(asset.utilisation_pct)}% used</strong><div className="platform-bar"><span style={{ width: `${Math.min(100, Math.max(0, asset.utilisation_pct))}%` }} /></div></>}
       {asset.capacity_pct !== null && <p className="platform-muted">Capacity reference {asset.capacity_pct}%</p>}
+      {asset.capture_enabled !== null && <p className="platform-muted">Data capture {asset.capture_enabled ? "enabled" : "disabled"} · retained {asset.storage_rounds} round{asset.storage_rounds === 1 ? "" : "s"}</p>}
       <StatusBadge status={status} label={label} />
     </article>
   );

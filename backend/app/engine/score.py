@@ -127,7 +127,7 @@ def score_team(pack: Casepack, state: TeamState) -> TeamScore:
             weights = dict(s.capability_weights)
             break
 
-    bsc = rollup_mod.balanced_scorecard(realised, tech_subs, org_subs, mgmt_subs, weights)
+    bsc = rollup_mod.balanced_scorecard(realised, tech_subs, org_subs, mgmt_subs, weights, state.financial_model)
     fscore = rollup_mod.firm_score(pack, state.declared_strategy, realised)
     sat = rollup_mod.stakeholder_satisfaction(state, realised)
 

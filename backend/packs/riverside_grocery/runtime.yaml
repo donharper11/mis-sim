@@ -516,6 +516,10 @@ services:
         compute: 0
         storage_gb: 0
     max_units: 1
+capture_storage:
+  data_platform:
+    capture_enabled: true
+    storage_rounds: 2
 drivers:
   transactions:
   - 80000
@@ -1748,6 +1752,9 @@ response_disposition:
     fund_effect: prevent_current_round
     explanation: 'A commissioned report prevents this round''s board-request consequence. TODO: calibrate M1/M4'
 provenance:
+  /capture_storage/data_platform/storage_rounds:
+    source: AUTHORED
+    note: "M4 capture/storage retention setting; owner M4"
   /catalog/pos_system_2011/capacity_by_capability/store_operations:
     source: AUTHORED
     note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
@@ -2829,6 +2836,7 @@ provenance:
     source: AUTHORED
     note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
 units:
+  /capture_storage/data_platform/storage_rounds: rounds
   /catalog/pos_system_2011/capacity_by_capability/store_operations: store_day
   /catalog/pos_system_2011/capacity_multiplier_by_config/core: fraction
   /catalog/pos_system_2011/capacity_multiplier_by_config/modernised: fraction

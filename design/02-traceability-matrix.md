@@ -30,7 +30,7 @@ All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-r
 | Single points of failure | *(none — computed)* | `round_result.spof_list` | — (graph-derived, zero authoring) | 🔵 |
 | Data adequacy — integration | Purchase wizard › integrations to build; canvas edges | `arch_edge`, `integration_line` | catalog `must_be_fed_by`, `must_feed` | ✅ |
 | Data adequacy — inconsistency | *(none — detected)* | computed from `entity_ownership` | — | 🔵 |
-| Data currency / freshness | Capture/storage settings remain deferred; round-to-round production now records required-entity freshness from the live estate and integration graph; scoring consumption remains a future follow-up | `round_result.data_freshness` and `state_changes.data_freshness` | live owners, required entities, and integration grants | ⚠️ **partially produced — see register G2.** No score modifier is applied, and this is not folded into `Component currency (EOL)`. |
+| Data currency / freshness | Platform runtime exposes authored capture/storage settings; round evolution records required-entity freshness from live owners, configured capture services, and integration grants; Technology caps data adequacy by the resulting coverage | `round_result.data_freshness` and `state_changes.data_freshness`; `PlatformAssetOut.capture_enabled/storage_rounds` | `runtime.capture_storage`, live owners, required entities, and integration grants | ✅ producer + consumer; current-round freshness remains distinct from Component currency (EOL). |
 | Component currency (EOL) | Standing decision › Lifecycle (patch/upgrade/retire) | `deployment.installed_round`, `.retired_round` | catalog `service_life` | ✅ |
 
 ---
@@ -99,7 +99,7 @@ All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-r
 | Causal trace ("throttled by …") | the three term decompositions | ✅ |
 | Signals you missed, with round first shown | `signal` ledger | ✅ |
 | Event resolution + blast radius | `arch_edge` traversal, `event.precondition` | ✅ |
-| **Balanced Scorecard — Financial · Customer · Internal Process · Learning & Growth** | 1.4 normalized base plus 1.6 fired-event point adjustments; scorecard contract v1 and persisted base/delta/partial-status evidence | ✅ unit/persistence contract; Financial remains a partial discipline proxy, full model M4 |
+| **Balanced Scorecard — Financial · Customer · Internal Process · Learning & Growth** | 1.4 normalized base plus 1.6 fired-event point adjustments; modern runtime Financial consumes the ledger-backed revenue/capex/opex/debt model and persists base/delta/status evidence; legacy 1.4 callers retain the partial proxy | ✅ unit/persistence contract; modern Financial complete, legacy proxy explicitly partial |
 | Management question answerability | `entity_ownership`, `arch_edge`, level-of-detail | ❓ **see G3** |
 | Competitor moves | `competitor_action` | ⚠️ **see G4** |
 | Debrief written reflection | Debrief › reflection box | ⚠️ **see G5** |

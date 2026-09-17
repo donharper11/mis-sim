@@ -28,10 +28,10 @@ The engine produces four families of output, and they map onto BSC almost exactl
 | **Learning & Growth** | training coverage, adoption, resistance, staff skills, governance maturity |
 
 **Implemented scorecard boundary — contract v1:** the pure engine emits normalized
-0–1 base perspectives. Financial is currently the strategic-alignment and
-portfolio-discipline proxy with `financial_partial=True`; the Financial measures
-listed above describe the intended fuller model, not a claim those ledgers already
-feed this score. The round runner alone applies fired-event point adjustments under
+0–1 base perspectives. Legacy pure-engine callers without runtime accounting retain
+the strategic-alignment and portfolio-discipline proxy with `financial_partial=True`;
+the modern runtime supplies a ledger-backed revenue/capex/opex/debt model and marks
+`financial_partial=False`. The round runner alone applies fired-event point adjustments under
 `CONTRACTS.md` and persists bounded scores plus base/delta/status evidence. Engine
 Tech/Org/Mgmt, capability realised value, firm score and historical pins are unchanged.
 

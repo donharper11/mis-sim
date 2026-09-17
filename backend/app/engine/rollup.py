@@ -14,7 +14,7 @@ joined at one point and keeps the causal trace traceable.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from app.casepack.models import Casepack
@@ -51,6 +51,7 @@ def balanced_scorecard(
     org_subs: dict[str, dict[str, float]],
     mgmt_subs: dict[str, dict[str, float]],
     weights: dict[str, float],
+    financial_model: Any | None = None,
 ) -> BalancedScorecard:
     caps = list(realised)
 
@@ -76,18 +77,28 @@ def balanced_scorecard(
     ]))
     # Financial (partial): the cost-discipline the engine can see without the ledger.
     any_cap = caps[0]
-    financial = geomean([
-        mgmt_subs[any_cap]["strategic_alignment"] or 0.001,
-        mgmt_subs[any_cap]["portfolio_discipline"] or 0.001,
-    ])
+    if financial_model is None:
+        financial = geomean([
+            mgmt_subs[any_cap]["strategic_alignment"] or 0.001,
+            mgmt_subs[any_cap]["portfolio_discipline"] or 0.001,
+        ])
+        financial_partial = True
+        financial_inputs = {"perspective_scale": "0..1 computed rollup; multiply by 100 for a headline"}
+    else:
+        financial = financial_model.score
+        financial_partial = False
+        financial_inputs = {
+            "perspective_scale": "0..1 computed rollup; multiply by 100 for a headline",
+            "financial_model": asdict(financial_model),
+        }
 
     return BalancedScorecard(
         financial=round(financial, 6),
         customer=round(customer, 6),
         internal_process=round(internal, 6),
         learning_growth=round(learning, 6),
-        financial_partial=True,
-        inputs={"perspective_scale": "0..1 computed rollup; multiply by 100 for a headline"},
+        financial_partial=financial_partial,
+        inputs=financial_inputs,
     )
 
 

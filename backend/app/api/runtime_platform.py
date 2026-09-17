@@ -39,6 +39,8 @@ class PlatformAssetOut(BaseModel):
     status: str
     capacity_pct: int | None = None
     utilisation_pct: float | None = None
+    capture_enabled: bool | None = None
+    storage_rounds: int | None = None
 
 
 class PlatformProjectOut(BaseModel):
@@ -168,6 +170,8 @@ def _state_rows(team: Team, instance: SimulationInstance, state: Mapping[str, An
             installed_round=int(raw.get("installed_round", 0)), status="retired" if raw.get("retired_round") is not None else "active",
             capacity_pct=int(row.capacity) if row is not None else (int(definition.capacity_pct) if definition is not None else None),
             utilisation_pct=float(row.utilisation * 100) if row is not None else None,
+            capture_enabled=(pack.runtime.capture_storage.get(source_key).capture_enabled if pack is not None and raw.get("source_kind") == "service" and source_key in pack.runtime.capture_storage else None),
+            storage_rounds=(pack.runtime.capture_storage.get(source_key).storage_rounds if pack is not None and raw.get("source_kind") == "service" and source_key in pack.runtime.capture_storage else None),
         ))
     projects: list[PlatformProjectOut] = []
     for raw in (state.get("projects", {}) if isinstance(state.get("projects"), Mapping) else {}).values():

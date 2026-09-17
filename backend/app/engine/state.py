@@ -132,6 +132,50 @@ class EntityAccess:
 
 
 @dataclass(frozen=True)
+class DataFreshnessState:
+    """Current-round freshness evidence supplied by the runtime producer."""
+
+    coverage: float
+    statuses: tuple[tuple[str, str], ...] = ()
+
+    def __post_init__(self) -> None:
+        _validate_numeric_input(self.coverage, "data_freshness.coverage", positive=False)
+        if self.coverage > 1:
+            raise ValueError("data_freshness.coverage must be within 0..1")
+        if len({entity for entity, _status in self.statuses}) != len(self.statuses):
+            raise ValueError("duplicate data freshness entity")
+        allowed = {"fresh", "produced_unserved", "unavailable"}
+        if any(not entity or status not in allowed for entity, status in self.statuses):
+            raise ValueError("invalid data freshness status")
+
+
+@dataclass(frozen=True)
+class FinancialModelState:
+    """Round financial model produced from the runtime accounting ledger."""
+
+    revenue: float
+    capex_spend: int
+    operating_cost: int
+    event_loss: int
+    technical_debt: int
+    closing_capital: int
+    closing_operating: int
+    operating_margin: float
+    capex_efficiency: float
+    debt_burden: float
+    score: float
+
+    def __post_init__(self) -> None:
+        if self.revenue <= 0 or any(value < 0 for value in (self.capex_spend, self.operating_cost, self.event_loss, self.technical_debt)):
+            raise ValueError("invalid financial model amounts")
+        for name in ("operating_margin", "capex_efficiency", "debt_burden", "score"):
+            value = getattr(self, name)
+            _validate_numeric_input(value, f"financial_model.{name}", positive=False)
+            if value > 1:
+                raise ValueError(f"financial_model.{name} must be within 0..1")
+
+
+@dataclass(frozen=True)
 class RepairCandidate:
     """Compact P4 attestation of a verified, credit-eligible repair witness."""
 
@@ -331,6 +375,9 @@ class TeamState:
     entity_access: tuple[EntityAccess, ...] | None = None
     #: P4 supplies complete current-round assessments; None retains generic legacy quotes.
     repair_assessments: tuple[RepairAssessment, ...] | None = None
+    #: Optional M4 producer output. None preserves the historical scorer contract.
+    data_freshness: DataFreshnessState | None = None
+    financial_model: FinancialModelState | None = None
 
     def __post_init__(self) -> None:
         if self.entity_access is not None:

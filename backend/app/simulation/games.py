@@ -47,6 +47,21 @@ def _patch(commands: list[dict[str, Any]]) -> dict[str, Any]:
 FIXTURE = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "simulation_v1_decisions.json"
 
 
+class _ExecutionPack:
+    """One detached pack view for a bounded playthrough batch.
+
+    RuntimePackV1 intentionally returns a defensive deepcopy on every public
+    access. A matrix is read-only, so copying once preserves that boundary while
+    avoiding repeated deepcopies across the repair catalogue.
+    """
+
+    def __init__(self, pack: RuntimePackV1):
+        self.casepack = pack.casepack
+        self.runtime = pack.runtime
+        self.pack_digest = pack.pack_digest
+        self.canonical_bytes = pack.canonical_bytes
+
+
 def _fixture() -> dict[str, dict[str, Any]]:
     rows = json.loads(FIXTURE.read_text())
     if not isinstance(rows, list):
@@ -146,3 +161,29 @@ def run_game(engine, pack: RuntimePackV1, archetype: str, strategy: str, instanc
         _assert_finite(result)
         reports.append(copy.deepcopy(result))
     return reports
+
+
+def run_strategy_matrix(engine, pack: RuntimePackV1, instance_start: int = 1000, archetypes: tuple[str, ...] = ARCHETYPES) -> list[dict[str, Any]]:
+    """Exercise every declared strategy against every decision archetype.
+
+    This is an evidence-producing playthrough, not a balance gate: the returned
+    rows make score curves, rank order, and spread reviewable without asserting
+    that one strategy must win.
+    """
+    strategies = [item.key for item in pack.casepack.strategies]
+    execution_pack = _ExecutionPack(pack)
+    rows: list[dict[str, Any]] = []
+    instance_id = instance_start
+    for strategy in strategies:
+        for archetype in archetypes:
+            reports = run_game(engine, execution_pack, archetype, strategy, instance_id, 1)
+            rows.append({
+                "strategy": strategy,
+                "archetype": archetype,
+                "rounds": [
+                    {"round": report["round"], "firm_score": report["score"].get("firm_score", 0.0), "scorecard": report.get("scorecard", {})}
+                    for report in reports
+                ],
+            })
+            instance_id += 1
+    return rows

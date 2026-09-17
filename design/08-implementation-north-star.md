@@ -106,7 +106,7 @@ unit contracts, finite values and bounds are checked independently of snapshot p
 | Training decay/adoption/resistance and actual preference-alignment producers | M1 organisation contract and implementation | M1; any richer refinement explicitly recorded for M4 |
 | Back-distributed opex and duplicated people-affected seed values, 1.6-A-003/A-004 | M1 estate/cost and organisation handoffs | M1 |
 | Data freshness, register G2 | M4 Platform producer + scoring follow-up | M4 |
-| Full financial scoring vs the current discipline proxy | M1 accounting contract, M4 scoring follow-up | M4 |
+| Full financial scoring vs the current discipline proxy | M1 accounting contract, M4 scoring follow-up | ✅ modern runtime model; calibration review remains M4 |
 | Numeric-range E00 diagnostics, OS-D1; remaining validator class coverage | M2 registry/validator follow-up | M2 |
 | Policy preference overrides; richer communication predicate, CC-D9 | M1 defines supported v1 shape; M4 policy/rollout follow-up for remaining scope | M4 |
 | Calibration values, B12/F5/CC-D1/J2 and pack markers | M1/M4 calibration review, each retained with location and owner | M4; playtest refinements may remain explicitly owned |
@@ -269,5 +269,6 @@ purchase forms now capture true/decoy TCO forecasts, in-flight projects expose
 continue/pause/kill controls through the typed lifecycle command, and Budget now executes the
 pack-authored CFO capital-request contract into the accounting ledger, challenge responses now
 preserve a bounded ungraded decision note, and round results now carry explicit data-freshness
-producer evidence. The optional LLM rationale modifier, capture/storage settings, scoring
-consumption, strategy balance, and the full financial model remain separate M4 work.
+producer evidence. M4 now also exposes authored capture/storage settings, consumes freshness
+in Technology, and emits a ledger-backed modern financial model. The optional LLM rationale
+modifier and exhaustive strategy-balance review remain separate M4 work.

@@ -239,6 +239,13 @@ class ServiceRuntimeV1(StrictModel):
         return self
 
 
+class CaptureStorageSettingsV1(StrictModel):
+    """Authored data-capture and retention behavior for a platform service."""
+
+    capture_enabled: bool = True
+    storage_rounds: StrictInt = Field(default=1, ge=1)
+
+
 class HiringOptionV1(StrictModel):
     fte: float
     wage_per_round: StrictInt
@@ -413,6 +420,7 @@ class RuntimeContentV1(StrictModel):
     version: Literal[1]
     catalog: dict[str, CatalogRuntimeV1]
     services: dict[str, ServiceRuntimeV1]
+    capture_storage: dict[str, CaptureStorageSettingsV1] = Field(default_factory=dict)
     drivers: dict[str, list[float]]
     people: PeopleV1
     initial: InitialV1
@@ -426,6 +434,8 @@ class RuntimeContentV1(StrictModel):
     def validate_numbers(self) -> "RuntimeContentV1":
         def walk(value: Any, path: str = ""):
             if isinstance(value, bool):
+                if path.endswith("/capture_enabled"):
+                    return
                 raise ValueError(f"boolean is not a numeric/content value at {path}")
             if isinstance(value, float) and not math.isfinite(value):
                 raise ValueError(f"non-finite numeric value at {path}")
