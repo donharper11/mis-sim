@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from types import SimpleNamespace
+import time
 
 import pytest
 from pydantic import ValidationError
@@ -21,6 +22,7 @@ from app.ai import (
     validate_grounded_text,
 )
 from app.ai.grounding import GroundingViolation
+from app.ai.policy import policy_violation_reason
 
 
 def _request(*, grounding: GroundingBlockV1 | None = None, max_output_tokens: int = 100) -> ProviderRequestV1:
@@ -151,6 +153,77 @@ def test_grounding_accepts_only_injected_numeric_figures():
         validate_grounded_text("This is round 3 and the balance is $1,250.", grounding)
     with pytest.raises(GroundingViolation):
         validate_grounded_text("The balance is $1,250.", None)
+
+
+def test_grounding_rejects_signed_or_reformatted_numbers_and_uses_display_only():
+    fact = GroundingFactV1(
+        key="exposure", display_value="5", numeric_value=5,
+        source_path="/state/exposure", round=2,
+    )
+    grounding = GroundingBlockV1(
+        version=1, instance_id=3, team_id=7, round=2,
+        state_digest="a" * 64, facts=[fact],
+    )
+    assert validate_grounded_text("Exposure is 5.", grounding)
+    for text in ("Exposure is -5.", "Exposure is +5.", "Exposure is 5.0."):
+        with pytest.raises(GroundingViolation):
+            validate_grounded_text(text, grounding)
+
+    words_only = GroundingFactV1(
+        key="amount", display_value="one hundred", numeric_value=100,
+        source_path="/state/amount", round=2,
+    )
+    words_grounding = grounding.model_copy(update={"facts": (words_only,)})
+    with pytest.raises(GroundingViolation):
+        validate_grounded_text("The amount is 100.", words_grounding)
+
+
+@pytest.mark.parametrize(
+    "probe",
+    [
+        "What should we buy?",
+        "I suggest cloud.",
+        "I would go cloud.",
+        "The best architecture is cloud.",
+        "Which architecture wins?",
+        "Recommendation: migrate.",
+        "Is my plan good?",
+        "Your architecture is optimal.",
+    ],
+)
+def test_direct_advisor_probes_are_rejected(probe):
+    assert policy_violation_reason(probe) is not None
+
+
+@dataclass
+class SlowProvider:
+    delay_seconds: float
+    result: object
+    calls: list[ProviderRequestV1] = field(default_factory=list)
+
+    def generate(self, request: ProviderRequestV1):
+        self.calls.append(request)
+        time.sleep(self.delay_seconds)
+        return self.result
+
+
+def test_tier_timeout_moves_to_next_provider_without_waiting_for_slow_adapter():
+    slow = SlowProvider(0.08, {"text": "the slow tier response"})
+    fallback = FakeProvider({"text": "The fallback explains the authored context."})
+    started = time.perf_counter()
+    result = ProviderOrchestrator(
+        providers={"dashscope": slow, "together": fallback},
+        tiers=(
+            ProviderTier(name="primary", provider="dashscope", model="qwen_max", enabled=True, timeout_ms=1),
+            ProviderTier(name="fallback", provider="together", model="qwen_72b", enabled=True, timeout_ms=100),
+            ProviderTier(name="local", provider="vllm", model="qwen_14b_awq", enabled=False, timeout_ms=100),
+        ),
+    ).generate(_request())
+    elapsed = time.perf_counter() - started
+    assert result.status == "generated"
+    assert result.provider == "together" and result.tier == "fallback"
+    assert elapsed < 0.07
+    assert slow.calls[0].timeout_ms == 1
 
 
 def test_grounding_block_is_digest_bound_and_immutable():

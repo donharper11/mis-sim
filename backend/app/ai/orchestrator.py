@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import math
+import queue
+import threading
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -128,7 +130,7 @@ class ProviderOrchestrator:
             tier_request = request.model_copy(update={"timeout_ms": tier.timeout_ms})
             started = time.perf_counter()
             try:
-                raw = self._invoke(provider, tier_request)
+                raw = self._invoke_with_timeout(provider, tier_request, tier.timeout_ms)
                 payload = self._payload(raw)
                 text = payload.get("text")
                 if not isinstance(text, str) or not text.strip():
@@ -174,6 +176,38 @@ class ProviderOrchestrator:
         return generate(request) if callable(generate) else provider(request)
 
     @staticmethod
+    def _invoke_with_timeout(provider: _Provider, request: ProviderRequestV1, timeout_ms: int) -> Any:
+        """Run an injected synchronous adapter behind a hard caller deadline.
+
+        Provider implementations are deliberately injected and may be blocking.
+        A daemon thread keeps the orchestration path from waiting after a tier
+        deadline; the next tier can therefore run immediately.  No provider
+        client or network primitive is created here.
+        """
+        result_queue: queue.Queue[tuple[bool, Any]] = queue.Queue(maxsize=1)
+
+        def call() -> None:
+            try:
+                result_queue.put((True, ProviderOrchestrator._invoke(provider, request)))
+            except BaseException as exc:  # captured and converted to safe status below
+                result_queue.put((False, exc))
+
+        worker = threading.Thread(target=call, name="mis-sim-ai-provider", daemon=True)
+        worker.start()
+        worker.join(timeout_ms / 1000)
+        if worker.is_alive():
+            raise _AttemptFailure("provider_timeout")
+        try:
+            succeeded, value = result_queue.get_nowait()
+        except queue.Empty as exc:  # defensive: a completed thread must publish a result
+            raise _AttemptFailure("provider_exception") from exc
+        if succeeded:
+            return value
+        if isinstance(value, Exception):
+            raise value
+        raise _AttemptFailure("provider_exception")
+
+    @staticmethod
     def _payload(raw: Any) -> dict[str, Any]:
         if isinstance(raw, ProviderResponseV1):
             if raw.status != "generated":
@@ -205,5 +239,6 @@ class ProviderOrchestrator:
             "empty_output", "decision_recommendation", "plan_evaluation",
             "purchase_instruction", "architecture_recommendation", "ranking_or_score",
             "numeric_claim_without_grounding", "ungrounded_numeric_claim",
+            "provider_timeout",
         }
         return reason if reason in known else "policy_rejected"

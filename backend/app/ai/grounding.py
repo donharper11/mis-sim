@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
 from .contracts import GroundingBlockV1
@@ -13,37 +14,55 @@ class GroundingViolation(ValueError):
 
 
 _NUMBER_RE = re.compile(
-    r"(?<![A-Za-z0-9_])(?P<currency>[$€£¥])?"
+    r"(?<![A-Za-z0-9_])(?P<sign>[+-])?(?P<currency>[$€£¥])?"
     r"(?P<number>\d[\d,]*(?:\.\d+)?)"
     r"(?P<percent>%)?(?![A-Za-z0-9_])"
 )
 
 
-def _decimal(value: str) -> Decimal:
-    return Decimal(value.replace(",", ""))
+@dataclass(frozen=True)
+class _NumericToken:
+    """The exact numeric representation visible to the model."""
+
+    sign: str
+    currency: str
+    number: str
+    percent: bool
+
+    @property
+    def decimal(self) -> Decimal:
+        value = Decimal(self.number.replace(",", ""))
+        return -value if self.sign == "-" else value
 
 
-def _number_candidates(text: str) -> list[tuple[Decimal, bool]]:
-    values: list[tuple[Decimal, bool]] = []
+def _number_candidates(text: str) -> list[_NumericToken]:
+    values: list[_NumericToken] = []
     for match in _NUMBER_RE.finditer(text):
         try:
-            values.append((_decimal(match.group("number")), bool(match.group("percent"))))
+            token = _NumericToken(
+                sign=match.group("sign") or "",
+                currency=match.group("currency") or "",
+                number=match.group("number"),
+                percent=bool(match.group("percent")),
+            )
+            # Validate the captured representation once, while retaining its
+            # exact sign/currency/format for the grounding comparison below.
+            token.decimal
+            values.append(token)
         except InvalidOperation:
             # The regex is deliberately narrow; this is defensive for future edits.
             continue
     return values
 
 
-def _allowed_numbers(grounding: GroundingBlockV1) -> set[Decimal]:
-    allowed: set[Decimal] = set()
+def _allowed_numbers(grounding: GroundingBlockV1) -> set[_NumericToken]:
+    allowed: set[_NumericToken] = set()
     for fact in grounding.facts:
-        if fact.numeric_value is not None:
-            value = Decimal(str(fact.numeric_value))
-            allowed.add(value)
         # display_value is the only human-readable value the provider may quote.
-        # Include its numeric form when it is explicitly part of the fact.
-        for value, is_percent in _number_candidates(fact.display_value):
-            allowed.add(value / Decimal("100") if is_percent else value)
+        # numeric_value is deliberately *not* an authorization source: it is
+        # semantic metadata for adapters and cannot authorize a different
+        # representation than the authored display value.
+        allowed.update(_number_candidates(fact.display_value))
     return allowed
 
 
@@ -60,9 +79,8 @@ def validate_grounded_text(text: str, grounding: GroundingBlockV1 | None) -> str
     if grounding is None:
         raise GroundingViolation("numeric_claim_without_grounding")
     allowed = _allowed_numbers(grounding)
-    for value, is_percent in numbers:
-        normalized = value / Decimal("100") if is_percent else value
-        if normalized not in allowed:
+    for token in numbers:
+        if token not in allowed:
             raise GroundingViolation("ungrounded_numeric_claim")
     return text
 
