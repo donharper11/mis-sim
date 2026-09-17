@@ -28,7 +28,7 @@ Across archetypes, only the coherent `balanced` plan produced non-zero rounds
 is a valid calibration finding, not a strategy-balance pass: the fixture's later
 rounds leave actionable signals unanswered and several strategy/archetype pairs hit
 zero Management sub-factors. No strategy winner or pedagogical balance claim should
-be made from this matrix yet.
+be made from this matrix at that stage.
 
 That first matrix identified the need for a small set of strategy-distinguishing
 plans that deliberately exercise signal response, policy discipline, and portfolio
@@ -75,3 +75,13 @@ The revised model removes the artificial all-zero transition rounds: every balan
 retains partial value in every round. Later-round scores remain relatively close because the four
 plans still share most of the same authored estate and rollout path; this is still not a
 competitive-market simulation. All three negative-control archetypes remained at zero.
+
+## M4 balance gate — accepted
+
+On 2026-09-18 the user accepted the weighted-term curves for pedagogical review and closed the
+M4 balance gate. The accepted criteria are met: no balanced strategy has an artificial all-zero
+round; all three negative controls remain at zero; strategy-specific differences remain visible;
+and later-round convergence is explained by shared authored plans rather than competitor
+interaction. This ruling closes the M4 balance review; it does not claim that the harness is a
+competitive-market simulation. M5 course operations and teaching support is now the active
+product phase.

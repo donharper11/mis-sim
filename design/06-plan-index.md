@@ -4,7 +4,12 @@ The original product packet inventory. `design/05-implementation-plan.md` explai
 [`08-implementation-north-star.md`](08-implementation-north-star.md) now governs the delivery
 order and recovery gates; packet IDs here remain stable for scope and history.
 
-**8 original phases · 47 work packets · 11 recorded closed, with accepted deferrals.**
+**8 original phases · 47 work packets · historical packet counts retained below; current delivery
+status is governed by the implementation north star.**
+
+**Current delivery status (2026-09-18):** M0, M1, M2, M3, and M4 are closed at their north-star
+gates. The M4 balance review accepted the weighted strategy curves. **M5 — course operations and
+teaching support — is now active.**
 
 ## Numbering
 
