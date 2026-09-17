@@ -34,6 +34,16 @@ def test_empty_round_quotes_authored_allowance_and_initial_liabilities(pack, sta
     assert preview.operating_forecast[0].recurring == 78_200
 
 
+def test_round_result_produces_data_freshness_evidence_without_scoring_it(pack, state):
+    resolved = resolve_transition(pack, state, [], 1)
+    freshness = resolved.result["data_freshness"]
+    assert freshness["round"] == 1
+    assert 0 <= freshness["coverage"] <= 1
+    assert freshness["entities"]
+    assert {row["status"] for row in freshness["entities"]} <= {"fresh", "produced_unserved", "unavailable"}
+    assert resolved.result["state_changes"]["data_freshness"] == freshness
+
+
 def test_quote_and_resolve_are_detached_and_reconcile_balances(pack, state):
     before = deepcopy(state.model_dump(mode="python"))
     command = CommandV1(key="buy_compute", op="buy_service", service="compute_pool", placement="cloud", units=1)

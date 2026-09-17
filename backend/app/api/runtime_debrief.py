@@ -25,6 +25,7 @@ class DebriefRoundOut(BaseModel):
     score: dict[str, Any] = Field(default_factory=dict)
     events: list[dict[str, Any]] = Field(default_factory=list)
     responses: list[dict[str, Any]] = Field(default_factory=list)
+    data_freshness: dict[str, Any] = Field(default_factory=dict)
     prevented_events: list[dict[str, Any]] = Field(default_factory=list)
     state_changes: dict[str, Any] = Field(default_factory=dict)
     financials: dict[str, Any] = Field(default_factory=dict)
@@ -61,6 +62,7 @@ def _round_payload(row: RoundResult, pack: Any | None) -> DebriefRoundOut:
         round=row.round, scorecard=dict(scorecard) if isinstance(scorecard, Mapping) else {}, score=dict(score),
         events=[dict(event) for event in events if isinstance(event, Mapping)],
         responses=[dict(response) for response in (payload.get("responses") or []) if isinstance(response, Mapping)],
+        data_freshness=dict(payload.get("data_freshness") or {}),
         prevented_events=[dict(event) for event in (payload.get("prevented_events") or []) if isinstance(event, Mapping)],
         state_changes=dict(state_changes), financials=dict(payload.get("financials") or {}),
         technical_debt=dict(payload.get("technical_debt") or {}),

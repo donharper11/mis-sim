@@ -267,6 +267,7 @@ The Phase 7 operational rehearsal now passes locally; its evidence is in
 `docs/phase7-operational-audit.md`. M4 has begun with two bounded coverage slices: component
 purchase forms now capture true/decoy TCO forecasts, in-flight projects expose
 continue/pause/kill controls through the typed lifecycle command, and Budget now executes the
-pack-authored CFO capital-request contract into the accounting ledger, and challenge responses
-now preserve a bounded ungraded decision note. The optional LLM rationale modifier, strategy
-balance, data freshness, and the full financial model remain separate M4 work.
+pack-authored CFO capital-request contract into the accounting ledger, challenge responses now
+preserve a bounded ungraded decision note, and round results now carry explicit data-freshness
+producer evidence. The optional LLM rationale modifier, capture/storage settings, scoring
+consumption, strategy balance, and the full financial model remain separate M4 work.

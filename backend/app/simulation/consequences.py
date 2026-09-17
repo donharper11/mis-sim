@@ -343,6 +343,47 @@ def _tco_evidence(pack: RuntimePackV1, prior: CheckpointStateV1, prepared: Prepa
     return evidence
 
 
+def _data_freshness(pack: RuntimePackV1, prepared: PreparedEffects, team_state: Any) -> dict[str, Any]:
+    """Produce round-local freshness evidence from the live estate and integrations.
+
+    Freshness is deliberately a producer only in this slice. A required entity is fresh for
+    the current round when a live owner produces it and a live integration grants it to a
+    capability. No score modifier is invented here; the immutable round result carries the
+    evidence for the later scoring follow-up.
+    """
+    catalogs = {item.key: item for item in pack.casepack.catalog}
+    live_assets = {
+        asset.id: asset for asset in prepared.state.assets.values()
+        if asset.installed_round <= prepared.round and (asset.retired_round is None or asset.retired_round > prepared.round)
+    }
+    owners: dict[str, list[str]] = {}
+    for asset in live_assets.values():
+        source = catalogs.get(asset.source_key)
+        if source is None:
+            continue
+        for item in source.owns_entities:
+            owners.setdefault(item.entity, []).append(asset.id)
+    required = sorted({item.entity for capability in pack.casepack.capabilities for item in capability.required_entities})
+    grants = tuple(getattr(team_state, "entity_access", ()) or ())
+    rows: list[dict[str, Any]] = []
+    for entity in required:
+        producer_assets = sorted(owners.get(entity, []))
+        receivers = sorted({grant.receiver for grant in grants if grant.entity == entity})
+        capabilities = sorted({grant.capability for grant in grants if grant.entity == entity})
+        status = "fresh" if producer_assets and receivers else ("produced_unserved" if producer_assets else "unavailable")
+        rows.append({
+            "entity": entity,
+            "status": status,
+            "produced_round": prepared.round if producer_assets else None,
+            "age_rounds": 0 if producer_assets else None,
+            "producer_assets": producer_assets,
+            "receivers": receivers,
+            "capabilities": capabilities,
+        })
+    fresh_count = sum(row["status"] == "fresh" for row in rows)
+    return {"round": prepared.round, "coverage": round(fresh_count / len(rows), 6) if rows else 1.0, "entities": rows}
+
+
 def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Iterable[CommandV1], round: int) -> TransitionV1:
     prepared = prepare_effects(pack, prior, commands, round)
     from .repairs import assess_repairs
@@ -445,7 +486,8 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     changed_rollouts = [{"key": key, **_dump(value)} for key, value in state.rollouts.items() if prior.rollouts.get(key) != value]
     changed_policies = [{"key": key, **_dump(value)} for key, value in state.policies.items() if prior.policies.get(key) != value]
     changed_assignments = [{"key": key, **_dump(value)} for key, value in state.governance.items() if prior.governance.get(key) != value]
-    state_changes = {"arrived": sorted(prepared.arrivals), "retired": sorted(prepared.retirements), "expired": sorted(prepared.expiries), "changed_rollouts": changed_rollouts, "changed_policies": changed_policies, "changed_assignments": changed_assignments, "resource_view": _dump(prepared.resources), "entity_access": [_dump(x) for x in team_state.entity_access or ()]}
-    result = {"simulation_version": 1, "round": round, "pack_identity": {"key": pack.casepack.metadata.pack_key, "version": pack.casepack.metadata.pack_version, "digest": pack.pack_digest}, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "responses": [_dump(x) for x in prepared.responses], "suppressed_events": [{"key": x.event_key, "reason": x.reason, "capability": x.capability} for x in suppressed], "prevented_events": prevented_evidence, "accounting": accounting, "state_changes": state_changes, "tco": _tco_evidence(pack, prior, prepared, tco_rows), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures), "debt_ratio": debt_ratio}, "financials": {"capital_spend": accounting["capital_spend"], "opex_runrate": prepared.operating_runrate, "debt": priced_total, "capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve}}
+    data_freshness = _data_freshness(pack, prepared, team_state)
+    state_changes = {"arrived": sorted(prepared.arrivals), "retired": sorted(prepared.retirements), "expired": sorted(prepared.expiries), "changed_rollouts": changed_rollouts, "changed_policies": changed_policies, "changed_assignments": changed_assignments, "resource_view": _dump(prepared.resources), "entity_access": [_dump(x) for x in team_state.entity_access or ()], "data_freshness": data_freshness}
+    result = {"simulation_version": 1, "round": round, "pack_identity": {"key": pack.casepack.metadata.pack_key, "version": pack.casepack.metadata.pack_version, "digest": pack.pack_digest}, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "responses": [_dump(x) for x in prepared.responses], "suppressed_events": [{"key": x.event_key, "reason": x.reason, "capability": x.capability} for x in suppressed], "prevented_events": prevented_evidence, "accounting": accounting, "state_changes": state_changes, "data_freshness": data_freshness, "tco": _tco_evidence(pack, prior, prepared, tco_rows), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures), "debt_ratio": debt_ratio}, "financials": {"capital_spend": accounting["capital_spend"], "opex_runrate": prepared.operating_runrate, "debt": priced_total, "capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve}}
     preview = _preview(pack, prior, prepared, assessments)
     return TransitionV1(state=state, result=result, preview=preview)

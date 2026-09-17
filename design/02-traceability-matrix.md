@@ -30,7 +30,7 @@ All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-r
 | Single points of failure | *(none — computed)* | `round_result.spof_list` | — (graph-derived, zero authoring) | 🔵 |
 | Data adequacy — integration | Purchase wizard › integrations to build; canvas edges | `arch_edge`, `integration_line` | catalog `must_be_fed_by`, `must_feed` | ✅ |
 | Data adequacy — inconsistency | *(none — detected)* | computed from `entity_ownership` | — | 🔵 |
-| Data currency / freshness | **deferred** — capture/storage → 3.4 Platform; round-to-round production → 1.6; scoring consumption → a future 1.4 follow-up once both exist | *(no producer yet; `platform_service.settings` is not implemented — 1.4 closeout §Verified facts)* | catalog option costs | ⚠️ **deferred — see register G2 / 1.4 closeout decision 12.** Not folded into `Component currency (EOL)`, which is a distinct EOL factor. |
+| Data currency / freshness | Capture/storage settings remain deferred; round-to-round production now records required-entity freshness from the live estate and integration graph; scoring consumption remains a future follow-up | `round_result.data_freshness` and `state_changes.data_freshness` | live owners, required entities, and integration grants | ⚠️ **partially produced — see register G2.** No score modifier is applied, and this is not folded into `Component currency (EOL)`. |
 | Component currency (EOL) | Standing decision › Lifecycle (patch/upgrade/retire) | `deployment.installed_round`, `.retired_round` | catalog `service_life` | ✅ |
 
 ---
