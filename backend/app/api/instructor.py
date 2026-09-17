@@ -139,6 +139,11 @@ async def _team_out(session: AsyncSession, team: Team) -> TeamOut:
     return TeamOut(id=team.id, section_id=team.section_id, instance_id=team.instance_id, name=team.name, member_count=count or 0)
 
 
+async def _team_summary(session: AsyncSession, team: Team) -> TeamSummary:
+    count = await session.scalar(select(func.count(Enrollment.id)).where(Enrollment.team_id == team.id, Enrollment.is_active.is_(True)))
+    return TeamSummary(id=team.id, name=team.name, member_count=count or 0)
+
+
 @router.get("/instructor/courses", response_model=list[CourseSummary])
 async def list_instructor_courses(
     session: AsyncSession = Depends(get_session),
@@ -163,7 +168,7 @@ async def read_course_setup(
             teams = []
             if instance is not None:
                 teams = list((await session.scalars(select(Team).where(Team.instance_id == instance.instance_id, Team.section_id == section.id).order_by(Team.id))).all())
-            team_summaries = [await _team_out(session, team) for team in teams]
+            team_summaries = [await _team_summary(session, team) for team in teams]
             enrollment_count = await session.scalar(select(func.count(Enrollment.id)).where(Enrollment.section_id == section.id, Enrollment.is_active.is_(True)))
             instance_summary = None if instance is None else InstanceSummary.model_validate(instance)
             result.append(SectionSetup(

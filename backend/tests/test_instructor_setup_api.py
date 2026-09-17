@@ -119,6 +119,28 @@ def test_setup_instance_is_digest_pinned_and_round_bounded(tmp_path):
     asyncio.run(run())
 
 
+def test_course_setup_projects_existing_teams_as_summaries(tmp_path):
+    async def run():
+        engine, factory, data = await _fixture(tmp_path)
+        async with factory() as session:
+            instance = SimulationInstance(
+                section_id=data["section"].id, pack_key="riverside_grocery", pack_version="0.1.0",
+                pack_digest=data["runtime"].pack_digest, total_rounds=6, status="setup",
+            )
+            session.add(instance)
+            await session.flush()
+            session.add(Team(section_id=data["section"].id, instance_id=instance.instance_id, name="Existing team"))
+            await session.commit()
+        app = _app(factory)
+        headers = {"Authorization": f"Bearer {_token(data['owner'])}"}
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.get(f"/api/instructor/courses/{data['course'].id}/setup", headers=headers)
+            assert response.status_code == 200
+            assert response.json()["sections"][0]["teams"] == [{"id": 1, "name": "Existing team", "member_count": 0}]
+        await engine.dispose()
+    asyncio.run(run())
+
+
 def test_roster_assignment_is_scoped_and_team_limits_apply(tmp_path):
     async def run():
         engine, factory, data = await _fixture(tmp_path)
