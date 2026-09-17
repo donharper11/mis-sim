@@ -180,6 +180,159 @@ body {
   font-family: var(--font-body);
 }
 
+.product-shell__nav-group--staff {
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--p-slate-700);
+}
+
+.instructor-workspace {
+  max-width: 1120px;
+}
+
+.instructor-workspace h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.eyebrow,
+.muted-copy,
+.page-intro,
+.setup-facts dt,
+.setup-table small {
+  color: var(--text-muted);
+}
+
+.page-intro {
+  max-width: 720px;
+}
+
+.setup-card {
+  margin-top: var(--space-xl);
+  padding: var(--space-xl);
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+}
+
+.setup-card h3 {
+  margin: 0 0 var(--space-lg);
+}
+
+.setup-card label {
+  display: grid;
+  gap: var(--space-sm);
+  max-width: 560px;
+  color: var(--text-secondary);
+}
+
+.setup-card input,
+.setup-card select {
+  min-height: 38px;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--input-text);
+}
+
+.setup-card button {
+  min-height: 38px;
+  padding: 0 var(--space-lg);
+  border: 0;
+  background: var(--action-primary);
+  color: var(--action-primary-text);
+  cursor: pointer;
+}
+
+.setup-card button:disabled {
+  background: var(--action-disabled);
+  color: var(--action-disabled-text);
+  cursor: not-allowed;
+}
+
+.setup-inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: end;
+  margin-top: var(--space-lg);
+}
+
+.setup-inline-form input,
+.setup-inline-form select {
+  flex: 1 1 180px;
+}
+
+.setup-card__heading {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  align-items: center;
+}
+
+.setup-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xl);
+  margin: 0;
+}
+
+.setup-facts div {
+  min-width: 180px;
+}
+
+.setup-facts dd {
+  margin: var(--space-sm) 0 0;
+}
+
+.mono-copy {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.setup-table-wrap {
+  overflow-x: auto;
+  margin-top: var(--space-xl);
+}
+
+.setup-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.setup-table th,
+.setup-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-default);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.setup-table th {
+  background: var(--surface-table-header);
+  color: var(--text-secondary);
+}
+
+.setup-table small {
+  display: block;
+  margin-top: var(--space-xs);
+}
+
+.workspace-message {
+  padding: var(--space-md);
+  border: 1px solid var(--border-default);
+}
+
+.workspace-message--error {
+  background: var(--status-danger-bg);
+  color: var(--status-danger-text);
+}
+
+.workspace-message--ok {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-text);
+}
+
 button,
 input,
 textarea,

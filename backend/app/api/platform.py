@@ -10,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session
+from app.casepack.registry import RegistryError, aresolve_runtime_pack
 from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
 from app.models.scheduling import RoundSchedule
 from app.api.deps import authorize_course, authorize_section, get_current_instance, get_current_user, require_instructor, require_instructor_or_ta
@@ -54,8 +55,8 @@ class SectionIn(BaseModel):
 class InstanceIn(BaseModel):
     pack_key: str
     pack_version: str
-    current_round: int = 0
-    total_rounds: int = 6
+    current_round: int = Field(default=0, ge=0)
+    total_rounds: int = Field(default=6, gt=0)
     status: str = "setup"
     settings: dict = Field(default_factory=dict)
     started_at: datetime | None = None
@@ -105,6 +106,7 @@ class InstanceOut(RowOut):
     section_id: int
     pack_key: str
     pack_version: str
+    pack_digest: str | None
     current_round: int
     total_rounds: int
     status: str
@@ -204,6 +206,15 @@ async def read_section(section_id: int, session: AsyncSession = Depends(get_sess
 async def create_instance(section_id: int, payload: InstanceIn, session: AsyncSession = Depends(get_session), current_user: User = Depends(require_instructor)):
     try:
         await authorize_section(session, current_user, section_id)
+        if payload.current_round != 0 or payload.status != "setup":
+            raise PlatformConflict("A new simulation instance must start in setup at round 0")
+        try:
+            runtime_pack = await aresolve_runtime_pack(session, payload.pack_key, payload.pack_version)
+        except RegistryError as exc:
+            raise PlatformConflict(str(exc)) from exc
+        authored_rounds = runtime_pack.casepack.metadata.rounds
+        if payload.total_rounds > authored_rounds:
+            raise PlatformConflict(f"total_rounds cannot exceed the registered pack's {authored_rounds} authored rounds")
         row = await InstanceService.create(session, section_id, **payload.model_dump())
         await session.commit()
         return row

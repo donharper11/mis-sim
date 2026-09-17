@@ -22,6 +22,9 @@ export default function AppShell({ me, instance, schedule, dashboard, activePath
         <div className="product-shell__brand">MIS Simulation</div>
         {me?.name && <div className="product-shell__user">{me.name}</div>}
         <nav aria-label="Main navigation">
+          {(me?.role === "instructor" || me?.role === "admin") && <div className="product-shell__nav-group product-shell__nav-group--staff">
+            <NavItem label="Instructor setup" to="/instructor/setup" active={activePath === "/instructor/setup"} />
+          </div>}
           <div className="product-shell__nav-group">
             {resultItems.map((item) => <NavItem key={item} label={item} to={item === "Dashboard" ? "/" : item === "Challenges" ? "/challenges" : item === "Review" ? "/review" : item === "Debrief" ? "/debrief" : undefined} active={(item === "Dashboard" && activePath === "/") || (item === "Challenges" && activePath === "/challenges") || (item === "Review" && activePath === "/review") || (item === "Debrief" && activePath === "/debrief")} />)}
           </div>

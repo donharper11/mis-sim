@@ -9,6 +9,7 @@ from app.api import (
     auth,
     dashboard,
     health,
+    instructor,
     platform,
     runtime_components,
     runtime_controls,
@@ -41,6 +42,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router, prefix="/api")
     app.include_router(auth.router, prefix="/api")
+    app.include_router(instructor.router, prefix="/api")
     app.include_router(platform.router, prefix="/api")
     app.include_router(dashboard.router, prefix="/api")
     app.include_router(runtime_platform.router, prefix="/api")

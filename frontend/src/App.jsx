@@ -3,6 +3,7 @@ import DevTokens from "./pages/DevTokens.jsx";
 import Login from "./pages/Login.jsx";
 import DevComponents from "./pages/DevComponents.jsx";
 import Shell from "./pages/Shell.jsx";
+import InstructorSetup from "./pages/InstructorSetup.jsx";
 
 function NotFound() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/challenges" element={<Shell view="challenges" />} />
         <Route path="/budget" element={<Shell view="budget" />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/instructor/setup" element={<InstructorSetup />} />
         <Route path="/_dev/tokens" element={<DevTokens />} />
         <Route path="/_dev/components" element={<DevComponents />} />
         <Route path="*" element={<NotFound />} />

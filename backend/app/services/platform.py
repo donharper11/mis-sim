@@ -6,7 +6,7 @@ state ownership and instance guards are deliberately deferred to packet 2.2.
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -44,6 +44,13 @@ class CourseService:
     @staticmethod
     async def read(session: AsyncSession, course_id: int) -> Course:
         return await _one(session, Course, course_id, "Course")
+
+    @staticmethod
+    async def list_for(session: AsyncSession, *, instructor_id: int | None = None) -> list[Course]:
+        query = select(Course).order_by(Course.id)
+        if instructor_id is not None:
+            query = query.where(Course.instructor_id == instructor_id)
+        return list((await session.scalars(query)).all())
 
     @staticmethod
     async def delete(session: AsyncSession, course_id: int) -> None:
@@ -162,11 +169,38 @@ class TeamService:
     @staticmethod
     async def create(session: AsyncSession, instance_id: int, section_id: int, **values) -> Team:
         instance = await InstanceService.read(session, instance_id)
-        await SectionService.read(session, section_id)
+        # Lock the section while checking the team count so concurrent setup
+        # requests cannot both observe a free final team slot on PostgreSQL.
+        section = await session.scalar(select(Section).where(Section.id == section_id).with_for_update())
+        if section is None:
+            raise PlatformNotFound(f"Section {section_id} was not found")
         if instance.section_id != section_id:
             raise PlatformConflict("Team section_id must match the simulation instance's section")
+        if instance.status != "setup":
+            raise PlatformConflict("Teams can only be changed while the simulation instance is in setup")
+        if section.team_size_min < 1 or section.team_size_min > section.team_size_max:
+            raise PlatformConflict("Section team-size limits are invalid")
+        team_count = await session.scalar(select(func.count(Team.id)).where(Team.instance_id == instance_id))
+        if team_count >= section.max_teams:
+            raise PlatformConflict(f"Section {section_id} cannot exceed its maximum of {section.max_teams} teams")
         team = Team(instance_id=instance_id, section_id=section_id, **values)
         session.add(team)
+        await session.flush()
+        return team
+
+    @staticmethod
+    async def list_for_instance(session: AsyncSession, instance_id: int, section_id: int) -> list[Team]:
+        return list((await session.scalars(
+            select(Team).where(Team.instance_id == instance_id, Team.section_id == section_id).order_by(Team.id)
+        )).all())
+
+    @staticmethod
+    async def rename(session: AsyncSession, team_id: int, *, instance_id: int, section_id: int, name: str) -> Team:
+        instance = await InstanceService.read(session, instance_id)
+        if instance.status != "setup":
+            raise PlatformConflict("Teams can only be changed while the simulation instance is in setup")
+        team = await TeamService.read(session, team_id, instance_id=instance_id, section_id=section_id)
+        team.name = name
         await session.flush()
         return team
 
@@ -194,8 +228,13 @@ class TeamService:
 class EnrollmentService:
     @staticmethod
     async def create(session: AsyncSession, section_id: int, user_id: int, team_id: int | None = None, **values) -> Enrollment:
-        await SectionService.read(session, section_id)
+        section = await SectionService.read(session, section_id)
         await _one(session, User, user_id, "User")
+        instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section_id))
+        if instance is not None and instance.status != "setup":
+            raise PlatformConflict("Roster can only be changed while the simulation instance is in setup")
+        if section.team_size_min < 1 or section.team_size_min > section.team_size_max:
+            raise PlatformConflict("Section team-size limits are invalid")
         if team_id is not None:
             try:
                 team = await TeamService.read(session, team_id, section_id=section_id)
@@ -203,6 +242,9 @@ class EnrollmentService:
                 raise PlatformConflict("Enrollment team_id must belong to the enrollment section") from exc
             if team.section_id != section_id:
                 raise PlatformConflict("Enrollment team_id must belong to the enrollment section")
+            members = await session.scalar(select(func.count(Enrollment.id)).where(Enrollment.team_id == team.id, Enrollment.is_active.is_(True)))
+            if members >= section.team_size_max:
+                raise PlatformConflict(f"Team {team.id} cannot exceed its maximum size of {section.team_size_max}")
         existing = await session.scalar(
             select(Enrollment).where(Enrollment.user_id == user_id, Enrollment.section_id == section_id)
         )
@@ -210,6 +252,65 @@ class EnrollmentService:
             raise PlatformConflict(f"User {user_id} is already enrolled in section {section_id}")
         enrollment = Enrollment(section_id=section_id, user_id=user_id, team_id=team_id, **values)
         session.add(enrollment)
+        await session.flush()
+        return enrollment
+
+    @staticmethod
+    async def list_for_section(session: AsyncSession, section_id: int) -> list[Enrollment]:
+        return list((await session.scalars(
+            select(Enrollment).where(Enrollment.section_id == section_id).order_by(Enrollment.id)
+        )).all())
+
+    @staticmethod
+    async def assign_team(
+        session: AsyncSession,
+        enrollment_id: int,
+        *,
+        section_id: int,
+        team_id: int | None,
+    ) -> Enrollment:
+        enrollment = await EnrollmentService.read(session, enrollment_id, section_id=section_id)
+        instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section_id))
+        if instance is None:
+            raise PlatformConflict("A section must have a simulation instance before roster assignment")
+        if instance.status != "setup":
+            raise PlatformConflict("Roster can only be changed while the simulation instance is in setup")
+        section = await SectionService.read(session, section_id)
+        if section.team_size_min < 1 or section.team_size_min > section.team_size_max:
+            raise PlatformConflict("Section team-size limits are invalid")
+        if team_id is not None and enrollment.team_id is not None and team_id != enrollment.team_id:
+            source_members = await session.scalar(select(func.count(Enrollment.id)).where(
+                Enrollment.team_id == enrollment.team_id, Enrollment.is_active.is_(True), Enrollment.id != enrollment.id
+            ))
+            if source_members and source_members < section.team_size_min:
+                raise PlatformConflict(f"Moving this student would leave team {enrollment.team_id} below its minimum size of {section.team_size_min}")
+        if team_id is not None:
+            try:
+                team = await session.scalar(select(Team).where(
+                    Team.id == team_id, Team.section_id == section_id, Team.instance_id == instance.instance_id
+                ).with_for_update())
+                if team is None:
+                    raise PlatformNotFound(f"Team {team_id} was not found in the requested scope")
+            except PlatformNotFound as exc:
+                raise PlatformConflict("Enrollment team_id must belong to the enrollment section and instance") from exc
+            members = await session.scalar(select(func.count(Enrollment.id)).where(
+                Enrollment.team_id == team.id,
+                Enrollment.is_active.is_(True),
+                Enrollment.id != enrollment.id,
+            ))
+            if members >= section.team_size_max:
+                raise PlatformConflict(f"Team {team.id} cannot exceed its maximum size of {section.team_size_max}")
+        enrollment.team_id = team_id
+        await session.flush()
+        return enrollment
+
+    @staticmethod
+    async def update(session: AsyncSession, enrollment_id: int, *, section_id: int, is_active: bool | None = None, role: str | None = None) -> Enrollment:
+        enrollment = await EnrollmentService.read(session, enrollment_id, section_id=section_id)
+        if is_active is not None:
+            enrollment.is_active = is_active
+        if role is not None:
+            enrollment.role = role
         await session.flush()
         return enrollment
 
