@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -46,10 +46,16 @@ class CourseIn(BaseModel):
 class SectionIn(BaseModel):
     section_code: str
     section_name: str
-    max_teams: int = 8
-    team_size_min: int = 2
-    team_size_max: int = 6
+    max_teams: int = Field(default=8, gt=0)
+    team_size_min: int = Field(default=2, ge=1)
+    team_size_max: int = Field(default=6, ge=1)
     is_active: bool = True
+
+    @model_validator(mode="after")
+    def validate_team_bounds(self):
+        if self.team_size_min > self.team_size_max:
+            raise ValueError("team_size_min must be less than or equal to team_size_max")
+        return self
 
 
 class InstanceIn(BaseModel):

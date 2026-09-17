@@ -124,15 +124,6 @@ class EnrollmentPatch(BaseModel):
     team_id: int | None
 
 
-class EnrollmentStatePatch(BaseModel):
-    role: str | None = Field(default=None, pattern="^(student|ta)$")
-    is_active: bool | None = None
-
-
-class TeamAssignment(BaseModel):
-    team_id: int | None
-
-
 def _error(exc: Exception) -> HTTPException:
     if isinstance(exc, HTTPException):
         return exc
@@ -184,7 +175,6 @@ async def read_course_setup(
         return CourseSetup(course=CourseSummary.model_validate(course), sections=result)
     except Exception as exc:
         raise _error(exc) from exc
-
 
 @router.get("/casepacks", response_model=list[CasepackSummary])
 async def list_casepacks(
@@ -292,24 +282,6 @@ async def assign_enrollment_team(
         row = await EnrollmentService.assign_team(session, enrollment_id, section_id=section_id, team_id=payload.team_id)
         await session.commit()
         return {"enrollment_id": row.id, "section_id": row.section_id, "team_id": row.team_id}
-    except Exception as exc:
-        await session.rollback()
-        raise _error(exc) from exc
-
-
-@router.patch("/sections/{section_id}/enrollments/{enrollment_id}/state", response_model=dict)
-async def update_enrollment_state(
-    section_id: int,
-    enrollment_id: int,
-    payload: EnrollmentStatePatch,
-    session: AsyncSession = Depends(get_session),
-    current_user: User = Depends(require_instructor),
-):
-    try:
-        await authorize_section(session, current_user, section_id)
-        row = await EnrollmentService.update(session, enrollment_id, section_id=section_id, **payload.model_dump(exclude_unset=True))
-        await session.commit()
-        return {"enrollment_id": row.id, "section_id": row.section_id, "role": row.role, "is_active": row.is_active}
     except Exception as exc:
         await session.rollback()
         raise _error(exc) from exc

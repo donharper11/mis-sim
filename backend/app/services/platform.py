@@ -77,6 +77,11 @@ class SectionService:
     @staticmethod
     async def create(session: AsyncSession, course_id: int, **values) -> Section:
         await CourseService.read(session, course_id)
+        max_teams = values.get("max_teams", 8)
+        team_size_min = values.get("team_size_min", 2)
+        team_size_max = values.get("team_size_max", 6)
+        if max_teams <= 0 or team_size_min < 1 or team_size_min > team_size_max:
+            raise PlatformConflict("Section team limits must satisfy max_teams > 0 and 1 <= team_size_min <= team_size_max")
         section = Section(course_id=course_id, **values)
         session.add(section)
         await session.flush()
@@ -178,7 +183,7 @@ class TeamService:
             raise PlatformConflict("Team section_id must match the simulation instance's section")
         if instance.status != "setup":
             raise PlatformConflict("Teams can only be changed while the simulation instance is in setup")
-        if section.team_size_min < 1 or section.team_size_min > section.team_size_max:
+        if section.max_teams < 1 or section.team_size_min < 1 or section.team_size_min > section.team_size_max:
             raise PlatformConflict("Section team-size limits are invalid")
         team_count = await session.scalar(select(func.count(Team.id)).where(Team.instance_id == instance_id))
         if team_count >= section.max_teams:
@@ -233,7 +238,7 @@ class EnrollmentService:
         instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section_id))
         if instance is not None and instance.status != "setup":
             raise PlatformConflict("Roster can only be changed while the simulation instance is in setup")
-        if section.team_size_min < 1 or section.team_size_min > section.team_size_max:
+        if section.max_teams < 1 or section.team_size_min < 1 or section.team_size_min > section.team_size_max:
             raise PlatformConflict("Section team-size limits are invalid")
         if team_id is not None:
             try:
@@ -269,20 +274,25 @@ class EnrollmentService:
         section_id: int,
         team_id: int | None,
     ) -> Enrollment:
+        # Lock the section parent before reading source/target membership.  All
+        # assignment mutations for a section therefore serialize on PostgreSQL,
+        # including moves and null unassignments.
+        section = await session.scalar(select(Section).where(Section.id == section_id).with_for_update())
+        if section is None:
+            raise PlatformNotFound(f"Section {section_id} was not found")
         enrollment = await EnrollmentService.read(session, enrollment_id, section_id=section_id)
         instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section_id))
         if instance is None:
             raise PlatformConflict("A section must have a simulation instance before roster assignment")
         if instance.status != "setup":
             raise PlatformConflict("Roster can only be changed while the simulation instance is in setup")
-        section = await SectionService.read(session, section_id)
-        if section.team_size_min < 1 or section.team_size_min > section.team_size_max:
+        if section.max_teams < 1 or section.team_size_min < 1 or section.team_size_min > section.team_size_max:
             raise PlatformConflict("Section team-size limits are invalid")
-        if team_id is not None and enrollment.team_id is not None and team_id != enrollment.team_id:
+        if enrollment.team_id is not None and team_id != enrollment.team_id:
             source_members = await session.scalar(select(func.count(Enrollment.id)).where(
                 Enrollment.team_id == enrollment.team_id, Enrollment.is_active.is_(True), Enrollment.id != enrollment.id
             ))
-            if source_members and source_members < section.team_size_min:
+            if source_members < section.team_size_min:
                 raise PlatformConflict(f"Moving this student would leave team {enrollment.team_id} below its minimum size of {section.team_size_min}")
         if team_id is not None:
             try:
@@ -301,16 +311,6 @@ class EnrollmentService:
             if members >= section.team_size_max:
                 raise PlatformConflict(f"Team {team.id} cannot exceed its maximum size of {section.team_size_max}")
         enrollment.team_id = team_id
-        await session.flush()
-        return enrollment
-
-    @staticmethod
-    async def update(session: AsyncSession, enrollment_id: int, *, section_id: int, is_active: bool | None = None, role: str | None = None) -> Enrollment:
-        enrollment = await EnrollmentService.read(session, enrollment_id, section_id=section_id)
-        if is_active is not None:
-            enrollment.is_active = is_active
-        if role is not None:
-            enrollment.role = role
         await session.flush()
         return enrollment
 
