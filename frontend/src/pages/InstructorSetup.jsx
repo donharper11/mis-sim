@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import {
@@ -23,21 +23,25 @@ export default function InstructorSetup() {
   const [newSection, setNewSection] = useState({ section_code: "", section_name: "" });
   const [packKey, setPackKey] = useState("");
   const [studentId, setStudentId] = useState("");
+  const loadSerial = useRef(0);
 
   const load = useCallback(async (courseId = null, sectionId = null) => {
+    const serial = ++loadSerial.current;
     try {
       const [meResponse, coursesResponse, packsResponse] = await Promise.all([getCurrentUser(), listInstructorCourses(), listCasepacks()]);
       const courses = coursesResponse.data;
-      const selectedCourseId = courseId || state.courseId || courses[0]?.id || null;
+      const selectedCourseId = courseId || courses[0]?.id || null;
       const setupResponse = selectedCourseId ? await getCourseSetup(selectedCourseId) : { data: null };
       const setup = setupResponse.data;
-      const selectedSectionId = sectionId || state.sectionId || setup?.sections?.[0]?.id || null;
+      const selectedSectionId = sectionId || setup?.sections?.[0]?.id || null;
       const selectedSection = setup?.sections?.find((item) => item.id === selectedSectionId);
       const rosterResponse = selectedSectionId ? await getSectionRoster(selectedSectionId) : { data: [] };
       const teamsResponse = selectedSection?.instance ? await getInstanceTeams(selectedSection.instance.instance_id) : { data: [] };
+      if (serial !== loadSerial.current) return;
       setState((previous) => ({ ...previous, loading: false, me: meResponse.data, courses, packs: packsResponse.data, setup, courseId: selectedCourseId, sectionId: selectedSectionId, roster: rosterResponse.data, teams: teamsResponse.data, error: "" }));
-      if (!packKey && packsResponse.data[0]) setPackKey(`${packsResponse.data[0].pack_key}@${packsResponse.data[0].pack_version}`);
+      if (packsResponse.data[0]) setPackKey((previous) => previous || `${packsResponse.data[0].pack_key}@${packsResponse.data[0].pack_version}`);
     } catch (error) {
+      if (serial !== loadSerial.current) return;
       if ([401, 403].includes(error.response?.status)) {
         clearAccessToken();
         navigate("/login", { replace: true });
@@ -45,7 +49,7 @@ export default function InstructorSetup() {
       }
       setState((previous) => ({ ...previous, loading: false, error: requestError(error) }));
     }
-  }, [navigate, packKey, state.courseId, state.sectionId]);
+  }, [navigate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -96,6 +100,18 @@ export default function InstructorSetup() {
     await perform(() => apiClient.patch(`/sections/${selectedSection.id}/enrollments/${enrollmentId}`, { team_id: teamId ? Number(teamId) : null }), "Roster assignment saved.");
   }
 
+  function selectCourse(event) {
+    const courseId = Number(event.target.value);
+    setState((previous) => ({ ...previous, courseId, sectionId: null, setup: null, roster: [], teams: [], error: "" }));
+    load(courseId, null);
+  }
+
+  function selectSection(event) {
+    const sectionId = Number(event.target.value);
+    setState((previous) => ({ ...previous, sectionId, setup: null, roster: [], teams: [], error: "" }));
+    load(state.courseId, sectionId);
+  }
+
   if (state.loading) return <main className="app-shell plain-state"><p>Loading instructor setup…</p></main>;
   return <AppShell me={state.me} activePath="/instructor/setup" pageTitle="Instructor setup">
     <div className="instructor-workspace">
@@ -108,13 +124,13 @@ export default function InstructorSetup() {
       {state.notice && <p className="workspace-message workspace-message--ok" role="status">{state.notice}</p>}
       <section className="setup-card" aria-labelledby="course-heading">
         <h3 id="course-heading">Course</h3>
-        <label>Selected course<select value={state.courseId || ""} onChange={(event) => load(Number(event.target.value), null)}><option value="">Choose a course</option>{state.courses.map((course) => <option key={course.id} value={course.id}>{course.course_code} — {course.course_name}</option>)}</select></label>
+        <label>Selected course<select value={state.courseId || ""} onChange={selectCourse}><option value="">Choose a course</option>{state.courses.map((course) => <option key={course.id} value={course.id}>{course.course_code} — {course.course_name}</option>)}</select></label>
         <form className="setup-inline-form" onSubmit={createCourse}><input aria-label="Course code" placeholder="Course code" value={newCourse.course_code} onChange={(event) => setNewCourse({ ...newCourse, course_code: event.target.value })} required /><input aria-label="Course name" placeholder="Course name" value={newCourse.course_name} onChange={(event) => setNewCourse({ ...newCourse, course_name: event.target.value })} required /><button type="submit">Create course</button></form>
       </section>
       {state.setup && <>
         <section className="setup-card" aria-labelledby="section-heading">
           <h3 id="section-heading">Section</h3>
-          <label>Selected section<select value={state.sectionId || ""} onChange={(event) => load(state.courseId, Number(event.target.value))}>{state.setup.sections.map((section) => <option key={section.id} value={section.id}>{section.section_code} — {section.section_name}</option>)}</select></label>
+          <label>Selected section<select value={state.sectionId || ""} onChange={selectSection}>{state.setup.sections.map((section) => <option key={section.id} value={section.id}>{section.section_code} — {section.section_name}</option>)}</select></label>
           <form className="setup-inline-form" onSubmit={createSection}><input aria-label="Section code" placeholder="Section code" value={newSection.section_code} onChange={(event) => setNewSection({ ...newSection, section_code: event.target.value })} required /><input aria-label="Section name" placeholder="Section name" value={newSection.section_name} onChange={(event) => setNewSection({ ...newSection, section_name: event.target.value })} required /><button type="submit">Create section</button></form>
         </section>
         {selectedSection && <>
