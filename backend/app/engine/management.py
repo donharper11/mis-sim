@@ -1,8 +1,7 @@
 """Management Quality -- computed from the pattern of decisions (spec 5.3).
 
-mgmt(c) = geomean(governance, strategic_alignment, portfolio_discipline,
-                  signal_responsiveness, follow_through, stakeholder_alignment,
-                  policy_alignment, policy_discipline)
+Management uses an authored weighted average after the governance gate. A missing
+strategic or portfolio signal reduces quality without erasing every other input.
 
 Nothing in the catalog raises any of these (invariant I4). Tech is bought, Org is
 funded, this term is earned. O3 hybrid default: governance and stakeholder
@@ -25,7 +24,7 @@ from math import sqrt
 from typing import Any
 
 from app.casepack.models import Casepack, Strategy
-from app.engine.mathx import clamp, geomean
+from app.engine.mathx import clamp, geomean, weighted_mean
 from app.engine.state import TeamState
 
 #: Information-policy discipline floor (1.4 closeout decision 7). A team that never
@@ -33,6 +32,20 @@ from app.engine.state import TeamState
 #: term and hiding every other lesson. Hard-coded v1 calibration constant; 1.7's
 #: harness owns revisiting it.
 POLICY_DISCIPLINE_FLOOR = 0.25
+
+# Governance is the hard structural gate; the remaining management evidence is
+# weighted so a temporary strategic or portfolio gap lowers quality without
+# erasing every other management signal.
+MANAGEMENT_WEIGHTS = {
+    "governance": 0.18,
+    "strategic_alignment": 0.18,
+    "portfolio_discipline": 0.14,
+    "signal_responsiveness": 0.12,
+    "follow_through": 0.12,
+    "stakeholder_alignment": 0.10,
+    "policy_alignment": 0.08,
+    "policy_discipline": 0.08,
+}
 
 
 @dataclass
@@ -424,7 +437,13 @@ def management(
         "policy_alignment": firm.policy_alignment,
         "policy_discipline": firm.policy_discipline,
     }
-    value = geomean(list(sub_factors.values()))
+    # Governance is the structural management gate. Once a capability has an
+    # owner or sponsor, the remaining evidence is partial and weighted rather
+    # than an all-or-nothing geometric product.
+    if governance == 0.0:
+        value = 0.0
+    else:
+        value = weighted_mean(sub_factors, MANAGEMENT_WEIGHTS)
     # Firm-wide policy factors are computed once (firm_management) and applied
     # identically to every capability; their evidence rides along unchanged per
     # capability. Existing per-capability `stakeholder_alignment` evidence is

@@ -459,7 +459,7 @@ projection: `actionable = was_actionable`; `acted_before_fire = cleared_round is
 (`fire_round is None`) is the MOST responsive case and IS credited** — the earlier
 `fire_round is not None`-required form gave it no credit and drove the pin to `0.0` (1.5
 contract-spec CC-A-001). A clear *after* fire earns nothing (O3). This seam keeps the 1.4 pin
-(`test_engine_scoring.py`: tech `0.750008`, org `0.507003`, mgmt `0.656778`, realised `0.249744`)
+(`test_engine_scoring.py`: tech `0.792458`, org `0.496349`, mgmt `0.752292`, realised `0.295903`)
 byte-identical: the seeded R1–R3 history projects to `acted=1 / actionable=3 → 0.333333`.
 
 **Producer:** the 1.5 engine (pure output). **Consumers:** the `SignalState` projection → 1.4

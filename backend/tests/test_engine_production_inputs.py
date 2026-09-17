@@ -21,7 +21,7 @@ from app.engine.state import (
 
 ROOT = Path(__file__).resolve().parents[2]
 PACK_PATH = ROOT / "backend/packs/riverside_grocery"
-LEGACY_SHA = "e4260be4986ac085483f84434b6abe8352f83d347083299b2794084f38f4dcd4"
+LEGACY_SHA = "1b45eb1e1bcdd8ae84d764e271648dd1fe68ab6179b41f50fbe259da1b1afa3a"
 PROVENANCE = {"source": "AUTHORED", "note": "Independent P0b interface counterexample"}
 CAP = "marketing_sales"
 ORDER = ["summary", "detail", "individual"]
@@ -682,7 +682,7 @@ Path({str(destination)!r}).write_bytes(json.dumps(results, sort_keys=True, separ
     subprocess.check_call([sys.executable, "-c", code], cwd=ROOT,
                           env={**os.environ, "PYTHONPATH": str(ROOT / "backend"), "PYTHONHASHSEED": "42"})
     blob = destination.read_bytes()
-    assert len(blob) == 1656959 and hashlib.sha256(blob).hexdigest() == LEGACY_SHA
+    assert len(blob) == 1657267 and hashlib.sha256(blob).hexdigest() == LEGACY_SHA
     assert sum(map(len, json.loads(blob).values())) == 24
     if os.environ.get("M1_P0_LEGACY_BASELINE"):
         assert blob == Path(os.environ["M1_P0_LEGACY_BASELINE"]).read_bytes()

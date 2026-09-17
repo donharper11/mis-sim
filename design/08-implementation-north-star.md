@@ -271,5 +271,7 @@ pack-authored CFO capital-request contract into the accounting ledger, challenge
 preserve a bounded ungraded decision note, and round results now carry explicit data-freshness
 producer evidence. M4 now also exposes authored capture/storage settings, consumes freshness
 in Technology, emits a ledger-backed modern financial model, and carries a governed rationale
-review seam with a neutral disabled default. The strategy harness now has a bounded coherent-plan
-calibration profile; the human pedagogical balance review remains separate from numeric checks.
+review seam with a neutral disabled default. The scoring terms now preserve partial evidence
+through authored weighted aggregation while retaining hard structural gates. The strategy harness
+now has a bounded coherent-plan calibration profile; the human pedagogical balance review remains
+separate from numeric checks.

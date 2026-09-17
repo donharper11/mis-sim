@@ -9,9 +9,9 @@
   I5  never mutates the pack -- yaml md5 identical before/after a run
   I6  the gate is not asserted by code -- no dominance sys.exit(1) / spread assertion
 
-I7 (the 1.4 pin is untouched) is guarded by the existing tests/test_engine_scoring.py, which
-``make check`` already runs -- the harness reads RoundResult and scores nothing, so it cannot move
-the pin. Each guard is falsifiable by a planted defect (spec section 4.3), noted at its check.
+The scoring pin is guarded by the existing tests/test_engine_scoring.py, which ``make check``
+already runs -- the harness reads RoundResult and scores nothing, so it cannot move the pin.
+Each guard is falsifiable by a planted defect (spec section 4.3), noted at its check.
 """
 
 from __future__ import annotations

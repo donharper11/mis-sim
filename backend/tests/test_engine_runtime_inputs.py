@@ -20,7 +20,7 @@ from app.engine.state import ArchEdge, ArchNode, StaffPool, TeamState
 
 ROOT = Path(__file__).resolve().parents[2]
 PACK = ROOT / "backend/packs/riverside_grocery"
-LEGACY_SHA256 = "e4260be4986ac085483f84434b6abe8352f83d347083299b2794084f38f4dcd4"
+LEGACY_SHA256 = "1b45eb1e1bcdd8ae84d764e271648dd1fe68ab6179b41f50fbe259da1b1afa3a"
 HASH_SEEDS = (0, 1, 2, 3, 42, 99)
 PROVENANCE = {"source": "AUTHORED", "note": "Independent P0 unit fixture"}
 
@@ -377,7 +377,7 @@ assert sum(map(len, results.values())) == 24
 Path({str(capture)!r}).write_bytes(json.dumps(results, sort_keys=True, separators=(',', ':'), allow_nan=False).encode())
 ''', seed)
         blob = capture.read_bytes()
-        assert len(blob) == 1656959
+        assert len(blob) == 1657267
         assert hashlib.sha256(blob).hexdigest() == LEGACY_SHA256
         blobs.append(blob)
     assert all(blob == blobs[0] for blob in blobs)

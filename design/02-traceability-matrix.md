@@ -15,6 +15,17 @@ completeness audit of the design.
 
 All runtime tables are scoped by `instance_id` (BECSR pattern) — omitted per-row.
 
+### Scoring aggregation revision (2026-09-17)
+
+Technology, Organisation, and Management now use authored weighted arithmetic means
+for partial evidence. Structural blockers remain hard gates: no serving technology
+path, no primary organisational rollout, or no governance assignment yields a zero
+term. The realised-value boundary remains multiplicative (`Technology × Organisation ×
+Management`), so the complementary-assets lesson remains visible without allowing a
+temporary zero in one evidence factor to erase every other signal. The weights are
+explicit in `app/engine/technology.py`, `organisation.py`, and `management.py` and
+are covered by the revised Riverside scoring pin.
+
 ---
 
 ## A. Technology Capability

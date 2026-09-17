@@ -12,7 +12,7 @@ import json
 from dataclasses import replace
 
 from app.engine import graph as graph_mod
-from app.engine.management import firm_management
+from app.engine.management import FirmManagement, firm_management, management
 from app.engine.score import score_capability, score_team
 from app.engine.state import ArchEdge, ArchNode, TeamState
 from app.seed.demo import load_scenario
@@ -30,14 +30,12 @@ def test_pin_riverside_r3_order_fulfilment():
     pack, state = _pack_state()
     result = score_team(pack, state)
     of = next(c for c in result.capabilities if c.capability == "order_fulfilment")
-    # Tech and Org are unchanged by the 1.4 closeout (invariant C1): exact to 1e-6.
-    assert abs(of.terms["tech"] - 0.750008) <= 1e-6, of.terms
-    assert abs(of.terms["org"] - 0.507003) <= 1e-6, of.terms
-    # Mgmt and realised are the NEW computed pins after two real Management inputs
-    # (policy_alignment, policy_discipline) were added by the closeout. The prior
-    # 0.648006 / 0.246408 are historical baselines, not targets (decision 10/11).
-    assert abs(of.terms["mgmt"] - 0.656778) <= 1e-6, of.terms
-    assert abs(of.realised - 0.249744) <= 1e-6, of.realised
+    # Revised weighted-term pins: partial technology, organisation, and management
+    # evidence remains visible instead of collapsing through a within-term zero.
+    assert abs(of.terms["tech"] - 0.792458) <= 1e-6, of.terms
+    assert abs(of.terms["org"] - 0.496349) <= 1e-6, of.terms
+    assert abs(of.terms["mgmt"] - 0.752292) <= 1e-6, of.terms
+    assert abs(of.realised - 0.295903) <= 1e-6, of.realised
     assert of.throttle == "org", of.throttle
 
 
@@ -100,6 +98,21 @@ def test_i7_direct_arithmetic():
     # The property at the arithmetic level: any zero term zeroes the product.
     for t, o, m in [(0.0, 0.5, 0.5), (0.5, 0.0, 0.5), (0.5, 0.5, 0.0)]:
         assert t * o * m == 0.0
+
+
+def test_partial_management_evidence_is_weighted_after_governance_gate():
+    pack, state = _pack_state()
+    firm = FirmManagement(
+        strategic_alignment=0.0,
+        portfolio_discipline=0.0,
+        signal_responsiveness=1 / 3,
+        follow_through=1.0,
+        policy_alignment=0.4676,
+        policy_discipline=1.0,
+    )
+    result = management(state, "order_fulfilment", firm)
+    assert result.value > 0.0
+    assert result.sub_factors["governance"] == 1.0
 
 
 # -- I8 capacity is min, not sum ------------------------------------------------

@@ -36,7 +36,7 @@ import seeds.riverside_full as full
 PACK_DIR = Path(__file__).resolve().parents[1] / "packs/riverside_grocery"
 DIMS = get_args(ScorecardPerspective)
 HISTORICAL_DIGEST = "e0b5114c1e78574b8bafb272e40250ddad1663bb2c9d9bf553d63d04e83c2129"
-UNAFFECTED_DIGEST = "3ce39114a7c2fb4bce1add36b6e738ce4d553b15505dabdfca68b137457f4e41"
+UNAFFECTED_DIGEST = "17b0d426e18224a8be03346b3798a0915903ec2a41f42b5989ae8f652849eb26"
 
 
 def _score(base=0.8, partial=True):
@@ -426,19 +426,20 @@ def test_n5_n7_seeded_24_results_metadata_and_business_values(calibration):
                 assert event["outcomes"] == source.outcomes.model_dump()
     balanced = results["balanced"][0]
     assert balanced["scorecard"] == {"financial": 0.696932, "customer": 0.6083,
-        "internal_process": 0.313523, "learning_growth": 0.369272}
-    assert balanced["firm_score"] == 0.35825
+        "internal_process": 0.338769, "learning_growth": 0.369272}
+    assert balanced["firm_score"] == 0.41832
     assert balanced["scorecard_meta"]["base"] == {"financial": 0.966932, "customer": 0.6083,
-        "internal_process": 0.493523, "learning_growth": 0.439272}
+        "internal_process": 0.518769, "learning_growth": 0.439272}
     assert balanced["scorecard_meta"]["event_delta_points"] == {"financial": -27, "customer": 0,
         "internal_process": -18, "learning_growth": -7}
     by_event = {e["key"]: e for e in balanced["events"]}
     for key in ("ransomware_on_finance", "phishing_on_staff_accounts"):
         assert by_event[key]["node"] is None
-    assert by_event["ransomware_on_finance"]["outcomes"]["revenue_loss"] == 100000
-    for key in ("do_nothing", "all_tech_no_org"):
-        assert [p["firm_score"] for p in results[key]] == [0.0] * 6
-        assert all(c["terms"]["org"] == 0 for p in results[key] for c in p["capabilities"])
+        assert by_event["ransomware_on_finance"]["outcomes"]["revenue_loss"] == 100000
+    assert [p["firm_score"] for p in results["do_nothing"]] == [0.0] * 6
+    assert any(c["terms"]["org"] > 0 for p in results["do_nothing"] for c in p["capabilities"])
+    assert [p["firm_score"] for p in results["all_tech_no_org"]] == [0.0] * 6
+    assert any(c["terms"]["org"] > 0 for p in results["all_tech_no_org"] for c in p["capabilities"])
 
 
 def test_n6_all_24_unaffected_payload_fields_match_precorrection(calibration):

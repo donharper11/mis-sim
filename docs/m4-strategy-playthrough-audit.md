@@ -50,7 +50,28 @@ uses strategy-specific customer-system placement.
 | customer/supplier intimacy | 0.000000, 0.054818, 0.000000, 0.000000, 0.046517, 0.035878 |
 | focus strategy | 0.046672, 0.031388, 0.000000, 0.056006, 0.070744, 0.058472 |
 
-This is a better calibration instrument: later-round Management values are no longer universally
-zero, and the strategy curves separate. Round 3 remains zero while the on-order customer system
-is in lead time; that is an authored transition consequence, not a scoring override. The pass is
-still a human review input, not an automatic balance claim.
+This was a better calibration instrument than the original fixture: later-round Management values
+were no longer universally zero, and the strategy curves separated. In that pre-revision model,
+round 3 remained zero while the on-order customer system was in lead time. The pass was a human
+review input, not an automatic balance claim.
+
+## Weighted-term scoring pass
+
+The scoring model was then revised so Technology, Organisation, and Management use authored
+weighted averages for partial evidence. Structural blockers remain hard gates: no serving path,
+no primary rollout, or no governance assignment still produces a zero term. The top-level
+realised-value product remains `Technology × Organisation × Management`.
+
+Replaying the same four calibrated balanced firms produced:
+
+| Declared strategy | Weighted calibrated firm-score curve (R1–R6) | Six-round average |
+|---|---|---:|
+| cost leadership | 0.175300, 0.144619, 0.079602, 0.104325, 0.117863, 0.119957 | 0.123611 |
+| differentiation | 0.055909, 0.048585, 0.031841, 0.093595, 0.120945, 0.115819 | 0.077782 |
+| customer/supplier intimacy | 0.104699, 0.088109, 0.054584, 0.098335, 0.123624, 0.123190 | 0.098757 |
+| focus strategy | 0.060861, 0.049578, 0.031841, 0.098383, 0.112438, 0.101584 | 0.075781 |
+
+The revised model removes the artificial all-zero transition rounds: every balanced firm now
+retains partial value in every round. Later-round scores remain relatively close because the four
+plans still share most of the same authored estate and rollout path; this is still not a
+competitive-market simulation. All three negative-control archetypes remained at zero.

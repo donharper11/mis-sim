@@ -73,3 +73,6 @@ covers Ch 1 and Ch 12 without either becoming decoration.
 ## Changelog
 
 - **2026-09-14 — scorecard contract v1:** clarifies units and the existing partial Financial boundary; no pure-scoring formula change. Canonical rule: `CONTRACTS.md`.
+- **2026-09-17 — weighted term aggregation:** Technology, Organisation, and Management
+  use authored weighted averages for partial evidence, with explicit structural hard
+  gates. The top-level realised-value product remains unchanged.

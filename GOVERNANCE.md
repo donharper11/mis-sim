@@ -19,8 +19,11 @@ and responding to events. They are scored on **realised business value**:
 Realised Value  =  Technology Capability × Organisational Readiness × Management Quality
 ```
 
-Multiplication, not addition. A zero anywhere zeroes the result. That is Laudon's
-complementary-assets argument, made mechanical.
+The three terms remain multiplicative so the complementary-assets lesson remains
+visible. Within each term, authored weighted averages preserve partial evidence;
+explicit structural blockers (no serving path, no primary rollout, or no governance)
+still produce a hard zero. A temporary gap in one evidence factor reduces the term
+instead of erasing every other signal.
 
 ## 2. What it must feel like
 

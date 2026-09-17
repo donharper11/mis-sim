@@ -1,12 +1,11 @@
 """Archetype: ALL TECH, NO ORG -- buys the best of everything, funds zero training, assigns no
 owners (spec section 5.1).
 
-What it must demonstrate: **the sim's central lesson.** High Technology, collapsed Organisation.
-The estate is rich and always current (fresh nodes, ample capacity), so the Technology term is
-high; but with no training on any rollout the Organisation term is zero, and with no owners the
-governance sub-factor of Management is zero -- and a plain product across the three terms zeroes
-realised value. Capability bought without the complementary organisational assets delivers nothing
-(Laudon), shown from a script.
+What it must demonstrate: **the sim's central lesson.** High Technology, weak Organisation,
+and no governance. The estate is rich and always current (fresh nodes, ample capacity), so the
+Technology term is high; weighted Organisation evidence is reduced by the absent training, and
+the governance hard gate keeps Management and realised value at zero. Capability bought without
+the complementary organisational assets delivers nothing (Laudon), shown from a script.
 
 Everything here is authored seed data; the engine computes the terms from it. Nothing is asserted.
 """

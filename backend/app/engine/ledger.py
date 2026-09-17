@@ -119,7 +119,7 @@ def project_signal_state(
     it appeared (`fire_round == first_shown_round`) never gave the team a response window in ANY
     round -- so it is PERMANENTLY excluded from the responsiveness denominator, not just the
     round it appears. (Pass 1's rule alone left these as permanent misses that re-zeroed R2+ via
-    the Management geomean.) Both exclusions are gated on `current_round is not None`.
+    the Management aggregation.) Both exclusions are gated on `current_round is not None`.
 
     When `current_round is None` -- the 1.4 pin / projection-seam compatibility path and the
     debrief's `_missed_signals` -- every row projects exactly as before, so the frozen pin is

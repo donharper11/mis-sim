@@ -2,9 +2,9 @@
 
 Two things are proven here, both plant-falsifiable (SPEC_PROTOCOL 4.3):
 
-1. **Hermetic pin.** Scoring the riverside_r3 snapshot reproduces the frozen pin byte-for-byte
-   (tech 0.750008 / org 0.507003 / mgmt 0.656778 / realised 0.249744). 1.6 touches no engine or
-   scoring code, so `--full` leaves this untouched (also guarded by test_engine_scoring.py).
+1. **Hermetic pin.** Scoring the riverside_r3 snapshot reproduces the weighted-term pin
+(tech 0.792458 / org 0.496349 / mgmt 0.752292 / realised 0.295903). Structural hard gates
+remain explicit while partial evidence is preserved (also guarded by test_engine_scoring.py).
 
 2. **The projection seam preserves the pin.** The R1-R3 signal-ledger history projects (via
    `project_signal_state`) to exactly the three SignalState rows the pin depends on, and scoring
@@ -34,10 +34,10 @@ def _order_fulfilment(pack, state):
 def test_i10_pin_hermetic():
     pack, state = load_scenario("riverside_r3")
     of = _order_fulfilment(pack, state)
-    assert abs(of.terms["tech"] - 0.750008) <= TOL, of.terms
-    assert abs(of.terms["org"] - 0.507003) <= TOL, of.terms
-    assert abs(of.terms["mgmt"] - 0.656778) <= TOL, of.terms
-    assert abs(of.realised - 0.249744) <= TOL, of.realised
+    assert abs(of.terms["tech"] - 0.792458) <= TOL, of.terms
+    assert abs(of.terms["org"] - 0.496349) <= TOL, of.terms
+    assert abs(of.terms["mgmt"] - 0.752292) <= TOL, of.terms
+    assert abs(of.realised - 0.295903) <= TOL, of.realised
     assert of.throttle == "org"
 
 
@@ -48,8 +48,8 @@ def test_i10_projection_seam_preserves_pin():
     assert projected == state.signals
     # scoring with the PROJECTED signals (not the hand-built ones) still yields the pin
     of = _order_fulfilment(pack, replace(state, signals=projected))
-    assert abs(of.terms["mgmt"] - 0.656778) <= TOL, of.terms
-    assert abs(of.realised - 0.249744) <= TOL, of.realised
+    assert abs(of.terms["mgmt"] - 0.752292) <= TOL, of.terms
+    assert abs(of.realised - 0.295903) <= TOL, of.realised
 
 
 def test_i10_plant_missing_clear_action_drifts_pin():
@@ -62,8 +62,8 @@ def test_i10_plant_missing_clear_action_drifts_pin():
         for s in sig.signal_history()
     )
     of = _order_fulfilment(pack, replace(state, signals=project_signal_state(planted)))
-    assert abs(of.terms["mgmt"] - 0.656778) > TOL, "planted missing clear must drift the pin"
-    assert abs(of.realised - 0.249744) > TOL
+    assert abs(of.terms["mgmt"] - 0.752292) > TOL, "planted missing clear must drift the pin"
+    assert abs(of.realised - 0.295903) > TOL
 
 
 def test_i10_plant_unaffordable_drifts_pin():
@@ -76,4 +76,4 @@ def test_i10_plant_unaffordable_drifts_pin():
         for s in sig.signal_history()
     )
     of = _order_fulfilment(pack, replace(state, signals=project_signal_state(planted)))
-    assert abs(of.terms["mgmt"] - 0.656778) > TOL, "planted unaffordable ord_cap must drift the pin"
+    assert abs(of.terms["mgmt"] - 0.752292) > TOL, "planted unaffordable ord_cap must drift the pin"

@@ -1,6 +1,8 @@
 """Organisational Readiness -- computed from what was funded (spec 5.2).
 
-org(c) = geomean(training, process_fit, adoption, resistance_inv, staffing)
+Organisation uses an authored weighted average once a primary rollout exists.
+No rollout remains a hard zero; partial training, process, adoption, resistance,
+and staffing evidence now contributes proportionally.
 
 The capability's Organisation term reads its *primary* rollout -- the application
 whose people are being asked to change. Training coverage, the process choice and
@@ -17,12 +19,20 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.engine.mathx import clamp, geomean
+from app.engine.mathx import clamp, weighted_mean
 from app.engine.state import TeamState
 
 
 #: process_fit mapping (spec 5.2): a full redesign, a partial one, or nothing.
 PROCESS_FIT = {"redesigned": 1.0, "partial": 0.5, "unchanged": 0.25}
+
+ORGANISATION_WEIGHTS = {
+    "training": 0.30,
+    "process_fit": 0.20,
+    "adoption": 0.25,
+    "resistance_inv": 0.15,
+    "staffing": 0.10,
+}
 
 
 @dataclass
@@ -48,7 +58,7 @@ def organisation(state: TeamState, cap_key: str) -> OrgResult:
     evidence: dict[str, Any] = {}
     if dep is None:
         # No primary rollout: nothing has been rolled out to anyone. The people
-        # terms are floored at zero (geomean will crush the term), which is the
+        # terms are zero until a primary rollout exists, which is the
         # honest reading of an unstaffed capability.
         sub_factors = {
             "training": 0.0,
@@ -74,7 +84,7 @@ def organisation(state: TeamState, cap_key: str) -> OrgResult:
         "resistance_inv": round(resistance_inv, 6),
         "staffing": round(staffing, 6),
     }
-    value = geomean(list(sub_factors.values()))
+    value = weighted_mean(sub_factors, ORGANISATION_WEIGHTS)
 
     evidence["training"] = {"trained": dep.trained_count, "affected": dep.people_affected}
     evidence["process"] = dep.process

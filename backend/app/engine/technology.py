@@ -1,6 +1,8 @@
 """Technology Capability -- computed from the graph, no judgement (spec 5.1).
 
-tech(c) = geomean(coverage, capacity, reliability, data_adequacy, currency)
+Technology uses an authored weighted average for partial evidence. A capability
+with no serving path remains a hard zero; once a path exists, capacity, reliability,
+data and currency gaps reduce the term proportionally rather than erasing it.
 """
 
 from __future__ import annotations
@@ -10,7 +12,7 @@ from typing import Any
 
 from app.casepack.models import Casepack
 from app.engine import catalog, graph
-from app.engine.mathx import clamp, geomean
+from app.engine.mathx import clamp, weighted_mean
 from app.engine.state import TeamState
 
 
@@ -24,6 +26,16 @@ COVERAGE_FLOOR = 0.3
 #: inventory" problem). Each such entity multiplies data adequacy by (1 - this).
 #: Hard-coded v1 (O1 lineage); revisit after 1.7.
 INCONSISTENCY_PENALTY = 0.15
+
+# Technology evidence weights. Capacity and data adequacy carry the most weight
+# because they determine whether a live path can serve useful business work.
+TECHNOLOGY_WEIGHTS = {
+    "coverage": 0.20,
+    "capacity": 0.25,
+    "reliability": 0.20,
+    "data_adequacy": 0.25,
+    "currency": 0.10,
+}
 
 
 @dataclass
@@ -139,7 +151,7 @@ def technology(pack: Casepack, state: TeamState, cap_key: str) -> TechResult:
         "data_adequacy": round(data_adequacy, 6),
         "currency": round(currency, 6),
     }
-    value = geomean(list(sub_factors.values()))
+    value = 0.0 if path is None else weighted_mean(sub_factors, TECHNOLOGY_WEIGHTS)
 
     if missing_roles:
         evidence["missing_roles"] = missing_roles

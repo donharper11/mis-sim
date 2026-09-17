@@ -10,8 +10,18 @@
 > unchanged. See §5.3, §5.7 and the Changelog at the foot of this file.
 
 > `Realised Value = Technology × Organisation × Management`, per capability.
-> Multiplication, not addition. Every term computed from a click or a timestamp —
+> The three terms remain multiplicative; within each term, authored weighted averages
+> preserve partial evidence while structural blockers retain hard-zero semantics. Every
+> term is computed from a click or a timestamp —
 > **nothing here is LLM-judged** (`GOVERNANCE.md §4.7`).
+
+> **Scoring-model amendment — 2026-09-17.** The original equal-weight geometric means
+> were too brittle for transitional rounds: one temporary zero sub-factor erased all other
+> evidence. The implementation now uses explicit weighted arithmetic means for Technology,
+> Organisation, and Management. Hard gates remain: no serving path, no primary rollout,
+> or no governance assignment yields a zero term. The revised Riverside pin is Tech
+> `0.792458`, Org `0.496349`, Mgmt `0.752292`, realised `0.295903`; see the implementation
+> constants and updated tests for the authoritative weights.
 
 ---
 
@@ -59,10 +69,10 @@ performs no I/O. Scoping is 1.6's concern. Invariant I2.
 
 1. **Pure functions.** No DB, no clock, no randomness. Same inputs → same outputs, always.
    This is what makes 1.7 possible and debriefs reproducible.
-2. **Weighted geometric mean *within* each term; plain product *across* the three.**
-   Five multiplied sub-factors crush to unreadable values; the geometric mean keeps the
-   "a zero kills you" property without it. Across MOT, plain multiplication — that is the
-   Laudon lesson and it must bite (`design/02`).
+2. **Weighted arithmetic mean within each term; plain product across the three.**
+   Partial evidence lowers a term in proportion to its authored weight. Structural
+   prerequisites retain hard-zero gates, while the across-MOT product keeps the Laudon
+   complementary-assets lesson visible (`design/02`).
 3. **Per capability, never global.** A team may be excellent at one and negligent at
    another; the roll-up weights by declared strategy.
 4. **Bottleneck, not sum.** Path capacity is `min()` along the serving path.
@@ -79,7 +89,7 @@ performs no I/O. Scoping is 1.6's concern. Invariant I2.
 
 | # | Question | Criteria | Reporting |
 |---|---|---|---|
-| **O1** | Sub-factor weights inside each geometric mean — equal, or authored per casepack? | **Default: equal, hard-coded, v1.** Authored weights are a second calibration surface before we have evidence the first one works. Revisit after 1.7 | Record |
+| **O1** | Sub-factor weights inside each term | **Settled 2026-09-17:** explicit authored implementation weights; structural hard gates remain separate | `technology.py`, `organisation.py`, `management.py` |
 | **O2** | Does a hard-capped capability (missing required role) score 0, or a floor? | **Default: floor of 0.3 on coverage, not 0.** A true zero makes the whole capability 0 and hides the Org/Mgmt signal, which is the lesson. The student still sees "missing" prominently | Record |
 | **O3** | Should Management Quality be capability-scoped or firm-wide? | **Default: hybrid.** Governance and stakeholder alignment are per capability; portfolio discipline, signal responsiveness, and follow-through are firm-wide and apply identically to each | Record |
 
@@ -90,8 +100,11 @@ performs no I/O. Scoping is 1.6's concern. Invariant I2.
 ### 5.1 Technology Capability — from the graph, no judgement
 
 ```
-tech(c) = geomean(coverage, capacity, reliability, data_adequacy, currency)
+tech(c) = weighted_mean(coverage, capacity, reliability, data_adequacy, currency)
 ```
+
+No serving path is a hard zero. Current weights are coverage `.20`, capacity `.25`,
+reliability `.20`, data adequacy `.25`, and currency `.10`.
 
 | Sub-factor | Computation |
 |---|---|
@@ -110,8 +123,11 @@ point of failure. Standard articulation-point logic. Reported, not scored (decis
 ### 5.2 Organisational Readiness — from what was funded
 
 ```
-org(c) = geomean(training, process_fit, adoption, resistance_inv, staffing)
+org(c) = weighted_mean(training, process_fit, adoption, resistance_inv, staffing)
 ```
+
+No primary rollout is a hard zero. Current weights are training `.30`, process fit `.20`,
+adoption `.25`, resistance inverse `.15`, and staffing `.10`.
 
 | Sub-factor | Computation |
 |---|---|
@@ -129,10 +145,14 @@ not a fourth term.
 ### 5.3 Management Quality — from the pattern of decisions
 
 ```
-mgmt(c) = geomean(governance, strategic_alignment, portfolio_discipline,
-                  signal_responsiveness, follow_through, stakeholder_alignment,
-                  policy_alignment, policy_discipline)
+mgmt(c) = weighted_mean(governance, strategic_alignment, portfolio_discipline,
+                        signal_responsiveness, follow_through, stakeholder_alignment,
+                        policy_alignment, policy_discipline)
 ```
+
+No governance assignment is a hard zero. Current weights are governance `.18`, strategic
+alignment `.18`, portfolio discipline `.14`, signal responsiveness `.12`, follow-through
+`.12`, stakeholder alignment `.10`, policy alignment `.08`, and policy discipline `.08`.
 
 *(The last two sub-factors were added by the 2026-08-21 closeout; the six before them
 are unchanged. Frozen formulas and the runtime state contract are in §5.3a.)*
@@ -306,12 +326,11 @@ is the check that pins nineteen mockups to the engine.
 1. **Graph model + analysis** — serving path, coverage, min-capacity, path availability,
    articulation points, blast radius. *Verify:* I8; a hand-built 7-node fixture reproduces
    the `design/02` worked example.
-2. **Technology term.** *Verify:* Riverside round 3 order fulfilment → `tech ≈ 0.75`
-   (0.3 §5.4). A deviation >0.01 is a **STOP and report** — either the engine or the
-   mockup figures are wrong, and that must be resolved, not absorbed.
-3. **Organisation term** incl. the IT staffing pool. *Verify:* `org ≈ 0.51`.
-4. **Management term** incl. stakeholder alignment. *Verify:* `mgmt ≈ 0.65`; I4.
-5. **Roll-up + BSC + decomposition record.** *Verify:* `realised ≈ 0.249`; the record names
+2. **Technology term.** *Verify:* Riverside round 3 order fulfilment → weighted `tech ≈ 0.792`.
+   Structural no-path cases remain hard zeroes; partial path evidence remains visible.
+3. **Organisation term** incl. the IT staffing pool. *Verify:* weighted `org ≈ 0.496`.
+4. **Management term** incl. stakeholder alignment. *Verify:* weighted `mgmt ≈ 0.752`; I4.
+5. **Roll-up + BSC + decomposition record.** *Verify:* `realised ≈ 0.296`; the record names
    `org` as throttle.
 6. **Property tests.** *Verify:* I5, I6, I7, I8.
 
@@ -326,12 +345,12 @@ already-approved mockups either agree or expose a contradiction.
 |---|---|---|
 | Pre-flight rows 1–5 | | |
 | Steps 1–6 verified | | |
-| Riverside R3 reproduces 0.75 / 0.51 / 0.65 / 0.249 | | |
+| Riverside R3 reproduces 0.792 / 0.496 / 0.752 / 0.296 under weighted aggregation | | |
 | I1–I8 | | |
 | O1, O2, O3 recorded | | |
 | Every factor in `design/02` §A–D implemented or deferred with a reason | | |
 | Decomposition record emitted for every capability | | |
-| **Seed** — `riverside_r3` seeded; scorer COMPUTES 0.750008/0.507003/0.656778/0.249744 from it *(closeout pins; pre-closeout 0.750/0.507/0.648/0.249)* | | |
+| **Seed** — `riverside_r3` seeded; scorer computes 0.792458/0.496349/0.752292/0.295903 from it under the 2026-09-17 weighted-term amendment | | |
 | Browser / auth / instance canaries | | **N-A** — pure functions, headless |
 
 ---
@@ -339,6 +358,10 @@ already-approved mockups either agree or expose a contradiction.
 ## Changelog
 
 - **2026-09-14 — scorecard contract v1:** clarifies units and the existing partial Financial boundary; no pure-scoring formula change. Canonical rule: `CONTRACTS.md`.
+
+- **2026-09-17 — weighted-term amendment:** replaces the equal geometric means inside
+  Technology, Organisation, and Management with explicit weighted arithmetic means and
+  retains structural hard gates. The across-term realised-value product is unchanged.
 
 - **2026-08-21 — 1.4 closeout** (`closeout-spec.md`; branch `build/1.4-closeout`;
   DoD `dod.md` §closeout). Built the deferred information-policy path:

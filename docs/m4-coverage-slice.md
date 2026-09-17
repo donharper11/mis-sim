@@ -20,4 +20,7 @@ coherent-plan calibration profile that maintains policy discipline, supports eve
 data rollout, and varies customer-system placement by declared strategy; the three negative
 controls remain unchanged. The full matrix remains evidence for human review rather than an
 automatic balance verdict. The rationale path is executable and governance-safe, but the default
-provider remains disabled until an instructor explicitly opts into an approved evaluator.
+provider remains disabled until an instructor explicitly opts into an approved evaluator. The
+scoring model now preserves partial Technology, Organisation, and Management evidence through
+authored weighted aggregation while retaining structural hard gates; the revised matrix is
+recorded in `docs/m4-strategy-playthrough-audit.md`.

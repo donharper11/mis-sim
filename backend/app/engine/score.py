@@ -2,9 +2,10 @@
 
     Realised Value = Technology Capability x Organisational Readiness x Management Quality
 
-Multiplication across the three terms, plain product, never a geometric mean
-(settled decision 2, invariant I6). A zero in any term zeroes realised value
-(invariant I7) -- that is Laudon's complementary-assets argument made mechanical.
+Multiplication across the three terms remains a plain product. Within each term,
+authored weighted averages preserve partial evidence; structural hard gates still
+produce a zero term and therefore a zero realised value. That preserves Laudon's
+complementary-assets lesson without making every sub-factor an all-or-nothing gate.
 
 Every capability, every round, emits a decomposition record naming which factor
 throttled it (spec 5.6). A number without its decomposition is not a deliverable.
