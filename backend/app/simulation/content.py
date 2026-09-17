@@ -421,10 +421,11 @@ def _validate_against_casepack(pack: Casepack, runtime: RuntimeContentV1) -> Non
         "policy": "max_policy", "maintenance": "one_round_opex", "data_migration": "capex_fraction",
     }:
         raise SimulationError("invalid_input", "accounting/tco_estimators", {"reason": "exact estimator map required"})
-    expected_catalog = {"pos_system_2011", "order_mgmt_v42", "accounting_package", "store_spreadsheets", "order_db_cluster", "store_back_office_pc"}
-    expected_services = {"client_network", "compute_pool", "storage_pool", "backup_recovery"}
-    if len(runtime.initial.assets) != 10 or len({x.id for x in runtime.initial.assets}) != 10:
-        raise SimulationError("invalid_input", "initial.assets", {"reason": "expected ten unique initial assets"})
+    # The initial estate is authored by the pack.  Validate its shape and joins
+    # below, but do not require Riverside's six catalog items, four services, or
+    # ten assets.  A new vertical may choose a different starting estate.
+    if len({x.id for x in runtime.initial.assets}) != len(runtime.initial.assets):
+        raise SimulationError("invalid_input", "initial.assets", {"reason": "initial asset ids must be unique"})
     if any(x.units <= 0 or x.installed_round < 0 for x in runtime.initial.assets):
         raise SimulationError("invalid_input", "initial.assets")
     if set(runtime.people.units) != {x.people_affected.org_unit for x in pack.catalog}:
@@ -470,14 +471,10 @@ def _validate_against_casepack(pack: Casepack, runtime: RuntimeContentV1) -> Non
             raise SimulationError("invalid_input", f"initial.assets/{asset.id}/config", {"reason": "service config must be null"})
         if asset.installed_round > pack.metadata.rounds:
             raise SimulationError("invalid_input", f"initial.assets/{asset.id}/installed_round")
-        if asset.id != f"initial_{asset.source_key}" or asset.units != 1 or asset.installed_round != 0:
-            raise SimulationError("invalid_input", f"initial.assets/{asset.id}", {"reason": "initial asset identity is frozen"})
-        if asset.source_kind == "catalog" and (asset.source_key not in expected_catalog or asset.placement != "on_prem" or asset.config != "core"):
-            raise SimulationError("invalid_input", f"initial.assets/{asset.id}", {"reason": "initial catalog set/placement mismatch"})
-        if asset.source_kind == "service" and (asset.source_key not in expected_services or asset.placement != "on_prem"):
-            raise SimulationError("invalid_input", f"initial.assets/{asset.id}", {"reason": "initial service set/placement mismatch"})
-    if {a.source_key for a in runtime.initial.assets if a.source_kind == "catalog"} != expected_catalog or {a.source_key for a in runtime.initial.assets if a.source_kind == "service"} != expected_services:
-        raise SimulationError("invalid_input", "initial.assets", {"reason": "frozen initial source set mismatch"})
+        # IDs, units, installation round, placement and configuration are
+        # deliberately pack-authored.  The generic structural rules above are
+        # the contract; there is no required ``initial_<source_key>`` naming
+        # convention or fixed cardinality.
     if any(value is not None and value not in asset_ids for value in runtime.initial.primary.values()):
         raise SimulationError("invalid_reference", "initial.primary")
     for capability, asset_id in runtime.initial.primary.items():

@@ -12,7 +12,7 @@ import re
 import copy
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, ValidationInfo, field_validator, model_validator
 
 
 KEY_RE = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -456,6 +456,17 @@ class RuntimePackV1(StrictModel):
     canonical_bytes: bytes
 
     model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+
+    def validate_state(self, value: Any) -> CheckpointStateV1:
+        """Validate a checkpoint against this pack's capability vocabulary.
+
+        Capability keys are content references, so a state cannot use the
+        module-level Riverside vocabulary as its authority.  The explicit
+        helper keeps the binding at the loaded ``RuntimePackV1`` boundary while
+        allowing the DTO itself to remain usable for structural validation.
+        """
+        capabilities = tuple(item.key for item in self.casepack.capabilities)
+        return CheckpointStateV1.model_validate(value, context={"capabilities": capabilities})
 
     def __getattribute__(self, name: str):
         # Do not expose mutable aliases to the bound semantic inputs.  Later
@@ -976,7 +987,7 @@ class CheckpointStateV1(StrictModel):
     repair_assessment_history: list[RepairAssessmentV1]; unpriced_signal_exposures: list[UnpricedSignalExposureV1]
 
     @model_validator(mode="after")
-    def validate_state(self) -> "CheckpointStateV1":
+    def validate_state(self, info: ValidationInfo) -> "CheckpointStateV1":
         if not KEY_RE.fullmatch(self.strategy) or len(self.strategy) > 64 or not self.strategy_declared_round >= 0:
             raise ValueError("invalid strategy or declared round")
         if any(k != v.id for k, v in self.assets.items()):
@@ -989,7 +1000,13 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("invalid project identity")
         if any(v is not None and v not in self.assets for v in self.primary.values()):
             raise ValueError("primary references unknown asset")
-        if set(self.primary) - set(CAPABILITIES):
+        # Capability names belong to the bound casepack.  The state DTO keeps
+        # only the structural key contract; callers that have a loaded pack
+        # pass its capability keys as Pydantic validation context.
+        allowed_capabilities = None
+        if info.context and "capabilities" in info.context:
+            allowed_capabilities = set(info.context["capabilities"])
+        if allowed_capabilities is not None and (set(self.primary) - allowed_capabilities):
             raise ValueError("primary references unknown capability")
         if any(not 0 <= value <= 1 or not math.isfinite(value) for value in self.unit_resistance.values()):
             raise ValueError("unit resistance out of range")
@@ -1003,8 +1020,10 @@ class CheckpointStateV1(StrictModel):
             raise ValueError("rollout references unknown asset")
         if any(self.assets[k].source_kind != "catalog" for k in self.rollouts):
             raise ValueError("rollouts are only valid for catalog assets")
-        if any(k not in CAPABILITIES for k in self.governance | self.primary):
+        if allowed_capabilities is not None and any(k not in allowed_capabilities for k in self.governance | self.primary):
             raise ValueError("governance/primary capability key is unknown")
+        if any(not KEY_RE.fullmatch(k) or len(k) > 64 for k in self.governance | self.primary):
+            raise ValueError("invalid capability key")
         if len(self.staff_hires) != len({x.order_id for x in self.staff_hires}):
             raise ValueError("duplicate staff hire order")
         if any(hire.order_id not in self.hiring_orders for hire in self.staff_hires):
