@@ -973,6 +973,11 @@ class UnpricedSignalExposureV1(StrictModel):
 
 
 class CheckpointStateV1(StrictModel):
+    # A state validated through RuntimePackV1 carries pack-bound capability
+    # references.  Wrapping that already-validated instance in TransitionV1 or
+    # RunViewV1 must not silently re-run the unbound legacy fallback.
+    model_config = ConfigDict(extra="forbid", strict=True, validate_assignment=True, revalidate_instances="never")
+
     strategy: str; strategy_declared_round: StrictInt
     assets: dict[str, AssetV1]; connections: dict[str, ConnectionV1]
     projects: dict[str, ProjectV1]; hiring_orders: dict[str, HiringOrderV1]

@@ -70,7 +70,7 @@ def _commands(commands: Iterable[CommandV1]) -> tuple[CommandV1, ...]:
     return out
 
 
-def _state_merge(prior: CheckpointStateV1, estate: Any, org: Any, charges: list[CostEntryV1]) -> CheckpointStateV1:
+def _state_merge(pack: RuntimePackV1, prior: CheckpointStateV1, estate: Any, org: Any, charges: list[CostEntryV1]) -> CheckpointStateV1:
     data = prior.model_dump(mode="python")
     for assessment in data.get("repair_assessment_history", []):
         for witness in (*assessment.get("candidates", []), *assessment.get("repaired_but_uncredited", [])):
@@ -80,7 +80,7 @@ def _state_merge(prior: CheckpointStateV1, estate: Any, org: Any, charges: list[
     for name in ("rollouts", "unit_resistance", "governance", "primary", "policies", "support", "hiring_orders", "staff_hires", "strategy", "strategy_declared_round"):
         if hasattr(org, name): data[name] = _dump(getattr(org, name))
     data["cost_ledger"] = list(data["cost_ledger"]) + [_dump(x) for x in charges]
-    return CheckpointStateV1.model_validate(data)
+    return pack.validate_state(data)
 
 
 def _action_id(source_round: int, source_command: str, effect_round: int, action_type: str, capability: str | None, target_key: str | None) -> str:
@@ -207,7 +207,7 @@ def prepare_effects(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Ite
     cmds = _commands(commands)
     estate = reduce_estate(pack, prior, cmds, round)
     organisation = reduce_organisation(pack, prior, estate, cmds, round)
-    base_state = _state_merge(prior, estate, organisation, [])
+    base_state = _state_merge(pack, prior, estate, organisation, [])
     response_charges, responses, prevented = _response_entries(pack, cmds, round)
     request_charges = _capital_request_entries(pack, cmds, round)
     rec = recurring_entries(pack, base_state, round)
@@ -219,7 +219,7 @@ def prepare_effects(pack: RuntimePackV1, prior: CheckpointStateV1, commands: Ite
     capital_remaining = capital_available - capital_spend
     operating_runrate = -sum(x.operating_delta for x in rec)
     actions = tuple(_actions(pack, prior, estate, organisation, cmds, round))
-    state = _state_merge(prior, estate, organisation, charges)
+    state = _state_merge(pack, prior, estate, organisation, charges)
     return PreparedEffects(pack, prior, state, cmds, round, estate, organisation, resource_view(pack, state, round), charges, actions, tuple(responses), frozenset(prevented), tuple(estate.arrived_ids), tuple(estate.retired_ids), tuple(estate.expired_ids), capital_available, capital_spend, capital_remaining, operating_runrate)
 
 
@@ -527,7 +527,7 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     new_data["available_funds_by_round"] = list(prior.available_funds_by_round) + [prepared.capital_remaining]
     tco_rows = _tco(pack, prior, prepared)
     new_data["tco_forecasts"] = [_dump(x) for x in list(prior.tco_forecasts) + tco_rows]
-    state = CheckpointStateV1.model_validate(new_data)
+    state = pack.validate_state(new_data)
     data_freshness = _data_freshness(pack, prepared, team_state)
     freshness_state = DataFreshnessState(
         coverage=float(data_freshness["coverage"]),
@@ -550,4 +550,7 @@ def resolve_transition(pack: RuntimePackV1, prior: CheckpointStateV1, commands: 
     state_changes = {"arrived": sorted(prepared.arrivals), "retired": sorted(prepared.retirements), "expired": sorted(prepared.expiries), "changed_rollouts": changed_rollouts, "changed_policies": changed_policies, "changed_assignments": changed_assignments, "resource_view": _dump(prepared.resources), "entity_access": [_dump(x) for x in team_state.entity_access or ()], "data_freshness": data_freshness}
     result = {"simulation_version": 1, "round": round, "pack_identity": {"key": pack.casepack.metadata.pack_key, "version": pack.casepack.metadata.pack_version, "digest": pack.pack_digest}, "score": final_score.record(), "scorecard": scorecard, "scorecard_meta": scorecard_meta, "events": fired_records, "responses": [_dump(x) for x in prepared.responses], "suppressed_events": [{"key": x.event_key, "reason": x.reason, "capability": x.capability} for x in suppressed], "prevented_events": prevented_evidence, "accounting": accounting, "state_changes": state_changes, "data_freshness": data_freshness, "financial_model": vars(financial_model), "tco": _tco_evidence(pack, prior, prepared, tco_rows), "technical_debt": {"opening": sum(x.amount for x in prior.technical_debt if x.settled_round is None), "added": sum(x.amount for x in state.technical_debt if x not in prior.technical_debt), "settled": sum(x.amount for x in prior.technical_debt if x.settled_round == round), "closing": priced_total, "unpriced_episode_count": len(state.unpriced_signal_exposures), "debt_ratio": debt_ratio}, "financials": {"capital_spend": accounting["capital_spend"], "opex_runrate": prepared.operating_runrate, "debt": priced_total, "capital_balance": state.capital_balance, "operating_reserve": state.operating_reserve, "revenue": financial_model.revenue, "operating_margin": financial_model.operating_margin}}
     preview = _preview(pack, prior, prepared, assessments)
-    return TransitionV1(state=state, result=result, preview=preview)
+    return TransitionV1.model_validate(
+        {"state": state, "result": result, "preview": preview},
+        context={"capabilities": tuple(item.key for item in pack.casepack.capabilities)},
+    )

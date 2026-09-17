@@ -64,18 +64,18 @@ def initialize_state(pack: RuntimePackV1, strategy_key: str) -> CheckpointStateV
         for policy in casepack.policies
     }
     governance = {key: GovernanceStateV1(owner=value.owner, sponsor=value.sponsor) for key, value in runtime.initial.governance.items()}
-    return CheckpointStateV1(
-        strategy=strategy_key, strategy_declared_round=0,
-        assets=assets, connections=connections, projects=projects, hiring_orders={},
-        staff_hires=[], support={"tier": None, "covered_assets": []}, rollouts=rollouts,
-        unit_resistance={unit: runtime.people.units[unit].initial_resistance for unit in runtime.people.units},
-        governance=governance, primary=dict(runtime.initial.primary), policies=policies,
-        capital_balance=runtime.accounting.opening_capital,
-        operating_reserve=runtime.accounting.opening_operating,
-        cost_ledger=[], technical_debt=[], signal_ledger=[], action_history=[],
-        available_funds_by_round=[], event_history=[], response_history=[], tco_forecasts=[],
-        repair_assessment_history=[], unpriced_signal_exposures=[],
-    )
+    return pack.validate_state({
+        "strategy": strategy_key, "strategy_declared_round": 0,
+        "assets": assets, "connections": connections, "projects": projects, "hiring_orders": {},
+        "staff_hires": [], "support": {"tier": None, "covered_assets": []}, "rollouts": rollouts,
+        "unit_resistance": {unit: runtime.people.units[unit].initial_resistance for unit in runtime.people.units},
+        "governance": governance, "primary": dict(runtime.initial.primary), "policies": policies,
+        "capital_balance": runtime.accounting.opening_capital,
+        "operating_reserve": runtime.accounting.opening_operating,
+        "cost_ledger": [], "technical_debt": [], "signal_ledger": [], "action_history": [],
+        "available_funds_by_round": [], "event_history": [], "response_history": [], "tco_forecasts": [],
+        "repair_assessment_history": [], "unpriced_signal_exposures": [],
+    })
 
 
 def _price(casepack: Casepack, source_key: str, placement: str, config: str | None, units: int) -> tuple[int, int]:

@@ -219,7 +219,7 @@ class SimulationService:
         if row.pack_digest != self.runtime_pack.pack_digest:
             raise SimulationError("pack_mismatch", "checkpoint.pack_digest")
         try:
-            state = CheckpointStateV1.model_validate(row.state)
+            state = self.runtime_pack.validate_state(row.state)
         except Exception as exc:
             raise SimulationError("invalid_output", "checkpoint.state") from exc
         if _state_digest(state) != row.state_digest:
@@ -234,11 +234,11 @@ class SimulationService:
 
     def _state(self, session: Session, instance_id: int, team_id: int, round: int) -> CheckpointStateV1:
         row = self._checkpoint(session, instance_id, team_id, round)
-        return CheckpointStateV1.model_validate(row.state)
+        return self.runtime_pack.validate_state(row.state)
 
     def _view(self, session: Session, run: SimulationRunV1) -> RunViewV1:
         checkpoint = self._checkpoint(session, run.instance_id, run.team_id, run.advanced_round)
-        state = CheckpointStateV1.model_validate(checkpoint.state)
+        state = self.runtime_pack.validate_state(checkpoint.state)
         sheet_view = None
         if run.status != "completed":
             sheet = self._sheet(session, run.instance_id, run.team_id, run.current_round)
@@ -248,15 +248,15 @@ class SimulationService:
                 version=1, round=sheet.round, revision=sheet.revision,
                 locked_revision=sheet.locked_revision, commands=list(commands), preview=preview,
             )
-        return RunViewV1(
-            version=1,
-            pack_identity=PackIdentityV1(
+        return RunViewV1.model_validate({
+            "version": 1,
+            "pack_identity": PackIdentityV1(
                 key=run.pack_key, version=run.pack_version, digest=run.pack_digest,
             ),
-            current_round=run.current_round, status=run.status,
-            checkpoint_round=run.advanced_round, checkpoint_digest=checkpoint.state_digest,
-            state=state, sheet=sheet_view,
-        )
+            "current_round": run.current_round, "status": run.status,
+            "checkpoint_round": run.advanced_round, "checkpoint_digest": checkpoint.state_digest,
+            "state": state, "sheet": sheet_view,
+        }, context={"capabilities": tuple(item.key for item in self.runtime_pack.casepack.capabilities)})
 
     def initialize(self, instance_id: int, team_id: int, strategy_key: str) -> RunViewV1:
         instance_id, team_id = self._scope(instance_id, team_id)

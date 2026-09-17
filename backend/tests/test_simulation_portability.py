@@ -13,9 +13,19 @@ import tempfile
 
 import pytest
 import yaml
+from sqlalchemy import create_engine
 
+from app.casepack.models import Casepack
+from app.models.base import Base
+from app.models import platform as platform_models
+from app.models import scheduling as scheduling_models
+from app.round import models as round_models
 from app.simulation import load_runtime_pack
-from app.simulation.types import CheckpointStateV1, RuntimePackV1, SimulationError
+from app.simulation import models as simulation_models
+from app.simulation.consequences import resolve_transition
+from app.simulation.estate import initialize_state
+from app.simulation.service import SimulationService
+from app.simulation.types import CheckpointStateV1, RuntimeContentV1, RuntimePackV1, SimulationError
 
 
 PACK = Path(__file__).parents[1] / "packs" / "riverside_grocery"
@@ -48,6 +58,30 @@ def _runtime_with_authored_non_riverside_estate(raw: dict) -> dict:
     result["initial"]["connections"] = []
     result["initial"]["primary"] = {key: None for key in result["initial"]["primary"]}
     return result
+
+
+def _synthetic_bound_pack() -> RuntimePackV1:
+    """Bind a renamed capability through the same typed runtime seam."""
+    loaded = load_runtime_pack(PACK)
+
+    def replace(value):
+        if isinstance(value, str):
+            return "banking_operations" if value == "order_fulfilment" else value
+        if isinstance(value, dict):
+            return {
+                ("banking_operations" if key == "order_fulfilment" else key): replace(child)
+                for key, child in value.items()
+            }
+        if isinstance(value, list):
+            return [replace(child) for child in value]
+        return value
+
+    return RuntimePackV1(
+        casepack=Casepack.model_validate(replace(loaded.casepack.model_dump(mode="python"))),
+        runtime=RuntimeContentV1.model_validate(replace(loaded.runtime.model_dump(mode="python"))),
+        pack_digest="a" * 64,
+        canonical_bytes=b"synthetic-bank-pack",
+    )
 
 
 def test_runtime_accepts_pack_authored_non_riverside_initial_estate():
@@ -109,3 +143,27 @@ def test_checkpoint_capability_references_bind_to_supplied_pack_vocabulary():
         canonical_bytes=b"",
     )
     assert bound.validate_state(base).primary == {"banking_operations": None}
+
+
+def test_bound_pack_initializes_and_transitions_non_riverside_capability_state(tmp_path):
+    pack = _synthetic_bound_pack()
+    initial = initialize_state(pack, "cost_leadership")
+    transition = resolve_transition(pack, initial, [], 1)
+
+    assert "banking_operations" in initial.primary
+    assert "banking_operations" in transition.state.primary
+
+    engine = create_engine(f"sqlite:///{tmp_path / 'simulation.db'}", future=True)
+    Base.metadata.create_all(engine, tables=[
+        x.__table__ for x in (
+            *platform_models.ALL_TABLES, *round_models.ALL_TABLES,
+            *simulation_models.ALL_TABLES, *scheduling_models.ALL_TABLES,
+        )
+    ])
+    try:
+        service = SimulationService(engine, pack)
+        view = service.initialize(1, 1, "cost_leadership")
+        assert "banking_operations" in view.state.primary
+        assert "banking_operations" in service.read(1, 1).state.primary
+    finally:
+        engine.dispose()
