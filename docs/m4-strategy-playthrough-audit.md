@@ -2,30 +2,36 @@
 
 Date: 2026-09-17
 
-The production decision harness now supports a strategy matrix with one detached
-runtime-pack snapshot per batch. That preserves the pack isolation contract while
-making the audit practical. The audit command exercises the real `SimulationService`
-and persists six immutable rounds per playthrough.
+The production decision harness exercises the real `SimulationService` and persists
+six immutable rounds per playthrough. `run_strategy_matrix` uses one detached runtime
+pack snapshot per batch, preserving pack isolation while keeping the audit practical.
 
-The first bounded review covered the four declared strategies against the coherent
-`balanced` and negligent `do_nothing` decision plans:
+The first bounded run exposed a producer defect: modern projection left
+`TeamState.decisions` empty, so strategic alignment and portfolio discipline were
+zero even when the decision sheet contained spend. The projection now derives the
+scorer's decision records from current-round action and cost entries, resolves R/G/T
+from authored catalog items, and includes recurring maintenance spend in the floor.
+The existing pure-engine and legacy snapshot paths are unchanged.
 
-| Strategy | Playthroughs | Rounds | Firm-score range |
+The corrected full matrix covered all four strategies, all four decision archetypes,
+and 16 six-round playthroughs (96 persisted rounds):
+
+| Strategy | Playthroughs | Firm-score range | Non-zero rounds |
 |---|---:|---:|---:|
-| cost_leadership | 2 | 12 | 0.000000–0.000000 |
-| differentiation | 2 | 12 | 0.000000–0.000000 |
-| customer_supplier_intimacy | 2 | 12 | 0.000000–0.000000 |
-| focus_strategy | 2 | 12 | 0.000000–0.000000 |
+| cost_leadership | 4 | 0.000000–0.134310 | 1 |
+| differentiation | 4 | 0.000000–0.000000 | 0 |
+| customer_supplier_intimacy | 4 | 0.000000–0.000000 | 0 |
+| focus_strategy | 4 | 0.000000–0.046672 | 1 |
 
-This is a **failed balance review**, not evidence that the strategies are balanced.
-All eight playthroughs (48 persisted rounds) completed and remained finite, but the Management term was
-zero for the exercised runtime states, so the multiplicative realised-value model
-correctly produced zero firm score for every strategy. The result is useful: the next
-M4 calibration task is to identify why the decision-driven fixture leaves Management
-at zero and then rerun this matrix. No strategy winner or pedagogical balance claim is
-made until that throttle is resolved.
+Across archetypes, only the coherent `balanced` plan produced non-zero rounds
+(2 of 24); `all_tech_no_org`, `do_nothing`, and `overspender` remained at zero. This
+is a valid calibration finding, not a strategy-balance pass: the fixture's later
+rounds leave actionable signals unanswered and several strategy/archetype pairs hit
+zero Management sub-factors. No strategy winner or pedagogical balance claim should
+be made from this matrix yet.
 
-The full four-archetype matrix remains available through
-`app.simulation.games.run_strategy_matrix`; it should be run after the Management
-throttle is understood, because a larger matrix cannot turn a zero-score fixture into
-balance evidence.
+The next M4 calibration task is to author a small set of strategy-distinguishing
+plans that deliberately exercise signal response, policy discipline, and portfolio
+mix while preserving the negative controls. The matrix harness and the missing
+decision producer are now ready for that calibration; no scoring constants were
+changed to force a spread.

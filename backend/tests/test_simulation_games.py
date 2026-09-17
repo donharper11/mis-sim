@@ -64,6 +64,11 @@ def test_balanced_game_uses_service_and_persists_six_results(pack, engine):
     reports = run_game(engine, pack, "balanced", "cost_leadership", 101, 1)
     assert [row["round"] for row in reports] == [1, 2, 3, 4, 5, 6]
     assert all(row["simulation_version"] == 1 for row in reports)
+    # Modern projection must carry round spend into the Management engine; an empty
+    # decision tuple would silently zero strategic alignment and portfolio discipline.
+    management = reports[0]["score"]["capabilities"][0]["sub_factors"]["mgmt"]
+    assert management["strategic_alignment"] > 0
+    assert management["portfolio_discipline"] > 0
     from app.simulation.service import SimulationService
 
     view = SimulationService(engine, pack).read(101, 1)
