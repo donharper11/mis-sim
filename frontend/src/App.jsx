@@ -4,6 +4,10 @@ import Login from "./pages/Login.jsx";
 import DevComponents from "./pages/DevComponents.jsx";
 import Shell from "./pages/Shell.jsx";
 import InstructorSetup from "./pages/InstructorSetup.jsx";
+import InstructorRegistry from "./pages/InstructorRegistry.jsx";
+import InstructorRoundControl from "./pages/InstructorRoundControl.jsx";
+import InstructorMonitoring from "./pages/InstructorMonitoring.jsx";
+import InstructorGrading from "./pages/InstructorGrading.jsx";
 
 function NotFound() {
   return (
@@ -35,6 +39,10 @@ export default function App() {
         <Route path="/budget" element={<Shell view="budget" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/instructor/setup" element={<InstructorSetup />} />
+        <Route path="/instructor/registry" element={<InstructorRegistry />} />
+        <Route path="/instructor/round-control" element={<InstructorRoundControl />} />
+        <Route path="/instructor/monitoring" element={<InstructorMonitoring />} />
+        <Route path="/instructor/grading" element={<InstructorGrading />} />
         <Route path="/_dev/tokens" element={<DevTokens />} />
         <Route path="/_dev/components" element={<DevComponents />} />
         <Route path="*" element={<NotFound />} />

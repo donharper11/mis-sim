@@ -10,7 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.platform import Course, Enrollment, Section, SimulationInstance, Team, User
+from app.models.platform import Casepack, Course, Enrollment, Section, SimulationInstance, Team, User
 from app.casepack.registry import RegistryError, aresolve_runtime_pack
 
 
@@ -335,3 +335,154 @@ class EnrollmentService:
         if row is None:
             raise PlatformNotFound(f"Enrollment {enrollment_id} was not found in the requested scope")
         return row
+
+
+async def clone_section(
+    session: AsyncSession,
+    section_id: int,
+    *,
+    new_section_code: str | None = None,
+    new_section_name: str | None = None,
+) -> Section:
+    """Clone a section's structure into a new section in the same course.
+
+    Copies pack binding, team names, settings, and section limits.  The new
+    instance starts at status='setup', current_round=0.  No enrollments or
+    runtime state are copied.
+    """
+    source_section = await SectionService.read(session, section_id)
+    source_instance = await session.scalar(
+        select(SimulationInstance).where(SimulationInstance.section_id == source_section.id)
+    )
+    if source_instance is None:
+        raise PlatformNotFound(f"Section {section_id} has no simulation instance to clone")
+
+    code = new_section_code or f"{source_section.section_code} (clone)"
+    name = new_section_name or f"{source_section.section_name} (clone)"
+
+    new_section = Section(
+        course_id=source_section.course_id,
+        section_code=code,
+        section_name=name,
+        max_teams=source_section.max_teams,
+        team_size_min=source_section.team_size_min,
+        team_size_max=source_section.team_size_max,
+        is_active=source_section.is_active,
+    )
+    session.add(new_section)
+    await session.flush()
+
+    new_instance = SimulationInstance(
+        section_id=new_section.id,
+        pack_key=source_instance.pack_key,
+        pack_version=source_instance.pack_version,
+        pack_digest=source_instance.pack_digest,
+        current_round=0,
+        total_rounds=source_instance.total_rounds,
+        status="setup",
+        settings=dict(source_instance.settings) if source_instance.settings else {},
+    )
+    session.add(new_instance)
+    await session.flush()
+
+    source_teams = list((await session.scalars(
+        select(Team).where(Team.instance_id == source_instance.instance_id).order_by(Team.id)
+    )).all())
+    for team in source_teams:
+        session.add(Team(
+            section_id=new_section.id,
+            instance_id=new_instance.instance_id,
+            name=team.name,
+        ))
+    await session.flush()
+
+    return new_section
+
+
+async def archive_instance(session: AsyncSession, instance_id: int) -> SimulationInstance:
+    """Mark a completed instance as archived (read-only terminal state)."""
+    instance = await InstanceService.read(session, instance_id)
+    if instance.status != "completed":
+        raise PlatformConflict(
+            f"Only completed instances can be archived; instance {instance_id} is '{instance.status}'"
+        )
+    instance.status = "archived"
+    await session.flush()
+    return instance
+
+
+async def reset_instance(session: AsyncSession, instance_id: int) -> SimulationInstance:
+    """Delete all runtime state for a setup-status instance.
+
+    The instance keeps its pack binding, teams, settings, and round 0 position.
+    Only setup-status instances can be reset.
+    """
+    from app.models.grading import GradeConfig, GradeOverride
+    from app.models.scheduling import RoundSchedule, RoundScheduleTeam
+    from app.round.models import RoundResult
+    from app.simulation.models import SimulationCheckpointV1, SimulationRunV1, SimulationSheetV1
+
+    instance = await InstanceService.read(session, instance_id)
+    if instance.status != "setup":
+        raise PlatformConflict(
+            f"Only setup-status instances can be reset; instance {instance_id} is '{instance.status}'. "
+            "Archive and clone, or return to setup first."
+        )
+
+    # Delete runtime rows in dependency-safe order (children before parents).
+    # RoundScheduleTeam references RoundSchedule, so delete it first.
+    await session.execute(
+        RoundScheduleTeam.__table__.delete().where(RoundScheduleTeam.instance_id == instance_id)
+    )
+    await session.execute(
+        RoundSchedule.__table__.delete().where(RoundSchedule.instance_id == instance_id)
+    )
+    # SimulationSheetV1 and SimulationCheckpointV1 reference SimulationRunV1.
+    await session.execute(
+        SimulationSheetV1.__table__.delete().where(SimulationSheetV1.instance_id == instance_id)
+    )
+    await session.execute(
+        SimulationCheckpointV1.__table__.delete().where(SimulationCheckpointV1.instance_id == instance_id)
+    )
+    await session.execute(
+        SimulationRunV1.__table__.delete().where(SimulationRunV1.instance_id == instance_id)
+    )
+    await session.execute(
+        RoundResult.__table__.delete().where(RoundResult.instance_id == instance_id)
+    )
+    # Grading tables.
+    await session.execute(
+        GradeOverride.__table__.delete().where(GradeOverride.instance_id == instance_id)
+    )
+    await session.execute(
+        GradeConfig.__table__.delete().where(GradeConfig.instance_id == instance_id)
+    )
+    await session.flush()
+    return instance
+
+
+async def deregister_casepack(session: AsyncSession, pack_key: str, pack_version: str) -> None:
+    """Remove a Casepack registry row.
+
+    Raises PlatformNotFound if the pack is not registered.
+    Raises PlatformConflict if any active (non-archived) instances are bound.
+    """
+    row = await session.scalar(
+        select(Casepack).where(Casepack.pack_key == pack_key, Casepack.pack_version == pack_version)
+    )
+    if row is None:
+        raise PlatformNotFound(f"Casepack {pack_key} {pack_version} is not registered")
+    active = list(
+        (await session.scalars(
+            select(SimulationInstance).where(
+                SimulationInstance.pack_key == pack_key,
+                SimulationInstance.pack_version == pack_version,
+                SimulationInstance.status != "archived",
+            )
+        )).all()
+    )
+    if active:
+        ids = [inst.instance_id for inst in active]
+        raise PlatformConflict(f"Cannot deregister: active instances bound to this pack: {ids}")
+    await session.delete(row)
+    await session.flush()

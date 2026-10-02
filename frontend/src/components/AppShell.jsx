@@ -24,6 +24,10 @@ export default function AppShell({ me, instance, schedule, dashboard, activePath
         <nav aria-label="Main navigation">
           {(me?.role === "instructor" || me?.role === "admin") && <div className="product-shell__nav-group product-shell__nav-group--staff">
             <NavItem label="Instructor setup" to="/instructor/setup" active={activePath === "/instructor/setup"} />
+            <NavItem label="Round control" to="/instructor/round-control" active={activePath === "/instructor/round-control"} />
+            <NavItem label="Monitoring" to="/instructor/monitoring" active={activePath === "/instructor/monitoring"} />
+            <NavItem label="Grading" to="/instructor/grading" active={activePath === "/instructor/grading"} />
+            {me?.role === "admin" && <NavItem label="Registry" to="/instructor/registry" active={activePath === "/instructor/registry"} />}
           </div>}
           <div className="product-shell__nav-group">
             {resultItems.map((item) => <NavItem key={item} label={item} to={item === "Dashboard" ? "/" : item === "Challenges" ? "/challenges" : item === "Review" ? "/review" : item === "Debrief" ? "/debrief" : undefined} active={(item === "Dashboard" && activePath === "/") || (item === "Challenges" && activePath === "/challenges") || (item === "Review" && activePath === "/review") || (item === "Debrief" && activePath === "/debrief")} />)}

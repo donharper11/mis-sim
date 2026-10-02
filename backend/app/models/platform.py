@@ -77,7 +77,7 @@ class SimulationInstance(Base):
     __table_args__ = (
         UniqueConstraint("section_id", name="uq_simulation_instance_section"),
         UniqueConstraint("instance_id", "section_id", name="uq_simulation_instance_identity"),
-        CheckConstraint("status IN ('setup', 'active', 'paused', 'completed')", name="ck_simulation_instance_status"),
+        CheckConstraint("status IN ('setup', 'active', 'paused', 'completed', 'archived')", name="ck_simulation_instance_status"),
         CheckConstraint("current_round >= 0", name="ck_simulation_instance_current_round"),
         CheckConstraint("total_rounds > 0", name="ck_simulation_instance_total_rounds"),
     )

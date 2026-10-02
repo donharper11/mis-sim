@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
-from app.models.platform import Casepack
+from app.models.platform import Casepack, SimulationInstance
 from app.simulation.content import load_runtime_pack
 from app.simulation.types import RuntimePackV1
 from .validate import ERROR, validate_pack_dir
@@ -146,6 +146,23 @@ async def aresolve_runtime_pack(session: AsyncSession, pack_key: str, pack_versi
     if cached.pack_digest != row.pack_digest:
         raise RegistryIntegrityError(f"registered casepack {pack_key} {pack_version} failed registry integrity verification")
     return cached
+
+
+def get_casepack(session: Session, pack_key: str, pack_version: str) -> Casepack | None:
+    """Return the Casepack row for the given identity, or None."""
+    return session.scalar(
+        select(Casepack).where(Casepack.pack_key == pack_key, Casepack.pack_version == pack_version)
+    )
+
+
+def get_bound_instances(session: Session, pack_key: str, pack_version: str) -> list[SimulationInstance]:
+    """Return all SimulationInstance rows bound to the given pack identity."""
+    return list(session.scalars(
+        select(SimulationInstance).where(
+            SimulationInstance.pack_key == pack_key,
+            SimulationInstance.pack_version == pack_version,
+        ).order_by(SimulationInstance.instance_id)
+    ).all())
 
 
 class CasepackRegistry:

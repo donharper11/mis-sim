@@ -29,6 +29,11 @@ def _migrate(path: Path) -> None:
         if candidate.exists():
             alembic = str(candidate)
     if alembic is None:
+        import site
+        candidate = Path(site.getuserbase()) / "bin" / "alembic"
+        if candidate.exists():
+            alembic = str(candidate)
+    if alembic is None:
         pytest.fail("alembic executable is required for the migration-backed isolation canary")
     env = os.environ.copy()
     env["DATABASE_URL"] = f"sqlite+aiosqlite:///{path}"

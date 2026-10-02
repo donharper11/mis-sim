@@ -25,6 +25,11 @@ export default function InstructorSetup() {
   const [studentId, setStudentId] = useState("");
   const loadSerial = useRef(0);
 
+  // M5.7 lifecycle modal state
+  const [cloneModal, setCloneModal] = useState({ open: false, sectionId: null, code: "", name: "" });
+  const [archiveModal, setArchiveModal] = useState({ open: false, instanceId: null, confirmId: "" });
+  const [resetModal, setResetModal] = useState({ open: false, instanceId: null, confirmId: "" });
+
   const load = useCallback(async (courseId = null, sectionId = null) => {
     const serial = ++loadSerial.current;
     try {
@@ -100,6 +105,27 @@ export default function InstructorSetup() {
     await perform(() => apiClient.patch(`/sections/${selectedSection.id}/enrollments/${enrollmentId}`, { team_id: teamId ? Number(teamId) : null }), "Roster assignment saved.");
   }
 
+  // M5.7 lifecycle actions
+  async function handleClone() {
+    const body = {};
+    if (cloneModal.code.trim()) body.section_code = cloneModal.code.trim();
+    if (cloneModal.name.trim()) body.section_name = cloneModal.name.trim();
+    setCloneModal({ open: false, sectionId: null, code: "", name: "" });
+    await perform(() => apiClient.post(`/instructor/sections/${cloneModal.sectionId}/clone`, body), "Section cloned successfully.");
+  }
+
+  async function handleArchive() {
+    const iid = archiveModal.instanceId;
+    setArchiveModal({ open: false, instanceId: null, confirmId: "" });
+    await perform(() => apiClient.post(`/instructor/instances/${iid}/archive`, { confirm_instance_id: iid }), "Instance archived.");
+  }
+
+  async function handleReset() {
+    const iid = resetModal.instanceId;
+    setResetModal({ open: false, instanceId: null, confirmId: "" });
+    await perform(() => apiClient.post(`/instructor/instances/${iid}/reset`, { confirm_instance_id: iid }), "Instance reset. All runtime state cleared.");
+  }
+
   function selectCourse(event) {
     const courseId = Number(event.target.value);
     setState((previous) => ({ ...previous, courseId, sectionId: null, setup: null, roster: [], teams: [], error: "" }));
@@ -139,6 +165,15 @@ export default function InstructorSetup() {
             <p className="muted-copy">A pack binding is digest-pinned and can only be created before round 1.</p>
             {selectedSection.instance ? <dl className="setup-facts"><div><dt>Pack</dt><dd>{selectedSection.instance.pack_key} {selectedSection.instance.pack_version}</dd></div><div><dt>Digest</dt><dd className="mono-copy">{selectedSection.instance.pack_digest}</dd></div><div><dt>Status</dt><dd>{selectedSection.instance.status} / round {selectedSection.instance.current_round}</dd></div></dl> : <div className="setup-inline-form"><select aria-label="Registered pack" value={packKey} onChange={(event) => setPackKey(event.target.value)}>{state.packs.map((pack) => <option key={`${pack.pack_key}@${pack.pack_version}`} value={`${pack.pack_key}@${pack.pack_version}`}>{pack.display_name} — {pack.pack_version}</option>)}</select><button type="button" onClick={bindPack} disabled={!selectedPack}>Bind pack</button></div>}
           </section>
+          <section className="setup-card" aria-labelledby="lifecycle-heading">
+            <h3 id="lifecycle-heading">Lifecycle actions</h3>
+            <p className="muted-copy">Clone creates a copy of this section with the same configuration. Archive marks a completed instance as read-only. Reset clears all runtime state for a setup instance.</p>
+            <div className="setup-inline-form">
+              {selectedSection.instance && <button type="button" onClick={() => setCloneModal({ open: true, sectionId: selectedSection.id, code: "", name: "" })}>Clone section</button>}
+              {selectedSection.instance?.status === "completed" && <button type="button" onClick={() => setArchiveModal({ open: true, instanceId: selectedSection.instance.instance_id, confirmId: "" })}>Archive instance</button>}
+              {selectedSection.instance?.status === "setup" && <button type="button" onClick={() => setResetModal({ open: true, instanceId: selectedSection.instance.instance_id, confirmId: "" })}>Reset instance</button>}
+            </div>
+          </section>
           <section className="setup-card" aria-labelledby="roster-heading">
             <div className="setup-card__heading"><h3 id="roster-heading">Roster and teams</h3><button type="button" onClick={createTeam} disabled={!selectedSection.instance}>Create team</button></div>
             <form className="setup-inline-form" onSubmit={enrollStudent}><input aria-label="Existing student user ID" inputMode="numeric" placeholder="Existing student user ID" value={studentId} onChange={(event) => setStudentId(event.target.value)} required /><button type="submit" disabled={!selectedSection.instance}>Enroll existing identity</button></form>
@@ -147,5 +182,39 @@ export default function InstructorSetup() {
         </>}
       </>}
     </div>
+    {cloneModal.open && <div className="modal-overlay" onClick={() => setCloneModal({ open: false, sectionId: null, code: "", name: "" })}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <h3>Clone section</h3>
+        <p>Create a new section with the same pack, teams, and settings. No enrollments or runtime state will be copied.</p>
+        <label>Section code (optional)<input aria-label="Clone section code" placeholder="Leave blank for default" value={cloneModal.code} onChange={(e) => setCloneModal({ ...cloneModal, code: e.target.value })} /></label>
+        <label>Section name (optional)<input aria-label="Clone section name" placeholder="Leave blank for default" value={cloneModal.name} onChange={(e) => setCloneModal({ ...cloneModal, name: e.target.value })} /></label>
+        <div className="modal-actions">
+          <button type="button" onClick={() => setCloneModal({ open: false, sectionId: null, code: "", name: "" })}>Cancel</button>
+          <button type="button" className="btn-primary" onClick={handleClone}>Clone</button>
+        </div>
+      </div>
+    </div>}
+    {archiveModal.open && <div className="modal-overlay" onClick={() => setArchiveModal({ open: false, instanceId: null, confirmId: "" })}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <h3>Archive instance</h3>
+        <p>This will mark instance <strong>{archiveModal.instanceId}</strong> as archived (read-only). This action cannot be undone.</p>
+        <label>Type the instance ID to confirm<input aria-label="Confirm instance ID" placeholder={`${archiveModal.instanceId}`} value={archiveModal.confirmId} onChange={(e) => setArchiveModal({ ...archiveModal, confirmId: e.target.value })} /></label>
+        <div className="modal-actions">
+          <button type="button" onClick={() => setArchiveModal({ open: false, instanceId: null, confirmId: "" })}>Cancel</button>
+          <button type="button" className="btn-danger" disabled={Number(archiveModal.confirmId) !== archiveModal.instanceId} onClick={handleArchive}>Archive</button>
+        </div>
+      </div>
+    </div>}
+    {resetModal.open && <div className="modal-overlay" onClick={() => setResetModal({ open: false, instanceId: null, confirmId: "" })}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <h3>Reset instance</h3>
+        <p>This will delete <strong>all runtime state</strong> (runs, sheets, checkpoints, results, schedules, grades) for instance <strong>{resetModal.instanceId}</strong>. Teams and settings are preserved. Export grades first if needed.</p>
+        <label>Type the instance ID to confirm<input aria-label="Confirm instance ID" placeholder={`${resetModal.instanceId}`} value={resetModal.confirmId} onChange={(e) => setResetModal({ ...resetModal, confirmId: e.target.value })} /></label>
+        <div className="modal-actions">
+          <button type="button" onClick={() => setResetModal({ open: false, instanceId: null, confirmId: "" })}>Cancel</button>
+          <button type="button" className="btn-danger" disabled={Number(resetModal.confirmId) !== resetModal.instanceId} onClick={handleReset}>Reset</button>
+        </div>
+      </div>
+    </div>}
   </AppShell>;
 }

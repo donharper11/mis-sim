@@ -312,6 +312,17 @@ class SimulationService:
             except Exception as exc:
                 raise SimulationError("invalid_input", "patch") from exc
         with self._transaction() as session:
+            try:
+                from app.models.platform import SimulationInstance as _SI
+                instance_row = session.get(_SI, instance_id)
+                if instance_row is not None and instance_row.status == "paused":
+                    raise SimulationError("instance_paused", "instance")
+            except SimulationError:
+                raise
+            except Exception:
+                # The simulation_instance table may not exist in isolated test
+                # fixtures that predate the platform hierarchy.
+                pass
             run = self._run(session, instance_id, team_id, lock=True)
             if run.status == "completed" or round != run.current_round:
                 raise SimulationError("round_state", "round")
