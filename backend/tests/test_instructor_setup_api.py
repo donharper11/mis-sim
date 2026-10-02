@@ -8,6 +8,7 @@ from pathlib import Path
 
 from httpx import ASGITransport, AsyncClient
 import pytest
+import sqlalchemy
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -216,7 +217,8 @@ def test_assignment_concurrency_postgres_serializes_team_max():
         engine = create_async_engine(os.environ["M5_POSTGRES_URL"], isolation_level="READ COMMITTED")
         tables = [User.__table__, Course.__table__, Section.__table__, SimulationInstance.__table__, Team.__table__, Enrollment.__table__]
         async with engine.begin() as conn:
-            await conn.run_sync(lambda sync: Base.metadata.drop_all(sync, tables=tables))
+            await conn.execute(sqlalchemy.text("DROP SCHEMA public CASCADE"))
+            await conn.execute(sqlalchemy.text("CREATE SCHEMA public"))
             await conn.run_sync(lambda sync: Base.metadata.create_all(sync, tables=tables))
         factory = async_sessionmaker(engine, expire_on_commit=False)
         async with factory() as session:
