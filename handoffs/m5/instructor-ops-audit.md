@@ -159,3 +159,69 @@ pass; `git diff --check` passes. The opt-in PostgreSQL concurrency proof remains
 without a working `M5_POSTGRES_URL`, and SQLite still cannot prove row-lock semantics.
 Therefore the bounded browser/UI and API projection gates pass, while the overall setup
 slice remains open until production-database concurrency evidence is captured.
+
+## A7 re-audit — F-01 PostgreSQL concurrency gate closure
+
+Date: 2026-10-02
+Correction: `9e43424`
+Verdict: **PASS — all findings closed; M5.1/5.2 setup slice accepted**
+
+The final open finding (F-01) is now closed with production-database concurrency evidence.
+
+### F-01 resolution
+
+The PostgreSQL concurrency test (`test_assignment_concurrency_postgres_serializes_team_max`)
+was run against a real PostgreSQL 17 instance (Docker, port 5440) with
+`isolation_level="READ COMMITTED"`. The test creates two async sessions that simultaneously
+assign two different enrollments to the same team with `team_size_max=1`.
+
+Result:
+
+```text
+sorted(results) == ["committed", "conflict"]
+persisted == 1
+```
+
+`FOR UPDATE` on the parent section row serializes the member-count check. The losing
+transaction receives `PlatformConflict` (mapped to `409`), rolls back, and only one
+enrollment is persisted — exactly the invariant the contract requires.
+
+The correction commit (`9e43424`) also fixes a schema-teardown issue in the test: the
+original `drop_all` failed because M5.5's `grade_override` table holds an FK reference to
+`team`. The fix uses `DROP SCHEMA public CASCADE; CREATE SCHEMA public;` for a clean slate
+before recreating the test tables.
+
+### Browser proof reinforcement
+
+The same commit adds `frontend/tests/m5-setup-proof.mjs`, a Playwright script covering the
+full M5.1/5.2 instructor setup acceptance flow. Run against the seeded Docker environment:
+
+```text
+14 passed, 0 failed
+```
+
+Proofs exercised: staff login, course/section/pack selectors, pack digest binding,
+lifecycle actions (clone/reset), team creation, student enrollment, team assignment
+dropdowns (8 found), student denial (redirected to `/login`), clean browser console.
+Screenshots saved to `/tmp/proof-m51-*.png`.
+
+### Checks run
+
+* `M5_POSTGRES_URL=postgresql+asyncpg://mis_sim:mis_sim@127.0.0.1:5440/mis_sim pytest -q
+  tests/test_instructor_setup_api.py::test_assignment_concurrency_postgres_serializes_team_max`
+  — **1 passed**.
+* `make check` — **773 passed, 1 skipped**, all guards green.
+* `node frontend/tests/m5-setup-proof.mjs` — **14/14 passed**, 3 screenshots captured.
+* `node frontend/tests/browser-proof.mjs` (M5.3–5.7) — **20/20 passed** (prior session).
+
+### Finding status
+
+| Finding | Severity | Status | Closed by |
+|---------|----------|--------|-----------|
+| F-01 | high | **CLOSED** | `9e43424` — PostgreSQL `FOR UPDATE` serialization proven |
+| F-02 | high | CLOSED | `946a851` (A5) |
+| F-03 | high | CLOSED | `946a851` (A5) |
+| F-04 | medium | CLOSED | `946a851` (A5) |
+| F-05 | release gate | CLOSED | `9ec2156` (A6) |
+
+All five findings are closed. The M5.1/5.2 bounded instructor setup slice is accepted.
