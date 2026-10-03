@@ -1,0 +1,7 @@
+defaults_by_archetype:
+  operations: {ideal_training_coverage: high, weight: 0.9}
+  c_suite: {ideal_change_volume: medium, weight: 0.6}
+  finance: {ideal_cost_posture: medium, weight: 0.7}
+overrides:
+  - {item: records_system, archetype: operations, ideal_value: 100, weight: 1.0}
+provenance: {source: AUTHORED, note: "the clinical team will not accept a records rollout with no training; the owner wants change paced around clinic days"}
