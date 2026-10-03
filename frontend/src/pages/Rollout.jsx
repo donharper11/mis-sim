@@ -1,9 +1,15 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client.js";
-import { DetailTable, OptionRow, StatusBadge } from "../components/index.js";
+import { ContextBanner, DetailTable, OptionRow, PageTabs, StatusBadge } from "../components/index.js";
+import { GovernancePanel } from "./Controls.jsx";
 
-const tabs = ["Training", "Process", "Communication"];
+const rolloutTabs = [
+  { key: "deployments", label: "Deployments" },
+  { key: "ownership", label: "Ownership" },
+];
+
+const detailTabItems = ["Training", "Process", "Communication"];
 
 function percent(value) {
   return typeof value === "number" && Number.isFinite(value) ? `${Math.round(value * 100)}%` : "—";
@@ -42,16 +48,17 @@ function RolloutDetail({ deployment, team, instanceId, onSaved, onClose }) {
   return <section className="rollout-detail" aria-labelledby="rollout-detail-heading">
     <div className="components-panel-heading"><div><p className="eyebrow">Deployment detail</p><h2 id="rollout-detail-heading">{deployment.label} → {deployment.org_unit || "Firm-wide"} · {deployment.people || "—"} people</h2><p className="components-muted">Current: {deployment.trained_count} trained · {deployment.process} · {deployment.communication === "none" ? "no communication" : "communicated"}</p></div><button type="button" className="components-secondary" onClick={onClose}>Close</button></div>
     <div className="rollout-status"><StatusBadge status={deployment.status} /> <span>{percent(deployment.adoption)} adoption</span></div>
-    <div className="components-tabs" role="tablist">{tabs.map((item) => <button type="button" role="tab" aria-selected={tab === item} className={tab === item ? "components-tab--active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</div>
+    <div className="components-tabs" role="tablist">{detailTabItems.map((item) => <button type="button" role="tab" aria-selected={tab === item} className={tab === item ? "components-tab--active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</div>
     <div className="choice-stack">{options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={selected === item.key} disabled={readOnly} onSelect={() => choose(item.key)} />)}</div>
     <div className="rollout-detail-actions"><button type="button" className="components-primary" disabled={readOnly || saving || !options.length} onClick={save}>{saving ? "Saving…" : "Apply to this deployment"}</button></div>
     {error && <p className="components-error" role="alert">{error}</p>}
   </section>;
 }
 
-export default function Rollout({ data, instanceId }) {
+export default function Rollout({ data, controlsData, instanceId }) {
   const [view, setView] = useState(data);
   const [selectedId, setSelectedId] = useState(null);
+  const [activeTab, setActiveTab] = useState("deployments");
   useEffect(() => setView(data), [data]);
   const team = view?.team;
   const selected = team?.deployments?.find((item) => item.id === selectedId);
@@ -62,8 +69,13 @@ export default function Rollout({ data, instanceId }) {
   })), [team]);
   if (!team) return <section className="components-empty"><h2>Your team has not entered the runtime yet</h2><p>Rollout decisions will appear here after the team runtime is initialized.</p></section>;
   return <div className="rollout-page">
-    <section className="components-context"><div><p className="eyebrow">Getting systems into the hands of the people who use them</p><p className="components-muted">{team.name} · Round {team.current_round}</p></div></section>
-    {selected && <RolloutDetail deployment={selected} team={team} instanceId={instanceId} onClose={() => setSelectedId(null)} onSaved={(next) => setView(next)} />}
-    <section className="components-table-panel"><div className="components-panel-heading"><div><h2>Deployments</h2><p className="components-muted">Training, process, communication, and adoption for each active application</p></div><span className="components-muted">{rows.length} shown</span></div><DetailTable columns={[{ key: "label", label: "System" }, { key: "org_unit", label: "Unit" }, { key: "people", label: "People" }, { key: "trained", label: "Trained" }, { key: "processLabel", label: "Process" }, { key: "communicationLabel", label: "Communication" }, { key: "adoption", label: "Adoption" }, { key: "statusLabel", label: "Status" }]} rows={rows} onRowClick={(row) => setSelectedId(row.id)} /></section>
+    <ContextBanner step={4} eyebrow="Getting systems into the hands of the people who use them" description="Deploy, train, and assign ownership for each capability." teamName={team.name} round={team.current_round} strategy={team.strategy} />
+    <PageTabs tabs={rolloutTabs} activeKey={activeTab} onChange={setActiveTab} />
+    {activeTab === "deployments" && <>
+      {selected && <RolloutDetail deployment={selected} team={team} instanceId={instanceId} onClose={() => setSelectedId(null)} onSaved={(next) => setView(next)} />}
+      <section className="components-table-panel"><div className="components-panel-heading"><div><h2>Deployments</h2><p className="components-muted">Training, process, communication, and adoption for each active application</p></div><span className="components-muted">{rows.length} shown</span></div><DetailTable columns={[{ key: "label", label: "System" }, { key: "org_unit", label: "Unit" }, { key: "people", label: "People" }, { key: "trained", label: "Trained" }, { key: "processLabel", label: "Process" }, { key: "communicationLabel", label: "Communication" }, { key: "adoption", label: "Adoption" }, { key: "statusLabel", label: "Status" }]} rows={rows} onRowClick={(row) => setSelectedId(row.id)} /></section>
+    </>}
+    {activeTab === "ownership" && controlsData && <GovernancePanel view={controlsData} instanceId={instanceId} />}
+    {activeTab === "ownership" && !controlsData && <section className="controls-empty"><p>Ownership data is not available.</p></section>}
   </div>;
 }

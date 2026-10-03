@@ -651,7 +651,7 @@ select {
 .components-detail-grid h3, .components-detail-copy h3, .components-review h3 { margin: 0; font-size: 15px; }
 .components-detail-grid p, .components-detail-copy p, .components-review p { margin: 0; color: var(--text-secondary); line-height: 1.5; }
 .components-wizard { display: grid; gap: var(--space-lg); }
-.components-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-xs); }
+.components-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-xs); }
 .components-steps span { padding: var(--space-sm); background: var(--surface-sunken); border: 1px solid var(--border-default); color: var(--text-muted); font-size: 13px; }
 .components-steps .components-step--active { border-color: var(--border-focus); background: var(--surface-row-highlight); color: var(--text-link); font-weight: 600; }
 .components-steps .components-step--done { color: var(--status-ok-text); }
@@ -687,6 +687,37 @@ select {
 .debrief-grid h3, .debrief-capabilities h2 { margin: 0; font-size: 16px; }
 .debrief-grid p, .debrief-capability-list span { margin: 0; color: var(--text-secondary); font-size: 13px; }
 .debrief-capability-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--space-md); }
+
+.product-shell__phase { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); color: var(--text-on-sidebar-muted); text-decoration: none; cursor: pointer; }
+.product-shell__phase:hover { color: var(--text-on-sidebar); }
+.product-shell__phase--active { background: var(--surface-sidebar-active); color: var(--text-on-sidebar); font-weight: 600; }
+.product-shell__phase-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 1px solid var(--p-slate-500); border-radius: 50%; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.product-shell__phase--active .product-shell__phase-num { border-color: var(--text-on-sidebar); color: var(--text-on-sidebar); }
+.product-shell__phase-dot { width: 6px; height: 6px; border-radius: 50%; margin-left: auto; flex-shrink: 0; }
+.product-shell__phase-dot--gray { background: var(--p-slate-500); }
+.product-shell__phase-dot--amber { background: var(--p-amber-500); }
+.product-shell__phase-dot--green { background: var(--p-green-500); }
+
+.page-tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-bottom: var(--space-lg); border-bottom: 1px solid var(--border-default); }
+.page-tab { min-height: 2.5rem; padding: var(--space-sm) var(--space-md); border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--text-secondary); cursor: pointer; font-weight: 600; font: inherit; }
+.page-tab:hover { color: var(--text-primary); }
+.page-tab--active { border-bottom-color: var(--border-focus); color: var(--text-link); }
+
+.action-form-top { padding: var(--space-lg); background: var(--surface-card); border: 2px solid var(--accent-1); display: grid; gap: var(--space-md); }
+.action-form-top h2 { margin: 0; font-size: 18px; }
+
+.spending-summary { display: grid; gap: var(--space-sm); padding: var(--space-lg); background: var(--surface-card); border: 1px solid var(--border-default); }
+.spending-summary div { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-default); }
+.spending-summary div:last-child { border-bottom: none; }
+.spending-summary span { color: var(--text-secondary); }
+.spending-summary strong { font-size: 18px; }
+.spending-summary .spending-highlight { color: var(--action-primary); font-size: 22px; }
+
+.spending-table { padding: var(--space-lg); background: var(--surface-card); border: 1px solid var(--border-default); }
+.spending-table h2 { margin: 0 0 var(--space-md); font-size: 18px; }
+
+.platform-detail-panel { display: grid; gap: var(--space-md); padding: var(--space-lg); background: var(--surface-card); border: 1px solid var(--border-default); }
+.platform-detail-panel h3 { margin: 0; font-size: 18px; }
 
 @media (max-width: 720px) {
   .option-card-grid { grid-template-columns: 1fr; }

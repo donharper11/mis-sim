@@ -4,14 +4,24 @@ import { useNavigate } from "react-router-dom";
 import { apiClient, clearAccessToken } from "../api/client.js";
 import AppShell from "../components/AppShell.jsx";
 import Dashboard from "./Dashboard.jsx";
-import Platform from "./Platform.jsx";
-import Components from "./Components.jsx";
 import Rollout from "./Rollout.jsx";
 import Review from "./Review.jsx";
 import Debrief from "./Debrief.jsx";
 import Controls from "./Controls.jsx";
+import StrategyPage from "./StrategyPage.jsx";
+import InfrastructurePage from "./InfrastructurePage.jsx";
+import ApplicationsPage from "./ApplicationsPage.jsx";
 
-const controlViews = new Set(["strategy", "governance", "security", "services", "people", "challenges", "budget"]);
+const viewTitles = {
+  dashboard: "Dashboard",
+  strategy: "Strategy",
+  infrastructure: "IT Infrastructure",
+  applications: "Applications",
+  rollout: "Rollout & Adoption",
+  review: "Review & Budget",
+  debrief: "Debrief",
+  challenges: "Challenges",
+};
 
 export default function Shell({ view = "dashboard" }) {
   const navigate = useNavigate();
@@ -39,29 +49,47 @@ export default function Shell({ view = "dashboard" }) {
           schedule = scheduleResponse.data;
           const dashboardResponse = await apiClient.get(`/instances/${me.instance_id}/dashboard`);
           dashboard = dashboardResponse.data;
-          if (view === "platform") {
-            const platformResponse = await apiClient.get(`/instances/${me.instance_id}/platform`);
+
+          // Parallel data fetching for merged pages
+          if (view === "infrastructure") {
+            const [platformResponse, controlsResponse] = await Promise.all([
+              apiClient.get(`/instances/${me.instance_id}/platform`),
+              apiClient.get(`/instances/${me.instance_id}/controls`),
+            ]);
             platform = platformResponse.data;
+            controls = controlsResponse.data;
           }
-          if (view === "components") {
+          if (view === "applications") {
             const componentsResponse = await apiClient.get(`/instances/${me.instance_id}/components`);
             components = componentsResponse.data;
           }
           if (view === "rollout") {
-            const rolloutResponse = await apiClient.get(`/instances/${me.instance_id}/rollout`);
+            const [rolloutResponse, controlsResponse] = await Promise.all([
+              apiClient.get(`/instances/${me.instance_id}/rollout`),
+              apiClient.get(`/instances/${me.instance_id}/controls`),
+            ]);
             rollout = rolloutResponse.data;
+            controls = controlsResponse.data;
           }
           if (view === "review") {
-            const reviewResponse = await apiClient.get(`/instances/${me.instance_id}/review`);
+            const [reviewResponse, controlsResponse] = await Promise.all([
+              apiClient.get(`/instances/${me.instance_id}/review`),
+              apiClient.get(`/instances/${me.instance_id}/controls`),
+            ]);
             review = reviewResponse.data;
+            controls = controlsResponse.data;
+          }
+          if (view === "strategy") {
+            const controlsResponse = await apiClient.get(`/instances/${me.instance_id}/controls`);
+            controls = controlsResponse.data;
+          }
+          if (view === "challenges") {
+            const controlsResponse = await apiClient.get(`/instances/${me.instance_id}/controls`);
+            controls = controlsResponse.data;
           }
           if (view === "debrief") {
             const debriefResponse = await apiClient.get(`/instances/${me.instance_id}/debrief`);
             debrief = debriefResponse.data;
-          }
-          if (controlViews.has(view)) {
-            const controlsResponse = await apiClient.get(`/instances/${me.instance_id}/controls`);
-            controls = controlsResponse.data;
           }
         }
         if (active) setState({ status: "ready", me, instance, schedule, dashboard, platform, components, rollout, review, debrief, controls, error: "" });
@@ -81,8 +109,34 @@ export default function Shell({ view = "dashboard" }) {
 
   if (state.status === "loading") return <main className="app-shell plain-state"><p>Loading your simulation…</p></main>;
   if (state.status === "error") return <main className="app-shell plain-state"><h1>We could not open this simulation</h1><p role="alert">{state.error}</p></main>;
-  const title = controlViews.has(view) ? view[0].toUpperCase() + view.slice(1) : view === "platform" ? "Platform" : view === "components" ? "Components" : view === "rollout" ? "Rollout" : view === "review" ? "Review" : view === "debrief" ? "Debrief" : "Dashboard";
-  return <AppShell me={state.me} instance={state.instance} schedule={state.schedule} dashboard={state.dashboard} activePath={view === "dashboard" ? "/" : `/${view}`} pageTitle={title}>
-    {controlViews.has(view) ? <Controls data={state.controls} instanceId={state.instance?.instance_id} section={view} /> : view === "platform" ? <Platform data={state.platform} instanceId={state.instance?.instance_id} /> : view === "components" ? <Components data={state.components} instanceId={state.instance?.instance_id} /> : view === "rollout" ? <Rollout data={state.rollout} instanceId={state.instance?.instance_id} /> : view === "review" ? <Review data={state.review} instanceId={state.instance?.instance_id} /> : view === "debrief" ? <Debrief data={state.debrief} instanceId={state.instance?.instance_id} /> : <Dashboard data={state.dashboard} />}
-  </AppShell>;
+
+  const title = viewTitles[view] || "Dashboard";
+  const activePath = view === "dashboard" ? "/" : `/${view}`;
+
+  function renderView() {
+    switch (view) {
+      case "strategy":
+        return <StrategyPage data={state.controls} instanceId={state.instance?.instance_id} />;
+      case "infrastructure":
+        return <InfrastructurePage platformData={state.platform} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
+      case "applications":
+        return <ApplicationsPage data={state.components} instanceId={state.instance?.instance_id} />;
+      case "rollout":
+        return <Rollout data={state.rollout} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
+      case "review":
+        return <Review data={state.review} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
+      case "debrief":
+        return <Debrief data={state.debrief} instanceId={state.instance?.instance_id} />;
+      case "challenges":
+        return <Controls data={state.controls} instanceId={state.instance?.instance_id} section="challenges" />;
+      default:
+        return <Dashboard data={state.dashboard} />;
+    }
+  }
+
+  return (
+    <AppShell me={state.me} instance={state.instance} schedule={state.schedule} dashboard={state.dashboard} activePath={activePath} pageTitle={title}>
+      {renderView()}
+    </AppShell>
+  );
 }

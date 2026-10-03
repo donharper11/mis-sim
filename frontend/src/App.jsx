@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import DevTokens from "./pages/DevTokens.jsx";
 import Login from "./pages/Login.jsx";
 import DevComponents from "./pages/DevComponents.jsx";
@@ -25,18 +25,21 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Shell />} />
-        <Route path="/platform" element={<Shell view="platform" />} />
-        <Route path="/components" element={<Shell view="components" />} />
+        <Route path="/strategy" element={<Shell view="strategy" />} />
+        <Route path="/infrastructure" element={<Shell view="infrastructure" />} />
+        <Route path="/applications" element={<Shell view="applications" />} />
         <Route path="/rollout" element={<Shell view="rollout" />} />
         <Route path="/review" element={<Shell view="review" />} />
         <Route path="/debrief" element={<Shell view="debrief" />} />
-        <Route path="/strategy" element={<Shell view="strategy" />} />
-        <Route path="/governance" element={<Shell view="governance" />} />
-        <Route path="/security" element={<Shell view="security" />} />
-        <Route path="/services" element={<Shell view="services" />} />
-        <Route path="/people" element={<Shell view="people" />} />
         <Route path="/challenges" element={<Shell view="challenges" />} />
-        <Route path="/budget" element={<Shell view="budget" />} />
+        {/* Redirects from old routes */}
+        <Route path="/platform" element={<Navigate to="/infrastructure" replace />} />
+        <Route path="/services" element={<Navigate to="/infrastructure" replace />} />
+        <Route path="/people" element={<Navigate to="/infrastructure" replace />} />
+        <Route path="/security" element={<Navigate to="/infrastructure" replace />} />
+        <Route path="/components" element={<Navigate to="/applications" replace />} />
+        <Route path="/governance" element={<Navigate to="/rollout" replace />} />
+        <Route path="/budget" element={<Navigate to="/review" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/instructor/setup" element={<InstructorSetup />} />
         <Route path="/instructor/registry" element={<InstructorRegistry />} />

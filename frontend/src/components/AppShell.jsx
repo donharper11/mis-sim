@@ -1,11 +1,36 @@
 /* eslint-disable react/prop-types */
 import { NavLink } from "react-router-dom";
-const decisionItems = ["Strategy", "Platform", "Components", "Rollout", "Security", "Services", "People", "Governance"];
-const resultItems = ["Dashboard", "Challenges", "Review", "Debrief"];
+
+const resultItems = ["Dashboard", "Challenges", "Review & Budget", "Debrief"];
+
+const phases = [
+  { num: 1, label: "Strategy", to: "/strategy" },
+  { num: 2, label: "IT Infrastructure", to: "/infrastructure" },
+  { num: 3, label: "Applications", to: "/applications" },
+  { num: 4, label: "Rollout & Adoption", to: "/rollout" },
+  { num: 5, label: "Review & Budget", to: "/review" },
+];
+
+function resultPath(item) {
+  if (item === "Dashboard") return "/";
+  if (item === "Challenges") return "/challenges";
+  if (item === "Review & Budget") return "/review";
+  if (item === "Debrief") return "/debrief";
+  return undefined;
+}
 
 function NavItem({ label, active, to }) {
-  const className = `app-shell__nav-item${active ? " app-shell__nav-item--active" : ""}`;
+  const className = `app-shell__nav-item product-shell__nav-item${active ? " product-shell__nav-item--active" : ""}`;
   return to ? <NavLink className={className} to={to} end={to === "/"}>{label}</NavLink> : <span className={className}>{label}</span>;
+}
+
+function PhaseItem({ num, label, to, active }) {
+  return (
+    <NavLink className={`product-shell__phase${active ? " product-shell__phase--active" : ""}`} to={to}>
+      <span className="product-shell__phase-num">{num}</span>
+      <span>{label}</span>
+    </NavLink>
+  );
 }
 
 function formatMoney(value) {
@@ -29,13 +54,13 @@ export default function AppShell({ me, instance, schedule, dashboard, activePath
             <NavItem label="Grading" to="/instructor/grading" active={activePath === "/instructor/grading"} />
             {me?.role === "admin" && <NavItem label="Registry" to="/instructor/registry" active={activePath === "/instructor/registry"} />}
           </div>}
+          <div className="product-shell__nav-label">Results</div>
           <div className="product-shell__nav-group">
-            {resultItems.map((item) => <NavItem key={item} label={item} to={item === "Dashboard" ? "/" : item === "Challenges" ? "/challenges" : item === "Review" ? "/review" : item === "Debrief" ? "/debrief" : undefined} active={(item === "Dashboard" && activePath === "/") || (item === "Challenges" && activePath === "/challenges") || (item === "Review" && activePath === "/review") || (item === "Debrief" && activePath === "/debrief")} />)}
+            {resultItems.map((item) => <NavItem key={item} label={item} to={resultPath(item)} active={(item === "Dashboard" && activePath === "/") || (item === "Challenges" && activePath === "/challenges") || (item === "Review & Budget" && activePath === "/review") || (item === "Debrief" && activePath === "/debrief")} />)}
           </div>
-          <div className="product-shell__nav-label">Decisions</div>
+          <div className="product-shell__nav-label">Your Decisions</div>
           <div className="product-shell__nav-group">
-            {decisionItems.map((item) => <NavItem key={item} label={item} to={item === "Strategy" ? "/strategy" : item === "Platform" ? "/platform" : item === "Components" ? "/components" : item === "Rollout" ? "/rollout" : item === "Security" ? "/security" : item === "Services" ? "/services" : item === "People" ? "/people" : item === "Governance" ? "/governance" : undefined} active={activePath === `/${item.toLowerCase()}`} />)}
-            <NavItem label="Budget" to="/budget" active={activePath === "/budget"} />
+            {phases.map((phase) => <PhaseItem key={phase.num} num={phase.num} label={phase.label} to={phase.to} active={activePath === phase.to} />)}
           </div>
         </nav>
       </aside>
