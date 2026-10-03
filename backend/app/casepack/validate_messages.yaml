@@ -298,6 +298,12 @@ codes:
     message: "Has an invalid condition shape: it {problem}."
     fix: "Fix: use one known precondition type and author only every field that type requires. Known types: {known}."
 
+  E30:
+    severity: ERROR
+    subject: "Event {event}"
+    message: "Names from_persona '{persona}', which is not in the persona roster."
+    fix: "Fix: add '{persona}' to personas.yaml, or change from_persona in events.yaml to one of: {known}."
+
   # ---- inherited invariants from 1.1 section 6, named as codes by spec v1.2 section 5.1
 
   I3:

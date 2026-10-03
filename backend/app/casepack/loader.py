@@ -34,6 +34,7 @@ SECTION_FILES = {
     "events": "events.yaml",
     "obligation_rules": "obligation_rules.yaml",
     "stakeholders": "stakeholders.yaml",
+    "personas": "personas.yaml",
     "preferences": "preferences",
     "policies": "policies.yaml",
     "questions": "questions.yaml",
@@ -96,6 +97,9 @@ def load_casepack(pack_dir: str | Path) -> Casepack:
         # clean; the empty list is the honest reading of "no obligations authored".
         "obligation_rules": _optional(root, "obligation_rules.yaml", []),
         "stakeholders": _required(root, "stakeholders.yaml"),
+        # Optional section (A2). A pack without the file loads clean; the empty
+        # list is the honest reading of "no personas authored".
+        "personas": _optional(root, "personas.yaml", []),
         "preferences": _load_preferences(root),
         "policies": _required(root, "policies.yaml"),
         "questions": _required(root, "questions.yaml"),

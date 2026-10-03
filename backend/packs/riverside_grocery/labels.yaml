@@ -76,6 +76,15 @@ stakeholders:
   stakeholder_regulator: Regulator
   stakeholder_general_public: General Public
   stakeholder_media: Media
+  # Persona display names (A2 roster)
+  persona_tom_beckett: Tom Beckett
+  persona_dana_ruiz: Dana Ruiz
+  persona_centraline_vendor: Centraline Systems
+  persona_maya_oduya: Maya Oduya
+  persona_lena_hart: Lena Hart
+  persona_rob_alderman: Rob Alderman
+  persona_priya_shah: Priya Shah
+  persona_sam_okoro: Sam Okoro
 
 # `events` is not a name map: it holds the persona's message, in their voice.
 events:
@@ -162,6 +171,15 @@ questions:
 misc:
   # Stakeholder role lines
   role_executive_leadership: Executive Leadership
+  # Persona role lines (A2 roster)
+  role_tom_beckett: Warehouse Operations Manager
+  role_dana_ruiz: Chief Financial Officer
+  role_centraline_vendor: Centraline Systems (ERP vendor)
+  role_maya_oduya: IT Director
+  role_lena_hart: HR Director
+  role_rob_alderman: CEO
+  role_priya_shah: External IT Auditor
+  role_sam_okoro: Regional Retail Customer
   role_finance_department: Finance Department
   role_general_workforce: General Workforce
   role_operations_department: Operations Department

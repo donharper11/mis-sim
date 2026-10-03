@@ -15,6 +15,7 @@ from app.api import (
     runtime_components,
     runtime_controls,
     runtime_debrief,
+    runtime_persona,
     runtime_platform,
     runtime_review,
     runtime_rollout,
@@ -54,6 +55,7 @@ def create_app() -> FastAPI:
     app.include_router(runtime_debrief.router, prefix="/api")
     app.include_router(runtime_controls.router, prefix="/api")
     app.include_router(runtime_round_control.router, prefix="/api")
+    app.include_router(runtime_persona.router, prefix="/api")
 
     @app.exception_handler(IntegrityError)
     async def integrity_error_handler(request, exc: IntegrityError):

@@ -461,6 +461,27 @@ class Stakeholder(StrictModel):
     provenance: Provenance
 
 
+class PersonaContentV1(StrictModel):
+    """A named character in the case, bound to one platform archetype.
+
+    The roster maps each ``from_persona`` event key to a character with
+    authored voice, stance and safe fallback text.  The persona endpoint
+    reads this record to construct system prompts and to degrade safely
+    when providers are unavailable.
+    """
+
+    key: SnakeKey
+    archetype: SnakeKey
+    display_name_key: SnakeKey
+    role_key: SnakeKey
+    stakeholder_type: Literal["internal", "external"]
+    voice: str = Field(min_length=1, max_length=2000)
+    stance: str = Field(min_length=1, max_length=2000)
+    safe_fallback: str = Field(min_length=1, max_length=2000)
+    allowed_topics: list[SnakeKey] = Field(default_factory=list)
+    provenance: Provenance
+
+
 class PreferenceDefaults(StrictModel):
     defaults_by_archetype: dict[SnakeKey, dict[SnakeKey, Any]]
     overrides: list[dict[str, Any]] = Field(default_factory=list)
@@ -569,6 +590,10 @@ class Casepack(StrictModel):
     #: absence is `CG-5` and stays 1.3's to close.
     obligation_rules: list[ObligationRule] = Field(default_factory=list)
     stakeholders: list[Stakeholder]
+    #: Named characters in the case, bound to platform archetypes.  Optional:
+    #: a pack without ``personas.yaml`` loads clean with an empty roster, so
+    #: every pack authored before A2 continues to work unchanged.
+    personas: list[PersonaContentV1] = Field(default_factory=list)
     preferences: dict[SnakeKey, PreferenceDefaults]
     policies: list[PolicyOption]
     questions: list[Question]

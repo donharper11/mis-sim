@@ -1,0 +1,11 @@
+# Deliberately missing lead_vet — events reference it but it is not here.
+- key: practice_manager
+  archetype: operations
+  display_name_key: stakeholder_operations
+  role_key: role_operations_department
+  stakeholder_type: internal
+  voice: "The practice manager speaks plainly."
+  stance: "The practice manager cares about throughput."
+  safe_fallback: "The practice manager is not available."
+  allowed_topics: [appointment_booking]
+  provenance: {source: AUTHORED, note: "E30 fixture — present persona"}

@@ -860,6 +860,34 @@ def check_event_references(lens: Lens) -> list[Finding]:
     return findings
 
 
+def check_dangling_personas(lens: Lens) -> list[Finding]:
+    """E30 -- an event's from_persona does not resolve in the persona roster.
+
+    Every ``event.from_persona`` must name a ``personas[].key``.  When a pack
+    carries no ``personas.yaml`` (the roster is empty), this check does not
+    fire — the absence is a content gap, not a structural error, and every
+    pack authored before A2 must keep loading unchanged.
+    """
+    if not lens.pack.personas:
+        return []
+    persona_keys = {persona.key for persona in lens.pack.personas}
+    findings: list[Finding] = []
+    for event in lens.pack.events:
+        if event.from_persona not in persona_keys:
+            findings.append(
+                make_finding(
+                    "E30",
+                    "events.yaml",
+                    f"{event.key}.from_persona",
+                    line=lens.source.field_line("events.yaml", event.key, "from_persona"),
+                    event=event.key,
+                    persona=event.from_persona,
+                    known=", ".join(sorted(persona_keys)),
+                )
+            )
+    return findings
+
+
 def check_precondition_shapes(lens: Lens) -> list[Finding]:
     """E29 -- every event precondition has one known, exact field shape."""
     findings: list[Finding] = []
@@ -1646,6 +1674,7 @@ def validate(pack: Casepack, source: PackSource, raw: dict[str, Any]) -> list[Fi
     findings += check_inherited(lens)
     findings += check_entity_detail(lens)
     findings += check_event_references(lens)
+    findings += check_dangling_personas(lens)
     findings += check_precondition_shapes(lens)
     findings += check_labels(lens)
     findings += check_archetypes(lens)

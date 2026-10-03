@@ -31,6 +31,7 @@ Optional files:
 ```text
 backend/packs/<pack_key>/
   obligation_rules.yaml
+  personas.yaml
 ```
 
 A pack with no `obligation_rules.yaml` loads clean; the section reads as an empty list.
@@ -467,6 +468,59 @@ Worked example:
   display_name_key: stakeholder_operations
   role_key: role_operations_department
   stakeholder_type: internal
+```
+
+## `personas.yaml` — optional
+
+Feeds persona grounding and the persona endpoint. Maps each `from_persona` event key to a
+named character with authored voice, stance and safe fallback text. The persona endpoint
+reads this roster to construct system prompts and to degrade safely when providers are
+unavailable.
+
+**This file is optional.** A pack without it loads clean with an empty persona roster. Packs
+authored before A2 continue to work unchanged; events still reference `from_persona` keys
+but the persona endpoint is simply unavailable until a roster is authored.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `key` | snake string | yes | The `from_persona` key used in `events.yaml` |
+| `archetype` | snake string | yes | One of the 14 platform stakeholder archetypes |
+| `display_name_key` | snake string | yes | Resolves in `labels.stakeholders` |
+| `role_key` | snake string | yes | Resolves in `labels.misc` |
+| `stakeholder_type` | enum | yes | `internal` or `external` |
+| `voice` | string | yes | 1–3 sentence authored guidance for the system prompt (how this person speaks) |
+| `stance` | string | yes | Authored non-numeric opinion (what this person cares about) |
+| `safe_fallback` | string | yes | Authored in-world text returned when providers are unavailable |
+| `allowed_topics` | snake string list | no | Capability/domain keys this persona discusses; defaults to empty |
+| `provenance` | object | yes | Source tag and rationale |
+
+When a pack carries a `personas.yaml`, the validator checks that every `event.from_persona`
+resolves to a `personas[].key` (`E30`). Unresolved references are reported as errors.
+
+Worked example:
+
+```yaml
+- key: dana_ruiz
+  archetype: finance
+  display_name_key: persona_dana_ruiz
+  role_key: role_dana_ruiz
+  stakeholder_type: internal
+  voice: >-
+    Dana speaks precisely, quoting figures from the current state when available.
+    She frames every issue in terms of cost, exposure, and what the board will
+    ask at quarter end.
+  stance: >-
+    Dana cares about run-rate control, capital discipline and provable return on
+    every dollar spent.
+  safe_fallback: >-
+    Dana Ruiz is not available right now. She is the Chief Financial Officer and
+    is usually reviewing this quarter's numbers.
+  allowed_topics:
+    - financial_reporting
+    - order_fulfilment
+  provenance:
+    source: AUTHORED
+    note: A2 persona roster — finance persona
 ```
 
 ## `preferences/*.yaml`

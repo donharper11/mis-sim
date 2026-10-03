@@ -4,7 +4,7 @@
 **Spec version:** v1.6 · **Amended:** 2026-08-22 — findings CU-001/CU-002/CU-003: `E18` closes the closed-vocabulary E00-collapse class; the E29 behaviours are enumerated and made variant-visible; the label-routing narrowing is guarded
 **Previously amended:** v1.5, 2026-08-21 — readiness closeout added exact precondition-shape code `E29` and pack-relative W08
 **Previously:** v1.4, 2026-08-21 — obligation and policy coverage; v1.3, 2026-08-18 — `W08` added; v1.2, 2026-08-14, post-audit, against `findings/1.2-2026-08-14-audit.md`
-**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E20` · `E21`–`E29` · `W01`–`W08` · `I3` · `I8`
+**Code list is versioned, not frozen** *(`SPEC_PROTOCOL §3`)* — `E00`–`E20` · `E21`–`E30` · `W01`–`W08` · `I3` · `I8`
 **Phase:** 1 · **Depends on:** **1.1 as approved** · **Blocks:** 1.3, 6.1
 
 > An unvalidated pack does not fail loudly — it runs and scores wrongly, and you find out
@@ -239,6 +239,10 @@ E29  an event precondition that is not one exact known shape, in any of four
      belonging to another type; (4) a field set outside its own closed
      vocabulary (placement, severity) — the `E29_vocab` variant, which runs
      on raw YAML before the load so it does not collapse to E00     NEW v1.5
+E30  an event's from_persona names a key absent from the persona roster.
+     Only fires when the pack carries a personas.yaml (the roster is not
+     empty); packs without the file are a content gap, not a broken pack
+                                                                    NEW A2
 ```
 
 > **`E29` has four behaviours, and they are variants of one code by design.** All four are
