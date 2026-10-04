@@ -3,7 +3,9 @@ const STATUS = {
   complete: { label: "Complete", className: "status-badge--ok" },
   "partly-done": { label: "Partly done", className: "status-badge--info" },
   "needs-attention": { label: "Needs attention", className: "status-badge--warn" },
-  "not-started": { label: "Not started", className: "status-badge--neutral" }
+  "not-started": { label: "Not started", className: "status-badge--neutral" },
+  info: { label: "Info", className: "status-badge--info" },
+  neutral: { label: "Neutral", className: "status-badge--neutral" },
 };
 
 export default function StatusBadge({ status, label }) {

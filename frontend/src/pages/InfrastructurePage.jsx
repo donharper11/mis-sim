@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client.js";
 import { ContextBanner, DetailTable, StatusBadge } from "../components/index.js";
-import { PeoplePanel, SecurityPanel } from "./Controls.jsx";
 
 const placementNames = { cloud: "Cloud", on_prem: "On-Premises", saas: "SaaS" };
 const typeLabels = { on_prem: "On-Premises", cloud: "Cloud" };
