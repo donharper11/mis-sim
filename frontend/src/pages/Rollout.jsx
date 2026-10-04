@@ -1,132 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
-import { apiClient } from "../api/client.js";
-import { ContextBanner, OptionRow, StatusBadge } from "../components/index.js";
+import { ContextBanner, RolloutSlider } from "../components/index.js";
 import { GovernancePanel } from "./Controls.jsx";
-
-function percent(value) {
-  return typeof value === "number" && Number.isFinite(value) ? `${Math.round(value * 100)}%` : "—";
-}
-
-function BudgetField({ label, value, onChange, disabled }) {
-  return (
-    <label className="rollout-budget-field">
-      <span>{label}</span>
-      <input type="number" min="0" step="1" value={value} placeholder="0" disabled={disabled} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  );
-}
-
-/* ---------- Inline rollout detail for a single deployment ---------- */
-
-function InlineRolloutDetail({ deployment, team, instanceId, onSaved }) {
-  const [training, setTraining] = useState(deployment.training_options.find((item) => (item.coverage || 0) >= deployment.training_pct)?.key || deployment.training_options[0]?.key || "");
-  const [process, setProcess] = useState(deployment.process);
-  const [communication, setCommunication] = useState(deployment.communication);
-  const [trainingBudget, setTrainingBudget] = useState(deployment.training_budget ?? "");
-  const [processBudget, setProcessBudget] = useState(deployment.process_budget ?? "");
-  const [communicationBudget, setCommunicationBudget] = useState(deployment.communication_budget ?? "");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const readOnly = team.revision === null || team.locked_revision !== null;
-
-  async function save() {
-    if (readOnly || !training || !process || !communication) return;
-    setSaving(true); setError("");
-    try {
-      const response = await apiClient.patch(`/instances/${instanceId}/rollout`, {
-        version: 1, expected_revision: team.revision,
-        replace_categories: {
-          training: [{ key: `rollout_train_${deployment.id}`, op: "train", asset: deployment.id, option: training, budget: Number(trainingBudget) || 0 }],
-          process_redesign: [{ key: `rollout_process_${deployment.id}`, op: "set_process", asset: deployment.id, choice: process, budget: Number(processBudget) || 0 }],
-          communication: [{ key: `rollout_communicate_${deployment.org_unit}`, op: "communicate", org_unit: deployment.org_unit, option: communication, budget: Number(communicationBudget) || 0 }],
-        },
-      });
-      onSaved(response.data);
-    } catch (requestError) {
-      setError(typeof requestError.response?.data?.detail === "string" ? requestError.response.data.detail : "The rollout decision could not be saved.");
-    } finally { setSaving(false); }
-  }
-
-  return (
-    <section className="rollout-inline-detail">
-      <div className="rollout-inline-header">
-        <div>
-          <h3>{deployment.label}</h3>
-          <p className="components-muted">{deployment.org_unit?.replaceAll("_", " ") || "Firm-wide"} · {deployment.people || "—"} people</p>
-        </div>
-        <div className="rollout-status">
-          <StatusBadge status={deployment.status} />
-          <span>{percent(deployment.adoption)} adoption</span>
-        </div>
-      </div>
-      <div className="rollout-two-col">
-        <div className="rollout-inline-controls">
-          {/* Training */}
-          <div>
-            <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Training</h4>
-            <div className="choice-stack">{deployment.training_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={training === item.key} disabled={readOnly} onSelect={() => setTraining(item.key)} />)}</div>
-            <BudgetField label="Training budget ($)" value={trainingBudget} onChange={setTrainingBudget} disabled={readOnly} />
-          </div>
-
-          {/* Process */}
-          <div>
-            <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Process</h4>
-            <div className="choice-stack">{deployment.process_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={process === item.key} disabled={readOnly} onSelect={() => setProcess(item.key)} />)}</div>
-            <BudgetField label="Process budget ($)" value={processBudget} onChange={setProcessBudget} disabled={readOnly} />
-          </div>
-
-          {/* Communication */}
-          <div>
-            <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Communication</h4>
-            <div className="choice-stack">{deployment.communication_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={communication === item.key} disabled={readOnly} onSelect={() => setCommunication(item.key)} />)}</div>
-            <BudgetField label="Communication budget ($)" value={communicationBudget} onChange={setCommunicationBudget} disabled={readOnly} />
-          </div>
-        </div>
-
-        {/* Previous round summary */}
-        <aside className="rollout-prev-round">
-          <h4 style={{ margin: "0 0 var(--space-md)", fontSize: "13px" }}>Current State</h4>
-          <div className="rollout-prev-items">
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Training</span>
-              <span className="rollout-prev-value">{deployment.trained_count} trained ({percent(deployment.training_pct)})</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Process</span>
-              <span className="rollout-prev-value">{deployment.process === "unchanged" ? "Unchanged" : deployment.process === "partial" ? "Partial redesign" : deployment.process === "redesigned" ? "Redesigned" : deployment.process}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Communication</span>
-              <span className="rollout-prev-value">{deployment.communication === "none" ? "None" : deployment.communication}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Adoption</span>
-              <span className="rollout-prev-value">{percent(deployment.adoption)}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Budget (training)</span>
-              <span className="rollout-prev-value">{typeof deployment.training_budget === "number" ? `$${deployment.training_budget.toLocaleString()}` : "—"}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Budget (process)</span>
-              <span className="rollout-prev-value">{typeof deployment.process_budget === "number" ? `$${deployment.process_budget.toLocaleString()}` : "—"}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Budget (comms)</span>
-              <span className="rollout-prev-value">{typeof deployment.communication_budget === "number" ? `$${deployment.communication_budget.toLocaleString()}` : "—"}</span>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <div className="rollout-detail-actions">
-        <button type="button" className="components-primary" disabled={readOnly || saving || !deployment.training_options.length} onClick={save}>{saving ? "Saving…" : "Apply to this deployment"}</button>
-      </div>
-      {error && <p className="components-error" role="alert">{error}</p>}
-    </section>
-  );
-}
 
 /* ---------- Main Rollout component ---------- */
 
@@ -185,7 +60,7 @@ export default function Rollout({ data, controlsData, instanceId }) {
 
       {/* Per-application inline detail */}
       {activeDeployment && (
-        <InlineRolloutDetail
+        <RolloutSlider
           key={activeDeployment.id}
           deployment={activeDeployment}
           team={team}

@@ -771,6 +771,20 @@ select {
 .rollout-prev-label { color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
 .rollout-prev-value { color: var(--text-primary); font-size: 13px; }
 
+/* Rollout slider category rows */
+.rollout-slider-category { display: grid; grid-template-columns: 7rem minmax(8rem, 1fr) minmax(10rem, auto) 6rem; gap: var(--space-sm); align-items: center; }
+.rollout-slider-label { color: var(--text-secondary); font-size: 13px; font-weight: 600; }
+.rollout-slider-input { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: var(--border-default); outline: none; cursor: pointer; }
+.rollout-slider-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.rollout-slider-input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; background: var(--action-primary); border: 2px solid var(--surface-card); border-radius: 50%; cursor: pointer; }
+.rollout-slider-input::-moz-range-thumb { width: 16px; height: 16px; background: var(--action-primary); border: 2px solid var(--surface-card); border-radius: 50%; cursor: pointer; }
+.rollout-slider-input:focus { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.rollout-slider-info { color: var(--text-muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rollout-slider-budget { display: flex; align-items: center; }
+.rollout-slider-budget input { width: 100%; min-height: 28px; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text); font: inherit; font-size: 13px; }
+.rollout-slider-budget input:focus { outline: 2px solid var(--border-focus); outline-offset: 1px; }
+.rollout-slider-budget input:disabled { background: var(--input-disabled-bg); cursor: not-allowed; }
+
 /* Modal overlay */
 .modal-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.5); }
 .modal-dialog { width: min(100%, 28rem); max-height: 90vh; overflow-y: auto; background: var(--surface-card); border: 1px solid var(--border-default); }
@@ -806,4 +820,5 @@ select {
   .review-banner { align-items: flex-start; flex-direction: column; }
   .debrief-score, .debrief-grid { grid-template-columns: 1fr; }
   .rollout-two-col { grid-template-columns: 1fr; }
+  .rollout-slider-category { grid-template-columns: 1fr; }
 }

@@ -68,12 +68,22 @@ export default function Shell({ view = "dashboard" }) {
             controls = controlsResponse.data;
             hostPlatforms = hp;
           }
-          if (view === "applications" || view === "application-detail") {
+          if (view === "applications") {
             const [componentsResponse, hp] = await Promise.all([
               apiClient.get(`/instances/${me.instance_id}/components`),
               fetchHostPlatforms(),
             ]);
             components = componentsResponse.data;
+            hostPlatforms = hp;
+          }
+          if (view === "application-detail") {
+            const [componentsResponse, rolloutResponse, hp] = await Promise.all([
+              apiClient.get(`/instances/${me.instance_id}/components`),
+              apiClient.get(`/instances/${me.instance_id}/rollout`),
+              fetchHostPlatforms(),
+            ]);
+            components = componentsResponse.data;
+            rollout = rolloutResponse.data;
             hostPlatforms = hp;
           }
           if (view === "rollout") {
@@ -135,7 +145,7 @@ export default function Shell({ view = "dashboard" }) {
       case "applications":
         return <ApplicationsPage data={state.components} instanceId={state.instance?.instance_id} hostPlatforms={state.hostPlatforms} />;
       case "application-detail":
-        return <ApplicationDetailPage data={state.components} instanceId={state.instance?.instance_id} />;
+        return <ApplicationDetailPage data={state.components} rolloutData={state.rollout} instanceId={state.instance?.instance_id} />;
       case "rollout":
         return <Rollout data={state.rollout} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
       case "review":
