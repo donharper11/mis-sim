@@ -44,10 +44,10 @@ function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, onCancel, hostPl
   const [error, setError] = useState("");
 
   const choice = team.choices.find((item) => item.key === choiceKey);
-  const activePlatforms = (hostPlatforms || []).filter((p) => p.status === "active");
+  const availablePlatforms = (hostPlatforms || []).filter((p) => p.status === "active" || p.status === "pending");
 
   // Derive placement from selected platform's type
-  const selectedPlatform = activePlatforms.find((p) => String(p.id) === basePlatformId);
+  const selectedPlatform = availablePlatforms.find((p) => String(p.id) === basePlatformId);
   const derivedPlacement = selectedPlatform ? (selectedPlatform.platform_type === "cloud" ? "cloud" : "on_prem") : (choice?.placements[0]?.key || "on_prem");
 
   const readOnly = team.revision === null || team.locked_revision !== null;
@@ -100,7 +100,7 @@ function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, onCancel, hostPl
           <label>Base Platform
             <select value={basePlatformId} onChange={(e) => setBasePlatformId(e.target.value)} disabled={readOnly}>
               <option value="">Choose a platform…</option>
-              {activePlatforms.map((p) => <option key={p.id} value={String(p.id)}>{p.platform_code} — {p.name}</option>)}
+              {availablePlatforms.map((p) => <option key={p.id} value={String(p.id)}>{p.platform_code} — {p.name}{p.status === "pending" ? " (pending)" : ""}</option>)}
             </select>
           </label>
           <label>Business Unit
