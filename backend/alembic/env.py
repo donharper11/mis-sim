@@ -11,6 +11,7 @@ import app.simulation.models  # noqa: F401  -- register the versioned simulation
 import app.models.platform  # noqa: F401  -- register the M2 hierarchy tables
 import app.models.scheduling  # noqa: F401  -- register persisted round schedules
 import app.models.grading  # noqa: F401  -- register M5.5 grading tables
+import app.models.host_platform  # noqa: F401  -- register host platform tables
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "../api/client.js";
-import { DetailTable, OptionCard, OptionRow, StatusBadge } from "../components/index.js";
+import { DetailTable, OptionCard, OptionRow } from "../components/index.js";
 
 const placementNames = { cloud: "Cloud", on_prem: "On-Premises", saas: "SaaS" };
-const detailTabs = ["Overview", "Deployment", "Data", "Connections", "Lifecycle"];
 const wizardStepLabels = ["Select application", "Where will it run?", "Configuration tier", "Cost forecast", "Confirm & add"];
 
 function formatOrgUnit(value) {
@@ -17,6 +17,108 @@ function assetStatus(asset) {
   if (typeof asset.adoption === "number" && asset.adoption < 0.5) return ["needs-attention", "Needs attention"];
   if (typeof asset.adoption === "number" && asset.adoption < 0.9) return ["partly-done", "Partly done"];
   return ["complete", "Complete"];
+}
+
+const orgUnitOptions = [
+  { key: "hr", label: "HR" },
+  { key: "finance", label: "Finance" },
+  { key: "marketing", label: "Marketing" },
+  { key: "service", label: "Service" },
+  { key: "production", label: "Production" },
+];
+
+const operationOptions = [
+  { key: "active", label: "Active" },
+  { key: "discontinue", label: "Discontinue" },
+  { key: "modified", label: "Modified" },
+];
+
+function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, hostPlatforms }) {
+  const [choiceKey, setChoiceKey] = useState("");
+  const [notes, setNotes] = useState("");
+  const [basePlatformId, setBasePlatformId] = useState("");
+  const [orgUnit, setOrgUnit] = useState("");
+  const [operation, setOperation] = useState("active");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const choice = team.choices.find((item) => item.key === choiceKey);
+  const activePlatforms = (hostPlatforms || []).filter((p) => p.status === "active");
+
+  // Derive placement from selected platform's type
+  const selectedPlatform = activePlatforms.find((p) => String(p.id) === basePlatformId);
+  const derivedPlacement = selectedPlatform ? (selectedPlatform.platform_type === "cloud" ? "cloud" : "on_prem") : (choice?.placements[0]?.key || "on_prem");
+
+  const readOnly = team.revision === null || team.locked_revision !== null;
+  const canSubmit = !readOnly && choiceKey && orgUnit && operation;
+
+  async function submit(event) {
+    event.preventDefault();
+    if (!canSubmit) return;
+    setSaving(true); setError("");
+    try {
+      let commands;
+      if (operation === "discontinue") {
+        // Find the active asset to retire
+        const asset = team.assets?.find((a) => a.source_key === choiceKey && a.status === "active");
+        if (!asset) { setError("No active asset found to discontinue."); setSaving(false); return; }
+        commands = { lifecycle: [{ key: `retire_${asset.id}`, op: "retire_asset", asset: asset.id }] };
+      } else {
+        // Active or Modified (modified treated as active for now)
+        const placement = derivedPlacement;
+        const config = choice?.configs[0]?.key || "core";
+        commands = { application: [{ key: `buy_${choiceKey}_${placement}`, op: "buy_application", catalog: choiceKey, placement, config, primary_for: orgUnit, tco_categories: [] }] };
+      }
+      const response = await apiClient.patch(`/instances/${instanceId}/components`, {
+        version: 1, expected_revision: team.revision, replace_categories: commands,
+      });
+      onSaved(response.data);
+      setChoiceKey(""); setNotes(""); setBasePlatformId(""); setOrgUnit(""); setOperation("active");
+    } catch (requestError) {
+      setError(typeof requestError.response?.data?.detail === "string" ? requestError.response.data.detail : "The application decision could not be saved.");
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <section className="simple-add-form">
+      <h2>Launch an application</h2>
+      <form onSubmit={submit}>
+        <div className="simple-add-form-grid">
+          <label>Name
+            <select value={choiceKey} onChange={(e) => setChoiceKey(e.target.value)} disabled={readOnly}>
+              <option value="">Choose an application…</option>
+              {team.choices.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}
+            </select>
+          </label>
+          <label>Base Platform
+            <select value={basePlatformId} onChange={(e) => setBasePlatformId(e.target.value)} disabled={readOnly}>
+              <option value="">Choose a platform…</option>
+              {activePlatforms.map((p) => <option key={p.id} value={String(p.id)}>{p.platform_code} — {p.name}</option>)}
+            </select>
+          </label>
+          <label>Business Unit
+            <select value={orgUnit} onChange={(e) => setOrgUnit(e.target.value)} disabled={readOnly}>
+              <option value="">Choose a unit…</option>
+              {orgUnitOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}
+            </select>
+          </label>
+          <label>Operation
+            <select value={operation} onChange={(e) => setOperation(e.target.value)} disabled={readOnly}>
+              {operationOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}
+            </select>
+          </label>
+        </div>
+        <label>Notes
+          <textarea value={notes} maxLength={1000} placeholder="Optional notes about this application" onChange={(e) => setNotes(e.target.value)} disabled={readOnly} />
+        </label>
+        <div className="simple-add-form-actions">
+          <button type="submit" className="components-primary" disabled={!canSubmit || saving}>{saving ? "Launching…" : "Launch Application"}</button>
+          <button type="button" className="components-secondary" onClick={onAdvanced}>Advanced setup</button>
+        </div>
+        {error && <p className="components-error" role="alert">{error}</p>}
+      </form>
+    </section>
+  );
 }
 
 function AddWizard({ team, onClose, onSaved, instanceId }) {
@@ -68,39 +170,14 @@ function AddWizard({ team, onClose, onSaved, instanceId }) {
   );
 }
 
-function ComponentDetail({ asset, onClose, team, instanceId, onSaved }) {
-  const [tab, setTab] = useState("Overview");
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [status, label] = assetStatus(asset);
-  async function retire() {
-    if (team.revision === null || team.locked_revision !== null) return;
-    setSaving(true); setError("");
-    try {
-      const response = await apiClient.patch(`/instances/${instanceId}/components`, { version: 1, expected_revision: team.revision, replace_categories: { lifecycle: [{ key: `retire_${asset.id}`, op: "retire_asset", asset: asset.id }] } });
-      onSaved(response.data); onClose();
-    } catch (requestError) { setError(typeof requestError.response?.data?.detail === "string" ? requestError.response.data.detail : "The lifecycle decision could not be saved."); }
-    finally { setSaving(false); }
-  }
-  return <section className="components-detail" aria-labelledby="components-detail-heading">
-    <div className="components-panel-heading"><div><p className="eyebrow">Component detail</p><h2 id="components-detail-heading">{asset.label}</h2><p className="components-muted">{formatOrgUnit(asset.org_unit)} · {asset.people || "—"} people · {asset.serves.join(", ") || "No capability recorded"}</p></div><button type="button" className="components-secondary" onClick={onClose}>Close</button></div>
-    <div className="components-tabs" role="tablist">{detailTabs.map((item) => <button type="button" role="tab" aria-selected={tab === item} className={tab === item ? "components-tab--active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</div>
-    {tab === "Overview" && <div className="components-detail-grid"><article><h3>Overview</h3><p>{asset.label} serves {asset.serves.join(", ") || "the business"} for {asset.people || "the recorded"} people.</p><StatusBadge status={status} label={label} /></article><article><h3>Rollout</h3><p>Trained {asset.trained_count ?? "—"} · adoption {typeof asset.adoption === "number" ? `${Math.round(asset.adoption * 100)}%` : "—"} · process {asset.process || "—"}</p></article></div>}
-    {tab === "Deployment" && <div className="components-detail-grid"><article><h3>Placement</h3><p>{placementNames[asset.placement] || asset.placement} · {asset.config || "default configuration"}</p></article><article><h3>Lifecycle</h3><p>Installed round {asset.installed_round} · {asset.units} unit{asset.units === 1 ? "" : "s"}</p></article></div>}
-    {tab === "Data" && <div className="components-detail-copy"><h3>Data</h3><p>The runtime records this component's capabilities and people affected through the registered casepack.</p></div>}
-    {tab === "Connections" && <div className="components-detail-copy"><h3>Connections</h3><p>Connection detail will appear when integration records are present for this asset.</p></div>}
-    {tab === "Lifecycle" && <div className="components-detail-copy"><h3>Lifecycle</h3><p>Installed round {asset.installed_round}. Retiring removes this asset from the active estate at the round boundary.</p><button type="button" className="components-danger" disabled={saving || team.locked_revision !== null || team.revision === null || asset.status === "retired"} onClick={retire}>{saving ? "Saving…" : "Retire component"}</button>{error && <p className="components-error" role="alert">{error}</p>}</div>}
-  </section>;
-}
-
-export default function Components({ data, instanceId }) {
+export default function Components({ data, instanceId, hostPlatforms }) {
+  const navigate = useNavigate();
   const [view, setView] = useState(data);
-  const [selectedId, setSelectedId] = useState(null);
   const [wizard, setWizard] = useState(false);
+  const [showSimpleForm, setShowSimpleForm] = useState(false);
   const [filter, setFilter] = useState("All");
   useEffect(() => setView(data), [data]);
   const team = view?.team;
-  const selected = team?.assets?.find((asset) => asset.id === selectedId);
 
   // Build business-unit filter list from assets
   const filterOptions = useMemo(() => {
@@ -126,10 +203,10 @@ export default function Components({ data, instanceId }) {
     } catch (requestError) { setProjectError(typeof requestError.response?.data?.detail === "string" ? requestError.response.data.detail : "The in-flight decision could not be saved."); }
   }
   return <div className="components-page">
-    <section className="components-toolbar"><div className="components-filters">{filterOptions.map((value) => <button type="button" className={filter === value ? "components-filter--active" : ""} onClick={() => setFilter(value)} key={value}>{value}</button>)}</div><button type="button" className="components-primary" disabled={team.revision === null || team.locked_revision !== null || !team.choices.length} onClick={() => setWizard(true)}>+ Add application</button></section>
+    <section className="components-toolbar"><div className="components-filters">{filterOptions.map((value) => <button type="button" className={filter === value ? "components-filter--active" : ""} onClick={() => setFilter(value)} key={value}>{value}</button>)}</div><button type="button" className="components-primary" disabled={team.revision === null || team.locked_revision !== null || !team.choices.length} onClick={() => setShowSimpleForm(true)}>+ Add application</button></section>
+    {showSimpleForm && !wizard && <SimpleAddForm team={team} instanceId={instanceId} hostPlatforms={hostPlatforms} onSaved={(next) => { setView(next); setShowSimpleForm(false); }} onAdvanced={() => { setShowSimpleForm(false); setWizard(true); }} />}
     {wizard && <AddWizard team={team} instanceId={instanceId} onClose={() => setWizard(false)} onSaved={(next) => setView(next)} />}
-    {selected && <ComponentDetail asset={selected} team={team} instanceId={instanceId} onClose={() => setSelectedId(null)} onSaved={(next) => setView(next)} />}
-    <section className="components-table-panel"><div className="components-panel-heading"><div><h2>Applications</h2><p className="components-muted">Registered assets and their current rollout state</p></div><span className="components-muted">{rows.length} shown</span></div><DetailTable columns={[{ key: "label", label: "Application" }, { key: "typeLabel", label: "Type" }, { key: "placement", label: "Runs on" }, { key: "org_unit", label: "For whom" }, { key: "adoption", label: "Adoption" }, { key: "statusLabel", label: "Status" }]} rows={rows.map((asset) => { const [, label] = assetStatus(asset); return { ...asset, typeLabel: asset.label, placement: placementNames[asset.placement] || asset.placement || "—", org_unit: formatOrgUnit(asset.org_unit), adoption: typeof asset.adoption === "number" ? `${Math.round(asset.adoption * 100)}%` : "—", statusLabel: label, key: asset.id }; })} onRowClick={(row) => setSelectedId(row.id)} /></section>
+    <section className="components-table-panel"><div className="components-panel-heading"><div><h2>Applications</h2><p className="components-muted">Registered assets and their current rollout state</p></div><span className="components-muted">{rows.length} shown</span></div><DetailTable columns={[{ key: "label", label: "Application" }, { key: "typeLabel", label: "Type" }, { key: "placement", label: "Runs on" }, { key: "org_unit", label: "For whom" }, { key: "adoption", label: "Adoption" }, { key: "statusLabel", label: "Status" }]} rows={rows.map((asset) => { const [, label] = assetStatus(asset); return { ...asset, typeLabel: asset.label, placement: placementNames[asset.placement] || asset.placement || "—", org_unit: formatOrgUnit(asset.org_unit), adoption: typeof asset.adoption === "number" ? `${Math.round(asset.adoption * 100)}%` : "—", statusLabel: label, key: asset.id }; })} onRowClick={(row) => navigate(`/applications/${row.id}`)} /></section>
     {team.projects.length > 0 && <section className="components-projects"><h2>In flight</h2>{team.projects.map((project) => <article className="components-project-row" key={project.id}><div><strong>{project.label}</strong><p>{project.status} · {project.remaining_lead} round{project.remaining_lead === 1 ? "" : "s"} remaining</p></div>{["pending", "paused"].includes(project.status) && <div className="components-project-actions"><button type="button" className="components-secondary" disabled={team.locked_revision !== null} onClick={() => projectAction(project, project.status === "paused" ? "continue" : "pause")}>{project.status === "paused" ? "Continue" : "Pause"}</button><button type="button" className="components-danger" disabled={team.locked_revision !== null} onClick={() => projectAction(project, "kill")}>Kill</button></div>}</article>)}{projectError && <p className="components-error" role="alert">{projectError}</p>}</section>}
   </div>;
 }

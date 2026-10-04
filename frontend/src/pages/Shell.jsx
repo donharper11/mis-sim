@@ -11,12 +11,14 @@ import Controls from "./Controls.jsx";
 import StrategyPage from "./StrategyPage.jsx";
 import InfrastructurePage from "./InfrastructurePage.jsx";
 import ApplicationsPage from "./ApplicationsPage.jsx";
+import ApplicationDetailPage from "./ApplicationDetailPage.jsx";
 
 const viewTitles = {
   dashboard: "Dashboard",
   strategy: "Strategy",
   infrastructure: "IT Infrastructure",
   applications: "Applications",
+  "application-detail": "Application Detail",
   rollout: "Rollout & Adoption",
   review: "Review & Budget",
   debrief: "Debrief",
@@ -25,7 +27,7 @@ const viewTitles = {
 
 export default function Shell({ view = "dashboard" }) {
   const navigate = useNavigate();
-  const [state, setState] = useState({ status: "loading", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, rollout: null, review: null, debrief: null, controls: null, error: "" });
+  const [state, setState] = useState({ status: "loading", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, rollout: null, review: null, debrief: null, controls: null, hostPlatforms: null, error: "" });
 
   useEffect(() => {
     let active = true;
@@ -42,6 +44,7 @@ export default function Shell({ view = "dashboard" }) {
         let review = null;
         let debrief = null;
         let controls = null;
+        let hostPlatforms = null;
         if (me.instance_id) {
           const instanceResponse = await apiClient.get(`/instances/${me.instance_id}`);
           instance = instanceResponse.data;
@@ -52,16 +55,22 @@ export default function Shell({ view = "dashboard" }) {
 
           // Parallel data fetching for merged pages
           if (view === "infrastructure") {
-            const [platformResponse, controlsResponse] = await Promise.all([
+            const [platformResponse, controlsResponse, hostPlatformsResponse] = await Promise.all([
               apiClient.get(`/instances/${me.instance_id}/platform`),
               apiClient.get(`/instances/${me.instance_id}/controls`),
+              apiClient.get(`/instances/${me.instance_id}/host-platforms`),
             ]);
             platform = platformResponse.data;
             controls = controlsResponse.data;
+            hostPlatforms = hostPlatformsResponse.data.platforms;
           }
-          if (view === "applications") {
-            const componentsResponse = await apiClient.get(`/instances/${me.instance_id}/components`);
+          if (view === "applications" || view === "application-detail") {
+            const [componentsResponse, hostPlatformsResponse] = await Promise.all([
+              apiClient.get(`/instances/${me.instance_id}/components`),
+              apiClient.get(`/instances/${me.instance_id}/host-platforms`),
+            ]);
             components = componentsResponse.data;
+            hostPlatforms = hostPlatformsResponse.data.platforms;
           }
           if (view === "rollout") {
             const [rolloutResponse, controlsResponse] = await Promise.all([
@@ -92,7 +101,7 @@ export default function Shell({ view = "dashboard" }) {
             debrief = debriefResponse.data;
           }
         }
-        if (active) setState({ status: "ready", me, instance, schedule, dashboard, platform, components, rollout, review, debrief, controls, error: "" });
+        if (active) setState({ status: "ready", me, instance, schedule, dashboard, platform, components, rollout, review, debrief, controls, hostPlatforms, error: "" });
       } catch (requestError) {
         if (!active) return;
         if (requestError.response?.status === 401 || requestError.response?.status === 403) {
@@ -100,7 +109,7 @@ export default function Shell({ view = "dashboard" }) {
           navigate("/login", { replace: true });
           return;
         }
-        setState({ status: "error", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, rollout: null, review: null, debrief: null, controls: null, error: requestError.response?.data?.detail || "The simulation context could not be loaded." });
+        setState({ status: "error", me: null, instance: null, schedule: null, dashboard: null, platform: null, components: null, rollout: null, review: null, debrief: null, controls: null, hostPlatforms: null, error: requestError.response?.data?.detail || "The simulation context could not be loaded." });
       }
     }
     load();
@@ -111,16 +120,18 @@ export default function Shell({ view = "dashboard" }) {
   if (state.status === "error") return <main className="app-shell plain-state"><h1>We could not open this simulation</h1><p role="alert">{state.error}</p></main>;
 
   const title = viewTitles[view] || "Dashboard";
-  const activePath = view === "dashboard" ? "/" : `/${view}`;
+  const activePath = view === "dashboard" ? "/" : view === "application-detail" ? "/applications" : `/${view}`;
 
   function renderView() {
     switch (view) {
       case "strategy":
         return <StrategyPage data={state.controls} instanceId={state.instance?.instance_id} />;
       case "infrastructure":
-        return <InfrastructurePage platformData={state.platform} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
+        return <InfrastructurePage platformData={state.platform} controlsData={state.controls} instanceId={state.instance?.instance_id} hostPlatforms={state.hostPlatforms} />;
       case "applications":
-        return <ApplicationsPage data={state.components} instanceId={state.instance?.instance_id} />;
+        return <ApplicationsPage data={state.components} instanceId={state.instance?.instance_id} hostPlatforms={state.hostPlatforms} />;
+      case "application-detail":
+        return <ApplicationDetailPage data={state.components} instanceId={state.instance?.instance_id} />;
       case "rollout":
         return <Rollout data={state.rollout} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
       case "review":

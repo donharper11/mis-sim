@@ -1,25 +1,31 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client.js";
-import { ContextBanner, DetailTable, OptionRow, PageTabs, StatusBadge } from "../components/index.js";
+import { ContextBanner, OptionRow, StatusBadge } from "../components/index.js";
 import { GovernancePanel } from "./Controls.jsx";
-
-const rolloutTabs = [
-  { key: "deployments", label: "Deployments" },
-  { key: "ownership", label: "Ownership" },
-];
-
-const detailTabItems = ["Training", "Process", "Communication"];
 
 function percent(value) {
   return typeof value === "number" && Number.isFinite(value) ? `${Math.round(value * 100)}%` : "—";
 }
 
-function RolloutDetail({ deployment, team, instanceId, onSaved, onClose }) {
-  const [tab, setTab] = useState("Training");
+function BudgetField({ label, value, onChange, disabled }) {
+  return (
+    <label className="rollout-budget-field">
+      <span>{label}</span>
+      <input type="number" min="0" step="1" value={value} placeholder="0" disabled={disabled} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
+}
+
+/* ---------- Inline rollout detail for a single deployment ---------- */
+
+function InlineRolloutDetail({ deployment, team, instanceId, onSaved }) {
   const [training, setTraining] = useState(deployment.training_options.find((item) => (item.coverage || 0) >= deployment.training_pct)?.key || deployment.training_options[0]?.key || "");
   const [process, setProcess] = useState(deployment.process);
   const [communication, setCommunication] = useState(deployment.communication);
+  const [trainingBudget, setTrainingBudget] = useState(deployment.training_budget ?? "");
+  const [processBudget, setProcessBudget] = useState(deployment.process_budget ?? "");
+  const [communicationBudget, setCommunicationBudget] = useState(deployment.communication_budget ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const readOnly = team.revision === null || team.locked_revision !== null;
@@ -31,9 +37,9 @@ function RolloutDetail({ deployment, team, instanceId, onSaved, onClose }) {
       const response = await apiClient.patch(`/instances/${instanceId}/rollout`, {
         version: 1, expected_revision: team.revision,
         replace_categories: {
-          training: [{ key: `rollout_train_${deployment.id}`, op: "train", asset: deployment.id, option: training }],
-          process_redesign: [{ key: `rollout_process_${deployment.id}`, op: "set_process", asset: deployment.id, choice: process }],
-          communication: [{ key: `rollout_communicate_${deployment.org_unit}`, op: "communicate", org_unit: deployment.org_unit, option: communication }],
+          training: [{ key: `rollout_train_${deployment.id}`, op: "train", asset: deployment.id, option: training, budget: Number(trainingBudget) || 0 }],
+          process_redesign: [{ key: `rollout_process_${deployment.id}`, op: "set_process", asset: deployment.id, choice: process, budget: Number(processBudget) || 0 }],
+          communication: [{ key: `rollout_communicate_${deployment.org_unit}`, op: "communicate", org_unit: deployment.org_unit, option: communication, budget: Number(communicationBudget) || 0 }],
         },
       });
       onSaved(response.data);
@@ -42,40 +48,120 @@ function RolloutDetail({ deployment, team, instanceId, onSaved, onClose }) {
     } finally { setSaving(false); }
   }
 
-  const options = tab === "Training" ? deployment.training_options : tab === "Process" ? deployment.process_options : deployment.communication_options;
-  const selected = tab === "Training" ? training : tab === "Process" ? process : communication;
-  const choose = tab === "Training" ? setTraining : tab === "Process" ? setProcess : setCommunication;
-  return <section className="rollout-detail" aria-labelledby="rollout-detail-heading">
-    <div className="components-panel-heading"><div><p className="eyebrow">Deployment detail</p><h2 id="rollout-detail-heading">{deployment.label} → {deployment.org_unit || "Firm-wide"} · {deployment.people || "—"} people</h2><p className="components-muted">Current: {deployment.trained_count} trained · {deployment.process} · {deployment.communication === "none" ? "no communication" : "communicated"}</p></div><button type="button" className="components-secondary" onClick={onClose}>Close</button></div>
-    <div className="rollout-status"><StatusBadge status={deployment.status} /> <span>{percent(deployment.adoption)} adoption</span></div>
-    <div className="components-tabs" role="tablist">{detailTabItems.map((item) => <button type="button" role="tab" aria-selected={tab === item} className={tab === item ? "components-tab--active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</div>
-    <div className="choice-stack">{options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={selected === item.key} disabled={readOnly} onSelect={() => choose(item.key)} />)}</div>
-    <div className="rollout-detail-actions"><button type="button" className="components-primary" disabled={readOnly || saving || !options.length} onClick={save}>{saving ? "Saving…" : "Apply to this deployment"}</button></div>
-    {error && <p className="components-error" role="alert">{error}</p>}
-  </section>;
+  return (
+    <section className="rollout-inline-detail">
+      <div className="rollout-inline-header">
+        <div>
+          <h3>{deployment.label}</h3>
+          <p className="components-muted">{deployment.org_unit?.replaceAll("_", " ") || "Firm-wide"} · {deployment.people || "—"} people</p>
+        </div>
+        <div className="rollout-status">
+          <StatusBadge status={deployment.status} />
+          <span>{percent(deployment.adoption)} adoption</span>
+        </div>
+      </div>
+      <p className="components-muted" style={{ margin: 0 }}>Current: {deployment.trained_count} trained · {deployment.process} · {deployment.communication === "none" ? "no communication" : "communicated"}</p>
+
+      <div className="rollout-inline-controls">
+        {/* Training */}
+        <div>
+          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "15px" }}>Training</h4>
+          <div className="choice-stack">{deployment.training_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={training === item.key} disabled={readOnly} onSelect={() => setTraining(item.key)} />)}</div>
+          <BudgetField label="Training budget ($)" value={trainingBudget} onChange={setTrainingBudget} disabled={readOnly} />
+        </div>
+
+        {/* Process */}
+        <div>
+          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "15px" }}>Process</h4>
+          <div className="choice-stack">{deployment.process_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={process === item.key} disabled={readOnly} onSelect={() => setProcess(item.key)} />)}</div>
+          <BudgetField label="Process budget ($)" value={processBudget} onChange={setProcessBudget} disabled={readOnly} />
+        </div>
+
+        {/* Communication */}
+        <div>
+          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "15px" }}>Communication</h4>
+          <div className="choice-stack">{deployment.communication_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={communication === item.key} disabled={readOnly} onSelect={() => setCommunication(item.key)} />)}</div>
+          <BudgetField label="Communication budget ($)" value={communicationBudget} onChange={setCommunicationBudget} disabled={readOnly} />
+        </div>
+      </div>
+
+      <div className="rollout-detail-actions">
+        <button type="button" className="components-primary" disabled={readOnly || saving || !deployment.training_options.length} onClick={save}>{saving ? "Saving…" : "Apply to this deployment"}</button>
+      </div>
+      {error && <p className="components-error" role="alert">{error}</p>}
+    </section>
+  );
 }
+
+/* ---------- Main Rollout component ---------- */
 
 export default function Rollout({ data, controlsData, instanceId }) {
   const [view, setView] = useState(data);
-  const [selectedId, setSelectedId] = useState(null);
-  const [activeTab, setActiveTab] = useState("deployments");
   useEffect(() => setView(data), [data]);
   const team = view?.team;
-  const selected = team?.deployments?.find((item) => item.id === selectedId);
-  const rows = useMemo(() => (team?.deployments || []).map((deployment) => ({
-    ...deployment, key: deployment.id, org_unit: deployment.org_unit?.replaceAll("_", " ") || "—",
-    people: deployment.people ?? "—", trained: `${Math.round(deployment.training_pct * 100)}%`, processLabel: deployment.process,
-    communicationLabel: deployment.communication === "none" ? "None" : "Done", adoption: percent(deployment.adoption), statusLabel: deployment.status === "needs-attention" ? "Needs attention" : deployment.status === "partly-done" ? "Partly done" : "Complete",
-  })), [team]);
+
+  // Build dynamic tabs from deployments, grouped by label
+  const appTabs = useMemo(() => {
+    if (!team?.deployments?.length) return [];
+    const seen = new Map();
+    for (const dep of team.deployments) {
+      const tabKey = dep.id;
+      if (!seen.has(tabKey)) {
+        seen.set(tabKey, { key: tabKey, label: dep.label, deploymentId: dep.id });
+      }
+    }
+    return Array.from(seen.values());
+  }, [team]);
+
+  const allTabs = useMemo(() => [...appTabs, { key: "ownership", label: "Ownership" }], [appTabs]);
+
+  const [activeTab, setActiveTab] = useState(() => allTabs[0]?.key || "ownership");
+
+  // Reset active tab when tabs change and current tab is no longer valid
+  useEffect(() => {
+    if (allTabs.length > 0 && !allTabs.find((t) => t.key === activeTab)) {
+      setActiveTab(allTabs[0].key);
+    }
+  }, [allTabs, activeTab]);
+
   if (!team) return <section className="components-empty"><h2>Your team has not entered the runtime yet</h2><p>Rollout decisions will appear here after the team runtime is initialized.</p></section>;
-  return <div className="rollout-page">
-    <ContextBanner step={4} eyebrow="Getting systems into the hands of the people who use them" description="Deploy, train, and assign ownership for each capability." teamName={team.name} round={team.current_round} strategy={team.strategy} />
-    <PageTabs tabs={rolloutTabs} activeKey={activeTab} onChange={setActiveTab} />
-    {activeTab === "deployments" && <>
-      {selected && <RolloutDetail deployment={selected} team={team} instanceId={instanceId} onClose={() => setSelectedId(null)} onSaved={(next) => setView(next)} />}
-      <section className="components-table-panel"><div className="components-panel-heading"><div><h2>Deployments</h2><p className="components-muted">Training, process, communication, and adoption for each active application</p></div><span className="components-muted">{rows.length} shown</span></div><DetailTable columns={[{ key: "label", label: "System" }, { key: "org_unit", label: "Unit" }, { key: "people", label: "People" }, { key: "trained", label: "Trained" }, { key: "processLabel", label: "Process" }, { key: "communicationLabel", label: "Communication" }, { key: "adoption", label: "Adoption" }, { key: "statusLabel", label: "Status" }]} rows={rows} onRowClick={(row) => setSelectedId(row.id)} /></section>
-    </>}
-    {activeTab === "ownership" && controlsData && <GovernancePanel view={controlsData} instanceId={instanceId} />}
-    {activeTab === "ownership" && !controlsData && <section className="controls-empty"><p>Ownership data is not available.</p></section>}
-  </div>;
+
+  const activeDeployment = activeTab !== "ownership" ? team.deployments?.find((d) => d.id === activeTab) : null;
+
+  return (
+    <div className="rollout-page">
+      <ContextBanner step={4} eyebrow="Getting systems into the hands of the people who use them" description="Deploy, train, and assign ownership for each capability." teamName={team.name} round={team.current_round} strategy={team.strategy} />
+
+      {/* Dynamic tabs */}
+      <div className="rollout-app-tabs" role="tablist">
+        {allTabs.map((tab) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.key}
+            className={`rollout-app-tab${activeTab === tab.key ? " rollout-app-tab--active" : ""}`}
+            onClick={() => setActiveTab(tab.key)}
+            key={tab.key}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Per-application inline detail */}
+      {activeDeployment && (
+        <InlineRolloutDetail
+          key={activeDeployment.id}
+          deployment={activeDeployment}
+          team={team}
+          instanceId={instanceId}
+          onSaved={(next) => setView(next)}
+        />
+      )}
+
+      {/* Ownership tab */}
+      {activeTab === "ownership" && controlsData && <GovernancePanel view={controlsData} instanceId={instanceId} />}
+      {activeTab === "ownership" && !controlsData && <section className="controls-empty"><p>Ownership data is not available.</p></section>}
+    </div>
+  );
 }
