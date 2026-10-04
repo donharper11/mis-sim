@@ -11,14 +11,11 @@ import Controls from "./Controls.jsx";
 import StrategyPage from "./StrategyPage.jsx";
 import InfrastructurePage from "./InfrastructurePage.jsx";
 import ApplicationsPage from "./ApplicationsPage.jsx";
-import ApplicationDetailPage from "./ApplicationDetailPage.jsx";
-
 const viewTitles = {
   dashboard: "Dashboard",
   strategy: "Strategy",
   infrastructure: "IT Infrastructure",
   applications: "Applications",
-  "application-detail": "Application Detail",
   rollout: "Rollout & Adoption",
   review: "Review & Budget",
   debrief: "Debrief",
@@ -76,16 +73,6 @@ export default function Shell({ view = "dashboard" }) {
             components = componentsResponse.data;
             hostPlatforms = hp;
           }
-          if (view === "application-detail") {
-            const [componentsResponse, rolloutResponse, hp] = await Promise.all([
-              apiClient.get(`/instances/${me.instance_id}/components`),
-              apiClient.get(`/instances/${me.instance_id}/rollout`),
-              fetchHostPlatforms(),
-            ]);
-            components = componentsResponse.data;
-            rollout = rolloutResponse.data;
-            hostPlatforms = hp;
-          }
           if (view === "rollout") {
             const [rolloutResponse, controlsResponse] = await Promise.all([
               apiClient.get(`/instances/${me.instance_id}/rollout`),
@@ -134,7 +121,7 @@ export default function Shell({ view = "dashboard" }) {
   if (state.status === "error") return <main className="app-shell plain-state"><h1>We could not open this simulation</h1><p role="alert">{state.error}</p></main>;
 
   const title = viewTitles[view] || "Dashboard";
-  const activePath = view === "dashboard" ? "/" : view === "application-detail" ? "/applications" : `/${view}`;
+  const activePath = view === "dashboard" ? "/" : `/${view}`;
 
   function renderView() {
     switch (view) {
@@ -144,8 +131,6 @@ export default function Shell({ view = "dashboard" }) {
         return <InfrastructurePage platformData={state.platform} controlsData={state.controls} instanceId={state.instance?.instance_id} hostPlatforms={state.hostPlatforms} />;
       case "applications":
         return <ApplicationsPage data={state.components} instanceId={state.instance?.instance_id} hostPlatforms={state.hostPlatforms} />;
-      case "application-detail":
-        return <ApplicationDetailPage data={state.components} rolloutData={state.rollout} instanceId={state.instance?.instance_id} />;
       case "rollout":
         return <Rollout data={state.rollout} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
       case "review":

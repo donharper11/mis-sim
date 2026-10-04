@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { apiClient } from "../api/client.js";
 import { DetailTable, OptionCard, OptionRow } from "../components/index.js";
 
@@ -126,6 +125,87 @@ function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, onCancel, hostPl
   );
 }
 
+function EditAppModal({ asset, team, instanceId, onSaved, onClose, hostPlatforms }) {
+  const [basePlatformId, setBasePlatformId] = useState("");
+  const [orgUnit, setOrgUnit] = useState(asset.org_unit || "");
+  const [operation, setOperation] = useState(asset.status === "retired" ? "discontinue" : "active");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const availablePlatforms = (hostPlatforms || []).filter((p) => p.status === "active" || p.status === "pending");
+  const selectedPlatform = availablePlatforms.find((p) => String(p.id) === basePlatformId);
+  const derivedPlacement = selectedPlatform ? (selectedPlatform.platform_type === "cloud" ? "cloud" : "on_prem") : (asset.placement || "on_prem");
+
+  const readOnly = team.revision === null || team.locked_revision !== null;
+  const canSubmit = !readOnly && orgUnit && operation;
+
+  async function submit(event) {
+    event.preventDefault();
+    if (!canSubmit) return;
+    setSaving(true); setError("");
+    try {
+      let commands;
+      if (operation === "discontinue") {
+        commands = { lifecycle: [{ key: `retire_${asset.id}`, op: "retire_asset", asset: asset.id }] };
+      } else {
+        const placement = derivedPlacement;
+        const config = asset.config || "core";
+        commands = { application: [{ key: `buy_${asset.source_key}_${placement}`, op: "buy_application", catalog: asset.source_key, placement, config, primary_for: orgUnit, tco_categories: [] }] };
+      }
+      const response = await apiClient.patch(`/instances/${instanceId}/components`, {
+        version: 1, expected_revision: team.revision, replace_categories: commands,
+      });
+      onSaved(response.data);
+    } catch (requestError) {
+      setError(typeof requestError.response?.data?.detail === "string" ? requestError.response.data.detail : "The application decision could not be saved.");
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <section className="modal-dialog">
+        <div className="modal-header">
+          <h2>Edit Application</h2>
+          <button type="button" className="modal-close" onClick={onClose} aria-label="Close">&times;</button>
+        </div>
+        <form onSubmit={submit} className="modal-body">
+          <label>Name
+            <input type="text" value={asset.label} disabled />
+          </label>
+          <label>Custom Name
+            <input type="text" value={asset.custom_name || ""} disabled />
+          </label>
+          <label>Notes
+            <textarea value={asset.notes || ""} disabled />
+          </label>
+          <label>Base Platform
+            <select value={basePlatformId} onChange={(e) => setBasePlatformId(e.target.value)} disabled={readOnly}>
+              <option value="">{placementNames[asset.placement] || asset.placement || "Current platform"}</option>
+              {availablePlatforms.map((p) => <option key={p.id} value={String(p.id)}>{p.platform_code} — {p.name}{p.status === "pending" ? " (pending)" : ""}</option>)}
+            </select>
+          </label>
+          <label>Business Unit
+            <select value={orgUnit} onChange={(e) => setOrgUnit(e.target.value)} disabled={readOnly}>
+              <option value="">Choose a unit…</option>
+              {orgUnitOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}
+            </select>
+          </label>
+          <label>Operation
+            <select value={operation} onChange={(e) => setOperation(e.target.value)} disabled={readOnly}>
+              {operationOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}
+            </select>
+          </label>
+          <div className="modal-actions">
+            <button type="submit" className="components-primary" disabled={!canSubmit || saving}>{saving ? "Saving…" : "Update Application"}</button>
+            <button type="button" className="components-secondary" onClick={onClose}>Cancel</button>
+          </div>
+          {error && <p className="components-error" role="alert">{error}</p>}
+        </form>
+      </section>
+    </div>
+  );
+}
+
 function AddWizard({ team, onClose, onSaved, instanceId }) {
   const [step, setStep] = useState(1);
   const [choiceKey, setChoiceKey] = useState("");
@@ -176,13 +256,14 @@ function AddWizard({ team, onClose, onSaved, instanceId }) {
 }
 
 export default function Components({ data, instanceId, hostPlatforms }) {
-  const navigate = useNavigate();
   const [view, setView] = useState(data);
   const [wizard, setWizard] = useState(false);
   const [showSimpleForm, setShowSimpleForm] = useState(false);
+  const [editAssetId, setEditAssetId] = useState(null);
   const [filter, setFilter] = useState("All");
   useEffect(() => setView(data), [data]);
   const team = view?.team;
+  const editAsset = editAssetId ? team?.assets?.find((a) => a.id === editAssetId) : null;
 
   // Build business-unit filter list from assets
   const filterOptions = useMemo(() => {
@@ -202,6 +283,7 @@ export default function Components({ data, instanceId, hostPlatforms }) {
     <section className="components-toolbar"><div className="components-filters">{filterOptions.map((value) => <button type="button" className={filter === value ? "components-filter--active" : ""} onClick={() => setFilter(value)} key={value}>{value}</button>)}</div><button type="button" className="components-primary" disabled={team.revision === null || team.locked_revision !== null || !team.choices.length} onClick={() => setShowSimpleForm(true)}>+ Add application</button></section>
     {showSimpleForm && !wizard && <SimpleAddForm team={team} instanceId={instanceId} hostPlatforms={hostPlatforms} onSaved={(next) => { setView(next); setShowSimpleForm(false); }} onAdvanced={() => { setShowSimpleForm(false); setWizard(true); }} onCancel={() => setShowSimpleForm(false)} />}
     {wizard && <AddWizard team={team} instanceId={instanceId} onClose={() => setWizard(false)} onSaved={(next) => setView(next)} />}
-    <section className="components-table-panel"><div className="components-panel-heading"><div><h2>Applications</h2><p className="components-muted">Registered assets and their current rollout state</p></div><span className="components-muted">{rows.length} shown</span></div><DetailTable columns={[{ key: "label", label: "Application" }, { key: "typeLabel", label: "Type" }, { key: "placement", label: "Runs on" }, { key: "org_unit", label: "For whom" }, { key: "adoption", label: "Adoption" }, { key: "statusLabel", label: "Status" }]} rows={rows.map((asset) => { const [, label] = assetStatus(asset); return { ...asset, typeLabel: asset.label, placement: placementNames[asset.placement] || asset.placement || "—", org_unit: formatOrgUnit(asset.org_unit), adoption: typeof asset.adoption === "number" ? `${Math.round(asset.adoption * 100)}%` : "—", statusLabel: label, key: asset.id }; })} onRowClick={(row) => navigate(`/applications/${row.id}`)} /></section>
+    {editAsset && <EditAppModal asset={editAsset} team={team} instanceId={instanceId} hostPlatforms={hostPlatforms} onSaved={(next) => { setView(next); setEditAssetId(null); }} onClose={() => setEditAssetId(null)} />}
+    <section className="components-table-panel"><div className="components-panel-heading"><div><h2>Applications</h2><p className="components-muted">Registered assets and their current rollout state</p></div><span className="components-muted">{rows.length} shown</span></div><DetailTable columns={[{ key: "label", label: "Application" }, { key: "typeLabel", label: "Type" }, { key: "placement", label: "Runs on" }, { key: "org_unit", label: "For whom" }, { key: "adoption", label: "Adoption" }, { key: "statusLabel", label: "Status" }]} rows={rows.map((asset) => { const [, label] = assetStatus(asset); return { ...asset, typeLabel: asset.label, placement: placementNames[asset.placement] || asset.placement || "—", org_unit: formatOrgUnit(asset.org_unit), adoption: typeof asset.adoption === "number" ? `${Math.round(asset.adoption * 100)}%` : "—", statusLabel: label, key: asset.id }; })} onRowClick={(row) => setEditAssetId(row.id)} /></section>
   </div>;
 }

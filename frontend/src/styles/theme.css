@@ -774,11 +774,13 @@ select {
 /* Rollout slider category rows */
 .rollout-slider-category { display: grid; grid-template-columns: 7rem minmax(8rem, 1fr) minmax(10rem, auto) 6rem; gap: var(--space-sm); align-items: center; }
 .rollout-slider-label { color: var(--text-secondary); font-size: 13px; font-weight: 600; }
-.rollout-slider-input { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: var(--border-default); outline: none; cursor: pointer; }
-.rollout-slider-input:disabled { opacity: 0.5; cursor: not-allowed; }
-.rollout-slider-input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; background: var(--action-primary); border: 2px solid var(--surface-card); border-radius: 50%; cursor: pointer; }
-.rollout-slider-input::-moz-range-thumb { width: 16px; height: 16px; background: var(--action-primary); border: 2px solid var(--surface-card); border-radius: 50%; cursor: pointer; }
-.rollout-slider-input:focus { outline: 2px solid var(--border-focus); outline-offset: 2px; }
+.rollout-slider-track { min-width: 0; padding: 0 4px; }
+.rollout-slider-track .ant-slider { margin: 8px 0 24px; }
+.rollout-slider-track .ant-slider-rail { background: var(--border-default); }
+.rollout-slider-track .ant-slider-track { background: var(--action-primary); }
+.rollout-slider-track .ant-slider-handle::after { border-color: var(--action-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.rollout-slider-track .ant-slider-mark-text { font-size: 11px; color: var(--text-muted); }
+.rollout-slider-track .ant-slider-dot-active { border-color: var(--action-primary); }
 .rollout-slider-info { color: var(--text-muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rollout-slider-budget { display: flex; align-items: center; }
 .rollout-slider-budget input { width: 100%; min-height: 28px; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text); font: inherit; font-size: 13px; }

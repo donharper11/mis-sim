@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Slider } from "antd";
 import { apiClient } from "../api/client.js";
 import { StatusBadge } from "./index.js";
 
@@ -9,24 +10,41 @@ function percent(value) {
 
 function CategorySlider({ label, options, selectedKey, onSelect, budget, onBudgetChange, disabled }) {
   const idx = options.findIndex((o) => o.key === selectedKey);
-  const current = idx >= 0 ? idx : 0;
-  const opt = options[current];
+  const snappedIdx = idx >= 0 ? idx : 0;
+  const segSize = 100 / Math.max(options.length - 1, 1);
+  const [rawVal, setRawVal] = useState(snappedIdx * segSize);
+
+  useEffect(() => {
+    const i = options.findIndex((o) => o.key === selectedKey);
+    if (i >= 0) setRawVal(i * segSize);
+  }, [selectedKey, options, segSize]);
+
+  const nearestIdx = Math.min(Math.round(rawVal / segSize), options.length - 1);
+  const opt = options[nearestIdx];
+  const marks = options.reduce((acc, o, i) => { acc[i * segSize] = o.label; return acc; }, {});
 
   return (
     <div className="rollout-slider-category">
       <span className="rollout-slider-label">{label}</span>
-      <input
-        type="range"
-        className="rollout-slider-input"
-        min={0}
-        max={options.length - 1}
-        step={1}
-        value={current}
-        disabled={disabled}
-        onChange={(e) => onSelect(options[Number(e.target.value)].key)}
-      />
+      <div className="rollout-slider-track">
+        <Slider
+          min={0}
+          max={100}
+          step={1}
+          value={rawVal}
+          marks={marks}
+          disabled={disabled}
+          tooltip={{ formatter: () => opt?.label }}
+          onChange={(val) => setRawVal(val)}
+          onChangeComplete={(val) => {
+            const nearest = Math.min(Math.round(val / segSize), options.length - 1);
+            setRawVal(nearest * segSize);
+            onSelect(options[nearest].key);
+          }}
+        />
+      </div>
       <span className="rollout-slider-info">
-        {opt?.label}{opt?.cost ? ` · $${opt.cost.toLocaleString()}` : ""}{opt?.coverage != null ? ` · ${Math.round(opt.coverage * 100)}%` : ""}
+        {opt?.cost ? `$${opt.cost.toLocaleString()}` : "$0"}{opt?.coverage != null ? ` · ${Math.round(opt.coverage * 100)}%` : ""}
       </span>
       <label className="rollout-slider-budget">
         <span className="sr-only">{label} budget ($)</span>
