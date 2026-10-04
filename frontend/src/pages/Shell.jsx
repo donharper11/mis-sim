@@ -53,24 +53,27 @@ export default function Shell({ view = "dashboard" }) {
           const dashboardResponse = await apiClient.get(`/instances/${me.instance_id}/dashboard`);
           dashboard = dashboardResponse.data;
 
+          // Graceful host-platforms fetch (new endpoint may not be deployed yet)
+          const fetchHostPlatforms = () => apiClient.get(`/instances/${me.instance_id}/host-platforms`).then((r) => r.data.platforms).catch(() => []);
+
           // Parallel data fetching for merged pages
           if (view === "infrastructure") {
-            const [platformResponse, controlsResponse, hostPlatformsResponse] = await Promise.all([
+            const [platformResponse, controlsResponse, hp] = await Promise.all([
               apiClient.get(`/instances/${me.instance_id}/platform`),
               apiClient.get(`/instances/${me.instance_id}/controls`),
-              apiClient.get(`/instances/${me.instance_id}/host-platforms`),
+              fetchHostPlatforms(),
             ]);
             platform = platformResponse.data;
             controls = controlsResponse.data;
-            hostPlatforms = hostPlatformsResponse.data.platforms;
+            hostPlatforms = hp;
           }
           if (view === "applications" || view === "application-detail") {
-            const [componentsResponse, hostPlatformsResponse] = await Promise.all([
+            const [componentsResponse, hp] = await Promise.all([
               apiClient.get(`/instances/${me.instance_id}/components`),
-              apiClient.get(`/instances/${me.instance_id}/host-platforms`),
+              fetchHostPlatforms(),
             ]);
             components = componentsResponse.data;
-            hostPlatforms = hostPlatformsResponse.data.platforms;
+            hostPlatforms = hp;
           }
           if (view === "rollout") {
             const [rolloutResponse, controlsResponse] = await Promise.all([
