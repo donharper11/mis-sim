@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
+import { PlusCircle, Pencil } from "lucide-react";
 import { apiClient } from "../api/client.js";
 import { DetailTable, OptionCard, OptionRow } from "../components/index.js";
 
@@ -80,7 +81,7 @@ function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, onCancel, hostPl
     <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
       <section className="modal-dialog">
         <div className="modal-header">
-          <h2>Add Application</h2>
+          <h2><PlusCircle size={20} /> Add Application</h2>
           <button type="button" className="modal-close" onClick={onCancel} aria-label="Close">&times;</button>
         </div>
         <form onSubmit={submit} className="modal-body">
@@ -165,7 +166,7 @@ function EditAppModal({ asset, team, instanceId, onSaved, onClose, hostPlatforms
     <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <section className="modal-dialog">
         <div className="modal-header">
-          <h2>Edit Application</h2>
+          <h2><Pencil size={20} /> Edit Application</h2>
           <button type="button" className="modal-close" onClick={onClose} aria-label="Close">&times;</button>
         </div>
         <form onSubmit={submit} className="modal-body">

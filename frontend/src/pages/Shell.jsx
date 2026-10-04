@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient, clearAccessToken } from "../api/client.js";
+import { LayoutDashboard, Compass, Server, AppWindow, Rocket, ClipboardCheck, BarChart3, Zap } from "lucide-react";
 import AppShell from "../components/AppShell.jsx";
 import Dashboard from "./Dashboard.jsx";
 import Rollout from "./Rollout.jsx";
@@ -20,6 +21,17 @@ const viewTitles = {
   review: "Review & Budget",
   debrief: "Debrief",
   challenges: "Challenges",
+};
+
+const viewIcons = {
+  dashboard: LayoutDashboard,
+  strategy: Compass,
+  infrastructure: Server,
+  applications: AppWindow,
+  rollout: Rocket,
+  review: BarChart3,
+  debrief: ClipboardCheck,
+  challenges: Zap,
 };
 
 export default function Shell({ view = "dashboard" }) {
@@ -145,7 +157,7 @@ export default function Shell({ view = "dashboard" }) {
   }
 
   return (
-    <AppShell me={state.me} instance={state.instance} schedule={state.schedule} dashboard={state.dashboard} activePath={activePath} pageTitle={title}>
+    <AppShell me={state.me} instance={state.instance} schedule={state.schedule} dashboard={state.dashboard} activePath={activePath} pageTitle={title} pageIcon={viewIcons[view]}>
       {renderView()}
     </AppShell>
   );

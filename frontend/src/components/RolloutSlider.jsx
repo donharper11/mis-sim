@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Slider } from "antd";
+import { GraduationCap, Cog, Megaphone } from "lucide-react";
 import { apiClient } from "../api/client.js";
 import { StatusBadge } from "./index.js";
 
@@ -8,7 +9,15 @@ function percent(value) {
   return typeof value === "number" && Number.isFinite(value) ? `${Math.round(value * 100)}%` : "—";
 }
 
-function CategorySlider({ label, options, selectedKey, onSelect, budget, onBudgetChange, disabled }) {
+const categoryMeta = {
+  training: { icon: GraduationCap, label: "Training" },
+  process: { icon: Cog, label: "Process" },
+  communication: { icon: Megaphone, label: "Communication" },
+};
+
+function CategoryCard({ category, options, selectedKey, onSelect, budget, onBudgetChange, disabled }) {
+  const meta = categoryMeta[category];
+  const Icon = meta.icon;
   const idx = options.findIndex((o) => o.key === selectedKey);
   const snappedIdx = idx >= 0 ? idx : 0;
   const segSize = 100 / Math.max(options.length - 1, 1);
@@ -21,12 +30,13 @@ function CategorySlider({ label, options, selectedKey, onSelect, budget, onBudge
 
   const nearestIdx = Math.min(Math.round(rawVal / segSize), options.length - 1);
   const opt = options[nearestIdx];
-  const marks = options.reduce((acc, o, i) => { acc[i * segSize] = o.label; return acc; }, {});
+  const marks = options.reduce((acc, _o, i) => { acc[i * segSize] = Math.round(i * segSize); return acc; }, {});
 
   return (
-    <div className="rollout-slider-category">
-      <span className="rollout-slider-label">{label}</span>
-      <div className="rollout-slider-track">
+    <div className="rollout-category-card">
+      <div className="rollout-category-card__icon"><Icon size={32} /></div>
+      <div className="rollout-category-card__label">{meta.label}</div>
+      <div className="rollout-category-card__slider">
         <Slider
           min={0}
           max={100}
@@ -34,7 +44,7 @@ function CategorySlider({ label, options, selectedKey, onSelect, budget, onBudge
           value={rawVal}
           marks={marks}
           disabled={disabled}
-          tooltip={{ formatter: () => opt?.label }}
+          tooltip={{ formatter: (v) => Math.round(v) }}
           onChange={(val) => setRawVal(val)}
           onChangeComplete={(val) => {
             const nearest = Math.min(Math.round(val / segSize), options.length - 1);
@@ -43,37 +53,57 @@ function CategorySlider({ label, options, selectedKey, onSelect, budget, onBudge
           }}
         />
       </div>
-      <span className="rollout-slider-info">
+      <div className="rollout-category-card__desc">{opt?.label || "—"}</div>
+      <div className="rollout-category-card__info">
         {opt?.cost ? `$${opt.cost.toLocaleString()}` : "$0"}{opt?.coverage != null ? ` · ${Math.round(opt.coverage * 100)}%` : ""}
-      </span>
-      <label className="rollout-slider-budget">
-        <span className="sr-only">{label} budget ($)</span>
-        <input
-          type="number"
-          min="0"
-          step="1"
-          value={budget}
-          placeholder="0"
-          disabled={disabled}
-          onChange={(e) => onBudgetChange(e.target.value)}
-        />
-      </label>
+      </div>
+      <div className="rollout-category-card__budget">
+        <label>
+          Budget ($)
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={budget}
+            placeholder="0"
+            disabled={disabled}
+            onChange={(e) => onBudgetChange(e.target.value)}
+          />
+        </label>
+      </div>
     </div>
   );
 }
 
 export default function RolloutSlider({ deployment, team, instanceId, onSaved }) {
-  const [training, setTraining] = useState(
-    deployment.training_options.find((item) => (item.coverage || 0) >= deployment.training_pct)?.key || deployment.training_options[0]?.key || ""
-  );
-  const [process, setProcess] = useState(deployment.process);
-  const [communication, setCommunication] = useState(deployment.communication);
-  const [trainingBudget, setTrainingBudget] = useState(deployment.training_budget ?? "");
-  const [processBudget, setProcessBudget] = useState(deployment.process_budget ?? "");
-  const [communicationBudget, setCommunicationBudget] = useState(deployment.communication_budget ?? "");
+  const initialValues = useMemo(() => ({
+    training: deployment.training_options.find((item) => (item.coverage || 0) >= deployment.training_pct)?.key || deployment.training_options[0]?.key || "",
+    process: deployment.process,
+    communication: deployment.communication,
+    trainingBudget: deployment.training_budget ?? "",
+    processBudget: deployment.process_budget ?? "",
+    communicationBudget: deployment.communication_budget ?? "",
+  }), [deployment]);
+
+  const [training, setTraining] = useState(initialValues.training);
+  const [process, setProcess] = useState(initialValues.process);
+  const [communication, setCommunication] = useState(initialValues.communication);
+  const [trainingBudget, setTrainingBudget] = useState(initialValues.trainingBudget);
+  const [processBudget, setProcessBudget] = useState(initialValues.processBudget);
+  const [communicationBudget, setCommunicationBudget] = useState(initialValues.communicationBudget);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const readOnly = team.revision === null || team.locked_revision !== null;
+
+  function reset() {
+    setTraining(initialValues.training);
+    setProcess(initialValues.process);
+    setCommunication(initialValues.communication);
+    setTrainingBudget(initialValues.trainingBudget);
+    setProcessBudget(initialValues.processBudget);
+    setCommunicationBudget(initialValues.communicationBudget);
+    setError("");
+  }
 
   async function save() {
     if (readOnly || !training || !process || !communication) return;
@@ -105,75 +135,40 @@ export default function RolloutSlider({ deployment, team, instanceId, onSaved })
           <span>{percent(deployment.adoption)} adoption</span>
         </div>
       </div>
-      <div className="rollout-two-col">
-        <div className="rollout-inline-controls">
-          <CategorySlider
-            label="Training"
-            options={deployment.training_options}
-            selectedKey={training}
-            onSelect={setTraining}
-            budget={trainingBudget}
-            onBudgetChange={setTrainingBudget}
-            disabled={readOnly}
-          />
-          <CategorySlider
-            label="Process"
-            options={deployment.process_options}
-            selectedKey={process}
-            onSelect={setProcess}
-            budget={processBudget}
-            onBudgetChange={setProcessBudget}
-            disabled={readOnly}
-          />
-          <CategorySlider
-            label="Communication"
-            options={deployment.communication_options}
-            selectedKey={communication}
-            onSelect={setCommunication}
-            budget={communicationBudget}
-            onBudgetChange={setCommunicationBudget}
-            disabled={readOnly}
-          />
-        </div>
 
-        {/* Previous round summary */}
-        <aside className="rollout-prev-round">
-          <h4 style={{ margin: "0 0 var(--space-md)", fontSize: "13px" }}>Current State</h4>
-          <div className="rollout-prev-items">
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Training</span>
-              <span className="rollout-prev-value">{deployment.trained_count} trained ({percent(deployment.training_pct)})</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Process</span>
-              <span className="rollout-prev-value">{deployment.process === "unchanged" ? "Unchanged" : deployment.process === "partial" ? "Partial redesign" : deployment.process === "redesigned" ? "Redesigned" : deployment.process}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Communication</span>
-              <span className="rollout-prev-value">{deployment.communication === "none" ? "None" : deployment.communication}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Adoption</span>
-              <span className="rollout-prev-value">{percent(deployment.adoption)}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Budget (training)</span>
-              <span className="rollout-prev-value">{typeof deployment.training_budget === "number" ? `$${deployment.training_budget.toLocaleString()}` : "—"}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Budget (process)</span>
-              <span className="rollout-prev-value">{typeof deployment.process_budget === "number" ? `$${deployment.process_budget.toLocaleString()}` : "—"}</span>
-            </div>
-            <div className="rollout-prev-item">
-              <span className="rollout-prev-label">Budget (comms)</span>
-              <span className="rollout-prev-value">{typeof deployment.communication_budget === "number" ? `$${deployment.communication_budget.toLocaleString()}` : "—"}</span>
-            </div>
-          </div>
-        </aside>
+      <div className="rollout-category-cards">
+        <CategoryCard
+          category="training"
+          options={deployment.training_options}
+          selectedKey={training}
+          onSelect={setTraining}
+          budget={trainingBudget}
+          onBudgetChange={setTrainingBudget}
+          disabled={readOnly}
+        />
+        <CategoryCard
+          category="process"
+          options={deployment.process_options}
+          selectedKey={process}
+          onSelect={setProcess}
+          budget={processBudget}
+          onBudgetChange={setProcessBudget}
+          disabled={readOnly}
+        />
+        <CategoryCard
+          category="communication"
+          options={deployment.communication_options}
+          selectedKey={communication}
+          onSelect={setCommunication}
+          budget={communicationBudget}
+          onBudgetChange={setCommunicationBudget}
+          disabled={readOnly}
+        />
       </div>
 
       <div className="rollout-detail-actions">
-        <button type="button" className="components-primary" disabled={readOnly || saving || !deployment.training_options.length} onClick={save}>{saving ? "Saving…" : "Apply to this deployment"}</button>
+        <button type="button" className="components-secondary" disabled={readOnly} onClick={reset}>Reset</button>
+        <button type="button" className="components-primary" disabled={readOnly || saving || !deployment.training_options.length} onClick={save}>{saving ? "Saving…" : "Save Changes"}</button>
       </div>
       {error && <p className="components-error" role="alert">{error}</p>}
     </section>
