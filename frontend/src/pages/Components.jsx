@@ -78,7 +78,7 @@ function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, onCancel, hostPl
   }
 
   return (
-    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+    <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
       <section className="modal-dialog">
         <div className="modal-header">
           <h2>Add Application</h2>
