@@ -33,8 +33,9 @@ const operationOptions = [
   { key: "modified", label: "Modified" },
 ];
 
-function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, hostPlatforms }) {
+function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, onCancel, hostPlatforms }) {
   const [choiceKey, setChoiceKey] = useState("");
+  const [customName, setCustomName] = useState("");
   const [notes, setNotes] = useState("");
   const [basePlatformId, setBasePlatformId] = useState("");
   const [orgUnit, setOrgUnit] = useState("");
@@ -59,12 +60,10 @@ function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, hostPlatforms })
     try {
       let commands;
       if (operation === "discontinue") {
-        // Find the active asset to retire
         const asset = team.assets?.find((a) => a.source_key === choiceKey && a.status === "active");
         if (!asset) { setError("No active asset found to discontinue."); setSaving(false); return; }
         commands = { lifecycle: [{ key: `retire_${asset.id}`, op: "retire_asset", asset: asset.id }] };
       } else {
-        // Active or Modified (modified treated as active for now)
         const placement = derivedPlacement;
         const config = choice?.configs[0]?.key || "core";
         commands = { application: [{ key: `buy_${choiceKey}_${placement}`, op: "buy_application", catalog: choiceKey, placement, config, primary_for: orgUnit, tco_categories: [] }] };
@@ -73,22 +72,30 @@ function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, hostPlatforms })
         version: 1, expected_revision: team.revision, replace_categories: commands,
       });
       onSaved(response.data);
-      setChoiceKey(""); setNotes(""); setBasePlatformId(""); setOrgUnit(""); setOperation("active");
     } catch (requestError) {
       setError(typeof requestError.response?.data?.detail === "string" ? requestError.response.data.detail : "The application decision could not be saved.");
     } finally { setSaving(false); }
   }
 
   return (
-    <section className="simple-add-form">
-      <h2>Launch an application</h2>
-      <form onSubmit={submit}>
-        <div className="simple-add-form-grid">
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+      <section className="modal-dialog">
+        <div className="modal-header">
+          <h2>Add Application</h2>
+          <button type="button" className="modal-close" onClick={onCancel} aria-label="Close">&times;</button>
+        </div>
+        <form onSubmit={submit} className="modal-body">
           <label>Name
             <select value={choiceKey} onChange={(e) => setChoiceKey(e.target.value)} disabled={readOnly}>
               <option value="">Choose an application…</option>
               {team.choices.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}
             </select>
+          </label>
+          <label>Custom Name
+            <input type="text" value={customName} maxLength={200} placeholder="Your name for this application" onChange={(e) => setCustomName(e.target.value)} disabled={readOnly} />
+          </label>
+          <label>Notes
+            <textarea value={notes} maxLength={1000} placeholder="Optional notes" onChange={(e) => setNotes(e.target.value)} disabled={readOnly} />
           </label>
           <label>Base Platform
             <select value={basePlatformId} onChange={(e) => setBasePlatformId(e.target.value)} disabled={readOnly}>
@@ -107,17 +114,15 @@ function SimpleAddForm({ team, instanceId, onSaved, onAdvanced, hostPlatforms })
               {operationOptions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}
             </select>
           </label>
-        </div>
-        <label>Notes
-          <textarea value={notes} maxLength={1000} placeholder="Optional notes about this application" onChange={(e) => setNotes(e.target.value)} disabled={readOnly} />
-        </label>
-        <div className="simple-add-form-actions">
-          <button type="submit" className="components-primary" disabled={!canSubmit || saving}>{saving ? "Launching…" : "Launch Application"}</button>
-          <button type="button" className="components-secondary" onClick={onAdvanced}>Advanced setup</button>
-        </div>
-        {error && <p className="components-error" role="alert">{error}</p>}
-      </form>
-    </section>
+          <div className="modal-actions">
+            <button type="submit" className="components-primary" disabled={!canSubmit || saving}>{saving ? "Launching…" : "Launch Application"}</button>
+            <button type="button" className="components-secondary" onClick={onAdvanced}>Advanced setup</button>
+            <button type="button" className="components-secondary" onClick={onCancel}>Cancel</button>
+          </div>
+          {error && <p className="components-error" role="alert">{error}</p>}
+        </form>
+      </section>
+    </div>
   );
 }
 
@@ -192,21 +197,11 @@ export default function Components({ data, instanceId, hostPlatforms }) {
     return assets.filter((asset) => formatOrgUnit(asset.org_unit) === filter);
   }, [team, filter]);
 
-  const [projectError, setProjectError] = useState("");
   if (!team) return <section className="components-empty"><h2>Your team has not entered the runtime yet</h2><p>Components will appear here after the team runtime is initialized.</p></section>;
-  async function projectAction(project, choice) {
-    if (team.revision === null || team.locked_revision !== null) return;
-    setProjectError("");
-    try {
-      const response = await apiClient.patch(`/instances/${instanceId}/components`, { version: 1, expected_revision: team.revision, replace_categories: { lifecycle: [{ key: `${choice}_${project.id}`, op: "project", order: project.id, choice }] } });
-      setView(response.data);
-    } catch (requestError) { setProjectError(typeof requestError.response?.data?.detail === "string" ? requestError.response.data.detail : "The in-flight decision could not be saved."); }
-  }
   return <div className="components-page">
     <section className="components-toolbar"><div className="components-filters">{filterOptions.map((value) => <button type="button" className={filter === value ? "components-filter--active" : ""} onClick={() => setFilter(value)} key={value}>{value}</button>)}</div><button type="button" className="components-primary" disabled={team.revision === null || team.locked_revision !== null || !team.choices.length} onClick={() => setShowSimpleForm(true)}>+ Add application</button></section>
-    {showSimpleForm && !wizard && <SimpleAddForm team={team} instanceId={instanceId} hostPlatforms={hostPlatforms} onSaved={(next) => { setView(next); setShowSimpleForm(false); }} onAdvanced={() => { setShowSimpleForm(false); setWizard(true); }} />}
+    {showSimpleForm && !wizard && <SimpleAddForm team={team} instanceId={instanceId} hostPlatforms={hostPlatforms} onSaved={(next) => { setView(next); setShowSimpleForm(false); }} onAdvanced={() => { setShowSimpleForm(false); setWizard(true); }} onCancel={() => setShowSimpleForm(false)} />}
     {wizard && <AddWizard team={team} instanceId={instanceId} onClose={() => setWizard(false)} onSaved={(next) => setView(next)} />}
     <section className="components-table-panel"><div className="components-panel-heading"><div><h2>Applications</h2><p className="components-muted">Registered assets and their current rollout state</p></div><span className="components-muted">{rows.length} shown</span></div><DetailTable columns={[{ key: "label", label: "Application" }, { key: "typeLabel", label: "Type" }, { key: "placement", label: "Runs on" }, { key: "org_unit", label: "For whom" }, { key: "adoption", label: "Adoption" }, { key: "statusLabel", label: "Status" }]} rows={rows.map((asset) => { const [, label] = assetStatus(asset); return { ...asset, typeLabel: asset.label, placement: placementNames[asset.placement] || asset.placement || "—", org_unit: formatOrgUnit(asset.org_unit), adoption: typeof asset.adoption === "number" ? `${Math.round(asset.adoption * 100)}%` : "—", statusLabel: label, key: asset.id }; })} onRowClick={(row) => navigate(`/applications/${row.id}`)} /></section>
-    {team.projects.length > 0 && <section className="components-projects"><h2>In flight</h2>{team.projects.map((project) => <article className="components-project-row" key={project.id}><div><strong>{project.label}</strong><p>{project.status} · {project.remaining_lead} round{project.remaining_lead === 1 ? "" : "s"} remaining</p></div>{["pending", "paused"].includes(project.status) && <div className="components-project-actions"><button type="button" className="components-secondary" disabled={team.locked_revision !== null} onClick={() => projectAction(project, project.status === "paused" ? "continue" : "pause")}>{project.status === "paused" ? "Continue" : "Pause"}</button><button type="button" className="components-danger" disabled={team.locked_revision !== null} onClick={() => projectAction(project, "kill")}>Kill</button></div>}</article>)}{projectError && <p className="components-error" role="alert">{projectError}</p>}</section>}
   </div>;
 }

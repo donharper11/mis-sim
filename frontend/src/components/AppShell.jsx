@@ -66,21 +66,17 @@ export default function AppShell({ me, instance, schedule, dashboard, activePath
       </aside>
       <div className="product-shell__workspace">
         <header className="product-shell__topbar">
-          <div>
-            <p className="product-shell__context">{instance ? `Instance ${instance.instance_id}` : "No instance selected"}</p>
-            <h1>{pageTitle}</h1>
-          </div>
-          <div className="product-shell__round" aria-label={round ? `Round ${round} of ${totalRounds}` : "Round unavailable"}>
-            <span className="product-shell__round-label">Round</span>
-            <strong>{round ? `${round} of ${totalRounds}` : "—"}</strong>
-            {schedule?.deadline && <time dateTime={schedule.deadline}>Closes {new Date(schedule.deadline).toLocaleString()}</time>}
+          <h1>{pageTitle}</h1>
+          <div className="product-shell__topbar-meta">
+            {team && <span className="product-shell__topbar-stat"><span>Capital</span><strong>{formatMoney(team.capital_remaining)}</strong></span>}
+            <span className="product-shell__topbar-stat"><span>Status</span><strong>{schedule?.decisions_locked ? "Locked" : "Open"}</strong></span>
+            <div className="product-shell__round" aria-label={round ? `Round ${round} of ${totalRounds}` : "Round unavailable"}>
+              <span className="product-shell__round-label">Round</span>
+              <strong>{round ? `${round} of ${totalRounds}` : "—"}</strong>
+            </div>
+            {team?.name && <span className="product-shell__topbar-team">{team.name}</span>}
           </div>
         </header>
-        <section className="product-shell__capital" aria-label="Capital summary">
-          <div><span>Capital remaining</span><strong>{formatMoney(team?.capital_remaining)}</strong></div>
-          <div><span>Run-rate</span><strong>{formatMoney(team?.run_rate)}</strong></div>
-          <div><span>Round status</span><strong>{schedule?.decisions_locked ? "Locked" : "Open"}</strong></div>
-        </section>
         <main className="product-shell__content">{children}</main>
       </div>
     </div>

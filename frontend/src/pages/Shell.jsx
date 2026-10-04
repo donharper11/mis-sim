@@ -31,6 +31,7 @@ export default function Shell({ view = "dashboard" }) {
 
   useEffect(() => {
     let active = true;
+    setState((prev) => ({ ...prev, status: "loading" }));
     async function load() {
       try {
         const meResponse = await apiClient.get("/auth/me");
@@ -119,7 +120,7 @@ export default function Shell({ view = "dashboard" }) {
     return () => { active = false; };
   }, [navigate, view]);
 
-  if (state.status === "loading") return <main className="app-shell plain-state"><p>Loading your simulation…</p></main>;
+  if (state.status === "loading") return <main className="app-shell plain-state"><div className="loading-state"><div className="loading-spinner" /><span>Loading…</span></div></main>;
   if (state.status === "error") return <main className="app-shell plain-state"><h1>We could not open this simulation</h1><p role="alert">{state.error}</p></main>;
 
   const title = viewTitles[view] || "Dashboard";

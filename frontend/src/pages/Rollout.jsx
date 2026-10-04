@@ -60,29 +60,64 @@ function InlineRolloutDetail({ deployment, team, instanceId, onSaved }) {
           <span>{percent(deployment.adoption)} adoption</span>
         </div>
       </div>
-      <p className="components-muted" style={{ margin: 0 }}>Current: {deployment.trained_count} trained · {deployment.process} · {deployment.communication === "none" ? "no communication" : "communicated"}</p>
+      <div className="rollout-two-col">
+        <div className="rollout-inline-controls">
+          {/* Training */}
+          <div>
+            <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Training</h4>
+            <div className="choice-stack">{deployment.training_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={training === item.key} disabled={readOnly} onSelect={() => setTraining(item.key)} />)}</div>
+            <BudgetField label="Training budget ($)" value={trainingBudget} onChange={setTrainingBudget} disabled={readOnly} />
+          </div>
 
-      <div className="rollout-inline-controls">
-        {/* Training */}
-        <div>
-          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Training</h4>
-          <div className="choice-stack">{deployment.training_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={training === item.key} disabled={readOnly} onSelect={() => setTraining(item.key)} />)}</div>
-          <BudgetField label="Training budget ($)" value={trainingBudget} onChange={setTrainingBudget} disabled={readOnly} />
+          {/* Process */}
+          <div>
+            <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Process</h4>
+            <div className="choice-stack">{deployment.process_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={process === item.key} disabled={readOnly} onSelect={() => setProcess(item.key)} />)}</div>
+            <BudgetField label="Process budget ($)" value={processBudget} onChange={setProcessBudget} disabled={readOnly} />
+          </div>
+
+          {/* Communication */}
+          <div>
+            <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Communication</h4>
+            <div className="choice-stack">{deployment.communication_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={communication === item.key} disabled={readOnly} onSelect={() => setCommunication(item.key)} />)}</div>
+            <BudgetField label="Communication budget ($)" value={communicationBudget} onChange={setCommunicationBudget} disabled={readOnly} />
+          </div>
         </div>
 
-        {/* Process */}
-        <div>
-          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Process</h4>
-          <div className="choice-stack">{deployment.process_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={process === item.key} disabled={readOnly} onSelect={() => setProcess(item.key)} />)}</div>
-          <BudgetField label="Process budget ($)" value={processBudget} onChange={setProcessBudget} disabled={readOnly} />
-        </div>
-
-        {/* Communication */}
-        <div>
-          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Communication</h4>
-          <div className="choice-stack">{deployment.communication_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={communication === item.key} disabled={readOnly} onSelect={() => setCommunication(item.key)} />)}</div>
-          <BudgetField label="Communication budget ($)" value={communicationBudget} onChange={setCommunicationBudget} disabled={readOnly} />
-        </div>
+        {/* Previous round summary */}
+        <aside className="rollout-prev-round">
+          <h4 style={{ margin: "0 0 var(--space-md)", fontSize: "13px" }}>Current State</h4>
+          <div className="rollout-prev-items">
+            <div className="rollout-prev-item">
+              <span className="rollout-prev-label">Training</span>
+              <span className="rollout-prev-value">{deployment.trained_count} trained ({percent(deployment.training_pct)})</span>
+            </div>
+            <div className="rollout-prev-item">
+              <span className="rollout-prev-label">Process</span>
+              <span className="rollout-prev-value">{deployment.process === "unchanged" ? "Unchanged" : deployment.process === "partial" ? "Partial redesign" : deployment.process === "redesigned" ? "Redesigned" : deployment.process}</span>
+            </div>
+            <div className="rollout-prev-item">
+              <span className="rollout-prev-label">Communication</span>
+              <span className="rollout-prev-value">{deployment.communication === "none" ? "None" : deployment.communication}</span>
+            </div>
+            <div className="rollout-prev-item">
+              <span className="rollout-prev-label">Adoption</span>
+              <span className="rollout-prev-value">{percent(deployment.adoption)}</span>
+            </div>
+            <div className="rollout-prev-item">
+              <span className="rollout-prev-label">Budget (training)</span>
+              <span className="rollout-prev-value">{typeof deployment.training_budget === "number" ? `$${deployment.training_budget.toLocaleString()}` : "—"}</span>
+            </div>
+            <div className="rollout-prev-item">
+              <span className="rollout-prev-label">Budget (process)</span>
+              <span className="rollout-prev-value">{typeof deployment.process_budget === "number" ? `$${deployment.process_budget.toLocaleString()}` : "—"}</span>
+            </div>
+            <div className="rollout-prev-item">
+              <span className="rollout-prev-label">Budget (comms)</span>
+              <span className="rollout-prev-value">{typeof deployment.communication_budget === "number" ? `$${deployment.communication_budget.toLocaleString()}` : "—"}</span>
+            </div>
+          </div>
+        </aside>
       </div>
 
       <div className="rollout-detail-actions">
@@ -115,14 +150,14 @@ export default function Rollout({ data, controlsData, instanceId }) {
 
   const allTabs = useMemo(() => [...appTabs, { key: "ownership", label: "Ownership" }], [appTabs]);
 
-  const [activeTab, setActiveTab] = useState(() => allTabs[0]?.key || "ownership");
+  const [activeTab, setActiveTab] = useState("");
 
-  // Reset active tab when tabs change and current tab is no longer valid
+  // Default to first app tab when tabs become available
   useEffect(() => {
-    if (allTabs.length > 0 && !allTabs.find((t) => t.key === activeTab)) {
-      setActiveTab(allTabs[0].key);
+    if (appTabs.length > 0 && (!activeTab || !allTabs.find((t) => t.key === activeTab))) {
+      setActiveTab(appTabs[0].key);
     }
-  }, [allTabs, activeTab]);
+  }, [appTabs, allTabs, activeTab]);
 
   if (!team) return <section className="components-empty"><h2>Your team has not entered the runtime yet</h2><p>Rollout decisions will appear here after the team runtime is initialized.</p></section>;
 
@@ -130,7 +165,7 @@ export default function Rollout({ data, controlsData, instanceId }) {
 
   return (
     <div className="rollout-page">
-      <ContextBanner step={4} eyebrow="Getting systems into the hands of the people who use them" description="Deploy, train, and assign ownership for each capability." teamName={team.name} round={team.current_round} strategy={team.strategy} />
+      <ContextBanner description="Deploy, train, and assign ownership for each capability." />
 
       {/* Dynamic tabs */}
       <div className="rollout-app-tabs" role="tablist">

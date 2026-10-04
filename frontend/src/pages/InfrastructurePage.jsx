@@ -288,14 +288,18 @@ export default function InfrastructurePage({ platformData, controlsData, instanc
 
   return (
     <div className="controls-page">
-      <ContextBanner step={2} eyebrow="Build the firm's technology foundation" description="Platform services, staffing, and data governance for the entire firm." teamName={displayTeam.name} round={displayTeam.current_round} strategy={displayTeam.strategy} />
+      <ContextBanner description="Platform services, staffing, and data governance for the entire firm." />
 
       {readOnly && team?.locked_revision !== null && <section className="review-banner"><strong>This round is locked.</strong><span>Decisions reopen when the round advances.</span></section>}
 
-      {/* New platform button */}
-      {!readOnly && !showNewPlatformForm && (
-        <button type="button" className="components-primary" onClick={() => setShowNewPlatformForm(true)}>+ Set up new host platform</button>
-      )}
+      {/* Toolbar with action buttons */}
+      <section className="components-toolbar">
+        <div />
+        <div style={{ display: "flex", gap: "var(--space-sm)" }}>
+          {canAdd && !showAddService && <button type="button" className="components-secondary" onClick={() => setShowAddService(true)}>+ Provision a service</button>}
+          {!readOnly && !showNewPlatformForm && <button type="button" className="components-primary" onClick={() => setShowNewPlatformForm(true)}>+ New host platform</button>}
+        </div>
+      </section>
 
       {/* New platform form */}
       {showNewPlatformForm && (
@@ -320,9 +324,6 @@ export default function InfrastructurePage({ platformData, controlsData, instanc
 
       {/* Provision service (existing buy_service flow) */}
       {showAddService && canAdd && <AddServiceForm team={team} instanceId={instanceId} onSaved={(next) => { setView(next); setShowAddService(false); }} />}
-      {canAdd && !showAddService && (
-        <button type="button" className="components-secondary" onClick={() => setShowAddService(true)}>+ Provision a service</button>
-      )}
 
       {/* Unassigned services */}
       {unassignedServices.length > 0 && (
@@ -354,9 +355,6 @@ export default function InfrastructurePage({ platformData, controlsData, instanc
           </div>
         </section>
       )}
-
-      {/* In-flight projects */}
-      {team?.projects?.length > 0 && <section className="components-projects"><h2>In-flight projects</h2>{team.projects.map((project) => <article className="components-project-row" key={project.id}><div><strong>{project.label}</strong><p>{project.status} · {project.remaining_lead} round{project.remaining_lead === 1 ? "" : "s"} remaining</p></div></article>)}</section>}
 
       {/* Empty state */}
       {hostPlatforms.length === 0 && services.length === 0 && !showNewPlatformForm && (

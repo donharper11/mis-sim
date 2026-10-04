@@ -33,7 +33,7 @@ export default function Review({ data, controlsData, instanceId }) {
   }
   const locked = team.locked_revision !== null || team.status === "locked";
   return <div className="review-page">
-    <ContextBanner step={5} eyebrow="What you are committing to this round" description="Review all decisions, check spending, and lock when ready." teamName={team.name} round={team.current_round} strategy={team.strategy} />
+    <ContextBanner description="Review all decisions, check spending, and lock when ready." />
     <PageTabs tabs={reviewTabs} activeKey={activeTab} onChange={setActiveTab} />
     {activeTab === "decisions" && <>
       {locked && <section className="review-banner"><strong>This round is locked.</strong><span>Decisions reopen when the round advances.</span></section>}
