@@ -240,7 +240,7 @@ export function BudgetPanel({ view, instanceId, onSaved, reviewData }) {
 
   return <div className="controls-page">
     {reviewTeam && <section className="spending-summary">
-      <h2 style={{ margin: 0, fontSize: "18px" }}>Spending this round</h2>
+      <h2 style={{ margin: 0, fontSize: "14px" }}>Spending this round</h2>
       <div><span>Capital available</span><strong>{money(reviewTeam.capital_available)}</strong></div>
       <div><span>Capital committed</span><strong>{money(reviewTeam.capital_spend)}</strong></div>
       <div><span>Remaining</span><strong className="spending-highlight">{money(reviewTeam.capital_remaining)}</strong></div>

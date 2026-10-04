@@ -65,21 +65,21 @@ function InlineRolloutDetail({ deployment, team, instanceId, onSaved }) {
       <div className="rollout-inline-controls">
         {/* Training */}
         <div>
-          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "15px" }}>Training</h4>
+          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Training</h4>
           <div className="choice-stack">{deployment.training_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={training === item.key} disabled={readOnly} onSelect={() => setTraining(item.key)} />)}</div>
           <BudgetField label="Training budget ($)" value={trainingBudget} onChange={setTrainingBudget} disabled={readOnly} />
         </div>
 
         {/* Process */}
         <div>
-          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "15px" }}>Process</h4>
+          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Process</h4>
           <div className="choice-stack">{deployment.process_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={process === item.key} disabled={readOnly} onSelect={() => setProcess(item.key)} />)}</div>
           <BudgetField label="Process budget ($)" value={processBudget} onChange={setProcessBudget} disabled={readOnly} />
         </div>
 
         {/* Communication */}
         <div>
-          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "15px" }}>Communication</h4>
+          <h4 style={{ margin: "0 0 var(--space-sm)", fontSize: "13px" }}>Communication</h4>
           <div className="choice-stack">{deployment.communication_options.map((item) => <OptionRow key={item.key} label={item.label} detail={`${item.cost ? `$${item.cost.toLocaleString()}` : "$0"}${item.coverage !== null && item.coverage !== undefined ? ` · covers ${Math.round(item.coverage * 100)}%` : ""}`} selected={communication === item.key} disabled={readOnly} onSelect={() => setCommunication(item.key)} />)}</div>
           <BudgetField label="Communication budget ($)" value={communicationBudget} onChange={setCommunicationBudget} disabled={readOnly} />
         </div>

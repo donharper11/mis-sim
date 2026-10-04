@@ -50,7 +50,7 @@ export default function ApplicationDetailPage({ data, instanceId }) {
       <section className="components-detail" aria-labelledby="app-detail-heading">
         <div className="components-panel-heading">
           <div>
-            <h1 id="app-detail-heading" style={{ margin: 0, fontSize: "28px" }}>{asset.label}</h1>
+            <h1 id="app-detail-heading" style={{ margin: 0, fontSize: "18px" }}>{asset.label}</h1>
             <p className="components-muted">{formatOrgUnit(asset.org_unit)} · {asset.people || "—"} people · {asset.serves?.join(", ") || "No capability recorded"}</p>
           </div>
           <StatusBadge status={status} label={statusLabel} />
