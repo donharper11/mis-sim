@@ -386,6 +386,12 @@
       mis_lite carries only a cost.
 
 - key: erp_suite
+  infrastructure_category: enterprise_software
+  firmwide: true
+  vendor_examples: "SAP S/4HANA / Oracle ERP Cloud / Microsoft Dynamics 365"
+  description: >-
+    Integrated enterprise resource planning system unifying finance,
+    supply chain, and operations across the entire firm.
   roles_filled: [accounting_app, transaction_export, order_app]
   serves: [financial_reporting, order_fulfilment]
   deployment_modes:

@@ -185,6 +185,8 @@ class DeploymentMode(StrictModel):
     opex: int = Field(ge=0)
     lead_time_rounds: int = Field(ge=0)
     bypasses_platform: bool = False
+    availability_modifier: float = Field(default=1.0, gt=0, le=2.0)
+    staff_load_modifier: float = Field(default=1.0, ge=0, le=2.0)
 
 
 class ResourceDraw(StrictModel):
@@ -259,6 +261,15 @@ class CatalogItem(StrictModel):
     true_cost_categories: list[SnakeKey]
     decoy_cost_categories: list[SnakeKey]
     config_tiers: dict[SnakeKey, ConfigTier]
+    #: Laudon-aligned infrastructure category. Items with this set and firmwide=True
+    #: appear on the Infrastructure page under "+Add a Component".
+    infrastructure_category: SnakeKey | None = None
+    #: True = firmwide shared software (e.g. ERP) shown on Infrastructure page.
+    firmwide: bool = False
+    #: Real vendor product names for display.
+    vendor_examples: str | None = None
+    #: Pedagogical description shown in the catalog browser.
+    description: str | None = None
     provenance: Provenance
 
 
@@ -292,6 +303,18 @@ class PlatformService(StrictModel):
     #: of detail. Same shape `CatalogItem.owns_entities` uses: a platform service
     #: can fill a role *and* own the entity that role's capability requires.
     owns_entities: list[EntityDetail] = Field(default_factory=list)
+    #: Laudon-aligned infrastructure category key, e.g. "computing", "networking",
+    #: "security". Used by the UI to group services in the catalog browser.
+    infrastructure_category: SnakeKey | None = None
+    #: Service model classification: iaas, paas, saas, or aiaas.
+    service_model: SnakeKey | None = None
+    #: Pedagogical description shown in the catalog browser.
+    description: str | None = None
+    #: Real vendor product names, e.g. "AWS EC2 / Azure VMs / Dell PowerEdge".
+    vendor_examples: str | None = None
+    #: True = shared firmwide infrastructure (appears on Infrastructure page).
+    #: False = BU-specific (appears only on Applications page).
+    firmwide: bool = False
     provenance: Provenance
 
 
@@ -575,6 +598,8 @@ class Labels(StrictModel):
     watch_rules: dict[SnakeKey, str] = Field(default_factory=dict)
     questions: dict[SnakeKey, str] = Field(default_factory=dict)
     misc: dict[SnakeKey, str] = Field(default_factory=dict)
+    #: Laudon-aligned infrastructure category display names.
+    infrastructure_categories: dict[SnakeKey, str] = Field(default_factory=dict)
 
 
 class Casepack(StrictModel):

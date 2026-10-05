@@ -30,24 +30,50 @@
 #   intrusion_detection  saas at 0, where threat_detection saas is 1. The difference is
 #     `staff_load` -- 0.2 against 0.5. A subscribed sensor starts alerting; the advanced
 #     product needs somebody to tune it, and that person is the lead time.
+#
+# INFRASTRUCTURE CATEGORIES (Laudon & Laudon Chapter 5 alignment)
+# Each service now carries an infrastructure_category, service_model, description, and
+# vendor_examples for pedagogical display. The availability_modifier and staff_load_modifier
+# on each DeploymentMode feed the scoring engine's technology and organisation terms.
+#
+# Modifier convention:
+#   on_prem:  availability_modifier 0.95, staff_load_modifier 1.0  (standard baseline)
+#   cloud:    availability_modifier 1.0,  staff_load_modifier 0.7  (managed infrastructure)
+#   saas:     availability_modifier 1.05, staff_load_modifier 0.3  (fully managed)
 
 services:
-  - key: client_network
-    roles_filled: [client_access, network_path]
-    placement_options:
-      on_prem: {capex: 30000, opex: 2000, lead_time_rounds: 1}
-      cloud: {capex: 10000, opex: 4500, lead_time_rounds: 1}
-      saas: {capex: 0, opex: 6500, lead_time_rounds: 1, bypasses_platform: true}
-    capacity_pct: 65
-    staff_load: 0.6
-    provenance: {source: PINNED, note: "0.3 section 5.6 Network & WAN panel; platform pool required by capability roles"}
+  # ── Computing ──────────────────────────────────────────────────────────────────
 
   - key: compute_pool
+    infrastructure_category: computing
+    service_model: iaas
+    firmwide: true
+    description: >-
+      Server capacity for running applications and processing transactions.
+      Choose between owning your own hardware, renting virtual machines in
+      the cloud, or subscribing to managed compute.
+    vendor_examples: "AWS EC2 / Azure Virtual Machines / Dell PowerEdge"
     roles_filled: [compute_capacity]
     placement_options:
-      on_prem: {capex: 20000, opex: 1800, lead_time_rounds: 1}
-      cloud: {capex: 25000, opex: 6200, lead_time_rounds: 0}
-      saas: {capex: 0, opex: 8000, lead_time_rounds: 0, bypasses_platform: true}
+      on_prem:
+        capex: 20000
+        opex: 1800
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 25000
+        opex: 6200
+        lead_time_rounds: 0
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 8000
+        lead_time_rounds: 0
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
     capacity_pct: 100
     staff_load: 0.4
     provenance:
@@ -58,12 +84,74 @@ services:
         0.3 section 5.6 -- "Compute pool 100% used", which is why the wizard warns that
         Centraline IM 7 on-premises would use all remaining capacity.
 
+  # ── Networking ─────────────────────────────────────────────────────────────────
+
+  - key: client_network
+    infrastructure_category: networking
+    service_model: iaas
+    firmwide: true
+    description: >-
+      Network infrastructure connecting users to applications and data.
+      Includes LAN, WAN, firewalls, and load balancers that form the
+      communication backbone of the organisation.
+    vendor_examples: "Cisco / Juniper / AWS VPC / Azure Virtual Network"
+    roles_filled: [client_access, network_path]
+    placement_options:
+      on_prem:
+        capex: 30000
+        opex: 2000
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 10000
+        opex: 4500
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 6500
+        lead_time_rounds: 1
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
+    capacity_pct: 65
+    staff_load: 0.6
+    provenance: {source: PINNED, note: "0.3 section 5.6 Network & WAN panel; platform pool required by capability roles"}
+
+  # ── Storage ────────────────────────────────────────────────────────────────────
+
   - key: storage_pool
+    infrastructure_category: storage
+    service_model: iaas
+    firmwide: true
+    description: >-
+      Persistent data storage for files, databases, and application data.
+      Ranges from on-premises SAN/NAS hardware to cloud object storage
+      that scales on demand.
+    vendor_examples: "AWS S3 / Azure Blob Storage / NetApp / Dell EMC"
     roles_filled: [storage_capacity]
     placement_options:
-      on_prem: {capex: 15000, opex: 1200, lead_time_rounds: 1}
-      cloud: {capex: 5000, opex: 4000, lead_time_rounds: 0}
-      saas: {capex: 0, opex: 5200, lead_time_rounds: 0, bypasses_platform: true}
+      on_prem:
+        capex: 15000
+        opex: 1200
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 5000
+        opex: 4000
+        lead_time_rounds: 0
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 5200
+        lead_time_rounds: 0
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
     capacity_pct: 70
     staff_load: 0.3
     provenance:
@@ -72,40 +160,38 @@ services:
         mis_lite component_types_master Cloud-Based Storage (cost_value 15000).
         capacity_pct 70 is PINNED by 0.3 section 5.6 -- "Storage pool 70% used".
 
-  - key: backup_recovery
-    roles_filled: [backup_recovery]
-    placement_options:
-      on_prem: {capex: 5000, opex: 2000, lead_time_rounds: 1}
-      cloud: {capex: 2000, opex: 5000, lead_time_rounds: 1}
-      saas: {capex: 0, opex: 7000, lead_time_rounds: 1, bypasses_platform: true}
-    capacity_pct: 40
-    staff_load: 0.4
-    provenance: {source: HARVESTED, note: "mis_lite it_infrastructure_addons_master rows 1-2, Continuous Backups (2000) and Disaster Recovery Plan (5000). 0.3 section 5.6 notes it has never been restore-tested."}
-
-  - key: failover_cluster
-    roles_filled: [failover]
-    placement_options:
-      on_prem: {capex: 30000, opex: 2400, lead_time_rounds: 1}
-      cloud: {capex: 8000, opex: 6000, lead_time_rounds: 1}
-      saas: {capex: 0, opex: 7800, lead_time_rounds: 1, bypasses_platform: true}
-    capacity_pct: 0
-    staff_load: 0.3
-    provenance:
-      source: HARVESTED
-      note: >-
-        mis_lite it_infrastructure_addons_master row 9, Failover Clustering (cost_value
-        30000, taken as the on-premises capex). Load-bearing for 1.5 section 5.3: outage
-        duration multiplies by `no_failover_multiplier` when no failover edge exists, so
-        the same event card produces opposite outcomes for two teams.
-        TODO: calibrate -- the cloud and saas figures are authored; mis_lite carries one
-        cost per addon and no placement ladder.
+  # ── Security ───────────────────────────────────────────────────────────────────
 
   - key: central_sign_on
+    infrastructure_category: security
+    service_model: paas
+    firmwide: true
+    description: >-
+      Identity and access management controlling who can access what
+      across the organisation. Includes single sign-on, multi-factor
+      authentication, and role-based access control.
+    vendor_examples: "Okta / Azure Active Directory / AWS IAM"
     roles_filled: [identity_access]
     placement_options:
-      on_prem: {capex: 25000, opex: 1500, lead_time_rounds: 1}
-      cloud: {capex: 5000, opex: 5500, lead_time_rounds: 1}
-      saas: {capex: 0, opex: 7500, lead_time_rounds: 1, bypasses_platform: true}
+      on_prem:
+        capex: 25000
+        opex: 1500
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 5000
+        opex: 5500
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 7500
+        lead_time_rounds: 1
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
     capacity_pct: 0
     staff_load: 0.3
     owns_entities:
@@ -120,21 +206,68 @@ services:
         record for named users, so it holds them at `named_user` detail.
 
   - key: intrusion_detection
+    infrastructure_category: security
+    service_model: paas
+    firmwide: true
+    description: >-
+      Network and endpoint monitoring that detects unauthorised access
+      attempts, malware, and suspicious activity in real time.
+    vendor_examples: "CrowdStrike / AWS GuardDuty / Azure Sentinel"
     roles_filled: [security_monitoring]
     placement_options:
-      on_prem: {capex: 4000, opex: 1200, lead_time_rounds: 1}
-      cloud: {capex: 2000, opex: 4000, lead_time_rounds: 1}
-      saas: {capex: 0, opex: 5600, lead_time_rounds: 0, bypasses_platform: true}
+      on_prem:
+        capex: 4000
+        opex: 1200
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 2000
+        opex: 4000
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 5600
+        lead_time_rounds: 0
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
     capacity_pct: 0
     staff_load: 0.2
     provenance: {source: HARVESTED, note: "mis_lite it_infrastructure_addons_master row 6, Intrusion Detection System (cost_value 4000)"}
 
   - key: threat_detection
+    infrastructure_category: security
+    service_model: paas
+    firmwide: true
+    description: >-
+      Advanced security analytics using behavioural analysis, machine
+      learning, and threat intelligence to identify sophisticated attacks
+      that basic monitoring misses.
+    vendor_examples: "Darktrace / IBM QRadar / Splunk SIEM"
     roles_filled: [security_monitoring]
     placement_options:
-      on_prem: {capex: 40000, opex: 3200, lead_time_rounds: 1}
-      cloud: {capex: 12000, opex: 8400, lead_time_rounds: 1}
-      saas: {capex: 0, opex: 10500, lead_time_rounds: 1, bypasses_platform: true}
+      on_prem:
+        capex: 40000
+        opex: 3200
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 12000
+        opex: 8400
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 10500
+        lead_time_rounds: 1
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
     capacity_pct: 0
     staff_load: 0.5
     provenance:
@@ -146,38 +279,77 @@ services:
         alternative to weigh it against.
         TODO: calibrate -- cloud and saas figures authored.
 
-  - key: integration_api
-    roles_filled: [integration_bus]
+  - key: compliance_engine
+    infrastructure_category: security
+    service_model: paas
+    firmwide: true
+    description: >-
+      Regulatory compliance auditing, policy enforcement, and automated
+      reporting. Tracks the firm's adherence to industry standards and
+      legal requirements across all systems.
+    vendor_examples: "ServiceNow GRC / AWS Config / Azure Policy / OneTrust"
+    roles_filled: [compliance_audit]
     placement_options:
-      on_prem: {capex: 3000, opex: 900, lead_time_rounds: 1}
-      cloud: {capex: 3000, opex: 2600, lead_time_rounds: 1}
-      saas: {capex: 0, opex: 3400, lead_time_rounds: 1, bypasses_platform: true}
+      on_prem:
+        capex: 20000
+        opex: 2000
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 5000
+        opex: 5000
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 7000
+        lead_time_rounds: 0
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
     capacity_pct: 0
-    staff_load: 0.2
-    provenance: {source: HARVESTED, note: "mis_lite it_infrastructure_addons_master row 4, Cloud Integration API (cost_value 3000). 0.3 section 5.6 pins 7 connections between systems at $3,100 per round."}
-
-  - key: end_user_email
-    roles_filled: [end_user_messaging]
-    placement_options:
-      on_prem: {capex: 18000, opex: 1600, lead_time_rounds: 1}
-      cloud: {capex: 0, opex: 2200, lead_time_rounds: 0}
-      saas: {capex: 0, opex: 2600, lead_time_rounds: 0, bypasses_platform: true}
-    capacity_pct: 0
-    staff_load: 0.1
+    staff_load: 0.3
     provenance:
-      source: PINNED
+      source: AUTHORED
       note: >-
-        0.3 section 5.6 -- the one cloud service on the firm-wide panel, placed in round 2.
-        Harvested cost basis: mis_lite component_types_master SaaS (cost_value 18000) for
-        the on-premises alternative.
-        TODO: calibrate -- the cloud and saas run-rates are authored.
+        New service closing the gap between add-on "Compliance Auditing" in
+        it_infrastructure_addons_master and the platform service catalog.
+        Fills the compliance_audit role referenced by the watch system.
+
+  # ── Data Management ────────────────────────────────────────────────────────────
 
   - key: data_platform
+    infrastructure_category: data_management
+    service_model: paas
+    firmwide: true
+    description: >-
+      Centralised data warehouse and analytics engine that consolidates
+      information from across the business for reporting, analysis, and
+      decision support.
+    vendor_examples: "Snowflake / AWS Redshift / Azure Synapse / Oracle DB"
     roles_filled: [customer_data_store, analytics]
     placement_options:
-      on_prem: {capex: 45000, opex: 3400, lead_time_rounds: 2}
-      cloud: {capex: 12000, opex: 7600, lead_time_rounds: 1}
-      saas: {capex: 0, opex: 9200, lead_time_rounds: 1, bypasses_platform: true}
+      on_prem:
+        capex: 45000
+        opex: 3400
+        lead_time_rounds: 2
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 12000
+        opex: 7600
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 9200
+        lead_time_rounds: 1
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
     capacity_pct: 0
     staff_load: 0.5
     provenance:
@@ -188,6 +360,244 @@ services:
         component_types_master Data Warehouse (20000) plus Data Lake (20000) consolidated
         into one firm-wide platform rather than two catalog rows.
         TODO: calibrate -- the placement ladder is authored.
+
+  # ── Integration ────────────────────────────────────────────────────────────────
+
+  - key: integration_api
+    infrastructure_category: integration
+    service_model: paas
+    firmwide: true
+    description: >-
+      Middleware and API gateway connecting applications, databases, and
+      external partners. Enables data to flow between systems without
+      point-to-point wiring.
+    vendor_examples: "MuleSoft / AWS API Gateway / Azure Logic Apps"
+    roles_filled: [integration_bus]
+    placement_options:
+      on_prem:
+        capex: 3000
+        opex: 900
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 3000
+        opex: 2600
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 3400
+        lead_time_rounds: 1
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
+    capacity_pct: 0
+    staff_load: 0.2
+    provenance: {source: HARVESTED, note: "mis_lite it_infrastructure_addons_master row 4, Cloud Integration API (cost_value 3000). 0.3 section 5.6 pins 7 connections between systems at $3,100 per round."}
+
+  # ── Resilience ─────────────────────────────────────────────────────────────────
+
+  - key: backup_recovery
+    infrastructure_category: resilience
+    service_model: paas
+    firmwide: true
+    description: >-
+      Automated backup and disaster recovery ensuring business data can
+      be restored after hardware failure, ransomware, or accidental
+      deletion.
+    vendor_examples: "Veeam / AWS Backup / Azure Site Recovery"
+    roles_filled: [backup_recovery]
+    placement_options:
+      on_prem:
+        capex: 5000
+        opex: 2000
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 2000
+        opex: 5000
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 7000
+        lead_time_rounds: 1
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
+    capacity_pct: 40
+    staff_load: 0.4
+    provenance: {source: HARVESTED, note: "mis_lite it_infrastructure_addons_master rows 1-2, Continuous Backups (2000) and Disaster Recovery Plan (5000). 0.3 section 5.6 notes it has never been restore-tested."}
+
+  - key: failover_cluster
+    infrastructure_category: resilience
+    service_model: paas
+    firmwide: true
+    description: >-
+      High-availability clustering that keeps critical systems running
+      during hardware or software failure. A standby copy takes over
+      automatically, reducing downtime from hours to seconds.
+    vendor_examples: "VMware HA / AWS Multi-AZ / Azure Availability Zones"
+    roles_filled: [failover]
+    placement_options:
+      on_prem:
+        capex: 30000
+        opex: 2400
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 8000
+        opex: 6000
+        lead_time_rounds: 1
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 7800
+        lead_time_rounds: 1
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
+    capacity_pct: 0
+    staff_load: 0.3
+    provenance:
+      source: HARVESTED
+      note: >-
+        mis_lite it_infrastructure_addons_master row 9, Failover Clustering (cost_value
+        30000, taken as the on-premises capex). Load-bearing for 1.5 section 5.3: outage
+        duration multiplies by `no_failover_multiplier` when no failover edge exists, so
+        the same event card produces opposite outcomes for two teams.
+        TODO: calibrate -- the cloud and saas figures are authored; mis_lite carries one
+        cost per addon and no placement ladder.
+
+  # ── Productivity ───────────────────────────────────────────────────────────────
+
+  - key: end_user_email
+    infrastructure_category: productivity
+    service_model: saas
+    firmwide: true
+    description: >-
+      Email, calendaring, and collaboration tools for every employee.
+      The foundation of daily workplace communication and document
+      sharing across the firm.
+    vendor_examples: "Microsoft 365 / Google Workspace / Zimbra"
+    roles_filled: [end_user_messaging]
+    placement_options:
+      on_prem:
+        capex: 18000
+        opex: 1600
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 0
+        opex: 2200
+        lead_time_rounds: 0
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 2600
+        lead_time_rounds: 0
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
+    capacity_pct: 0
+    staff_load: 0.1
+    provenance:
+      source: PINNED
+      note: >-
+        0.3 section 5.6 -- the one cloud service on the firm-wide panel, placed in round 2.
+        Harvested cost basis: mis_lite component_types_master SaaS (cost_value 18000) for
+        the on-premises alternative.
+        TODO: calibrate -- the cloud and saas run-rates are authored.
+
+  # ── AI & Machine Learning ──────────────────────────────────────────────────────
+
+  - key: ai_ml_platform
+    infrastructure_category: ai_ml
+    service_model: paas
+    firmwide: true
+    description: >-
+      AI and machine learning platform for predictive analytics,
+      automation, and intelligent decision support. Enables the firm to
+      build and deploy models that learn from its own data.
+    vendor_examples: "AWS SageMaker / Azure Machine Learning / Google Vertex AI / IBM Watson"
+    roles_filled: [ai_inference, ml_training]
+    placement_options:
+      on_prem:
+        capex: 60000
+        opex: 4000
+        lead_time_rounds: 2
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 15000
+        opex: 9000
+        lead_time_rounds: 0
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 12000
+        lead_time_rounds: 0
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
+    capacity_pct: 0
+    staff_load: 0.6
+    provenance:
+      source: AUTHORED
+      note: >-
+        New service for the AI & ML infrastructure category (Laudon Chapter 5
+        IT R&D / Emerging Tech). Fills ai_inference and ml_training roles
+        for capabilities that require predictive or automated decision-making.
+
+  # ── IT Management ──────────────────────────────────────────────────────────────
+
+  - key: monitoring_dashboard
+    infrastructure_category: management
+    service_model: saas
+    firmwide: true
+    description: >-
+      IT infrastructure monitoring, alerting, and performance dashboards.
+      Provides real-time visibility into system health and enables
+      proactive issue detection before users are affected.
+    vendor_examples: "Datadog / AWS CloudWatch / Azure Monitor / Splunk"
+    roles_filled: [it_monitoring]
+    placement_options:
+      on_prem:
+        capex: 12000
+        opex: 1500
+        lead_time_rounds: 1
+        availability_modifier: 0.95
+        staff_load_modifier: 1.0
+      cloud:
+        capex: 3000
+        opex: 4000
+        lead_time_rounds: 0
+        availability_modifier: 1.0
+        staff_load_modifier: 0.7
+      saas:
+        capex: 0
+        opex: 5500
+        lead_time_rounds: 0
+        bypasses_platform: true
+        availability_modifier: 1.05
+        staff_load_modifier: 0.3
+    capacity_pct: 0
+    staff_load: 0.2
+    provenance:
+      source: AUTHORED
+      note: >-
+        New service for the IT Management category (Laudon Chapter 5
+        Consulting & System Integration). Fills it_monitoring role for
+        proactive infrastructure health visibility.
 
 support_tiers:
   # Two different provenances live on each row and they are kept apart deliberately (finding

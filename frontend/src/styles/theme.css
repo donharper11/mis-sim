@@ -766,6 +766,47 @@ select {
 .host-platform-form textarea { min-height: 3rem; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-text); resize: vertical; font: inherit; font-size: 13px; }
 .host-platform-form-actions { display: flex; gap: var(--space-sm); }
 
+/* Service model badges */
+.service-model-badge { display: inline-flex; align-items: center; padding: 2px 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; border-radius: var(--radius); }
+
+/* Platform service group inside card */
+.platform-service-group { display: grid; gap: 2px; }
+.platform-service-group__label { color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: var(--space-xs); }
+.platform-service-item { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); background: var(--surface-sunken); border: 1px solid var(--border-default); font-size: 13px; }
+.platform-service-item__name { font-weight: 600; color: var(--text-primary); }
+.platform-service-item__vendor { color: var(--text-muted); font-size: 12px; margin-left: auto; }
+.platform-service-item__status { color: var(--text-secondary); font-size: 12px; white-space: nowrap; }
+
+/* Catalog browser (inline within platform card) */
+.catalog-browser { display: grid; gap: var(--space-md); padding: var(--space-lg); background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius); }
+.catalog-browser__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); }
+.catalog-browser__header h3 { margin: 0; font-size: 14px; }
+
+/* Category toggle */
+.catalog-category { display: grid; gap: 0; }
+.catalog-category__toggle { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); border: 1px solid var(--border-default); background: var(--surface-card); color: var(--text-primary); cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; text-align: left; width: 100%; }
+.catalog-category__toggle:hover { background: var(--surface-row-highlight); }
+.catalog-category__arrow { font-size: 11px; width: 1em; color: var(--text-muted); }
+.catalog-category__label { flex: 1; }
+.catalog-category__count { color: var(--text-muted); font-weight: 400; font-size: 12px; }
+.catalog-category-tag { display: inline-flex; padding: 2px 6px; font-size: 11px; font-weight: 600; color: var(--text-muted); background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius); }
+
+/* Service card inside category */
+.catalog-service-card { display: grid; gap: var(--space-sm); padding: var(--space-lg); margin-left: var(--space-lg); border: 1px solid var(--border-default); border-top: none; background: var(--surface-card); }
+.catalog-service-card__header { display: flex; align-items: center; gap: var(--space-sm); }
+.catalog-service-card__header strong { font-size: 14px; }
+.catalog-service-card__vendors { margin: 0; color: var(--text-muted); font-size: 12px; font-style: italic; }
+.catalog-service-card__desc { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+.catalog-service-card__placement { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; }
+.catalog-service-card__field-label { color: var(--text-muted); font-size: 12px; font-weight: 600; }
+.catalog-service-card__placement-options { display: flex; gap: var(--space-sm); }
+.catalog-placement-option { display: inline-flex; align-items: center; gap: 4px; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--border-default); background: var(--surface-sunken); color: var(--text-secondary); font-size: 12px; font-weight: 500; cursor: pointer; border-radius: var(--radius); }
+.catalog-placement-option input[type="radio"] { margin: 0; }
+.catalog-placement-option--selected { border-color: var(--border-focus); background: var(--surface-row-highlight); color: var(--text-link); }
+.catalog-service-card__costs { display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); color: var(--text-secondary); font-size: 12px; padding: var(--space-sm) 0; }
+.catalog-service-card__costs span { white-space: nowrap; }
+.catalog-service-card__action { display: flex; justify-content: flex-end; }
+
 /* Rollout inline tabs overflow */
 .rollout-app-tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-bottom: var(--space-lg); border-bottom: 1px solid var(--border-default); overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .rollout-app-tab { min-height: 30px; padding: var(--space-xs) var(--space-md); border: 1px solid var(--border-default); border-bottom: 2px solid transparent; background: var(--surface-sunken); color: var(--text-secondary); cursor: pointer; font-weight: 600; font: inherit; font-size: 12px; white-space: nowrap; }

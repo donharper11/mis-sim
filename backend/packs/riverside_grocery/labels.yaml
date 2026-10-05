@@ -41,6 +41,10 @@ roles:
   end_user_messaging: Staff email
   failover: Standby copy for outages
   integration_bus: Connections between systems
+  compliance_audit: Compliance auditing
+  ai_inference: AI inference
+  ml_training: ML model training
+  it_monitoring: IT monitoring
 
 sidebar:
   dashboard: Dashboard
@@ -222,3 +226,16 @@ misc:
   impact_market_share: Market share
   impact_profitability: Profitability
   impact_security_resilience: Security resilience
+
+infrastructure_categories:
+  computing: Computer Hardware Platforms
+  networking: Networking & Telecommunications
+  storage: Data Management & Storage
+  security: Security, Privacy & Compliance
+  data_management: Database & Analytics Platforms
+  integration: Internet Platforms & Middleware
+  resilience: Backup, Recovery & High Availability
+  productivity: Productivity & Collaboration Software
+  enterprise_software: Enterprise Application Software
+  ai_ml: AI & Machine Learning
+  management: IT Management & Consulting Services

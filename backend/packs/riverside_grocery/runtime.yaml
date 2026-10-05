@@ -516,6 +516,96 @@ services:
         compute: 0
         storage_gb: 0
     max_units: 1
+  compliance_engine:
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  ai_ml_platform:
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
+  monitoring_dashboard:
+    serves:
+    - order_fulfilment
+    - store_operations
+    - financial_reporting
+    - customer_insight
+    - marketing_sales
+    - service
+    - firm_infrastructure
+    availability: 0.99
+    service_life_rounds: 6
+    capacity_by_capability:
+      order_fulfilment: null
+      store_operations: null
+      financial_reporting: null
+      customer_insight: null
+      marketing_sales: null
+      service: null
+      firm_infrastructure: null
+    supply_by_placement:
+      on_prem:
+        compute: 0
+        storage_gb: 0
+      cloud:
+        compute: 0
+        storage_gb: 0
+      saas:
+        compute: 0
+        storage_gb: 0
+    max_units: 1
 capture_storage:
   data_platform:
     capture_enabled: true
@@ -2268,6 +2358,87 @@ provenance:
   /services/data_platform/max_units:
     source: AUTHORED
     note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/compliance_engine/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/ai_ml_platform/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/availability:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/service_life_rounds:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/supply_by_placement/on_prem/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/supply_by_placement/on_prem/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/supply_by_placement/cloud/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/supply_by_placement/cloud/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/supply_by_placement/saas/compute:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/supply_by_placement/saas/storage_gb:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
+  /services/monitoring_dashboard/max_units:
+    source: AUTHORED
+    note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
   /drivers/transactions/0:
     source: AUTHORED
     note: "TODO: calibrate M1/M4 \u2014 owner M1/M4"
@@ -3008,6 +3179,33 @@ units:
   /services/data_platform/supply_by_placement/saas/compute: compute_units
   /services/data_platform/supply_by_placement/saas/storage_gb: GB
   /services/data_platform/max_units: count
+  /services/compliance_engine/availability: fraction
+  /services/compliance_engine/service_life_rounds: rounds
+  /services/compliance_engine/supply_by_placement/on_prem/compute: compute_units
+  /services/compliance_engine/supply_by_placement/on_prem/storage_gb: GB
+  /services/compliance_engine/supply_by_placement/cloud/compute: compute_units
+  /services/compliance_engine/supply_by_placement/cloud/storage_gb: GB
+  /services/compliance_engine/supply_by_placement/saas/compute: compute_units
+  /services/compliance_engine/supply_by_placement/saas/storage_gb: GB
+  /services/compliance_engine/max_units: count
+  /services/ai_ml_platform/availability: fraction
+  /services/ai_ml_platform/service_life_rounds: rounds
+  /services/ai_ml_platform/supply_by_placement/on_prem/compute: compute_units
+  /services/ai_ml_platform/supply_by_placement/on_prem/storage_gb: GB
+  /services/ai_ml_platform/supply_by_placement/cloud/compute: compute_units
+  /services/ai_ml_platform/supply_by_placement/cloud/storage_gb: GB
+  /services/ai_ml_platform/supply_by_placement/saas/compute: compute_units
+  /services/ai_ml_platform/supply_by_placement/saas/storage_gb: GB
+  /services/ai_ml_platform/max_units: count
+  /services/monitoring_dashboard/availability: fraction
+  /services/monitoring_dashboard/service_life_rounds: rounds
+  /services/monitoring_dashboard/supply_by_placement/on_prem/compute: compute_units
+  /services/monitoring_dashboard/supply_by_placement/on_prem/storage_gb: GB
+  /services/monitoring_dashboard/supply_by_placement/cloud/compute: compute_units
+  /services/monitoring_dashboard/supply_by_placement/cloud/storage_gb: GB
+  /services/monitoring_dashboard/supply_by_placement/saas/compute: compute_units
+  /services/monitoring_dashboard/supply_by_placement/saas/storage_gb: GB
+  /services/monitoring_dashboard/max_units: count
   /drivers/transactions/0: transactions/round
   /drivers/transactions/1: transactions/round
   /drivers/transactions/2: transactions/round

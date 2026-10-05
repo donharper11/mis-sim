@@ -62,10 +62,36 @@ class PlatformConnectionOut(BaseModel):
     tier: str | None = None
 
 
+class PlacementDetailOut(BaseModel):
+    placement: str
+    capex: int = 0
+    opex: int = 0
+    lead_time_rounds: int = 0
+    availability_modifier: float = 1.0
+    staff_load_modifier: float = 1.0
+
+
 class PlatformChoiceOut(BaseModel):
     key: str
     label: str
     placements: list[str] = Field(default_factory=list)
+    infrastructure_category: str | None = None
+    service_model: str | None = None
+    description: str | None = None
+    vendor_examples: str | None = None
+    firmwide: bool = False
+    staff_load: float = 0.0
+    placement_details: list[PlacementDetailOut] = Field(default_factory=list)
+
+
+class FirmwideCatalogItemOut(BaseModel):
+    key: str
+    label: str
+    infrastructure_category: str | None = None
+    vendor_examples: str | None = None
+    description: str | None = None
+    placements: list[str] = Field(default_factory=list)
+    placement_details: list[PlacementDetailOut] = Field(default_factory=list)
 
 
 class PlatformTeamOut(BaseModel):
@@ -81,6 +107,7 @@ class PlatformTeamOut(BaseModel):
     connections: list[PlatformConnectionOut] = Field(default_factory=list)
     available_services: list[PlatformChoiceOut] = Field(default_factory=list)
     missing_services: list[PlatformChoiceOut] = Field(default_factory=list)
+    firmwide_components: list[FirmwideCatalogItemOut] = Field(default_factory=list)
     split_rule: list[str] = Field(default_factory=list)
 
 
@@ -89,6 +116,7 @@ class PlatformOut(BaseModel):
     current_round: int
     total_rounds: int
     team: PlatformTeamOut | None = None
+    infrastructure_categories: dict[str, str] = Field(default_factory=dict)
 
 
 class PlatformPatchIn(BaseModel):
@@ -190,9 +218,56 @@ def _state_rows(team: Team, instance: SimulationInstance, state: Mapping[str, An
                 id=str(raw.get("id", "")), src=str(raw.get("src", "")), dst=str(raw.get("dst", "")),
                 kind=str(raw.get("kind", "network")), tier=raw.get("tier"),
             ))
-    services = [PlatformChoiceOut(key=item.key, label=_label(pack, item.key, service=True), placements=_placements(pack, item.key, service=True)) for item in pack.casepack.platform.services] if pack is not None else []
+    services = [
+        PlatformChoiceOut(
+            key=item.key,
+            label=_label(pack, item.key, service=True),
+            placements=_placements(pack, item.key, service=True),
+            infrastructure_category=item.infrastructure_category,
+            service_model=item.service_model,
+            description=item.description,
+            vendor_examples=item.vendor_examples,
+            firmwide=item.firmwide,
+            staff_load=item.staff_load,
+            placement_details=[
+                PlacementDetailOut(
+                    placement=str(p.value),
+                    capex=mode.capex,
+                    opex=mode.opex,
+                    lead_time_rounds=mode.lead_time_rounds,
+                    availability_modifier=mode.availability_modifier,
+                    staff_load_modifier=mode.staff_load_modifier,
+                )
+                for p, mode in item.placement_options.items()
+            ],
+        )
+        for item in pack.casepack.platform.services
+    ] if pack is not None else []
     active_services = {item.source_key for item in assets if item.source_kind == "service" and item.status == "active"}
-    return assets, projects, connections, services, [item for item in services if item.key not in active_services]
+    firmwide_items = [
+        FirmwideCatalogItemOut(
+            key=item.key,
+            label=_label(pack, item.key),
+            infrastructure_category=item.infrastructure_category,
+            vendor_examples=item.vendor_examples,
+            description=item.description,
+            placements=[str(p.value) for p in item.deployment_modes],
+            placement_details=[
+                PlacementDetailOut(
+                    placement=str(p.value),
+                    capex=mode.capex,
+                    opex=mode.opex,
+                    lead_time_rounds=mode.lead_time_rounds,
+                    availability_modifier=mode.availability_modifier,
+                    staff_load_modifier=mode.staff_load_modifier,
+                )
+                for p, mode in item.deployment_modes.items()
+            ],
+        )
+        for item in pack.casepack.catalog
+        if item.firmwide
+    ] if pack is not None else []
+    return assets, projects, connections, services, [item for item in services if item.key not in active_services], firmwide_items
 
 
 async def _read_team(session: AsyncSession, instance: SimulationInstance, team: Team, pack: Any | None) -> PlatformTeamOut:
@@ -206,13 +281,14 @@ async def _read_team(session: AsyncSession, instance: SimulationInstance, team: 
             PlatformServiceRow.team_id == team.id,
             PlatformServiceRow.round == max(run.advanced_round, 1),
         ))).all())
-        assets, projects, connections, services, missing = _state_rows(team, instance, state, pack, service_rows)
+        assets, projects, connections, services, missing, firmwide = _state_rows(team, instance, state, pack, service_rows)
         return PlatformTeamOut(
             id=team.id, name=team.name, current_round=run.current_round, status=run.status,
             strategy=state.get("strategy"), revision=sheet.revision if sheet is not None else None,
             locked_revision=sheet.locked_revision if sheet is not None else None,
             assets=assets, projects=projects, connections=connections,
             available_services=services, missing_services=missing,
+            firmwide_components=firmwide,
         )
     team_state = await session.get(TeamStateRow, (instance.instance_id, team.id))
     round_number = max((team_state.advanced_round if team_state and team_state.advanced_round else (team_state.current_round if team_state else instance.current_round)), 1)
@@ -235,13 +311,14 @@ async def _read_team(session: AsyncSession, instance: SimulationInstance, team: 
         row.key: {"id": row.key, "source_kind": "service" if row.key in {item.key for item in service_rows} else "catalog", "source_key": row.key, "placement": row.placement or "", "config": None, "units": 1, "installed_round": row.installed_round, "retired_round": None}
         for row in nodes
     }, "connections": {str(row.id): {"id": str(row.id), "src": row.src, "dst": row.dst, "kind": row.kind, "tier": None} for row in edges}}
-    assets, projects, connections, services, missing = _state_rows(team, instance, state, pack, service_rows)
+    assets, projects, connections, services, missing, firmwide = _state_rows(team, instance, state, pack, service_rows)
     return PlatformTeamOut(
         id=team.id, name=team.name, current_round=round_number,
         status="active" if team_state is not None else "uninitialized",
         strategy=team_state.declared_strategy if team_state is not None else None,
         assets=assets, projects=projects, connections=connections,
         available_services=services, missing_services=missing,
+        firmwide_components=firmwide,
     )
 
 
@@ -254,10 +331,12 @@ async def read_platform(
 ):
     team = await _team_for_user(session, instance, current_user, team_id)
     pack = await _runtime_pack(session, instance)
+    categories = dict(pack.casepack.labels.infrastructure_categories) if pack is not None else {}
     return PlatformOut(
         instance_id=instance.instance_id, current_round=max(instance.current_round, 1),
         total_rounds=instance.total_rounds,
         team=await _read_team(session, instance, team, pack) if team is not None else None,
+        infrastructure_categories=categories,
     )
 
 
@@ -296,4 +375,5 @@ async def patch_platform(
         status = 409 if exc.code in {"revision_conflict", "locked", "round_state", "unaffordable", "not_found"} else 422
         raise HTTPException(status_code=status, detail={"code": exc.code, "field": exc.field}) from exc
     refreshed = await _read_team(session, instance, team, pack)
-    return PlatformOut(instance_id=instance.instance_id, current_round=max(instance.current_round, 1), total_rounds=instance.total_rounds, team=refreshed)
+    categories = dict(pack.casepack.labels.infrastructure_categories) if pack is not None else {}
+    return PlatformOut(instance_id=instance.instance_id, current_round=max(instance.current_round, 1), total_rounds=instance.total_rounds, team=refreshed, infrastructure_categories=categories)

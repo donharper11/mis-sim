@@ -56,7 +56,7 @@ def test_patch_categories_merge_and_empty_clear():
 def test_runtime_content_is_complete_and_semantically_bound():
     pack = load_runtime_pack(PACK)
     assert len(pack.runtime.catalog) == 14
-    assert len(pack.runtime.services) == 11
+    assert len(pack.runtime.services) == 14
     assert pack.runtime.capture_storage["data_platform"].capture_enabled is True
     assert pack.runtime.capture_storage["data_platform"].storage_rounds == 2
     assert len(pack.runtime.response_disposition) == 13
