@@ -1,0 +1,80 @@
+{
+  "complete": true,
+  "checks": [
+    {
+      "name": "Real student browsers create pending hosts with real members",
+      "data": {
+        "host": {
+          "id": 1,
+          "instance_id": 1,
+          "team_id": 1,
+          "platform_code": "OP01",
+          "name": "Manual lifecycle host",
+          "notes": null,
+          "platform_type": "on_prem",
+          "cloud_subtype": null,
+          "status": "pending",
+          "created_round": 1,
+          "activated_round": 2,
+          "members": []
+        },
+        "foreign": {
+          "id": 2,
+          "instance_id": 2,
+          "team_id": 3,
+          "platform_code": "OP01",
+          "name": "Scheduled lifecycle host",
+          "notes": null,
+          "platform_type": "on_prem",
+          "cloud_subtype": null,
+          "status": "pending",
+          "created_round": 1,
+          "activated_round": 2,
+          "members": []
+        }
+      }
+    },
+    {
+      "name": "Active reset409 preserves all inspected rows"
+    },
+    {
+      "name": "Manual advance atomically activates and browser/API refuse active edits",
+      "data": {
+        "round": 1,
+        "next": 2
+      }
+    },
+    {
+      "name": "Real scheduler activation and stale presentation pointer uses run round for host/member",
+      "data": {
+        "scheduled": [
+          {
+            "instance_id": 2,
+            "round_number": 1,
+            "state": "advanced",
+            "failures": []
+          }
+        ],
+        "newHost": {
+          "id": 3,
+          "instance_id": 2,
+          "team_id": 3,
+          "platform_code": "OP02",
+          "name": "Actual round2 host",
+          "notes": null,
+          "platform_type": "on_prem",
+          "cloud_subtype": null,
+          "status": "pending",
+          "created_round": 2,
+          "activated_round": 3,
+          "members": []
+        }
+      }
+    },
+    {
+      "name": "Authorized setup reset clears scoped runtime/hosts; identities and other scope preserved; repeat harmless",
+      "data": "Instance reset successfully. All runtime state has been cleared."
+    }
+  ],
+  "errors": []
+}

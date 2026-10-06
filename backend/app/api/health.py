@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.database import async_session
@@ -12,5 +13,5 @@ async def health():
         async with async_session() as session:
             await session.execute(text("SELECT 1"))
     except Exception:
-        return {"status": "degraded", "db": "unreachable"}
+        return JSONResponse(status_code=503, content={"status": "degraded", "db": "unreachable"})
     return {"status": "ok"}

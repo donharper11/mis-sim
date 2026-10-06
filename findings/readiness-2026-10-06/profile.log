@@ -1,0 +1,28 @@
+budget_seconds 0.091
+full_preview_seconds 17.212
+         82445652 function calls (67224897 primitive calls) in 17.209 seconds
+
+   Ordered by: cumulative time
+   List reduced from 644 to 18 due to restriction <18>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   17.212   17.212 /home/ubuntu/projects/mis-sim/backend/app/simulation/service.py:299(read)
+        1    0.000    0.000   17.188   17.188 /home/ubuntu/projects/mis-sim/backend/app/simulation/service.py:239(_view)
+        1    0.000    0.000   17.152   17.152 /home/ubuntu/projects/mis-sim/backend/app/simulation/service.py:86(_quote)
+        1    0.000    0.000   17.152   17.152 /home/ubuntu/projects/mis-sim/backend/app/simulation/consequences.py:270(quote_transition)
+12704479/5306    7.467    0.000   16.935    0.003 /usr/lib/python3.12/copy.py:118(deepcopy)
+1209153/5076    2.094    0.000   16.917    0.003 /usr/lib/python3.12/copy.py:217(_deepcopy_dict)
+1002429/4753    1.467    0.000   16.836    0.004 /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/pydantic/main.py:837(__deepcopy__)
+     1566    0.022    0.000   16.806    0.011 /home/ubuntu/projects/mis-sim/backend/app/simulation/types.py:471(__getattribute__)
+        1    0.013    0.013   16.095   16.095 /home/ubuntu/projects/mis-sim/backend/app/simulation/repairs.py:87(assess_repairs)
+353235/58015    0.307    0.000    9.011    0.000 /usr/lib/python3.12/copy.py:191(_deepcopy_list)
+       24    0.018    0.001    6.408    0.267 /home/ubuntu/projects/mis-sim/backend/app/simulation/consequences.py:205(prepare_effects)
+        3    0.027    0.009    4.466    1.489 /home/ubuntu/projects/mis-sim/backend/app/simulation/repairs.py:31(_catalogue_commands)
+       24    0.020    0.001    4.056    0.169 /home/ubuntu/projects/mis-sim/backend/app/simulation/projection.py:99(project_team_state)
+       41    0.013    0.000    2.780    0.068 /home/ubuntu/projects/mis-sim/backend/app/simulation/accounting.py:74(recurring_entries)
+ 26424609    2.226    0.000    2.226    0.000 {method 'get' of 'dict' objects}
+       87    0.007    0.000    2.095    0.024 /home/ubuntu/projects/mis-sim/backend/app/simulation/resources.py:21(resource_projection)
+       87    0.000    0.000    2.078    0.024 /home/ubuntu/projects/mis-sim/backend/app/simulation/resources.py:12(_parts)
+       23    0.011    0.000    2.010    0.087 /home/ubuntu/projects/mis-sim/backend/app/simulation/organisation.py:198(reduce_organisation)
+
+

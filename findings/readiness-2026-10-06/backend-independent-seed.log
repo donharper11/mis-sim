@@ -1,0 +1,53 @@
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 20260726_0001, baseline
+INFO  [alembic.runtime.migration] Running upgrade 20260726_0001 -> 20260822_0002, round runner runtime tables (module 1.6)
+INFO  [alembic.runtime.migration] Running upgrade 20260822_0002 -> 20260914_0003, Add the versioned production simulation run/checkpoint tables.
+INFO  [alembic.runtime.migration] Running upgrade 20260914_0003 -> 20260915_0004, Create the M2 platform hierarchy and identity foundation.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0004 -> 20260915_0005, Add the complete M2 runtime instance-scope foreign-key boundary.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0005 -> 20260915_0006, Add the platform-level immutable casepack registry.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0006 -> 20260915_0007, Add authentication activity timestamp.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0007 -> 20260915_0008, Add deterministic instance-scoped round schedules.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0008 -> 20261002_0009, Add grading tables for M5.5 grade derivation and export.
+INFO  [alembic.runtime.migration] Running upgrade 20261002_0009 -> 20261002_0010, Add archived to simulation_instance status CHECK constraint.
+INFO  [alembic.runtime.migration] Running upgrade 20261002_0010 -> 20261004_0011, Add host_platform and host_platform_member tables.
+Traceback (most recent call last):
+  File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: database is locked
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ubuntu/projects/mis-sim/backend/scripts/seed_readiness_demo.py", line 76, in <module>
+    instance.current_round = 1
+
+  File "/home/ubuntu/projects/mis-sim/backend/scripts/seed_readiness_demo.py", line 66, in main
+    for instance in session.scalars(select(SimulationInstance)):
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/mis-sim/backend/app/simulation/service.py", line 264, in initialize
+    with self._transaction() as session:
+  File "/usr/lib/python3.12/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/home/ubuntu/projects/mis-sim/backend/app/simulation/service.py", line 149, in _transaction
+    connection.exec_driver_sql("BEGIN IMMEDIATE")
+  File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1779, in exec_driver_sql
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
+[SQL: BEGIN IMMEDIATE]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)

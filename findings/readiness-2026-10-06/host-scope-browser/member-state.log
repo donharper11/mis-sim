@@ -1,0 +1,5 @@
+ id | instance_id | platform_id |        asset_key        | parent_instance | team_id 
+----+-------------+-------------+-------------------------+-----------------+---------
+  2 |           1 |           1 | initial_pos_system_2011 |               1 |       1
+(1 row)
+

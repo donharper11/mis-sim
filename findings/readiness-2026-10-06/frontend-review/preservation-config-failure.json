@@ -1,0 +1,115 @@
+[
+  {
+    "case": "Partial Unit selection while hiring removes prior store communication",
+    "commands": [
+      {
+        "org_unit": "finance",
+        "op": "communicate",
+        "option": "none",
+        "key": "comm_finance"
+      },
+      {
+        "org_unit": "store_operations",
+        "op": "communicate",
+        "option": "none",
+        "key": "comm_store"
+      },
+      {
+        "strategy": "cost_leadership",
+        "op": "declare_strategy",
+        "key": "conflict_review_strategy"
+      },
+      {
+        "policy": "access_logging",
+        "op": "set_policy",
+        "selected": "unlogged",
+        "key": "policy_access_logging"
+      },
+      {
+        "policy": "data_access",
+        "op": "set_policy",
+        "selected": "open_to_all_staff",
+        "key": "policy_data_access"
+      },
+      {
+        "policy": "data_collection",
+        "op": "set_policy",
+        "selected": "everything_by_default",
+        "key": "policy_data_collection"
+      },
+      {
+        "policy": "data_egress",
+        "op": "set_policy",
+        "selected": "unrestricted",
+        "key": "policy_data_egress"
+      },
+      {
+        "policy": "data_retention",
+        "op": "set_policy",
+        "selected": "indefinite",
+        "key": "policy_data_retention"
+      },
+      {
+        "policy": "staff_monitoring",
+        "op": "set_policy",
+        "selected": "untracked",
+        "key": "policy_staff_monitoring"
+      },
+      {
+        "option": "it_generalist",
+        "op": "hire",
+        "key": "hire_it_generalist"
+      }
+    ],
+    "preserved": true
+  },
+  {
+    "case": "prior security purchase",
+    "commands": [
+      {
+        "primary_for": null,
+        "tco_categories": [],
+        "op": "buy_application",
+        "catalog": "next_gen_firewall",
+        "placement": "on_prem",
+        "key": "security_next_gen_firewall",
+        "config": "core"
+      }
+    ]
+  },
+  {
+    "case": "component provision",
+    "status": 422,
+    "body": {
+      "detail": {
+        "code": "invalid_reference",
+        "field": "config"
+      }
+    }
+  },
+  {
+    "case": "host component followed by policy save",
+    "before": [
+      {
+        "primary_for": null,
+        "tco_categories": [],
+        "op": "buy_application",
+        "catalog": "next_gen_firewall",
+        "placement": "on_prem",
+        "key": "security_next_gen_firewall",
+        "config": "core"
+      }
+    ],
+    "after": [
+      {
+        "primary_for": null,
+        "tco_categories": [],
+        "op": "buy_application",
+        "catalog": "next_gen_firewall",
+        "placement": "on_prem",
+        "key": "security_next_gen_firewall",
+        "config": "core"
+      }
+    ]
+  }
+]

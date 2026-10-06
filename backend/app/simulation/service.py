@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.repo.base import ScopedRepo
 from app.round import models as round_models
 from app.round.models import RoundResult
+from app.services.host_lifecycle import activate_due_hosts
 
 from .consequences import quote_transition, resolve_transition
 from .content import canonical_json, normalize_patch
@@ -302,6 +303,23 @@ class SimulationService:
             run = self._run(session, instance_id, team_id)
             return self._view(session, run)
 
+    def read_budget(self, instance_id: int, team_id: int) -> dict[str, int]:
+        """Read current accounting without enumerating repair recommendations.
+
+        Shares reducers with the full preview, validates the checkpoint/digest,
+        and performs no writes. Completed games expose the closing balance.
+        """
+        from .consequences import prepare_effects
+        instance_id, team_id = self._scope(instance_id, team_id)
+        with self._transaction(immediate=False) as session:
+            run = self._run(session, instance_id, team_id)
+            prior = self._state(session, instance_id, team_id, run.advanced_round)
+            if run.status == "completed":
+                return {"capital_remaining": prior.capital_balance}
+            sheet = self._sheet(session, instance_id, team_id, run.current_round)
+            prepared = prepare_effects(self.runtime_pack, _reducer_prior(prior), _commands(sheet.commands), run.current_round)
+            return {"capital_remaining": prepared.capital_remaining}
+
     def patch_sheet(self, instance_id: int, team_id: int, round: int, expected_revision: int, patch: SheetPatchV1) -> SheetViewV1:
         instance_id, team_id = self._scope(instance_id, team_id)
         if type(round) is not int or round < 1 or type(expected_revision) is not int or expected_revision < 0:
@@ -472,5 +490,6 @@ class SimulationService:
                     instance_id=instance_id, team_id=team_id, round=round + 1,
                     revision=0, locked_revision=None, commands=[], sheet_digest=None,
                 ))
+            activate_due_hosts(session, instance_id, team_id, run.current_round)
             session.flush()
             return deepcopy(result)

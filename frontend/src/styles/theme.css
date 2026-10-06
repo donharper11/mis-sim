@@ -1,4 +1,44 @@
 @font-face {
+  font-family: "Barlow Semi Condensed";
+  src: url("./fonts/BarlowSemiCondensed-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  src: url("./fonts/BarlowSemiCondensed-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  src: url("./fonts/BarlowSemiCondensed-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  src: url("./fonts/BarlowSemiCondensed-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  src: url("./fonts/BarlowSemiCondensed-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'IBM Plex Sans';
   font-style: normal;
   font-weight: 400;
@@ -871,6 +911,34 @@ select {
 .rollout-category-card__budget input:focus { outline: 2px solid var(--border-focus); outline-offset: 1px; }
 .rollout-category-card__budget input:disabled { background: var(--input-disabled-bg); cursor: not-allowed; }
 
+/* Platform detail modal (wider variant) */
+.platform-detail-modal { width: min(100%, 56rem); max-height: 90vh; overflow-y: auto; background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius); box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
+.platform-detail-modal__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); padding: var(--space-lg) var(--space-2xl); border-bottom: 1px solid var(--border-default); flex-wrap: wrap; }
+.platform-detail-modal__header-left { display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; }
+.platform-detail-modal__header-left h2 { margin: 0; font-size: 18px; display: flex; align-items: center; gap: var(--space-sm); }
+.platform-detail-modal__body { display: grid; gap: var(--space-xl); padding: var(--space-2xl); }
+.platform-detail-modal__meta { display: grid; gap: var(--space-xs); color: var(--text-secondary); font-size: 13px; }
+.platform-detail-modal__meta p { margin: 0; }
+.platform-detail-modal__section { display: grid; gap: var(--space-md); padding: var(--space-lg); background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius); }
+.platform-detail-modal__section-title { margin: 0; font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.platform-detail-modal__group-label { margin: var(--space-xs) 0 0; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.platform-detail-modal__item { display: grid; gap: 2px; padding: var(--space-sm) var(--space-md); background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius); }
+.platform-detail-modal__item-header { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+.platform-detail-modal__item-header strong { font-size: 13px; }
+.platform-detail-modal__item-costs { display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-lg); color: var(--text-muted); font-size: 12px; }
+.platform-detail-modal__cost-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-md); padding: var(--space-lg); background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius); }
+.platform-detail-modal__cost-summary div { display: grid; gap: var(--space-xs); }
+.platform-detail-modal__cost-summary span { color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+.platform-detail-modal__cost-summary strong { font-size: 16px; color: var(--text-primary); }
+.platform-detail-modal__locked-banner { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md) var(--space-lg); background: var(--status-info-bg); border: 1px solid var(--status-info-marker); border-radius: var(--radius); color: var(--status-info-text); font-size: 13px; }
+.platform-detail-modal__actions { display: flex; justify-content: center; gap: var(--space-md); margin-top: var(--space-sm); }
+
+/* Rollout deployment metadata bar */
+.rollout-deployment-meta { display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-xl); padding: var(--space-md) var(--space-lg); background: var(--surface-sunken); border: 1px solid var(--border-default); border-radius: var(--radius); color: var(--text-secondary); font-size: 13px; }
+.rollout-deployment-meta span { white-space: nowrap; }
+.rollout-deployment-meta__link { color: var(--text-link); cursor: pointer; font-weight: 600; background: none; border: none; padding: 0; font: inherit; font-size: 13px; text-decoration: none; }
+.rollout-deployment-meta__link:hover { text-decoration: underline; }
+
 @media (max-width: 720px) {
   .simple-add-form-grid { grid-template-columns: 1fr; }
   .option-card-grid { grid-template-columns: 1fr; }
@@ -880,7 +948,9 @@ select {
   .product-shell__nav-label { margin-top: var(--space-md); }
   .product-shell__workspace { padding: var(--space-md); }
   .product-shell__topbar { align-items: flex-start; flex-direction: column; }
-  .product-shell__round { width: 100%; text-align: left; }
+  .product-shell__topbar-meta { width: 100%; flex-wrap: wrap; }
+  .product-shell__round { text-align: left; }
+  .product-shell__topbar-team { white-space: nowrap; }
   .product-shell__capital { grid-template-columns: 1fr; }
   .dashboard-grid { grid-template-columns: 1fr; }
   .dashboard-context { align-items: flex-start; flex-direction: column; }
@@ -896,4 +966,5 @@ select {
   .rollout-slider-category { grid-template-columns: 1fr; }
   .rollout-category-cards { grid-template-columns: 1fr; }
   .modal-body label { grid-template-columns: 1fr; }
+  .platform-detail-modal__cost-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

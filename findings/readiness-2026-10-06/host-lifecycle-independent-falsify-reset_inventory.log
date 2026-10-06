@@ -1,0 +1,61 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_reset_all_runtime_preservation_rejection_and_rollback[sqlite] ______
+
+database = (Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-30/test_reset_all_runtime_preserv0/lifecycle.db), 'sqlite+aiosqlite:////tmp/pytest-of-ubuntu/pytest-30/test_reset_all_runtime_preserv0/lifecycle.db')
+
+                        else: value='sentinel'
+                        values[col.name]=value
+                    c.execute(model.__table__.insert().values(**values))
+    
+    
+    def test_reset_all_runtime_preservation_rejection_and_rollback(database):
+        engine,url=database
+        service_for(engine);fill_legacy(engine)
+        now=datetime.now(timezone.utc)
+        with Session(engine) as s:
+            for iid in (1,2):
+                inst=s.get(platform.SimulationInstance,iid)
+                inst.current_round=3;inst.started_at=now;inst.completed_at=now
+                sch=scheduling.RoundSchedule(instance_id=iid,round_number=1,start_at=now,deadline=now+timedelta(days=1),auto_advance=True,grace_period_minutes=0)
+                s.add(sch);s.flush()
+                s.add(scheduling.RoundScheduleTeam(schedule_id=sch.id,instance_id=iid,team_id=iid))
+                s.add(grading.GradeConfig(instance_id=iid,updated_by=1))
+                s.add(grading.GradeOverride(instance_id=iid,team_id=iid,updated_by=1,override=0.5,reason='Preserve scope'))
+            s.commit()
+        original=snapshot(engine)
+        identities=snapshot(engine,platform.ALL_TABLES)
+        async def run():
+            ae=create_async_engine(url);factory=async_sessionmaker(ae,expire_on_commit=False)
+            try:
+                async with factory() as s:
+                    def fail_after_delete(conn,cursor,statement,params,context,many):
+                        if statement.startswith('DELETE FROM grade_config'):
+                            raise RuntimeError('late reset failure')
+                    event.listen(ae.sync_engine,'before_cursor_execute',fail_after_delete)
+                    try:
+                        with pytest.raises(RuntimeError,match='late reset failure'):
+                            await reset_instance(s,1)
+                        await s.rollback()
+                    finally:
+                        event.remove(ae.sync_engine,'before_cursor_execute',fail_after_delete)
+                assert snapshot(engine)==original
+                assert snapshot(engine,platform.ALL_TABLES)==identities
+                for status in ('active','paused','completed','archived'):
+                    # SQLite archive CHECK repair is a separately owned open task.
+                    if status=='archived' and engine.dialect.name=='sqlite': continue
+                    async with factory() as s:
+                        inst=await s.get(platform.SimulationInstance,1);inst.status=status
+                        await s.commit()
+                        with pytest.raises(PlatformConflict):await reset_instance(s,1)
+                        await s.rollback()
+                    assert snapshot(engine)==original
+                async with factory() as s:
+>                   inst=await s.get(platform.SimulationInstance,1);inst.status='setup';await s.commit()
+E                   assert False
+E                    +  where False = all(<generator object test_reset_all_runtime_preservation_rejection_and_rollback.<locals>.<genexpr> at 0x724448396d40>)
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_host_lifecycle.py:250: AssertionError
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/projects/mis-sim/backend/tests/test_host_lifecycle.py::test_reset_all_runtime_preservation_rejection_and_rollback[sqlite]
+1 failed in 11.07s

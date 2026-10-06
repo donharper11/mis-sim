@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
+import StatusBadge from "../components/StatusBadge.jsx";
 import {
   apiClient,
   getCurrentUser,
@@ -16,13 +17,9 @@ function requestError(error) {
   return "The round control workspace could not complete that action.";
 }
 
-function StatusBadge({ status }) {
-  const colors = { draft: "#1890ff", locked: "#faad14", completed: "#52c41a", active: "#1890ff", paused: "#ff4d4f", setup: "#d9d9d9" };
-  return (
-    <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 4, fontSize: 12, fontWeight: 600, background: colors[status] || "#d9d9d9", color: "#fff" }}>
-      {status}
-    </span>
-  );
+function roundStatusBadge(status) {
+  const states = { draft: "info", locked: "needs-attention", completed: "complete", active: "info", paused: "needs-attention", setup: "neutral" };
+  return <StatusBadge status={states[status] || "neutral"} label={status} />;
 }
 
 export default function InstructorRoundControl() {
@@ -180,7 +177,7 @@ export default function InstructorRoundControl() {
             <section className="setup-card" aria-labelledby="rc-status-heading">
               <h3 id="rc-status-heading">Instance status</h3>
               <dl className="setup-facts">
-                <div><dt>Status</dt><dd><StatusBadge status={instance.status} /></dd></div>
+                <div><dt>Status</dt><dd>{roundStatusBadge(instance.status)}</dd></div>
                 <div><dt>Round</dt><dd>{Math.max(instance.current_round, 1)} of {instance.total_rounds}</dd></div>
                 <div><dt>Pack</dt><dd>{instance.pack_key} {instance.pack_version}</dd></div>
               </dl>
@@ -214,7 +211,7 @@ export default function InstructorRoundControl() {
                             <tr key={team.id}>
                               <td>{team.name}<small>ID: {team.id}</small></td>
                               <td>
-                                {teamAdvanced ? <StatusBadge status="completed" /> : teamLocked ? <StatusBadge status="locked" /> : <StatusBadge status="draft" />}
+                                {teamAdvanced ? roundStatusBadge("completed") : teamLocked ? roundStatusBadge("locked") : roundStatusBadge("draft")}
                               </td>
                               <td>
                                 {teamLocked && !teamAdvanced && (
@@ -248,7 +245,7 @@ export default function InstructorRoundControl() {
                           <td>{new Date(round.deadline).toLocaleString()}</td>
                           <td>{round.auto_advance ? "Yes" : "No"}</td>
                           <td>{round.grace_period_minutes}</td>
-                          <td>{round.decisions_locked ? <StatusBadge status="locked" /> : <StatusBadge status="draft" />}</td>
+                          <td>{round.decisions_locked ? roundStatusBadge("locked") : roundStatusBadge("draft")}</td>
                         </tr>
                       ))}
                     </tbody>

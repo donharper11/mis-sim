@@ -1,0 +1,7 @@
+{
+  "initial": "50",
+  "choice": "100",
+  "retained": true,
+  "text": "Another save changed this round. Your choices are still shown here. Reload the latest decisions before trying again; reloading discards these unsaved choices.",
+  "reloaded": true
+}

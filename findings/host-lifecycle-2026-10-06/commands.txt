@@ -1,0 +1,17 @@
+# Repository root; all databases are disposable local fixtures, mutually separate.
+PATH=/tmp/mis-sim-readiness-venv/bin:$PATH \
+HOST_SCOPE_POSTGRES_URL=postgresql+asyncpg://readiness@127.0.0.1:44535/mis_sim_verify_host_scope_build \
+HOST_LIFECYCLE_POSTGRES_URL=postgresql+asyncpg://readiness@127.0.0.1:44535/mis_sim_verify_host_lifecycle_build \
+M5_POSTGRES_URL=postgresql+asyncpg://readiness@127.0.0.1:44535/mis_sim_verify_concurrency \
+make check
+
+# backend/; fresh empty DB created once with createdb, not shared with above fixtures.
+SECRET_KEY=test PYTHONPATH=. /tmp/mis-sim-readiness-venv/bin/python scripts/check_postgres_runtime.py \
+--database-url postgresql://readiness:readiness@127.0.0.1:44535/mis_sim_verify_host_lifecycle_fresh
+
+# frontend/
+PATH=/home/ubuntu/.nvm/versions/node/v22.23.2/bin:$PATH npm run lint
+PATH=/home/ubuntu/.nvm/versions/node/v22.23.2/bin:$PATH npm run build
+
+# Repository root; isolated predecessor-behavior copies, never production mutation.
+/tmp/mis-sim-readiness-venv/bin/python findings/host-lifecycle-2026-10-06/falsify.py

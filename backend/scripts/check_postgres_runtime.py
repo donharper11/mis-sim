@@ -21,12 +21,16 @@ from sqlalchemy.exc import ArgumentError, SQLAlchemyError
 BACKEND = Path(__file__).resolve().parents[1]
 DATABASE_PREFIX = "mis_sim_verify_"
 EXPECTED_ROUNDS = list(range(1, 7))
-EXPECTED_TABLE_COUNT = 28
+EXPECTED_TABLE_COUNT = 32
 
 
 def expected_schema_models(round_models, simulation_models, platform_models, scheduling_models):
     """Return every table created by the current migration head."""
+    from app.models import grading, host_platform
+
     return (
+        *grading.ALL_TABLES,
+        *host_platform.ALL_TABLES,
         *platform_models.ALL_TABLES,
         platform_models.Casepack,
         *scheduling_models.ALL_TABLES,

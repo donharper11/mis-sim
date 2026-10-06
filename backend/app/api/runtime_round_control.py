@@ -101,7 +101,6 @@ async def advance_round(
     if not team_ids:
         raise HTTPException(status_code=409, detail="The instance has no teams to advance")
     instance_id_value = instance.instance_id
-    total_rounds = instance.total_rounds
     run_rounds: dict[int, int] = {}
     for team_id in team_ids:
         run = await session.get(SimulationRunV1, (instance_id_value, team_id))
@@ -164,15 +163,25 @@ async def advance_round(
         advanced.append(team_id)
         results.append({"team_id": team_id, "round": target_round, "score": result.get("score"), "scorecard": result.get("scorecard")})
 
-    instance = await session.get(SimulationInstance, instance_id_value)
-    if target_round >= total_rounds:
-        instance.current_round = target_round
-        instance.status = "completed"
-        next_round = None
-    else:
-        instance.current_round = target_round + 1
-        instance.status = "active"
-        next_round = target_round + 1
+    # Reset can complete after the last per-team commit. Fence the final display
+    # update with its instance lock and fresh scalar run rows, not cached ORM data.
+    await session.rollback()
+    instance = await session.scalar(select(SimulationInstance).where(
+        SimulationInstance.instance_id == instance_id_value,
+    ).with_for_update(key_share=True).execution_options(populate_existing=True))
+    runs = (await session.execute(select(
+        SimulationRunV1.team_id, SimulationRunV1.current_round,
+        SimulationRunV1.advanced_round, SimulationRunV1.status,
+    ).where(SimulationRunV1.instance_id == instance_id_value))).all()
+    if instance is None or {r.team_id for r in runs} != set(team_ids) or any(r.advanced_round < target_round for r in runs):
+        raise HTTPException(status_code=409, detail="The instance changed while advancing; refresh its current status")
+    active_rounds = {r.current_round for r in runs if r.status != "completed"}
+    if len(active_rounds) > 1:
+        raise HTTPException(status_code=409, detail="Teams are on different rounds; refresh their current status")
+    next_round = next(iter(active_rounds), None)
+    instance.current_round = next_round if next_round is not None else max(r.current_round for r in runs)
+    if instance.status not in {"paused", "archived"}:
+        instance.status = "active" if next_round is not None else "completed"
     await session.commit()
     return AdvanceOut(instance_id=instance.instance_id, round=target_round, next_round=next_round, advanced=advanced, completed=completed, results=results)
 

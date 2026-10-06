@@ -87,6 +87,8 @@ async def _team_for_user(
                 Enrollment.is_active.is_(True),
             )
         )
+        if selected is None:
+            return None
         team_id = selected
     if team_id is None:
         candidates = list(

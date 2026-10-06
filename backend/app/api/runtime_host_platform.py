@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import get_current_instance, get_current_user, get_session
 from app.models.host_platform import HostPlatform, HostPlatformMember
 from app.models.platform import Enrollment, SimulationInstance, Team, User
+from app.simulation.models import SimulationRunV1, SimulationSheetV1
 
 router = APIRouter(tags=["host-platform"])
 
@@ -72,6 +73,8 @@ async def _team_for_user(
             Enrollment.role == "student",
             Enrollment.is_active.is_(True),
         ))
+        if selected is None:
+            return None
         team_id = selected
     if team_id is None:
         candidates = list((await session.scalars(select(Team).where(
@@ -83,6 +86,20 @@ async def _team_for_user(
     return await session.scalar(select(Team).where(
         Team.instance_id == instance.instance_id, Team.id == team_id,
     ))
+
+
+async def _require_editable(session: AsyncSession, instance: SimulationInstance, team: Team) -> SimulationRunV1:
+    """Serialize metadata edits with the same run row used by lock/advance."""
+    run = await session.scalar(select(SimulationRunV1).where(
+        SimulationRunV1.instance_id == instance.instance_id,
+        SimulationRunV1.team_id == team.id,
+    ).with_for_update())
+    if run is None or instance.status in {"paused", "completed", "archived"} or run.status == "completed":
+        raise HTTPException(status_code=409, detail="Platform changes are unavailable for this round")
+    sheet = await session.get(SimulationSheetV1, (instance.instance_id, team.id, run.current_round))
+    if sheet is None or sheet.locked_revision is not None:
+        raise HTTPException(status_code=409, detail="This round is locked")
+    return run
 
 
 def _serialize(platform: HostPlatform) -> HostPlatformOut:
@@ -110,6 +127,7 @@ async def _list_platforms(session: AsyncSession, instance_id: int, team_id: int)
         select(HostPlatform)
         .where(HostPlatform.instance_id == instance_id, HostPlatform.team_id == team_id)
         .options(selectinload(HostPlatform.members))
+        .execution_options(populate_existing=True)
         .order_by(HostPlatform.id),
     )
     return [_serialize(p) for p in result.all()]
@@ -152,6 +170,7 @@ async def create_host_platform(
     team = await _team_for_user(session, instance, current_user, team_id)
     if team is None:
         raise HTTPException(status_code=409, detail="Select a team before creating a platform")
+    run = await _require_editable(session, instance, team)
     if payload.platform_type not in ("on_prem", "cloud"):
         raise HTTPException(status_code=422, detail="platform_type must be on_prem or cloud")
     if payload.platform_type == "cloud" and payload.cloud_subtype not in ("iaas", "paas", "saas", "aiaas"):
@@ -161,7 +180,7 @@ async def create_host_platform(
 
     prefix = "OP" if payload.platform_type == "on_prem" else "CL"
     code = await _next_code(session, instance.instance_id, team.id, prefix)
-    current_round = max(instance.current_round, 1)
+    current_round = run.current_round
 
     platform = HostPlatform(
         instance_id=instance.instance_id,
@@ -192,9 +211,14 @@ async def update_host_platform(
     team = await _team_for_user(session, instance, current_user, team_id)
     if team is None:
         raise HTTPException(status_code=409, detail="Select a team")
-    platform = await session.get(HostPlatform, platform_id)
+    await _require_editable(session, instance, team)
+    platform = await session.scalar(select(HostPlatform).where(
+        HostPlatform.id == platform_id, HostPlatform.instance_id == instance.instance_id, HostPlatform.team_id == team.id,
+    ))
     if platform is None or platform.instance_id != instance.instance_id or platform.team_id != team.id:
         raise HTTPException(status_code=404, detail="Platform not found")
+    if platform.status != "pending":
+        raise HTTPException(status_code=409, detail="Only pending platforms can be changed")
     if payload.name is not None:
         platform.name = payload.name
     if payload.notes is not None:
@@ -215,6 +239,7 @@ async def add_member(
     team = await _team_for_user(session, instance, current_user, team_id)
     if team is None:
         raise HTTPException(status_code=409, detail="Select a team")
+    run = await _require_editable(session, instance, team)
     platform = await session.scalar(
         select(HostPlatform)
         .where(HostPlatform.id == platform_id, HostPlatform.instance_id == instance.instance_id, HostPlatform.team_id == team.id)
@@ -222,6 +247,8 @@ async def add_member(
     )
     if platform is None:
         raise HTTPException(status_code=404, detail="Platform not found")
+    if platform.status != "pending":
+        raise HTTPException(status_code=409, detail="Only pending platforms can be changed")
     if payload.member_kind not in ("service", "component"):
         raise HTTPException(status_code=422, detail="member_kind must be service or component")
     kind_count = sum(1 for m in platform.members if m.member_kind == payload.member_kind)
@@ -231,10 +258,11 @@ async def add_member(
     if existing is not None:
         raise HTTPException(status_code=409, detail="This asset is already assigned to this platform")
     member = HostPlatformMember(
+        instance_id=instance.instance_id,
         platform_id=platform.id,
         asset_key=payload.asset_key,
         member_kind=payload.member_kind,
-        assigned_round=max(instance.current_round, 1),
+        assigned_round=run.current_round,
     )
     session.add(member)
     await session.commit()
@@ -253,10 +281,19 @@ async def remove_member(
     team = await _team_for_user(session, instance, current_user, team_id)
     if team is None:
         raise HTTPException(status_code=409, detail="Select a team")
-    platform = await session.get(HostPlatform, platform_id)
+    await _require_editable(session, instance, team)
+    platform = await session.scalar(select(HostPlatform).where(
+        HostPlatform.id == platform_id, HostPlatform.instance_id == instance.instance_id, HostPlatform.team_id == team.id,
+    ))
     if platform is None or platform.instance_id != instance.instance_id or platform.team_id != team.id:
         raise HTTPException(status_code=404, detail="Platform not found")
-    member = await session.get(HostPlatformMember, member_id)
+    if platform.status != "pending":
+        raise HTTPException(status_code=409, detail="Only pending platforms can be changed")
+    member = await session.scalar(select(HostPlatformMember).where(
+        HostPlatformMember.id == member_id,
+        HostPlatformMember.instance_id == instance.instance_id,
+        HostPlatformMember.platform_id == platform.id,
+    ))
     if member is None or member.platform_id != platform.id:
         raise HTTPException(status_code=404, detail="Member not found")
     await session.delete(member)

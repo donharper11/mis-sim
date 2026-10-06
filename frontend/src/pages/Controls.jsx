@@ -76,7 +76,7 @@ export function StrategyPanel({ view, instanceId, onSaved }) {
     {locked && <section className="review-banner"><strong>This round is locked.</strong><span>Decisions reopen when the instructor advances the round.</span></section>}
     {effectiveStrategy && <section className="controls-panel" style={{ padding: "var(--space-md) var(--space-lg)" }}><p style={{ margin: 0 }}><strong>Current strategy:</strong> <span className="dashboard-context__chip">{effectiveStrategy}</span></p></section>}
     {!effectiveStrategy && <section className="controls-panel" style={{ padding: "var(--space-md) var(--space-lg)" }}><p style={{ margin: 0 }}><strong>Current strategy:</strong> Not yet declared</p></section>}
-    {currentRound > 2 && effectiveStrategy && <section className="review-banner"><strong>Strategy is locked after round 2.</strong><span>You declared "{effectiveStrategy}" and it cannot be changed.</span></section>}
+    {currentRound > 2 && effectiveStrategy && <section className="review-banner"><strong>Strategy is locked after round 2.</strong><span>You declared &ldquo;{effectiveStrategy}&rdquo; and it cannot be changed.</span></section>}
     <div className="option-card-grid">{(viewState?.strategies || []).map((item) => <OptionCard key={item.key} title={item.label} detail={item.values.map((v) => v.replaceAll("_", " ")).join(", ")} selected={selected("strategy", effectiveStrategy) === item.key} disabled={readOnly || (currentRound > 2 && !!effectiveStrategy)} onSelect={() => set("strategy", item.key)} />)}</div>
     <section className="controls-actions"><button type="button" className="components-primary" disabled={readOnly || saving || !selected("strategy") || (currentRound > 2 && !!effectiveStrategy)} title={locked ? "This round is locked" : (currentRound > 2 && !!effectiveStrategy) ? "Strategy is locked after round 2" : undefined} onClick={save}>{saving ? "Saving…" : "Save strategy"}</button>{error && <p className="components-error" role="alert">{error}</p>}</section>
   </div>;
@@ -95,7 +95,7 @@ export function PeoplePanel({ view, instanceId, onSaved }) {
   function set(key, value) { setSelection((prior) => ({ ...prior, [key]: value })); }
 
   function commands() {
-    const result = [];
+    const result = (team?.selected_commands || []).filter((c) => (c.op === "set_support") || (c.op === "hire" && !selected("hire")) || (c.op === "communicate" && !(selected("unit") && selected("communication") && c.org_unit === selected("unit"))));
     if (selected("hire")) result.push({ key: `hire_${selected("hire")}`, op: "hire", option: selected("hire") });
     if (selected("unit") && selected("communication")) result.push({ key: `communicate_${selected("unit")}`, op: "communicate", org_unit: selected("unit"), option: selected("communication") });
     return result;
@@ -131,13 +131,14 @@ export function SecurityPanel({ view, instanceId, onSaved }) {
   const [error, setError] = useState("");
   const team = viewState?.team;
   const readOnly = !team || team.revision === null || team.locked_revision !== null;
-  const policies = useMemo(() => Object.fromEntries((team?.policies || []).map((item) => [item.key, item.selected])), [team]);
+  const policies = useMemo(() => ({ ...Object.fromEntries((team?.policies || []).map((item) => [item.key, item.selected])), ...Object.fromEntries((team?.selected_commands || []).filter((c) => c.op === "set_policy").map((c) => [c.policy, c.selected])) }), [team]);
 
   function selected(key, fallback = "") { return selection[key] ?? fallback; }
   function set(key, value) { setSelection((prior) => ({ ...prior, [key]: value })); }
 
   function commands() {
     const result = (viewState?.policies || []).map((item) => ({ key: `policy_${item.key}`, op: "set_policy", policy: item.key, selected: selected(`policy:${item.key}`, policies[item.key]) }));
+    result.push(...(team?.selected_commands || []).filter((c) => ["buy_application", "replace_application"].includes(c.op) && c.key !== `security_${selected("security_component")}`));
     if (selected("security_component") && selected("security_placement")) result.push({ key: `security_${selected("security_component")}`, op: "buy_application", catalog: selected("security_component"), placement: selected("security_placement"), config: "core", primary_for: null, tco_categories: [] });
     return result;
   }
@@ -157,7 +158,7 @@ export function SecurityPanel({ view, instanceId, onSaved }) {
   }
 
   return <div className="controls-page">
-    <section className="controls-panel"><h2>Data policies</h2><div className="controls-grid">{(viewState?.policies || []).map((item) => <SelectField key={item.key} label={policyLabels[item.key] || item.label} value={selected(`policy:${item.key}`, item.selected)} options={item.options.map((key) => ({ key, label: key.replaceAll("_", " ") }))} onChange={(value) => set(`policy:${item.key}`, value)} disabled={readOnly} />)}</div></section>
+    <section className="controls-panel"><h2>Data policies</h2><div className="controls-grid">{(viewState?.policies || []).map((item) => <SelectField key={item.key} label={policyLabels[item.key] || item.label} value={selected(`policy:${item.key}`, policies[item.key])} options={item.options.map((key) => ({ key, label: key.replaceAll("_", " ") }))} onChange={(value) => set(`policy:${item.key}`, value)} disabled={readOnly} />)}</div></section>
     <section className="controls-panel"><h2>Security component request</h2><div className="controls-grid"><SelectField label="Component" value={selected("security_component")} options={viewState?.security_components || []} onChange={(value) => { set("security_component", value); set("security_placement", ""); }} disabled={readOnly} /><SelectField label="Placement" value={selected("security_placement")} options={((viewState?.security_components || []).find((item) => item.key === selected("security_component"))?.values || []).map((key) => ({ key, label: key.replaceAll("_", " ") }))} onChange={(value) => set("security_placement", value)} disabled={readOnly} /></div></section>
     <section className="controls-actions"><button type="button" className="components-primary" disabled={readOnly || saving || !commands().length} onClick={save}>{saving ? "Saving…" : "Save data policies"}</button>{error && <p className="components-error" role="alert">{error}</p>}</section>
   </div>;
@@ -171,12 +172,16 @@ export function GovernancePanel({ view, instanceId, onSaved }) {
   const [error, setError] = useState("");
   const team = viewState?.team;
   const readOnly = !team || team.revision === null || team.locked_revision !== null;
+  const governanceRows = (viewState?.governance || []).map((item) => {
+    const pending = team?.selected_commands?.find((c) => c.op === "assign" && c.capability === item.capability);
+    return pending ? { ...item, owner: pending.owner, sponsor: pending.sponsor } : item;
+  });
 
   function selected(key, fallback = "") { return selection[key] ?? fallback; }
   function set(key, value) { setSelection((prior) => ({ ...prior, [key]: value })); }
 
   function commands() {
-    return (viewState?.governance || []).filter((item) => selected(`owner:${item.capability}`, item.owner) || selected(`sponsor:${item.capability}`, item.sponsor)).map((item) => ({ key: `assign_${item.capability}`, op: "assign", capability: item.capability, owner: selected(`owner:${item.capability}`, item.owner) || null, sponsor: selected(`sponsor:${item.capability}`, item.sponsor) || null }));
+    return [...(team?.selected_commands || []).filter((c) => c.op === "set_primary"), ...governanceRows.filter((item) => selected(`owner:${item.capability}`, item.owner) || selected(`sponsor:${item.capability}`, item.sponsor)).map((item) => ({ key: `assign_${item.capability}`, op: "assign", capability: item.capability, owner: selected(`owner:${item.capability}`, item.owner) || null, sponsor: selected(`sponsor:${item.capability}`, item.sponsor) || null }))];
   }
 
   async function save() {
@@ -196,7 +201,7 @@ export function GovernancePanel({ view, instanceId, onSaved }) {
   return <div className="controls-page">
     <p className="components-muted">Each capability needs a business owner and a sponsor to ensure adoption success and accountability.</p>
     <section className="controls-panel"><h2>Capability ownership</h2>
-      <div className="detail-table-wrap"><table className="detail-table"><thead><tr><th>Capability</th><th>Owner</th><th>Sponsor</th></tr></thead><tbody>{(viewState?.governance || []).map((item) => <tr key={item.capability}><td><strong>{item.label}</strong></td><td><SelectField label="" value={selected(`owner:${item.capability}`, item.owner || "")} options={[{ key: "technology", label: "Technology" }, { key: "operations", label: "Operations" }, { key: "finance", label: "Finance" }]} onChange={(value) => set(`owner:${item.capability}`, value)} disabled={readOnly} /></td><td><SelectField label="" value={selected(`sponsor:${item.capability}`, item.sponsor || "")} options={[{ key: "business", label: "Business" }, { key: "technology", label: "Technology" }, { key: "finance", label: "Finance" }]} onChange={(value) => set(`sponsor:${item.capability}`, value)} disabled={readOnly} /></td></tr>)}</tbody></table></div>
+      <div className="detail-table-wrap"><table className="detail-table"><thead><tr><th>Capability</th><th>Owner</th><th>Sponsor</th></tr></thead><tbody>{governanceRows.map((item) => <tr key={item.capability}><td><strong>{item.label}</strong></td><td><SelectField label="" value={selected(`owner:${item.capability}`, item.owner || "")} options={[{ key: "technology", label: "Technology" }, { key: "operations", label: "Operations" }, { key: "finance", label: "Finance" }]} onChange={(value) => set(`owner:${item.capability}`, value)} disabled={readOnly} /></td><td><SelectField label="" value={selected(`sponsor:${item.capability}`, item.sponsor || "")} options={[{ key: "business", label: "Business" }, { key: "technology", label: "Technology" }, { key: "finance", label: "Finance" }]} onChange={(value) => set(`sponsor:${item.capability}`, value)} disabled={readOnly} /></td></tr>)}</tbody></table></div>
     </section>
     <section className="controls-actions"><button type="button" className="components-primary" disabled={readOnly || saving || !commands().length} onClick={save}>{saving ? "Saving…" : "Save ownership decisions"}</button>{error && <p className="components-error" role="alert">{error}</p>}</section>
   </div>;

@@ -1,5 +1,8 @@
 # Handoffs — how work moves through this project
 
+> Current status and actions (2026-10-06): [../BATTLECARD.md](../BATTLECARD.md) and [../TODO.md](../TODO.md). Progress narratives below are historical; contracts and audit records remain in force.
+
+
 Every unit of work is a **module**. Every module gets a folder here containing its spec,
 its playthrough script, and its filled Definition-of-Done table.
 
@@ -192,3 +195,8 @@ current work and the original packet index governs the remaining product scope.
 | 0.4 | Reference mockups ×7 | `mockups/` | ✅ merged |
 The `0.5-coverage-gaps` folder is design input for Phase 3/4. The component library is
 packet **3.1**, still unbuilt. These are not additional completed foundation packets.
+
+## Paused October6 checkpoint
+
+[Resume note](readiness-2026-10-06/NEXT-AGENT.md): host scope/lifecycle accepted, 834-test gate
+green; instructor-start contract accepted but implementation paused at user request.

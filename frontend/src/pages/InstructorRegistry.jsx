@@ -7,7 +7,7 @@ function requestError(error) {
   return error.response?.data?.detail || "The registry could not complete that action.";
 }
 
-function ValidationBadge({ errors, warnings }) {
+function validationBadge(errors, warnings) {
   if (errors > 0) return <span className="badge badge--error">Errors: {errors}</span>;
   if (warnings > 0) return <span className="badge badge--warn">Warnings: {warnings}</span>;
   return <span className="badge badge--ok">Valid</span>;
@@ -151,7 +151,7 @@ export default function InstructorRegistry() {
                       <td>{pack.pack_version}</td>
                       <td>{pack.display_name}</td>
                       <td>{pack.rounds}</td>
-                      <td><ValidationBadge errors={pack.errors?.length || 0} warnings={pack.warnings?.length || 0} /></td>
+                      <td>{validationBadge(pack.errors?.length || 0, pack.warnings?.length || 0)}</td>
                     </tr>
                   ))}
                 </tbody>

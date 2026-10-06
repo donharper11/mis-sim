@@ -162,6 +162,8 @@ async def _team_for_user(session: AsyncSession, instance: SimulationInstance, us
             Enrollment.role == "student",
             Enrollment.is_active.is_(True),
         ))
+        if selected is None:
+            return None
         team_id = selected
     if team_id is None:
         candidates = list((await session.scalars(select(Team).where(

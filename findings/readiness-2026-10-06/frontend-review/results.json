@@ -1,0 +1,247 @@
+{
+  "results": [
+    {
+      "name": "Browser authentication",
+      "data": "student"
+    },
+    {
+      "name": "Seed deployments",
+      "data": [
+        {
+          "id": "initial_pos_system_2011",
+          "unit": "store_operations"
+        },
+        {
+          "id": "initial_order_mgmt_v42",
+          "unit": "store_operations"
+        },
+        {
+          "id": "initial_accounting_package",
+          "unit": "finance"
+        },
+        {
+          "id": "initial_store_spreadsheets",
+          "unit": "store_operations"
+        },
+        {
+          "id": "initial_order_db_cluster",
+          "unit": "it"
+        },
+        {
+          "id": "initial_store_back_office_pc",
+          "unit": "store_operations"
+        }
+      ]
+    },
+    {
+      "name": "Two application drafts preserved",
+      "data": [
+        {
+          "org_unit": "store_operations",
+          "op": "communicate",
+          "option": "none",
+          "key": "rollout_communicate_store_operations"
+        },
+        {
+          "capability": "order_fulfilment",
+          "op": "assign",
+          "sponsor": null,
+          "key": "assign_order_fulfilment",
+          "owner": "finance"
+        },
+        {
+          "policy": "access_logging",
+          "op": "set_policy",
+          "selected": "unlogged",
+          "key": "policy_access_logging"
+        },
+        {
+          "policy": "data_access",
+          "op": "set_policy",
+          "selected": "need_to_know",
+          "key": "policy_data_access"
+        },
+        {
+          "policy": "data_collection",
+          "op": "set_policy",
+          "selected": "everything_by_default",
+          "key": "policy_data_collection"
+        },
+        {
+          "policy": "data_egress",
+          "op": "set_policy",
+          "selected": "unrestricted",
+          "key": "policy_data_egress"
+        },
+        {
+          "policy": "data_retention",
+          "op": "set_policy",
+          "selected": "indefinite",
+          "key": "policy_data_retention"
+        },
+        {
+          "policy": "staff_monitoring",
+          "op": "set_policy",
+          "selected": "untracked",
+          "key": "policy_staff_monitoring"
+        },
+        {
+          "choice": "partial",
+          "op": "set_process",
+          "asset": "initial_order_mgmt_v42",
+          "key": "rollout_process_initial_order_mgmt_v42"
+        },
+        {
+          "choice": "partial",
+          "op": "set_process",
+          "asset": "initial_pos_system_2011",
+          "key": "rollout_process_initial_pos_system_2011"
+        },
+        {
+          "option": "it_generalist",
+          "op": "hire",
+          "key": "hire_it_generalist"
+        },
+        {
+          "option": "full",
+          "op": "train",
+          "asset": "initial_order_mgmt_v42",
+          "key": "rollout_train_initial_order_mgmt_v42"
+        },
+        {
+          "option": "full",
+          "op": "train",
+          "asset": "initial_pos_system_2011",
+          "key": "rollout_train_initial_pos_system_2011"
+        }
+      ]
+    },
+    {
+      "name": "Sibling ownership then rollout save revision synchronized"
+    },
+    {
+      "name": "Policy then hiring saves preserve communication and revision"
+    },
+    {
+      "name": "Security draft survives reload"
+    },
+    {
+      "name": "Partial communication selection plus hiring",
+      "data": {
+        "unit": "store_operations",
+        "communicationPreserved": true,
+        "commands": [
+          {
+            "org_unit": "store_operations",
+            "op": "communicate",
+            "option": "none",
+            "key": "rollout_communicate_store_operations"
+          },
+          {
+            "capability": "order_fulfilment",
+            "op": "assign",
+            "sponsor": null,
+            "key": "assign_order_fulfilment",
+            "owner": "finance"
+          },
+          {
+            "policy": "access_logging",
+            "op": "set_policy",
+            "selected": "unlogged",
+            "key": "policy_access_logging"
+          },
+          {
+            "policy": "data_access",
+            "op": "set_policy",
+            "selected": "need_to_know",
+            "key": "policy_data_access"
+          },
+          {
+            "policy": "data_collection",
+            "op": "set_policy",
+            "selected": "everything_by_default",
+            "key": "policy_data_collection"
+          },
+          {
+            "policy": "data_egress",
+            "op": "set_policy",
+            "selected": "unrestricted",
+            "key": "policy_data_egress"
+          },
+          {
+            "policy": "data_retention",
+            "op": "set_policy",
+            "selected": "indefinite",
+            "key": "policy_data_retention"
+          },
+          {
+            "policy": "staff_monitoring",
+            "op": "set_policy",
+            "selected": "untracked",
+            "key": "policy_staff_monitoring"
+          },
+          {
+            "choice": "partial",
+            "op": "set_process",
+            "asset": "initial_order_mgmt_v42",
+            "key": "rollout_process_initial_order_mgmt_v42"
+          },
+          {
+            "choice": "partial",
+            "op": "set_process",
+            "asset": "initial_pos_system_2011",
+            "key": "rollout_process_initial_pos_system_2011"
+          },
+          {
+            "option": "it_generalist",
+            "op": "hire",
+            "key": "hire_it_generalist"
+          },
+          {
+            "option": "full",
+            "op": "train",
+            "asset": "initial_order_mgmt_v42",
+            "key": "rollout_train_initial_order_mgmt_v42"
+          },
+          {
+            "option": "full",
+            "op": "train",
+            "asset": "initial_pos_system_2011",
+            "key": "rollout_train_initial_pos_system_2011"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Restored controls responsive document widths"
+    },
+    {
+      "name": "Rollout modal actual host name and member",
+      "data": "OP01\nIndependent audit host\nOn-Premises\nPending\n×\n\nCreated: Round 1\n\nSERVICES (0/5)\n\nNo services provisioned yet.\n\nCOMPONENTS (1/5)\nOTHER\nPOS System 2011\nOn-Premises\nCAPEX $0\nOPEX $3.1K/rd\nTOTAL CAPEX\n$0\nTOTAL OPEX\n$3.1K/round\nSTAFF LOAD\n0.0 FTE\nLEAD TIME\n0 rounds\nClose"
+    },
+    {
+      "name": "Stale draft save response",
+      "data": {
+        "status": 409,
+        "body": "{\"detail\":{\"code\":\"revision_conflict\",\"field\":\"revision\"}}",
+        "alert": "The rollout decision could not be saved."
+      }
+    },
+    {
+      "name": "Locked restored panels read-only"
+    }
+  ],
+  "diagnostics": [
+    {
+      "negative": true,
+      "type": "http",
+      "status": 409,
+      "url": "http://127.0.0.1:3004/api/instances/1/rollout"
+    },
+    {
+      "negative": true,
+      "type": "console",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    }
+  ]
+}

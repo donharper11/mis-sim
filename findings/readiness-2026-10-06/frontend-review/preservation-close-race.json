@@ -1,0 +1,1103 @@
+[
+  {
+    "case": "Partial Unit selection while hiring removes prior store communication",
+    "commands": [
+      {
+        "org_unit": "finance",
+        "op": "communicate",
+        "option": "none",
+        "key": "comm_finance"
+      },
+      {
+        "org_unit": "store_operations",
+        "op": "communicate",
+        "option": "none",
+        "key": "comm_store"
+      },
+      {
+        "strategy": "cost_leadership",
+        "op": "declare_strategy",
+        "key": "conflict_review_strategy"
+      },
+      {
+        "policy": "access_logging",
+        "op": "set_policy",
+        "selected": "unlogged",
+        "key": "policy_access_logging"
+      },
+      {
+        "policy": "data_access",
+        "op": "set_policy",
+        "selected": "open_to_all_staff",
+        "key": "policy_data_access"
+      },
+      {
+        "policy": "data_collection",
+        "op": "set_policy",
+        "selected": "everything_by_default",
+        "key": "policy_data_collection"
+      },
+      {
+        "policy": "data_egress",
+        "op": "set_policy",
+        "selected": "unrestricted",
+        "key": "policy_data_egress"
+      },
+      {
+        "policy": "data_retention",
+        "op": "set_policy",
+        "selected": "indefinite",
+        "key": "policy_data_retention"
+      },
+      {
+        "policy": "staff_monitoring",
+        "op": "set_policy",
+        "selected": "untracked",
+        "key": "policy_staff_monitoring"
+      },
+      {
+        "option": "it_generalist",
+        "op": "hire",
+        "key": "hire_it_generalist"
+      }
+    ],
+    "preserved": true
+  },
+  {
+    "case": "prior security purchase",
+    "commands": [
+      {
+        "primary_for": null,
+        "tco_categories": [],
+        "op": "buy_application",
+        "catalog": "next_gen_firewall",
+        "placement": "on_prem",
+        "key": "security_next_gen_firewall",
+        "config": "core"
+      }
+    ]
+  },
+  {
+    "case": "component provision",
+    "status": 200,
+    "body": {
+      "instance_id": 1,
+      "current_round": 1,
+      "total_rounds": 6,
+      "strategies": [
+        {
+          "key": "cost_leadership",
+          "label": "Cost Leadership",
+          "detail": null,
+          "values": [
+            "order_fulfilment",
+            "store_operations",
+            "financial_reporting",
+            "firm_infrastructure",
+            "customer_insight",
+            "marketing_sales"
+          ]
+        },
+        {
+          "key": "differentiation",
+          "label": "Differentiation",
+          "detail": null,
+          "values": [
+            "customer_insight",
+            "marketing_sales",
+            "service",
+            "order_fulfilment",
+            "store_operations",
+            "firm_infrastructure"
+          ]
+        },
+        {
+          "key": "customer_supplier_intimacy",
+          "label": "Customer Supplier Intimacy",
+          "detail": null,
+          "values": [
+            "customer_insight",
+            "order_fulfilment",
+            "store_operations",
+            "service",
+            "financial_reporting",
+            "firm_infrastructure"
+          ]
+        },
+        {
+          "key": "focus_strategy",
+          "label": "Focus Strategy",
+          "detail": null,
+          "values": [
+            "service",
+            "customer_insight",
+            "marketing_sales",
+            "order_fulfilment",
+            "financial_reporting",
+            "firm_infrastructure"
+          ]
+        }
+      ],
+      "governance": [
+        {
+          "capability": "order_fulfilment",
+          "label": "Order Fulfilment",
+          "owner": null,
+          "sponsor": null,
+          "primary": "initial_order_mgmt_v42"
+        },
+        {
+          "capability": "store_operations",
+          "label": "Store Operations",
+          "owner": null,
+          "sponsor": null,
+          "primary": "initial_pos_system_2011"
+        },
+        {
+          "capability": "financial_reporting",
+          "label": "Financial Reporting",
+          "owner": null,
+          "sponsor": null,
+          "primary": "initial_accounting_package"
+        },
+        {
+          "capability": "customer_insight",
+          "label": "Customer Insight",
+          "owner": null,
+          "sponsor": null,
+          "primary": null
+        },
+        {
+          "capability": "marketing_sales",
+          "label": "Marketing and Sales",
+          "owner": null,
+          "sponsor": null,
+          "primary": null
+        },
+        {
+          "capability": "service",
+          "label": "Service",
+          "owner": null,
+          "sponsor": null,
+          "primary": null
+        },
+        {
+          "capability": "firm_infrastructure",
+          "label": "Firm Infrastructure",
+          "owner": null,
+          "sponsor": null,
+          "primary": null
+        }
+      ],
+      "security_components": [
+        {
+          "key": "next_gen_firewall",
+          "label": "Perimeter firewall",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        }
+      ],
+      "policies": [
+        {
+          "key": "data_collection",
+          "label": "Data Collection",
+          "selected": "everything_by_default",
+          "options": [
+            "everything_by_default",
+            "purpose_limited",
+            "minimal"
+          ]
+        },
+        {
+          "key": "data_retention",
+          "label": "Data Retention",
+          "selected": "indefinite",
+          "options": [
+            "indefinite",
+            "standard_period",
+            "minimal"
+          ]
+        },
+        {
+          "key": "data_access",
+          "label": "Data Access",
+          "selected": "open_to_all_staff",
+          "options": [
+            "open_to_all_staff",
+            "role_based",
+            "need_to_know"
+          ]
+        },
+        {
+          "key": "access_logging",
+          "label": "Access Logging",
+          "selected": "unlogged",
+          "options": [
+            "unlogged",
+            "sampled",
+            "full_audit_trail"
+          ]
+        },
+        {
+          "key": "data_egress",
+          "label": "Data Egress",
+          "selected": "unrestricted",
+          "options": [
+            "unrestricted",
+            "approved_destinations",
+            "no_export"
+          ]
+        },
+        {
+          "key": "staff_monitoring",
+          "label": "Staff Monitoring",
+          "selected": "untracked",
+          "options": [
+            "untracked",
+            "aggregate_only",
+            "individual_activity"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "key": "compute_pool",
+          "label": "Compute pool",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "client_network",
+          "label": "Store access",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "storage_pool",
+          "label": "Storage pool",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "central_sign_on",
+          "label": "Central sign-on",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "intrusion_detection",
+          "label": "Security monitoring",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "threat_detection",
+          "label": "Security monitoring",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "compliance_engine",
+          "label": "Compliance auditing",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "data_platform",
+          "label": "Customer data store",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "integration_api",
+          "label": "Connections between systems",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "backup_recovery",
+          "label": "Backup and recovery",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "failover_cluster",
+          "label": "Standby copy for outages",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "end_user_email",
+          "label": "Staff email",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "ai_ml_platform",
+          "label": "AI inference",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        },
+        {
+          "key": "monitoring_dashboard",
+          "label": "IT monitoring",
+          "detail": null,
+          "values": [
+            "on_prem",
+            "cloud",
+            "saas"
+          ]
+        }
+      ],
+      "people_units": [
+        {
+          "key": "finance",
+          "label": "Finance",
+          "detail": null,
+          "values": []
+        },
+        {
+          "key": "firm",
+          "label": "Firm",
+          "detail": null,
+          "values": []
+        },
+        {
+          "key": "it",
+          "label": "It",
+          "detail": null,
+          "values": []
+        },
+        {
+          "key": "marketing_sales",
+          "label": "Marketing and Sales",
+          "detail": null,
+          "values": []
+        },
+        {
+          "key": "service",
+          "label": "Service",
+          "detail": null,
+          "values": []
+        },
+        {
+          "key": "store_operations",
+          "label": "Store Operations",
+          "detail": null,
+          "values": []
+        },
+        {
+          "key": "warehouse",
+          "label": "Warehouse",
+          "detail": null,
+          "values": []
+        }
+      ],
+      "hiring_options": [
+        {
+          "key": "it_generalist",
+          "label": "It Generalist",
+          "detail": "1 FTE · $31,000/round",
+          "values": []
+        }
+      ],
+      "communication_options": [
+        {
+          "key": "change_champions",
+          "label": "Change Champions",
+          "detail": "$4,000 · resistance −0.1",
+          "values": []
+        },
+        {
+          "key": "knowledge_portal",
+          "label": "Knowledge Portal",
+          "detail": "$3,500 · resistance −0.05",
+          "values": []
+        },
+        {
+          "key": "feedback_loops",
+          "label": "Feedback Loops",
+          "detail": "$2,500 · resistance −0.08",
+          "values": []
+        }
+      ],
+      "challenges": [
+        {
+          "key": "inventory_audit_question",
+          "label": "Inventory Audit Question",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 6000,
+              "rationale_tags": [
+                "capacity_risk",
+                "compliance"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "not_aligned_with_strategy"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "warehouse_rollout_gap",
+          "label": "Warehouse Rollout Gap",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 6000,
+              "rationale_tags": [
+                "strategic_priority"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "insufficient_information"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "pos_support_ending",
+          "label": "Pos Support Ending",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 6000,
+              "rationale_tags": [
+                "capacity_risk"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "not_aligned_with_strategy"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "ransomware_on_finance",
+          "label": "Ransomware On Finance",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 40000,
+              "rationale_tags": [
+                "capacity_risk",
+                "compliance"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "insufficient_information"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "crm_data_exposed",
+          "label": "Crm Data Exposed",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 20000,
+              "rationale_tags": [
+                "compliance",
+                "strategic_priority"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "not_aligned_with_strategy"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "phishing_on_staff_accounts",
+          "label": "Phishing On Staff Accounts",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 12000,
+              "rationale_tags": [
+                "strategic_priority"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "insufficient_information"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "privacy_regulator_letter",
+          "label": "Privacy Regulator Letter",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 15000,
+              "rationale_tags": [
+                "compliance"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "insufficient_information"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "financial_audit_deadline_missed",
+          "label": "Financial Audit Deadline Missed",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 18000,
+              "rationale_tags": [
+                "compliance",
+                "capacity_risk"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "not_aligned_with_strategy"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "unlogged_system_change",
+          "label": "Unlogged System Change",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 9000,
+              "rationale_tags": [
+                "compliance"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "insufficient_information"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "checkout_queues_lengthen",
+          "label": "Checkout Queues Lengthen",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 14000,
+              "rationale_tags": [
+                "capacity_risk",
+                "strategic_priority"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "not_aligned_with_strategy"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "service_backlog_builds",
+          "label": "Service Backlog Builds",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 11000,
+              "rationale_tags": [
+                "strategic_priority"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "not_aligned_with_strategy"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "supplier_portal_request",
+          "label": "Supplier Portal Request",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 15000,
+              "rationale_tags": [
+                "strategic_priority"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "insufficient_information"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            }
+          ]
+        },
+        {
+          "key": "analytics_request_from_board",
+          "label": "Analytics Request From Board",
+          "status": "available",
+          "options": [
+            {
+              "key": "fund",
+              "label": "Fund",
+              "cost": 10000,
+              "rationale_tags": [
+                "strategic_priority"
+              ]
+            },
+            {
+              "key": "defer",
+              "label": "Defer",
+              "cost": 0,
+              "rationale_tags": [
+                "insufficient_information"
+              ]
+            },
+            {
+              "key": "reject",
+              "label": "Reject",
+              "cost": 0,
+              "rationale_tags": [
+                "cost_containment"
+              ]
+            }
+          ]
+        }
+      ],
+      "capital_balance": 0,
+      "capital_request_max_amount": 100000,
+      "capital_request_min_reason_length": 20,
+      "capital_request_approval_rounds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "team": {
+        "id": 2,
+        "name": "Section A Team 2",
+        "current_round": 1,
+        "status": "draft",
+        "revision": 19,
+        "locked_revision": null,
+        "strategy": "cost_leadership",
+        "governance": [
+          {
+            "capability": "order_fulfilment",
+            "label": "Order Fulfilment",
+            "owner": null,
+            "sponsor": null,
+            "primary": "initial_order_mgmt_v42"
+          },
+          {
+            "capability": "store_operations",
+            "label": "Store Operations",
+            "owner": null,
+            "sponsor": null,
+            "primary": "initial_pos_system_2011"
+          },
+          {
+            "capability": "financial_reporting",
+            "label": "Financial Reporting",
+            "owner": null,
+            "sponsor": null,
+            "primary": "initial_accounting_package"
+          },
+          {
+            "capability": "customer_insight",
+            "label": "Customer Insight",
+            "owner": null,
+            "sponsor": null,
+            "primary": null
+          },
+          {
+            "capability": "marketing_sales",
+            "label": "Marketing and Sales",
+            "owner": null,
+            "sponsor": null,
+            "primary": null
+          },
+          {
+            "capability": "service",
+            "label": "Service",
+            "owner": null,
+            "sponsor": null,
+            "primary": null
+          },
+          {
+            "capability": "firm_infrastructure",
+            "label": "Firm Infrastructure",
+            "owner": null,
+            "sponsor": null,
+            "primary": null
+          }
+        ],
+        "policies": [
+          {
+            "key": "data_collection",
+            "label": "Data Collection",
+            "selected": "everything_by_default",
+            "options": [
+              "everything_by_default",
+              "purpose_limited",
+              "minimal"
+            ]
+          },
+          {
+            "key": "data_retention",
+            "label": "Data Retention",
+            "selected": "indefinite",
+            "options": [
+              "indefinite",
+              "standard_period",
+              "minimal"
+            ]
+          },
+          {
+            "key": "data_access",
+            "label": "Data Access",
+            "selected": "open_to_all_staff",
+            "options": [
+              "open_to_all_staff",
+              "role_based",
+              "need_to_know"
+            ]
+          },
+          {
+            "key": "access_logging",
+            "label": "Access Logging",
+            "selected": "unlogged",
+            "options": [
+              "unlogged",
+              "sampled",
+              "full_audit_trail"
+            ]
+          },
+          {
+            "key": "data_egress",
+            "label": "Data Egress",
+            "selected": "unrestricted",
+            "options": [
+              "unrestricted",
+              "approved_destinations",
+              "no_export"
+            ]
+          },
+          {
+            "key": "staff_monitoring",
+            "label": "Staff Monitoring",
+            "selected": "untracked",
+            "options": [
+              "untracked",
+              "aggregate_only",
+              "individual_activity"
+            ]
+          }
+        ],
+        "selected_commands": [
+          {
+            "primary_for": null,
+            "tco_categories": [],
+            "op": "buy_application",
+            "catalog": "erp_suite",
+            "placement": "on_prem",
+            "key": "buy_erp_suite_on_prem",
+            "config": "basic"
+          },
+          {
+            "primary_for": null,
+            "tco_categories": [],
+            "op": "buy_application",
+            "catalog": "next_gen_firewall",
+            "placement": "on_prem",
+            "key": "security_next_gen_firewall",
+            "config": "core"
+          },
+          {
+            "org_unit": "finance",
+            "op": "communicate",
+            "option": "none",
+            "key": "comm_finance"
+          },
+          {
+            "org_unit": "store_operations",
+            "op": "communicate",
+            "option": "none",
+            "key": "comm_store"
+          },
+          {
+            "strategy": "cost_leadership",
+            "op": "declare_strategy",
+            "key": "conflict_review_strategy"
+          },
+          {
+            "policy": "access_logging",
+            "op": "set_policy",
+            "selected": "unlogged",
+            "key": "policy_access_logging"
+          },
+          {
+            "policy": "data_access",
+            "op": "set_policy",
+            "selected": "open_to_all_staff",
+            "key": "policy_data_access"
+          },
+          {
+            "policy": "data_collection",
+            "op": "set_policy",
+            "selected": "everything_by_default",
+            "key": "policy_data_collection"
+          },
+          {
+            "policy": "data_egress",
+            "op": "set_policy",
+            "selected": "unrestricted",
+            "key": "policy_data_egress"
+          },
+          {
+            "policy": "data_retention",
+            "op": "set_policy",
+            "selected": "indefinite",
+            "key": "policy_data_retention"
+          },
+          {
+            "policy": "staff_monitoring",
+            "op": "set_policy",
+            "selected": "untracked",
+            "key": "policy_staff_monitoring"
+          },
+          {
+            "option": "it_generalist",
+            "op": "hire",
+            "key": "hire_it_generalist"
+          }
+        ]
+      }
+    }
+  }
+]

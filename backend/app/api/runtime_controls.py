@@ -225,11 +225,13 @@ async def patch_controls(section: str, payload: ControlsPatchIn, instance: Simul
     instance_id = instance.instance_id
     team_id_value = team.id
     current_round = run.current_round
+    sheet = await session.get(SimulationSheetV1, (instance_id, team_id_value, current_round))
+    existing = _sheet_commands(sheet)
     categories = {category: payload.commands for category in allowed if category in {"governance", "policy", "application", "platform_service", "staffing", "communication", "event_response"}}
     if section == "strategy":
-        categories = {"governance": [command for command in payload.commands if command.get("op") == "declare_strategy"]}
+        categories = {"governance": [command for command in existing if command.get("op") in {"assign", "set_primary"}] + [command for command in payload.commands if command.get("op") == "declare_strategy"]}
     elif section == "governance":
-        categories = {"governance": [command for command in payload.commands if command.get("op") in {"assign", "set_primary"}]}
+        categories = {"governance": [command for command in existing if command.get("op") == "declare_strategy"] + [command for command in payload.commands if command.get("op") in {"assign", "set_primary"}]}
     elif section == "security":
         categories = {"policy": [command for command in payload.commands if command.get("op") == "set_policy"], "application": [command for command in payload.commands if command.get("op") in {"buy_application", "replace_application"}]}
     elif section == "services":

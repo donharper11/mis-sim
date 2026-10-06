@@ -20,6 +20,7 @@ from app.api import runtime_round_control  # noqa: F401 – router registration
 from app.config import settings
 from app.main import create_app
 from app.models.base import Base
+from app.models import host_platform as host_models
 from app.models.platform import Casepack, Course, Enrollment, Section, SimulationInstance, Team, User
 from app.models.scheduling import RoundSchedule, RoundScheduleTeam
 from app.services.auth import create_access_token, hash_password
@@ -43,7 +44,7 @@ async def _fixture(tmp_path):
         Casepack.__table__, RoundSchedule.__table__, RoundScheduleTeam.__table__,
         SimulationRunV1.__table__, SimulationSheetV1.__table__,
         SimulationCheckpointV1.__table__,
-    ] + [t.__table__ for t in round_models.ALL_TABLES]
+    ] + [t.__table__ for t in (*round_models.ALL_TABLES, *host_models.ALL_TABLES)]
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all, tables=tables)
     factory = async_sessionmaker(engine, expire_on_commit=False)

@@ -1,0 +1,17 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 20260726_0001, baseline
+INFO  [alembic.runtime.migration] Running upgrade 20260726_0001 -> 20260822_0002, round runner runtime tables (module 1.6)
+INFO  [alembic.runtime.migration] Running upgrade 20260822_0002 -> 20260914_0003, Add the versioned production simulation run/checkpoint tables.
+INFO  [alembic.runtime.migration] Running upgrade 20260914_0003 -> 20260915_0004, Create the M2 platform hierarchy and identity foundation.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0004 -> 20260915_0005, Add the complete M2 runtime instance-scope foreign-key boundary.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0005 -> 20260915_0006, Add the platform-level immutable casepack registry.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0006 -> 20260915_0007, Add authentication activity timestamp.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0007 -> 20260915_0008, Add deterministic instance-scoped round schedules.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0008 -> 20261002_0009, Add grading tables for M5.5 grade derivation and export.
+INFO  [alembic.runtime.migration] Running upgrade 20261002_0009 -> 20261002_0010, Add archived to simulation_instance status CHECK constraint.
+INFO  [alembic.runtime.migration] Running upgrade 20261002_0010 -> 20261004_0011, Add host_platform and host_platform_member tables.
+Ready: two sections, four round-one teams; accounts in docs/demo-accounts.md
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+REFUSED: database already has users; use a fresh disposable database

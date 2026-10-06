@@ -1,0 +1,65 @@
+[
+  {
+    "case": "Partial Unit selection while hiring removes prior store communication",
+    "commands": [
+      {
+        "org_unit": "finance",
+        "op": "communicate",
+        "option": "none",
+        "key": "comm_finance"
+      },
+      {
+        "option": "it_generalist",
+        "op": "hire",
+        "key": "hire_it_generalist"
+      }
+    ],
+    "preserved": false
+  },
+  {
+    "case": "prior security purchase",
+    "commands": [
+      {
+        "primary_for": null,
+        "tco_categories": [],
+        "op": "buy_application",
+        "catalog": "next_gen_firewall",
+        "placement": "on_prem",
+        "key": "security_next_gen_firewall",
+        "config": "core"
+      }
+    ]
+  },
+  {
+    "case": "component provision",
+    "status": 422,
+    "body": {
+      "detail": "Platform commands are not valid for this round"
+    }
+  },
+  {
+    "case": "host component followed by policy save",
+    "before": [
+      {
+        "primary_for": null,
+        "tco_categories": [],
+        "op": "buy_application",
+        "catalog": "next_gen_firewall",
+        "placement": "on_prem",
+        "key": "security_next_gen_firewall",
+        "config": "core"
+      }
+    ],
+    "after": [
+      {
+        "primary_for": null,
+        "tco_categories": [],
+        "op": "buy_application",
+        "catalog": "next_gen_firewall",
+        "placement": "on_prem",
+        "key": "security_next_gen_firewall",
+        "config": "core"
+      }
+    ]
+  }
+]

@@ -1,0 +1,40 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_activation_atomic_retry_parity_and_final_horizon[sqlite] _________
+
+database = (Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-26/test_activation_atomic_retry_p0/lifecycle.db), 'sqlite+aiosqlite:////tmp/pytest-of-ubuntu/pytest-26/test_activation_atomic_retry_p0/lifecycle.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x724c1b5ab170>
+
+    def test_activation_atomic_retry_parity_and_final_horizon(database, monkeypatch):
+        engine, _ = database
+        service = service_for(engine)
+        hosts(engine)
+        before_other = snapshot(engine, instance_id=2)
+        service.lock(1,1,1,0)
+        before = snapshot(engine)
+        import app.simulation.service as module
+        original = module.activate_due_hosts
+        def failed(*args):
+            original(*args)
+            raise RuntimeError('after promotion')
+        with monkeypatch.context() as patch:
+            patch.setattr(module, 'activate_due_hosts', failed)
+            with pytest.raises(RuntimeError, match='after promotion'):
+                service.advance(1,1,1,0)
+        assert snapshot(engine) == before
+        result = service.advance(1,1,1,0)
+        assert snapshot(engine, instance_id=2) == before_other
+        with Session(engine) as s:
+            statuses = dict(s.execute(select(HostPlatform.id,HostPlatform.status)).all())
+>       assert {hid for hid,status in statuses.items() if status=='active'} == {1,11,17}
+E       assert {17} == {1, 11, 17}
+E         
+E         Extra items in the right set:
+E         1
+E         11
+E         Use -v to get more diff
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_host_lifecycle.py:125: AssertionError
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/projects/mis-sim/backend/tests/test_host_lifecycle.py::test_activation_atomic_retry_parity_and_final_horizon[sqlite]
+1 failed in 24.25s

@@ -8,7 +8,7 @@
 Canonical source of truth for cross-cutting fields that have drifted, or are likely to.
 Kept short by design.
 
-**Last updated:** 2026-09-15 — production engine input contract v1: scoped entity access and verified credit-eligible repair assessments. Previous update: 2026-09-14 — scorecard contract revision 1: explicit event points, normalized bounded runtime perspectives, persisted partial-financial status and versioned evidence. Previous history: 2026-08-21 (catch-up rework: `capital_remaining` entry added — one home, `budget`, with `review`'s second home eliminated as a schema change, finding `1.3-001` / CG-6; earlier 2026-08-21: 1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
+**Last updated:** 2026-10-06 — host scope0012 and host lifecycle/reset v1 (migration0013), rollout commands and current capital reads. Previous update: 2026-09-15 — production engine input contract v1: scoped entity access and verified credit-eligible repair assessments. Previous update: 2026-09-14 — scorecard contract revision 1: explicit event points, normalized bounded runtime perspectives, persisted partial-financial status and versioned evidence. Previous history: 2026-08-21 (catch-up rework: `capital_remaining` entry added — one home, `budget`, with `review`'s second home eliminated as a schema change, finding `1.3-001` / CG-6; earlier 2026-08-21: 1.4 closeout CR-001/CR-002: `PolicyDecisionState` — archetype absence is exclusion not error, policy overrides unsupported and raise when non-empty; `TeamState.policy_decisions[]` / `PolicyDecisionState` runtime-snapshot contract added, and `PolicyOption.options` consumer moved from prospective to live — 1.4 closeout; earlier 2026-08-21: `PolicyOption.options` / `.default` ordinal-ordering contract added — rework finding `1.1-RA-002`; prior: 2026-07-27 design-token two-tier contract and status badge scale — finding `0.3-013`).
 Entries marked **PROSPECTIVE** are contracts declared in advance; convert to normal
 entries with producer/consumer lists as code lands.
 
@@ -26,6 +26,47 @@ runtime table without exception. Never nullable.
 and carries the standing note *"No data should ever leak between sections."*
 
 **Verify:** `GOVERNANCE.md §5` instance-isolation canary.
+
+**Host scope extension (20261006_0012):** `HostPlatformMember` has nonnull `instance_id`.
+Host `(team_id, instance_id)` references Team `(id, instance_id)`; member
+`(platform_id, instance_id)` references host `(id, instance_id)`. Both host and member
+also directly reference `SimulationInstance` by `instance_id`. These host relationships
+use `ON DELETE CASCADE`, preserving the original host deletion behavior; the historical
+nineteen-table `RESTRICT` contract remains separate. API member writes derive `instance_id`
+from authorized context; all member queries and ORM parent loads constrain it. Asset-key
+assignment and lifecycle semantics are unchanged by this scope migration.
+
+Verify: `check_host_scope_schema.py`, `test_host_scope_guard.py`,
+`test_host_scope_migration.py` (SQLite and explicit disposable PostgreSQL), and
+`test_host_scope_api.py`. Contract dispatch acceptance is recorded in
+`handoffs/readiness-2026-10-06/contract-independent-review.md`.
+
+## Host lifecycle and setup reset — v1, 2026-10-06
+
+Host `created_round` and member `assigned_round` derive from the editable, locked
+`SimulationRunV1.current_round`, not the display-level instance pointer. New hosts remain
+pending with `activated_round=created_round+1`. First successful advancement promotes only
+same-instance/team pending hosts with valid positive timing and activation no later than the
+new run pointer, atomically with result/checkpoint/run. A final-round host stays pending:
+completion does not open another round. Null/malformed timing and retired hosts do not change.
+Only pending hosts in an editable run permit rename/member changes. This grouping metadata
+never changes scoring, asset arrival or immutable result/checkpoint evidence.
+
+Migration0013 repairs valid overdue pending status against matching scoped runs, including
+completed runs. It changes status only; its downgrade is intentionally a no-op on status.
+Timing arithmetic widens before addition so malformed INTEGER extremes cannot abort repairs.
+
+Setup reset clears every scoped schedule, host, versioned simulation, historical round and
+grading row; sets display round0 and clears start/completion timestamps; preserves identities,
+pack binding/digest, settings and roster. PostgreSQL instance NO KEY UPDATE, schedule, then
+run locks serialize cleanup. Manual advancement performs a final refreshed instance-lock/run
+snapshot check: a reset that already removed its runs yields409 without restoring status.
+The manual multi-team batch remains a sequence of independent team transactions.
+
+Producers: `SimulationService.advance`, host API, reset service and migration0013.
+Consumers: host/rollout UI, manual round-control reconciliation and scheduler.
+Verify: `test_host_lifecycle.py` on SQLite and dedicated PostgreSQL, independent browser/API
+and backend evidence linked from `docs/host-lifecycle-2026-10-06.md`.
 
 ## Round scheduling (M2.3)
 
@@ -626,6 +667,32 @@ entity access and verified credit-eligible repair assessments. Absent-input hist
 payloads remain unchanged. The production transition and candidate generator remain M1 work.
 
 ---
+
+## Rollout draft projection — 2026-10-06
+
+`RolloutTeamOut.selected_commands` is a list of the current team's persisted strict
+`CommandV1` payloads, or `[]` without a sheet. It is scoped by authorized instance/team.
+It describes draft choices; deployment adoption/trained counts still describe the latest
+checkpoint. `replace_categories` continues to replace an entire named category. A client
+editing one application must preserve other assets' commands in that category, and preserve
+other business units' communication commands. Revision and lock checks remain mandatory.
+There is no arbitrary `budget` field on train/set_process/communicate; costs are authored
+options consumed by the existing reducers. Rollout capex/opex metadata are catalog placement
+prices, not a claim about historical paid or config-adjusted costs.
+
+Producer: `api/runtime_rollout.py`; consumer: `components/RolloutSlider.jsx`.
+Readiness tests and browser proof are in `tests/test_rollout_runtime_api.py` and
+`frontend/tests/readiness-proof.mjs`. No engine score or command shape changed.
+
+## Dashboard current capital — 2026-10-06
+
+For an active modern run, dashboard `capital_remaining` is the current-round capital after
+its grant and saved commitments, computed by `SimulationService.read_budget` through the
+same `prepare_effects` reducers as Review. It is not simply the previous checkpoint's closing
+balance. Completed runs retain their closing balance; absent runtime evidence remains null.
+Budget reads validate scope, pack/checkpoint digest and command payloads and do not enumerate
+repair candidates, write state or produce scores. The browser proof reconciles it to Review;
+the service regression verifies parity and no full-preview call.
 
 ## How to add an entry
 

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "checks": [
+    "Rollout and Ownership share the current revision and retain strategy",
+    "Strategy save preserves pending ownership",
+    "People is reachable and hiring preserves rollout communication",
+    "Security and People saves share revisions and retain draft policy selections",
+    "Policy and ownership choices survive page reload"
+  ],
+  "errors": []
+}

@@ -86,12 +86,16 @@ export default function Shell({ view = "dashboard" }) {
             hostPlatforms = hp;
           }
           if (view === "rollout") {
-            const [rolloutResponse, controlsResponse] = await Promise.all([
+            const [rolloutResponse, controlsResponse, hp, platformResponse] = await Promise.all([
               apiClient.get(`/instances/${me.instance_id}/rollout`),
               apiClient.get(`/instances/${me.instance_id}/controls`),
+              fetchHostPlatforms(),
+              apiClient.get(`/instances/${me.instance_id}/platform`),
             ]);
             rollout = rolloutResponse.data;
+            platform = platformResponse.data;
             controls = controlsResponse.data;
+            hostPlatforms = hp;
           }
           if (view === "review") {
             const [reviewResponse, controlsResponse] = await Promise.all([
@@ -144,7 +148,7 @@ export default function Shell({ view = "dashboard" }) {
       case "applications":
         return <ApplicationsPage data={state.components} instanceId={state.instance?.instance_id} hostPlatforms={state.hostPlatforms} />;
       case "rollout":
-        return <Rollout data={state.rollout} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
+        return <Rollout data={state.rollout} platformData={state.platform} controlsData={state.controls} instanceId={state.instance?.instance_id} hostPlatforms={state.hostPlatforms} />;
       case "review":
         return <Review data={state.review} controlsData={state.controls} instanceId={state.instance?.instance_id} />;
       case "debrief":

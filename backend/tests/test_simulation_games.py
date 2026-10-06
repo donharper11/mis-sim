@@ -6,7 +6,9 @@ from pathlib import Path
 import pytest
 from sqlalchemy import create_engine
 
+from app.models import platform as platform_models
 from app.models.base import Base
+from app.models import host_platform as host_models
 from app.round import models as round_models
 from app.simulation import models as simulation_models
 from app.simulation.content import load_runtime_pack
@@ -28,7 +30,7 @@ def pack():
 @pytest.fixture()
 def engine(tmp_path):
     db = create_engine(f"sqlite:///{tmp_path / 'games.db'}", future=True)
-    Base.metadata.create_all(db, tables=[x.__table__ for x in (*round_models.ALL_TABLES, *simulation_models.ALL_TABLES)])
+    Base.metadata.create_all(db, tables=[x.__table__ for x in (*platform_models.ALL_TABLES, *host_models.ALL_TABLES, *round_models.ALL_TABLES, *simulation_models.ALL_TABLES)])
     yield db
     db.dispose()
 

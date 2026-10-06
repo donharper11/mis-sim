@@ -1,0 +1,19 @@
+INFO:httpx:HTTP Request: GET http://test/api/instances/1/dashboard "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST http://test/api/instances/1/host-platforms "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: PATCH http://test/api/instances/1/host-platforms/1 "HTTP/1.1 409 Conflict"
+INFO:httpx:HTTP Request: PATCH http://test/api/instances/1/host-platforms/1 "HTTP/1.1 409 Conflict"
+INFO:httpx:HTTP Request: GET http://test/api/instances/2/host-platforms "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET http://test/api/instances/1/host-platforms "HTTP/1.1 200 OK"
+budget_no_write {'capital_remaining': 400000}
+budget_scope not_found
+budget_scope not_found
+budget_negative pack_digest pack_mismatch
+budget_negative state_digest invalid_output
+budget_negative commands invalid_output
+dashboard_budget 400000
+host_status_guard paused 409
+host_status_guard completed 409
+cross_instance 403
+reset_residual_platforms 2
+member_columns ['id', 'platform_id', 'asset_key', 'member_kind', 'assigned_round']
+migration_head 20261004_0011

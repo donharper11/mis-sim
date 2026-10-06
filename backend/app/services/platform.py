@@ -418,45 +418,34 @@ async def reset_instance(session: AsyncSession, instance_id: int) -> SimulationI
     Only setup-status instances can be reset.
     """
     from app.models.grading import GradeConfig, GradeOverride
+    from app.models.host_platform import HostPlatform, HostPlatformMember
     from app.models.scheduling import RoundSchedule, RoundScheduleTeam
-    from app.round.models import RoundResult
+    from app.round import models as round_models
     from app.simulation.models import SimulationCheckpointV1, SimulationRunV1, SimulationSheetV1
 
-    instance = await InstanceService.read(session, instance_id)
+    # NO KEY UPDATE permits the FK key locks taken by an in-flight host insert.
+    instance = await session.scalar(select(SimulationInstance).where(
+        SimulationInstance.instance_id == instance_id,
+    ).with_for_update(key_share=True).execution_options(populate_existing=True))
+    if instance is None:
+        raise PlatformNotFound(f"Instance {instance_id} was not found")
     if instance.status != "setup":
         raise PlatformConflict(
             f"Only setup-status instances can be reset; instance {instance_id} is '{instance.status}'. "
             "Archive and clone, or return to setup first."
         )
-
-    # Delete runtime rows in dependency-safe order (children before parents).
-    # RoundScheduleTeam references RoundSchedule, so delete it first.
-    await session.execute(
-        RoundScheduleTeam.__table__.delete().where(RoundScheduleTeam.instance_id == instance_id)
-    )
-    await session.execute(
-        RoundSchedule.__table__.delete().where(RoundSchedule.instance_id == instance_id)
-    )
-    # SimulationSheetV1 and SimulationCheckpointV1 reference SimulationRunV1.
-    await session.execute(
-        SimulationSheetV1.__table__.delete().where(SimulationSheetV1.instance_id == instance_id)
-    )
-    await session.execute(
-        SimulationCheckpointV1.__table__.delete().where(SimulationCheckpointV1.instance_id == instance_id)
-    )
-    await session.execute(
-        SimulationRunV1.__table__.delete().where(SimulationRunV1.instance_id == instance_id)
-    )
-    await session.execute(
-        RoundResult.__table__.delete().where(RoundResult.instance_id == instance_id)
-    )
-    # Grading tables.
-    await session.execute(
-        GradeOverride.__table__.delete().where(GradeOverride.instance_id == instance_id)
-    )
-    await session.execute(
-        GradeConfig.__table__.delete().where(GradeConfig.instance_id == instance_id)
-    )
+    # Match scheduler's schedule→run order and retain locks through caller commit.
+    for model, order in ((RoundSchedule, RoundSchedule.id), (SimulationRunV1, SimulationRunV1.team_id)):
+        await session.execute(select(model).where(model.instance_id == instance_id).order_by(order).with_for_update())
+    for model in (
+        RoundScheduleTeam, RoundSchedule, HostPlatformMember, HostPlatform,
+        SimulationSheetV1, SimulationCheckpointV1, SimulationRunV1,
+        *reversed(round_models.ALL_TABLES), GradeOverride, GradeConfig,
+    ):
+        await session.execute(model.__table__.delete().where(model.instance_id == instance_id))
+    instance.current_round = 0
+    instance.started_at = None
+    instance.completed_at = None
     await session.flush()
     return instance
 

@@ -15,7 +15,7 @@ const categoryMeta = {
   communication: { icon: Megaphone, label: "Communication" },
 };
 
-function CategoryCard({ category, options, selectedKey, onSelect, budget, onBudgetChange, disabled }) {
+function CategoryCard({ category, options, selectedKey, onSelect, disabled }) {
   const meta = categoryMeta[category];
   const Icon = meta.icon;
   const idx = options.findIndex((o) => o.key === selectedKey);
@@ -43,7 +43,7 @@ function CategoryCard({ category, options, selectedKey, onSelect, budget, onBudg
           step={1}
           value={rawVal}
           marks={marks}
-          disabled={disabled}
+          disabled={disabled || !options.length}
           tooltip={{ formatter: (v) => Math.round(v) }}
           onChange={(val) => setRawVal(val)}
           onChangeComplete={(val) => {
@@ -57,69 +57,70 @@ function CategoryCard({ category, options, selectedKey, onSelect, budget, onBudg
       <div className="rollout-category-card__info">
         {opt?.cost ? `$${opt.cost.toLocaleString()}` : "$0"}{opt?.coverage != null ? ` · ${Math.round(opt.coverage * 100)}%` : ""}
       </div>
-      <div className="rollout-category-card__budget">
-        <label>
-          Budget ($)
-          <input
-            type="number"
-            min="0"
-            step="1"
-            value={budget}
-            placeholder="0"
-            disabled={disabled}
-            onChange={(e) => onBudgetChange(e.target.value)}
-          />
-        </label>
-      </div>
+
     </div>
   );
 }
 
-export default function RolloutSlider({ deployment, team, instanceId, onSaved }) {
+function fmt$(n) { return n >= 1000 ? `$${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K` : `$${n}`; }
+const placementNames = { cloud: "Cloud", on_prem: "On-Premises", saas: "SaaS" };
+
+export default function RolloutSlider({ deployment, team, instanceId, onSaved, onViewPlatform }) {
   const initialValues = useMemo(() => ({
-    training: deployment.training_options.find((item) => (item.coverage || 0) >= deployment.training_pct)?.key || deployment.training_options[0]?.key || "",
-    process: deployment.process,
-    communication: deployment.communication,
-    trainingBudget: deployment.training_budget ?? "",
-    processBudget: deployment.process_budget ?? "",
-    communicationBudget: deployment.communication_budget ?? "",
-  }), [deployment]);
+    training: team.selected_commands?.find((c) => c.op === "train" && c.asset === deployment.id)?.option
+      || deployment.training_options.find((item) => (item.coverage || 0) >= deployment.training_pct)?.key || deployment.training_options[0]?.key || "",
+    process: team.selected_commands?.find((c) => c.op === "set_process" && c.asset === deployment.id)?.choice || deployment.process,
+    communication: team.selected_commands?.find((c) => c.op === "communicate" && c.org_unit === deployment.org_unit)?.option || deployment.communication,
+  }), [deployment, team.selected_commands]);
 
   const [training, setTraining] = useState(initialValues.training);
   const [process, setProcess] = useState(initialValues.process);
   const [communication, setCommunication] = useState(initialValues.communication);
-  const [trainingBudget, setTrainingBudget] = useState(initialValues.trainingBudget);
-  const [processBudget, setProcessBudget] = useState(initialValues.processBudget);
-  const [communicationBudget, setCommunicationBudget] = useState(initialValues.communicationBudget);
+  useEffect(() => {
+    setTraining(initialValues.training);
+    setProcess(initialValues.process);
+    setCommunication(initialValues.communication);
+  }, [initialValues]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [revisionConflict, setRevisionConflict] = useState(false);
   const readOnly = team.revision === null || team.locked_revision !== null;
 
   function reset() {
     setTraining(initialValues.training);
     setProcess(initialValues.process);
     setCommunication(initialValues.communication);
-    setTrainingBudget(initialValues.trainingBudget);
-    setProcessBudget(initialValues.processBudget);
-    setCommunicationBudget(initialValues.communicationBudget);
     setError("");
+    setRevisionConflict(false);
   }
 
   async function save() {
     if (readOnly || !training || !process || !communication) return;
-    setSaving(true); setError("");
+    setSaving(true); setError(""); setRevisionConflict(false);
     try {
       const response = await apiClient.patch(`/instances/${instanceId}/rollout`, {
         version: 1, expected_revision: team.revision,
         replace_categories: {
-          training: [{ key: `rollout_train_${deployment.id}`, op: "train", asset: deployment.id, option: training, budget: Number(trainingBudget) || 0 }],
-          process_redesign: [{ key: `rollout_process_${deployment.id}`, op: "set_process", asset: deployment.id, choice: process, budget: Number(processBudget) || 0 }],
-          communication: [{ key: `rollout_communicate_${deployment.org_unit}`, op: "communicate", org_unit: deployment.org_unit, option: communication, budget: Number(communicationBudget) || 0 }],
+          training: [
+            ...(team.selected_commands || []).filter((c) => c.op === "train" && c.asset !== deployment.id),
+            { key: `rollout_train_${deployment.id}`, op: "train", asset: deployment.id, option: training },
+          ],
+          process_redesign: [
+            ...(team.selected_commands || []).filter((c) => c.op === "set_process" && c.asset !== deployment.id),
+            { key: `rollout_process_${deployment.id}`, op: "set_process", asset: deployment.id, choice: process },
+          ],
+          communication: [
+            ...(team.selected_commands || []).filter((c) => c.op === "communicate" && c.org_unit !== deployment.org_unit),
+            { key: `rollout_communicate_${deployment.org_unit}`, op: "communicate", org_unit: deployment.org_unit, option: communication },
+          ],
         },
       });
       onSaved(response.data);
     } catch (requestError) {
-      setError(typeof requestError.response?.data?.detail === "string" ? requestError.response.data.detail : "The rollout decision could not be saved.");
+      const detail = requestError.response?.data?.detail;
+      const conflict = detail?.code === "revision_conflict";
+      setRevisionConflict(conflict);
+      setError(conflict ? "Another save changed this round. Your choices are still shown here. Reload the latest decisions before trying again; reloading discards these unsaved choices." : typeof detail === "string" ? detail : "The rollout decision could not be saved.");
     } finally { setSaving(false); }
   }
 
@@ -136,14 +137,33 @@ export default function RolloutSlider({ deployment, team, instanceId, onSaved })
         </div>
       </div>
 
+      {/* Deployment metadata */}
+      {(deployment.platform_code || deployment.capex || deployment.opex) && (
+        <div className="rollout-deployment-meta">
+          {deployment.platform_code && (
+            <span>
+              Platform: {deployment.platform_code} &middot; {deployment.platform_name || "—"}
+              {onViewPlatform && deployment.platform_id && (
+                <>
+                  {" "}
+                  <button type="button" className="rollout-deployment-meta__link" onClick={() => onViewPlatform(deployment.platform_id)}>view &#x2197;</button>
+                </>
+              )}
+            </span>
+          )}
+          {deployment.org_unit && <span>BU: {deployment.org_unit.replaceAll("_", " ")}</span>}
+          {deployment.placement && <span>Placement: {placementNames[deployment.placement] || deployment.placement}</span>}
+          {deployment.capex > 0 && <span>Setup: {fmt$(deployment.capex)} CAPEX</span>}
+          {deployment.opex > 0 && <span>OPEX: {fmt$(deployment.opex)}/round</span>}
+        </div>
+      )}
+
       <div className="rollout-category-cards">
         <CategoryCard
           category="training"
           options={deployment.training_options}
           selectedKey={training}
           onSelect={setTraining}
-          budget={trainingBudget}
-          onBudgetChange={setTrainingBudget}
           disabled={readOnly}
         />
         <CategoryCard
@@ -151,8 +171,6 @@ export default function RolloutSlider({ deployment, team, instanceId, onSaved })
           options={deployment.process_options}
           selectedKey={process}
           onSelect={setProcess}
-          budget={processBudget}
-          onBudgetChange={setProcessBudget}
           disabled={readOnly}
         />
         <CategoryCard
@@ -160,8 +178,6 @@ export default function RolloutSlider({ deployment, team, instanceId, onSaved })
           options={deployment.communication_options}
           selectedKey={communication}
           onSelect={setCommunication}
-          budget={communicationBudget}
-          onBudgetChange={setCommunicationBudget}
           disabled={readOnly}
         />
       </div>
@@ -171,6 +187,7 @@ export default function RolloutSlider({ deployment, team, instanceId, onSaved })
         <button type="button" className="components-primary" disabled={readOnly || saving || !deployment.training_options.length} onClick={save}>{saving ? "Saving…" : "Save Changes"}</button>
       </div>
       {error && <p className="components-error" role="alert">{error}</p>}
+      {revisionConflict && <button type="button" className="components-secondary" onClick={() => window.location.reload()}>Reload latest decisions</button>}
     </section>
   );
 }

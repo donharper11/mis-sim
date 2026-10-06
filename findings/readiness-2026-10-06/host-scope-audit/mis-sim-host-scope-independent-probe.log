@@ -1,0 +1,2 @@
+PASS postgresql: all 32 tables preserved, nonaligned backfill, eager/lazy joins, loaded ORM cascade, update rejection and round-trip
+PASS sqlite: all 32 tables preserved, nonaligned backfill, eager/lazy joins, loaded ORM cascade, update rejection and round-trip

@@ -1,0 +1,2 @@
+RESET_BLOCKED_ON_ACTUAL_ADVANCE_RUN Lock
+PASS actual advance holds lock, reset waits, then all runtime including grade rows deleted; other scope and enrollment preserved; later advance refused

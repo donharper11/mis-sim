@@ -1,0 +1,87 @@
+Empty disposable database confirmed: 127.0.0.1:44535/mis_sim_verify_readiness
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 20260726_0001, baseline
+INFO  [alembic.runtime.migration] Running upgrade 20260726_0001 -> 20260822_0002, round runner runtime tables (module 1.6)
+INFO  [alembic.runtime.migration] Running upgrade 20260822_0002 -> 20260914_0003, Add the versioned production simulation run/checkpoint tables.
+INFO  [alembic.runtime.migration] Running upgrade 20260914_0003 -> 20260915_0004, Create the M2 platform hierarchy and identity foundation.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0004 -> 20260915_0005, Add the complete M2 runtime instance-scope foreign-key boundary.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0005 -> 20260915_0006, Add the platform-level immutable casepack registry.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0006 -> 20260915_0007, Add authentication activity timestamp.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0007 -> 20260915_0008, Add deterministic instance-scoped round schedules.
+INFO  [alembic.runtime.migration] Running upgrade 20260915_0008 -> 20261002_0009, Add grading tables for M5.5 grade derivation and export.
+INFO  [alembic.runtime.migration] Running upgrade 20261002_0009 -> 20261002_0010, Add archived to simulation_instance status CHECK constraint.
+INFO  [alembic.runtime.migration] Running upgrade 20261002_0010 -> 20261004_0011, Add host_platform and host_platform_member tables.
+{
+  "alembic_heads": [
+    "20261004_0011"
+  ],
+  "database": "mis_sim_verify_readiness",
+  "instance_id": 1,
+  "migrated_tables": [
+    "arch_edge",
+    "arch_node",
+    "casepack",
+    "course",
+    "debt_item",
+    "decision_line",
+    "deployment_org_state",
+    "enrollment",
+    "governance_state",
+    "grade_config",
+    "grade_override",
+    "host_platform",
+    "host_platform_member",
+    "in_flight",
+    "it_staff",
+    "org_unit",
+    "platform_service",
+    "policy_decision",
+    "round_result",
+    "round_schedule",
+    "round_schedule_team",
+    "section",
+    "signal",
+    "simulation_checkpoint_v1",
+    "simulation_instance",
+    "simulation_run_v1",
+    "simulation_sheet_v1",
+    "stakeholder_alignment",
+    "tco_forecast",
+    "team",
+    "team_state",
+    "user"
+  ],
+  "persisted_rounds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "postgresql": "PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit",
+  "scoped_row_counts": {
+    "arch_edge": 48,
+    "arch_node": 57,
+    "debt_item": 2,
+    "decision_line": 23,
+    "deployment_org_state": 29,
+    "governance_state": 18,
+    "in_flight": 0,
+    "it_staff": 6,
+    "org_unit": 18,
+    "platform_service": 0,
+    "policy_decision": 36,
+    "round_result": 6,
+    "signal": 10,
+    "simulation_checkpoint_v1": 0,
+    "simulation_run_v1": 0,
+    "simulation_sheet_v1": 0,
+    "stakeholder_alignment": 18,
+    "tco_forecast": 6,
+    "team_state": 1
+  },
+  "team_id": 1
+}
+PASS: PostgreSQL migrations and six committed rounds verified; retain this database for audit, then use the documented scoped cleanup.

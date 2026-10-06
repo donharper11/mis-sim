@@ -1,0 +1,68 @@
+{
+  "complete": true,
+  "checks": [
+    {
+      "name": "Four browser logins + same-origin auth canary",
+      "data": [
+        {
+          "student": "M2-101",
+          "instance": 1
+        },
+        {
+          "student": "M2-102",
+          "instance": 1
+        },
+        {
+          "student": "M2-105",
+          "instance": 1
+        },
+        {
+          "student": "M2-201",
+          "instance": 2
+        }
+      ]
+    },
+    {
+      "name": "Browser host create",
+      "data": {
+        "id": 1,
+        "instance_id": 1,
+        "team_id": 1,
+        "platform_code": "OP01",
+        "name": "Scope audit host",
+        "notes": null,
+        "platform_type": "on_prem",
+        "cloud_subtype": null,
+        "status": "pending",
+        "created_round": 1,
+        "activated_round": 2,
+        "members": []
+      }
+    },
+    {
+      "name": "Add real initialized asset; response contract preserved",
+      "data": {
+        "id": 1,
+        "asset_key": "initial_pos_system_2011",
+        "member_kind": "component",
+        "assigned_round": 1
+      }
+    },
+    {
+      "name": "Rename and same-team member read"
+    },
+    {
+      "name": "Populated cross-team404/cross-instance403 mutations and no rollout leakage"
+    },
+    {
+      "name": "Owner removal reflected in list and rollout"
+    },
+    {
+      "name": "Re-added scoped member visible in read-only rollout modal"
+    },
+    {
+      "name": "Browser lock retains read-only member and blocks rename/add/remove409"
+    }
+  ],
+  "errors": []
+}

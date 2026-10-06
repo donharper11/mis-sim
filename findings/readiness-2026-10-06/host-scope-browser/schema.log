@@ -1,0 +1,31 @@
+  version_num  
+---------------
+ 20261006_0012
+(1 row)
+
+  column_name   | is_nullable 
+----------------+-------------
+ id             | NO
+ platform_id    | NO
+ asset_key      | NO
+ member_kind    | NO
+ assigned_round | NO
+ instance_id    | NO
+(6 rows)
+
+                  conname                  |                                                                                       pg_get_constraintdef                                                                                        
+-------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ck_host_platform_cloud_subtype            | CHECK (((cloud_subtype IS NULL) OR ((cloud_subtype)::text = ANY ((ARRAY['iaas'::character varying, 'paas'::character varying, 'saas'::character varying, 'aiaas'::character varying])::text[]))))
+ ck_host_platform_status                   | CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'active'::character varying, 'retired'::character varying])::text[])))
+ ck_host_platform_type                     | CHECK (((platform_type)::text = ANY ((ARRAY['on_prem'::character varying, 'cloud'::character varying])::text[])))
+ fk_host_platform_member_instance          | FOREIGN KEY (instance_id) REFERENCES simulation_instance(instance_id) ON DELETE CASCADE
+ fk_host_platform_member_platform_instance | FOREIGN KEY (platform_id, instance_id) REFERENCES host_platform(id, instance_id) ON DELETE CASCADE
+ fk_host_platform_team_instance            | FOREIGN KEY (team_id, instance_id) REFERENCES team(id, instance_id) ON DELETE CASCADE
+ host_platform_instance_id_fkey            | FOREIGN KEY (instance_id) REFERENCES simulation_instance(instance_id) ON DELETE CASCADE
+ host_platform_member_pkey                 | PRIMARY KEY (id)
+ host_platform_pkey                        | PRIMARY KEY (id)
+ uq_host_platform_code                     | UNIQUE (instance_id, team_id, platform_code)
+ uq_host_platform_instance_identity        | UNIQUE (id, instance_id)
+ uq_host_platform_member_asset             | UNIQUE (platform_id, asset_key)
+(12 rows)
+

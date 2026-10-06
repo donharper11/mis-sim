@@ -74,8 +74,8 @@ in the existing Alembic configuration.
 The verifier first checks the connected database/address and refuses any existing
 user tables, views, materialized views, sequences, or foreign tables in any user
 schema. It runs `alembic upgrade head`, checks the actual Alembic revision and
-all 16 runtime tables with non-null integer `instance_id` columns **before
-seeding**, then calls the existing `run_full_game` seed directly. It never invokes
+the complete 32-model migration inventory **before seeding**, including grading and
+host-platform tables; it separately retains the 19-table core runtime inventory, then calls the existing `run_full_game` seed directly. It never invokes
 `create_all` as a fallback. A separate session reads six committed RoundResult
 rows for instance 1/team 1, checks rounds 1–6 and payload identity, and reports
 scoped row counts. The final `PASS` appears only after those reads succeed.
@@ -116,3 +116,12 @@ rm -r -- "$runtime_venv"
 For another run, create another fresh `mis_sim_verify_*` database or repeat the
 isolated-cluster recipe. Do not point this verifier at a normal application DB,
 including an application database that happens to be empty.
+
+
+## Current round-one browser rehearsal
+
+For an initialized student/instructor environment use
+[`readiness-runbook.md`](readiness-runbook.md) and
+`backend/scripts/seed_readiness_demo.py`. The current migration head is `20261006_0012`.
+The historical `--full` verifier above still proves historical persistence; it is not the
+browser fixture and must not be substituted for the decision-driven playthrough.

@@ -15,6 +15,7 @@ from app.api.deps import get_current_instance, get_current_user, get_session
 from app.api.runtime_platform import _label, _runtime_pack, _team_for_user
 from app.models.platform import SimulationInstance, Team, User
 from app.round.db import make_engine
+from app.models.host_platform import HostPlatform, HostPlatformMember
 from app.round.models import ArchNodeRow, DeploymentOrgStateRow, TeamStateRow
 from app.simulation.models import (
     SimulationCheckpointV1,
@@ -48,6 +49,13 @@ class RolloutDeploymentOut(BaseModel):
     training_options: list[RolloutOptionOut] = Field(default_factory=list)
     process_options: list[RolloutOptionOut] = Field(default_factory=list)
     communication_options: list[RolloutOptionOut] = Field(default_factory=list)
+    source_key: str | None = None
+    placement: str | None = None
+    capex: int = 0
+    opex: int = 0
+    platform_code: str | None = None
+    platform_name: str | None = None
+    platform_id: int | None = None
 
 
 class RolloutTeamOut(BaseModel):
@@ -58,6 +66,7 @@ class RolloutTeamOut(BaseModel):
     revision: int | None = None
     locked_revision: int | None = None
     deployments: list[RolloutDeploymentOut] = Field(default_factory=list)
+    selected_commands: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class RolloutOut(BaseModel):
@@ -89,6 +98,7 @@ def _communication_options(pack: Any | None) -> list[RolloutOptionOut]:
 def _deployment(
     raw: Mapping[str, Any], pack: Any | None, rollout: Mapping[str, Any] | None,
     communications: Mapping[str, str], *, legacy: Any | None = None,
+    platform_map: Mapping[str, dict[str, Any]] | None = None,
 ) -> RolloutDeploymentOut:
     source_key = str(raw.get("source_key", raw.get("catalog_key", raw.get("key", ""))))
     item = next((entry for entry in (pack.casepack.catalog if pack is not None else []) if entry.key == source_key), None)
@@ -105,6 +115,16 @@ def _deployment(
             RolloutOptionOut(key="partial", label="Partly redesign process", cost=round(item.process_option.cost * pack.runtime.accounting.process_partial_fraction)),
             RolloutOptionOut(key="redesigned", label="Redesign process", cost=int(item.process_option.cost)),
         ])
+    # Resolve placement and costs from the asset raw data or catalog
+    asset_placement = raw.get("placement")
+    capex = 0
+    opex = 0
+    if item is not None and asset_placement in item.deployment_modes:
+        mode = item.deployment_modes[asset_placement]
+        capex = int(mode.capex)
+        opex = int(mode.opex)
+    # Prefer a particular deployment assignment over the catalog-wide fallback.
+    plat_info = (platform_map or {}).get(str(raw.get("id", raw.get("key", "")))) or (platform_map or {}).get(source_key)
     return RolloutDeploymentOut(
         id=str(raw.get("id", raw.get("key", ""))), label=_label(pack, source_key), org_unit=org_unit,
         people=people, trained_count=trained, training_pct=(trained / people if people else 0.0),
@@ -112,6 +132,13 @@ def _deployment(
         status="needs-attention" if adoption < 0.5 else "partly-done" if adoption < 0.9 else "complete",
         training_options=training_options, process_options=process_options,
         communication_options=_communication_options(pack),
+        source_key=source_key,
+        placement=asset_placement,
+        capex=capex,
+        opex=opex,
+        platform_code=plat_info["platform_code"] if plat_info else None,
+        platform_name=plat_info["platform_name"] if plat_info else None,
+        platform_id=plat_info["platform_id"] if plat_info else None,
     )
 
 
@@ -129,7 +156,32 @@ def _communication_from_sheet(sheet: SimulationSheetV1 | None) -> dict[str, str]
     return result
 
 
+async def _build_platform_map(session: AsyncSession, instance_id: int, team_id: int) -> dict[str, dict[str, Any]]:
+    """Build a lookup from asset_key -> {platform_code, platform_name, platform_id}."""
+    platforms = list((await session.scalars(
+        select(HostPlatform).where(HostPlatform.instance_id == instance_id, HostPlatform.team_id == team_id)
+    )).all())
+    if not platforms:
+        return {}
+    platform_ids = [p.id for p in platforms]
+    members = list((await session.scalars(
+        select(HostPlatformMember).join(HostPlatform).where(
+            HostPlatform.instance_id == instance_id, HostPlatform.team_id == team_id,
+            HostPlatformMember.platform_id.in_(platform_ids),
+            HostPlatformMember.instance_id == instance_id,
+        ).order_by(HostPlatformMember.id)
+    )).all())
+    plat_by_id = {p.id: p for p in platforms}
+    result: dict[str, dict[str, Any]] = {}
+    for m in members:
+        p = plat_by_id.get(m.platform_id)
+        if p is not None:
+            result[m.asset_key] = {"platform_code": p.platform_code, "platform_name": p.name, "platform_id": p.id}
+    return result
+
+
 async def _read_team(session: AsyncSession, instance: SimulationInstance, team: Team, pack: Any | None) -> RolloutTeamOut:
+    platform_map = await _build_platform_map(session, instance.instance_id, team.id)
     run = await session.get(SimulationRunV1, (instance.instance_id, team.id))
     if run is not None:
         checkpoint = await session.get(SimulationCheckpointV1, (instance.instance_id, team.id, run.advanced_round))
@@ -138,8 +190,8 @@ async def _read_team(session: AsyncSession, instance: SimulationInstance, team: 
         rollouts = state.get("rollouts", {}) if isinstance(state.get("rollouts"), Mapping) else {}
         assets = state.get("assets", {}) if isinstance(state.get("assets"), Mapping) else {}
         communications = _communication_from_sheet(sheet)
-        deployments = [_deployment(raw, pack, rollouts.get(asset_id), communications) for asset_id, raw in assets.items() if isinstance(raw, Mapping) and raw.get("source_kind") == "catalog" and asset_id in rollouts]
-        return RolloutTeamOut(id=team.id, name=team.name, current_round=run.current_round, status=run.status, revision=sheet.revision if sheet is not None else None, locked_revision=sheet.locked_revision if sheet is not None else None, deployments=deployments)
+        deployments = [_deployment(raw, pack, rollouts.get(asset_id), communications, platform_map=platform_map) for asset_id, raw in assets.items() if isinstance(raw, Mapping) and raw.get("source_kind") == "catalog" and asset_id in rollouts]
+        return RolloutTeamOut(id=team.id, name=team.name, current_round=run.current_round, status=run.status, revision=sheet.revision if sheet is not None else None, locked_revision=sheet.locked_revision if sheet is not None else None, deployments=deployments, selected_commands=list(sheet.commands or []) if sheet is not None else [])
 
     team_state = await session.get(TeamStateRow, (instance.instance_id, team.id))
     round_number = max((team_state.advanced_round if team_state and team_state.advanced_round else (team_state.current_round if team_state else instance.current_round)), 1)
@@ -148,9 +200,9 @@ async def _read_team(session: AsyncSession, instance: SimulationInstance, team: 
     deployments = []
     for node in nodes:
         row = legacy_rows.get(node.key)
-        raw = {"id": node.key, "source_key": row.catalog_key if row is not None else node.key, "key": node.key, "org_unit": row.org_unit if row is not None else None, "people_affected": row.people_affected if row is not None else None, "trained_count": row.trained_count if row is not None else 0, "process": row.process if row is not None else "unchanged", "adoption": row.adoption if row is not None else 0.0}
+        raw = {"id": node.key, "source_key": row.catalog_key if row is not None else node.key, "key": node.key, "org_unit": row.org_unit if row is not None else None, "people_affected": row.people_affected if row is not None else None, "trained_count": row.trained_count if row is not None else 0, "process": row.process if row is not None else "unchanged", "adoption": row.adoption if row is not None else 0.0, "placement": node.placement}
         if pack is None or any(item.key == raw["source_key"] for item in pack.casepack.catalog):
-            deployments.append(_deployment(raw, pack, raw, {} , legacy=row))
+            deployments.append(_deployment(raw, pack, raw, {}, legacy=row, platform_map=platform_map))
     return RolloutTeamOut(id=team.id, name=team.name, current_round=round_number, status="active" if team_state is not None else "uninitialized", deployments=deployments)
 
 

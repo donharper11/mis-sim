@@ -1,0 +1,23 @@
+[
+  {
+    "method": "PATCH",
+    "status": 404,
+    "body": {
+      "detail": "Platform not found"
+    }
+  },
+  {
+    "method": "POST",
+    "status": 404,
+    "body": {
+      "detail": "Platform not found"
+    }
+  },
+  {
+    "method": "DELETE",
+    "status": 404,
+    "body": {
+      "detail": "Platform not found"
+    }
+  }
+]

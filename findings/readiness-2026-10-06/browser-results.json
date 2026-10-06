@@ -1,0 +1,22 @@
+{
+  "checks": [
+    "Student browser login and scoped API canary",
+    "Eight student routes at 1440px, no page overflow",
+    "Eight student routes at 1280px, no page overflow",
+    "Eight student routes at 1024px, no page overflow",
+    "Eight student routes at 720px, no page overflow",
+    "Two application rollout saves persist without erasing one another",
+    "Headline capital reconciles to current-round review",
+    "Review lock makes rollout read-only",
+    "Instructor login and four authenticated workspaces",
+    "Instructor advanced round 1; student reads persisted result",
+    "Instructor advanced round 2; student reads persisted result",
+    "Instructor advanced round 3; student reads persisted result",
+    "Instructor advanced round 4; student reads persisted result",
+    "Instructor advanced round 5; student reads persisted result",
+    "Instructor advanced round 6; student reads persisted result",
+    "Completed six-round report download",
+    "Zero console/page/network errors"
+  ],
+  "failures": []
+}

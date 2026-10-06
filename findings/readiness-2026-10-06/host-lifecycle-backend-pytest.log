@@ -1,0 +1,510 @@
+....FF.........F                                                         [100%]
+=================================== FAILURES ===================================
+______ test_reset_all_runtime_preservation_rejection_and_rollback[sqlite] ______
+
+self = <sqlalchemy.engine.base.Connection object at 0x71b579985d00>
+dialect = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x71b579a0a7e0>
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x71b579984a70>
+statement = <sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0x71b579985640>
+parameters = [(1, 1, '2026-10-06 14:55:53.296221', '2026-10-07 14:55:53.296221', 1, None, ...)]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -> CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+>                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1967: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x71b579a0a7e0>
+cursor = <sqlite3.Cursor object at 0x71b57931e5c0>
+statement = 'INSERT INTO round_schedule (instance_id, round_number, start_at, deadline, auto_advance, grace_period_minutes, decisions_locked, lock_reason, locked_at, advanced_at, claim_token, claim_until) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+parameters = (1, 1, '2026-10-06 14:55:53.296221', '2026-10-07 14:55:53.296221', 1, None, ...)
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x71b579984a70>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       sqlite3.IntegrityError: NOT NULL constraint failed: round_schedule.grace_period_minutes
+
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py:941: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+database = (Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-19/test_reset_all_runtime_preserv0/lifecycle.db), 'sqlite+aiosqlite:////tmp/pytest-of-ubuntu/pytest-19/test_reset_all_runtime_preserv0/lifecycle.db')
+
+    
+    def test_reset_all_runtime_preservation_rejection_and_rollback(database):
+        engine,url=database
+        service_for(engine);fill_legacy(engine)
+        now=datetime.now(timezone.utc)
+        with Session(engine) as s:
+            for iid in (1,2):
+                inst=s.get(platform.SimulationInstance,iid)
+                inst.current_round=3;inst.started_at=now;inst.completed_at=now
+>               sch=scheduling.RoundSchedule(instance_id=iid,round_number=1,start_at=now,deadline=now+timedelta(days=1),auto_advance=True)
+
+tests/test_host_lifecycle.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:4352: in flush
+    self._flush(objects)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:4487: in _flush
+    with util.safe_reraise():
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:146: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:4448: in _flush
+    flush_context.execute()
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute
+    rec.execute(self)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj
+    _emit_insert_statements(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1418: in execute
+    return meth(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:515: in _execute_on_connection
+    return connection._execute_clauseelement(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1640: in _execute_clauseelement
+    ret = self._execute_context(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1846: in _execute_context
+    return self._exec_single_context(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1986: in _exec_single_context
+    self._handle_dbapi_exception(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:2355: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1967: in _exec_single_context
+    self.dialect.do_execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x71b579a0a7e0>
+cursor = <sqlite3.Cursor object at 0x71b57931e5c0>
+statement = 'INSERT INTO round_schedule (instance_id, round_number, start_at, deadline, auto_advance, grace_period_minutes, decisions_locked, lock_reason, locked_at, advanced_at, claim_token, claim_until) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+parameters = (1, 1, '2026-10-06 14:55:53.296221', '2026-10-07 14:55:53.296221', 1, None, ...)
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x71b579984a70>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: round_schedule.grace_period_minutes
+E       [SQL: INSERT INTO round_schedule (instance_id, round_number, start_at, deadline, auto_advance, grace_period_minutes, decisions_locked, lock_reason, locked_at, advanced_at, claim_token, claim_until) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+E       [parameters: (1, 1, '2026-10-06 14:55:53.296221', '2026-10-07 14:55:53.296221', 1, None, 0, None, None, None, None, None)]
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py:941: IntegrityError
+_____ test_reset_all_runtime_preservation_rejection_and_rollback[postgres] _____
+
+self = <sqlalchemy.engine.base.Connection object at 0x71b579933c50>
+dialect = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x71b579ba9af0>
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x71b5799300e0>
+statement = <sqlalchemy.dialects.postgresql.base.PGCompiler object at 0x71b579635130>
+parameters = [{'advanced_at': None, 'auto_advance': True, 'claim_token': None, 'claim_until': None, ...}]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -> CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+>                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1967: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x71b579ba9af0>
+cursor = <cursor object at 0x71b579cf4b80; closed: -1>
+statement = 'INSERT INTO round_schedule (instance_id, round_number, start_at, deadline, auto_advance, grace_period_minutes, decisi...cked)s, %(lock_reason)s, %(locked_at)s, %(advanced_at)s, %(claim_token)s, %(claim_until)s) RETURNING round_schedule.id'
+parameters = {'advanced_at': None, 'auto_advance': True, 'claim_token': None, 'claim_until': None, ...}
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x71b5799300e0>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       psycopg2.errors.NotNullViolation: null value in column "grace_period_minutes" of relation "round_schedule" violates not-null constraint
+E       DETAIL:  Failing row contains (1, 1, 1, 2026-10-06 22:56:04.164752+08, 2026-10-07 22:56:04.164752+08, t, null, f, null, null, null, null, null).
+
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py:941: NotNullViolation
+
+The above exception was the direct cause of the following exception:
+
+database = (Engine(postgresql+psycopg2://audit:***@127.0.0.1:48183/mis_sim_verify_host_lifecycle_independent), 'postgresql+asyncpg://audit:audit@127.0.0.1:48183/mis_sim_verify_host_lifecycle_independent')
+
+    
+    def test_reset_all_runtime_preservation_rejection_and_rollback(database):
+        engine,url=database
+        service_for(engine);fill_legacy(engine)
+        now=datetime.now(timezone.utc)
+        with Session(engine) as s:
+            for iid in (1,2):
+                inst=s.get(platform.SimulationInstance,iid)
+                inst.current_round=3;inst.started_at=now;inst.completed_at=now
+>               sch=scheduling.RoundSchedule(instance_id=iid,round_number=1,start_at=now,deadline=now+timedelta(days=1),auto_advance=True)
+
+tests/test_host_lifecycle.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:4352: in flush
+    self._flush(objects)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:4487: in _flush
+    with util.safe_reraise():
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/util/langhelpers.py:146: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/session.py:4448: in _flush
+    flush_context.execute()
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/unitofwork.py:466: in execute
+    rec.execute(self)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/persistence.py:93: in save_obj
+    _emit_insert_statements(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1418: in execute
+    return meth(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/sql/elements.py:515: in _execute_on_connection
+    return connection._execute_clauseelement(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1640: in _execute_clauseelement
+    ret = self._execute_context(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1846: in _execute_context
+    return self._exec_single_context(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1986: in _exec_single_context
+    self._handle_dbapi_exception(
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:2355: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/base.py:1967: in _exec_single_context
+    self.dialect.do_execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x71b579ba9af0>
+cursor = <cursor object at 0x71b579cf4b80; closed: -1>
+statement = 'INSERT INTO round_schedule (instance_id, round_number, start_at, deadline, auto_advance, grace_period_minutes, decisi...cked)s, %(lock_reason)s, %(locked_at)s, %(advanced_at)s, %(claim_token)s, %(claim_until)s) RETURNING round_schedule.id'
+parameters = {'advanced_at': None, 'auto_advance': True, 'claim_token': None, 'claim_until': None, ...}
+context = <sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x71b5799300e0>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       sqlalchemy.exc.IntegrityError: (psycopg2.errors.NotNullViolation) null value in column "grace_period_minutes" of relation "round_schedule" violates not-null constraint
+E       DETAIL:  Failing row contains (1, 1, 1, 2026-10-06 22:56:04.164752+08, 2026-10-07 22:56:04.164752+08, t, null, f, null, null, null, null, null).
+E       
+E       [SQL: INSERT INTO round_schedule (instance_id, round_number, start_at, deadline, auto_advance, grace_period_minutes, decisions_locked, lock_reason, locked_at, advanced_at, claim_token, claim_until) VALUES (%(instance_id)s, %(round_number)s, %(start_at)s, %(deadline)s, %(auto_advance)s, %(grace_period_minutes)s, %(decisions_locked)s, %(lock_reason)s, %(locked_at)s, %(advanced_at)s, %(claim_token)s, %(claim_until)s) RETURNING round_schedule.id]
+E       [parameters: {'instance_id': 1, 'round_number': 1, 'start_at': datetime.datetime(2026, 10, 6, 14, 56, 4, 164752, tzinfo=datetime.timezone.utc), 'deadline': datetime.datetime(2026, 10, 7, 14, 56, 4, 164752, tzinfo=datetime.timezone.utc), 'auto_advance': True, 'grace_period_minutes': None, 'decisions_locked': False, 'lock_reason': None, 'locked_at': None, 'advanced_at': None, 'claim_token': None, 'claim_until': None}]
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/engine/default.py:941: IntegrityError
+__________ test_pending_only_writes_and_authoritative_round[postgres] __________
+
+database = (Engine(postgresql+psycopg2://audit:***@127.0.0.1:48183/mis_sim_verify_host_lifecycle_independent), 'postgresql+asyncpg://audit:audit@127.0.0.1:48183/mis_sim_verify_host_lifecycle_independent')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x71b5761de3c0>
+
+                async with factory() as s:yield s
+            app=create_app();app.dependency_overrides[deps.get_session]=session_dep
+            async def after_service(func,*args,**kwargs):
+                value=await original_to_thread(func,*args,**kwargs)
+                if func.__name__=='advance_one':
+                    if interleave=='reset':
+                        async with factory() as s:
+                            await reset_instance(s,1);await s.commit()
+                    else:
+                        service.lock(1,1,2,0);service.advance(1,1,2,0)
+                return value
+            monkeypatch.setattr(asyncio,'to_thread',after_service)
+            try:
+                token=create_access_token(user_id=1,role='instructor')
+                async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test') as client:
+                    r=await client.post('/api/instances/1/round-control/advance',headers={'Authorization':'Bearer '+token})
+                    assert r.status_code==(409 if interleave=='reset' else 200),r.text
+                    if interleave=='newer_advance':assert r.json()['next_round']==3
+            finally:await ae.dispose()
+        asyncio.run(run())
+        with Session(engine) as s:
+            inst=s.get(platform.SimulationInstance,1)
+            if interleave=='reset':
+                assert (inst.status,inst.current_round)==('setup',0)
+                assert all(not rows for rows in snapshot(engine,instance_id=1).values())
+            else:assert (inst.status,inst.current_round)==('active',3)
+    
+    
+    def test_pending_only_writes_and_authoritative_round(database, monkeypatch):
+        from httpx import ASGITransport, AsyncClient
+        from app.api import deps
+        from app.main import create_app
+        from app.services.auth import create_access_token
+        engine,url=database
+        service=service_for(engine)
+        service.lock(1,1,1,0);service.advance(1,1,1,0)
+        async def run():
+            ae=create_async_engine(url);factory=async_sessionmaker(ae,expire_on_commit=False)
+            async def session_dep():
+                async with factory() as s:yield s
+>           app=create_app();app.dependency_overrides[deps.get_session]=session_dep
+
+tests/test_host_lifecycle.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+            else:
+                service.lock(1,1,2,0);service.advance(1,1,2,0)
+        return value
+    monkeypatch.setattr(asyncio,'to_thread',after_service)
+    try:
+        token=create_access_token(user_id=1,role='instructor')
+        async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test') as client:
+            r=await client.post('/api/instances/1/round-control/advance',headers={'Authorization':'Bearer '+token})
+            assert r.status_code==(409 if interleave=='reset' else 200),r.text
+            if interleave=='newer_advance':assert r.json()['next_round']==3
+>   finally:await ae.dispose()
+E   AssertionError: {"detail":"A record with this value already exists."}
+E   assert 409 == 200
+E    +  where 409 = <Response [409 Conflict]>.status_code
+
+tests/test_host_lifecycle.py:382: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  app.main:main.py:72 IntegrityError on POST /api/instances/1/host-platforms: <class 'asyncpg.exceptions.UniqueViolationError'>: duplicate key value violates unique constraint "host_platform_pkey"
+DETAIL:  Key (id)=(1) already exists.
+=============================== warnings summary ===============================
+tests/test_host_lifecycle.py::test_real_manual_and_scheduler_activation_parity[sqlite]
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+tests/test_host_lifecycle.py: 19 warnings
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/jose/jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_host_lifecycle.py::test_reset_all_runtime_preservation_rejection_and_rollback[sqlite]
+FAILED tests/test_host_lifecycle.py::test_reset_all_runtime_preservation_rejection_and_rollback[postgres]
+FAILED tests/test_host_lifecycle.py::test_pending_only_writes_and_authoritative_round[postgres]
+3 failed, 13 passed, 20 warnings in 455.86s (0:07:35)

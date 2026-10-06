@@ -1,7 +1,9 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "../api/client.js";
-import { ContextBanner, DetailTable, StatusBadge } from "../components/index.js";
+import { ContextBanner, DetailTable, PageTabs, StatusBadge } from "../components/index.js";
+
+import { PeoplePanel, SecurityPanel } from "./Controls.jsx";
 
 const placementNames = { cloud: "Cloud", on_prem: "On-Premises", saas: "SaaS" };
 const typeLabels = { on_prem: "On-Premises", cloud: "Cloud" };
@@ -9,15 +11,9 @@ const subtypeLabels = { iaas: "IaaS", paas: "PaaS", saas: "SaaS", aiaas: "AIaaS"
 const statusBadgeMap = { active: ["complete", "Active"], pending: ["info", "Pending"], retired: ["neutral", "Retired"] };
 const modelBadgeColors = { iaas: "var(--status-info-bg)", paas: "var(--status-ok-bg)", saas: "var(--p-purple-100, #ede9fe)", aiaas: "var(--p-amber-100, #fef3c7)" };
 const modelBadgeTextColors = { iaas: "var(--status-info-text)", paas: "var(--status-ok-text)", saas: "var(--p-purple-700, #6d28d9)", aiaas: "var(--p-amber-700, #b45309)" };
+const categoryOrder = ["computing", "networking", "storage", "security", "data_management", "integration", "resilience", "productivity", "enterprise_software", "ai_ml", "management", "other"];
 
 function fmt$(n) { return n >= 1000 ? `$${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K` : `$${n}`; }
-
-function statusFor(utilisation) {
-  if (typeof utilisation !== "number") return ["not-started", "Not measured"];
-  if (utilisation >= 100) return ["needs-attention", "Needs attention"];
-  if (utilisation >= 70) return ["partly-done", "Partly done"];
-  return ["complete", "OK"];
-}
 
 /* ---------- Service model badge ---------- */
 
@@ -100,7 +96,7 @@ function NewPlatformForm({ instanceId, onCreated, onCancel }) {
 
 /* ---------- Categorized service catalog browser ---------- */
 
-function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvisioned, onCancel }) {
+function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvisioned, onCancel, onBusyChange }) {
   const [expanded, setExpanded] = useState(null);
   const [selectedPlacements, setSelectedPlacements] = useState({});
   const [provisioning, setProvisioning] = useState(null);
@@ -121,7 +117,6 @@ function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvi
     return map;
   }, [missingServices]);
 
-  const categoryOrder = ["computing", "networking", "storage", "security", "data_management", "integration", "resilience", "productivity", "enterprise_software", "ai_ml", "management", "other"];
   const sortedCategories = categoryOrder.filter((c) => grouped[c]?.length > 0);
 
   function selectPlacement(serviceKey, placement) {
@@ -131,14 +126,16 @@ function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvi
   async function provision(service) {
     const placement = selectedPlacements[service.key];
     if (!placement || team.revision === null || team.locked_revision !== null) return;
-    setProvisioning(service.key); setError("");
+    setProvisioning(service.key); onBusyChange(true); setError("");
     try {
-      // Buy the service
+      const current = (await apiClient.get(`/instances/${instanceId}/controls`)).data;
+      const commandKey = `platform_${service.key}_${placement}`;
       const response = await apiClient.patch(`/instances/${instanceId}/platform`, {
         version: 1,
-        expected_revision: team.revision,
-        commands: [{ key: `platform_${service.key}_${placement}`, op: "buy_service", service: service.key, placement, units: 1 }],
+        expected_revision: current.team.revision,
+        commands: [...current.team.selected_commands.filter((c) => ["buy_service", "replace_service"].includes(c.op) && c.key !== commandKey), { key: commandKey, op: "buy_service", service: service.key, placement, units: 1 }],
       });
+      let warning = "";
       // Assign to platform
       const newAssetKey = service.key;
       try {
@@ -146,12 +143,12 @@ function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvi
           asset_key: newAssetKey,
           member_kind: "service",
         });
-      } catch { /* assignment failure is non-fatal */ }
-      onProvisioned(response.data);
+      } catch { warning = "The purchase was saved, but it could not be assigned to this host platform. Reload to check the purchase before trying again."; }
+      await onProvisioned(response.data, warning);
     } catch (requestError) {
       const detail = requestError.response?.data?.detail;
       setError(typeof detail === "string" ? detail : detail?.code || "Could not provision the service.");
-    } finally { setProvisioning(null); }
+    } finally { setProvisioning(null); onBusyChange(false); }
   }
 
   if (sortedCategories.length === 0) {
@@ -159,7 +156,7 @@ function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvi
       <div className="catalog-browser">
         <div className="catalog-browser__header">
           <h3>Add a Service to {platform.platform_code} &middot; {platform.name}</h3>
-          <button type="button" className="components-secondary" onClick={onCancel}>Cancel</button>
+          <button type="button" className="components-secondary" disabled={!!provisioning} onClick={onCancel}>Cancel</button>
         </div>
         <p className="components-muted">All available services have been provisioned.</p>
       </div>
@@ -170,7 +167,7 @@ function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvi
     <div className="catalog-browser">
       <div className="catalog-browser__header">
         <h3>Add a Service to {platform.platform_code} &middot; {platform.name}</h3>
-        <button type="button" className="components-secondary" onClick={onCancel}>Cancel</button>
+        <button type="button" className="components-secondary" disabled={!!provisioning} onClick={onCancel}>Cancel</button>
       </div>
       {error && <p className="platform-error" role="alert">{error}</p>}
       {sortedCategories.map((cat) => {
@@ -216,7 +213,7 @@ function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvi
                     </div>
                   )}
                   <div className="catalog-service-card__action">
-                    <button type="button" className="components-primary" disabled={!selected || provisioning === svc.key || team.revision === null} onClick={() => provision(svc)}>
+                    <button type="button" className="components-primary" disabled={!selected || !!provisioning || team.revision === null} onClick={() => provision(svc)}>
                       {provisioning === svc.key ? "Provisioning..." : "Provision"}
                     </button>
                   </div>
@@ -232,7 +229,7 @@ function ServiceCatalogBrowser({ platform, team, instanceId, categories, onProvi
 
 /* ---------- Firmwide component browser ---------- */
 
-function ComponentCatalogBrowser({ platform, team, instanceId, categories, firmwideComponents, onProvisioned, onCancel }) {
+function ComponentCatalogBrowser({ platform, team, instanceId, categories, firmwideComponents, onProvisioned, onCancel, onBusyChange }) {
   const [selectedPlacements, setSelectedPlacements] = useState({});
   const [provisioning, setProvisioning] = useState(null);
   const [error, setError] = useState("");
@@ -247,31 +244,44 @@ function ComponentCatalogBrowser({ platform, team, instanceId, categories, firmw
   async function provision(item) {
     const placement = selectedPlacements[item.key];
     if (!placement || team.revision === null || team.locked_revision !== null) return;
-    setProvisioning(item.key); setError("");
+    setProvisioning(item.key); onBusyChange(true); setError("");
     try {
-      const response = await apiClient.patch(`/instances/${instanceId}/platform`, {
+      const [controlsResponse, componentsResponse] = await Promise.all([
+        apiClient.get(`/instances/${instanceId}/controls`),
+        apiClient.get(`/instances/${instanceId}/components`),
+      ]);
+      const current = controlsResponse.data;
+      const config = componentsResponse.data.team?.choices.find((choice) => choice.key === item.key)?.configs[0]?.key;
+      if (!config) {
+        setError("No configuration is available for this component. Reload the catalog before trying again.");
+        return;
+      }
+      const commandKey = `buy_${item.key}_${placement}`;
+      await apiClient.patch(`/instances/${instanceId}/controls/security`, {
         version: 1,
-        expected_revision: team.revision,
-        commands: [{ key: `buy_${item.key}_${placement}`, op: "buy", application: item.key, placement, config: "basic", units: 1 }],
+        expected_revision: current.team.revision,
+        commands: [...current.team.selected_commands.filter((c) => ["buy_application", "replace_application"].includes(c.op) && c.key !== commandKey), { key: commandKey, op: "buy_application", catalog: item.key, placement, config, primary_for: null, tco_categories: [] }],
       });
+      let warning = "";
       try {
         await apiClient.post(`/instances/${instanceId}/host-platforms/${platform.id}/members`, {
           asset_key: item.key,
           member_kind: "component",
         });
-      } catch { /* assignment failure is non-fatal */ }
-      onProvisioned(response.data);
+      } catch { warning = "The purchase was saved, but it could not be assigned to this host platform. Reload to check the purchase before trying again."; }
+      const response = await apiClient.get(`/instances/${instanceId}/platform`);
+      await onProvisioned(response.data, warning);
     } catch (requestError) {
       const detail = requestError.response?.data?.detail;
       setError(typeof detail === "string" ? detail : detail?.code || "Could not provision the component.");
-    } finally { setProvisioning(null); }
+    } finally { setProvisioning(null); onBusyChange(false); }
   }
 
   return (
     <div className="catalog-browser">
       <div className="catalog-browser__header">
         <h3>Add a Component to {platform.platform_code} &middot; {platform.name}</h3>
-        <button type="button" className="components-secondary" onClick={onCancel}>Cancel</button>
+        <button type="button" className="components-secondary" disabled={!!provisioning} onClick={onCancel}>Cancel</button>
       </div>
       {error && <p className="platform-error" role="alert">{error}</p>}
       {available.length === 0 && <p className="components-muted">All firmwide components have been provisioned.</p>}
@@ -306,7 +316,7 @@ function ComponentCatalogBrowser({ platform, team, instanceId, categories, firmw
               </div>
             )}
             <div className="catalog-service-card__action">
-              <button type="button" className="components-primary" disabled={!selected || provisioning === item.key || team.revision === null} onClick={() => provision(item)}>
+              <button type="button" className="components-primary" disabled={!selected || !!provisioning || team.revision === null} onClick={() => provision(item)}>
                 {provisioning === item.key ? "Provisioning..." : "Provision"}
               </button>
             </div>
@@ -317,166 +327,232 @@ function ComponentCatalogBrowser({ platform, team, instanceId, categories, firmw
   );
 }
 
-/* ---------- Platform card ---------- */
+/* ---------- Platform Detail Modal ---------- */
 
-function PlatformCard({ platform, team, instanceId, categories, firmwideComponents, onPlatformsUpdated, onPlatformDataUpdated }) {
-  const [badgeStatus, badgeLabel] = statusBadgeMap[platform.status] || ["neutral", platform.status];
+export function PlatformDetailModal({ platform, team, instanceId, categories, firmwideComponents, readOnly, onClose, onPlatformDataUpdated }) {
   const [showServiceCatalog, setShowServiceCatalog] = useState(false);
+  const [provisioning, setProvisioning] = useState(false);
   const [showComponentCatalog, setShowComponentCatalog] = useState(false);
-  const services = platform.members.filter((m) => m.member_kind === "service");
-  const components = platform.members.filter((m) => m.member_kind === "component");
-  const readOnly = !team || team.revision === null || team.locked_revision !== null;
+  const [badgeStatus, badgeLabel] = statusBadgeMap[platform.status] || ["neutral", platform.status];
   const isActive = platform.status === "active";
   const isPending = platform.status === "pending";
 
+  const services = platform.members.filter((m) => m.member_kind === "service");
+  const components = platform.members.filter((m) => m.member_kind === "component");
   const teamAssets = team?.assets || [];
   const availableServicesList = team?.available_services || [];
 
-  function serviceRow(member) {
+  function enrichService(member) {
     const asset = teamAssets.find((a) => a.source_key === member.asset_key || a.id === member.asset_key);
-    const svcDef = availableServicesList.find((s) => s.key === member.asset_key);
-    if (!asset) return { key: member.id, name: member.asset_key, vendor: "", model: "", capacity: "", utilisation: "", status: "" };
-    const [, statusLabel] = statusFor(asset.utilisation_pct);
+    const svcDef = availableServicesList.find((s) => s.key === (asset?.source_key || member.asset_key));
+    const placementDetail = svcDef?.placement_details?.find((d) => d.placement === asset?.placement);
     return {
       key: member.id,
-      name: asset.label,
+      name: asset?.label || member.asset_key,
       vendor: svcDef?.vendor_examples || "",
       model: svcDef?.service_model || "",
-      category: svcDef?.infrastructure_category || "",
-      capacity: typeof asset.capacity_pct === "number" ? `${asset.capacity_pct}%` : "",
-      utilisation: typeof asset.utilisation_pct === "number" ? `${Math.round(asset.utilisation_pct)}%` : "",
-      status: statusLabel,
+      category: svcDef?.infrastructure_category || "other",
+      placement: asset?.placement ? (placementNames[asset.placement] || asset.placement) : "",
+      capex: placementDetail?.capex || 0,
+      opex: placementDetail?.opex || 0,
+      staffLoad: (svcDef?.staff_load || 0) * (placementDetail?.staff_load_modifier || 1),
+      leadTime: placementDetail?.lead_time_rounds || 0,
     };
   }
 
-  function componentRow(member) {
+  function enrichComponent(member) {
     const asset = teamAssets.find((a) => a.source_key === member.asset_key || a.id === member.asset_key);
-    if (!asset) return { key: member.id, name: member.asset_key, vendor: "", installed: "", placement: "", config: "" };
-    const fwItem = (firmwideComponents || []).find((c) => c.key === member.asset_key);
+    const fwItem = (firmwideComponents || []).find((c) => c.key === (asset?.source_key || member.asset_key));
+    const placementDetail = fwItem?.placement_details?.find((d) => d.placement === asset?.placement);
     return {
       key: member.id,
-      name: asset.label,
+      name: asset?.label || member.asset_key,
       vendor: fwItem?.vendor_examples || "",
-      category: fwItem?.infrastructure_category || "",
-      installed: `R${asset.installed_round}`,
-      placement: placementNames[asset.placement] || asset.placement,
-      config: asset.config || "",
+      category: fwItem?.infrastructure_category || "other",
+      placement: asset?.placement ? (placementNames[asset.placement] || asset.placement) : "",
+      capex: placementDetail?.capex || 0,
+      opex: placementDetail?.opex || 0,
+      staffLoad: 0,
+      leadTime: placementDetail?.lead_time_rounds || 0,
     };
   }
 
-  // Group services by category for display
-  const serviceRows = services.map(serviceRow);
+  const enrichedServices = services.map(enrichService);
+  const enrichedComponents = components.map(enrichComponent);
+
+  // Group services by category
   const servicesByCategory = useMemo(() => {
     const map = {};
-    for (const row of serviceRows) {
-      const cat = row.category || "other";
+    for (const s of enrichedServices) {
+      const cat = s.category || "other";
       if (!map[cat]) map[cat] = [];
-      map[cat].push(row);
+      map[cat].push(s);
     }
     return map;
-  }, [serviceRows]);
-  const categoryOrder = ["computing", "networking", "storage", "security", "data_management", "integration", "resilience", "productivity", "enterprise_software", "ai_ml", "management", "other"];
+  }, [enrichedServices]);
   const sortedServiceCategories = categoryOrder.filter((c) => servicesByCategory[c]?.length > 0);
 
+  // Group components by category
+  const componentsByCategory = useMemo(() => {
+    const map = {};
+    for (const c of enrichedComponents) {
+      const cat = c.category || "other";
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(c);
+    }
+    return map;
+  }, [enrichedComponents]);
+  const sortedComponentCategories = categoryOrder.filter((c) => componentsByCategory[c]?.length > 0);
+
+  // Cost summary
+  const allItems = [...enrichedServices, ...enrichedComponents];
+  const totalCapex = allItems.reduce((s, i) => s + i.capex, 0);
+  const totalOpex = allItems.reduce((s, i) => s + i.opex, 0);
+  const totalStaff = allItems.reduce((s, i) => s + i.staffLoad, 0);
+  const maxLeadTime = allItems.reduce((m, i) => Math.max(m, i.leadTime), 0);
+
+  const canEdit = isPending && !readOnly;
+
   return (
-    <section className="host-platform-card">
-      <div className="host-platform-card__header">
-        <div>
-          <span className="host-platform-card__code">{platform.platform_code}</span>
-          <strong>{platform.name}</strong>
-          <span className={`host-platform-type-badge host-platform-type-badge--${platform.platform_type}`}>
-            {typeLabels[platform.platform_type] || platform.platform_type}
-            {platform.cloud_subtype ? ` \u00b7 ${subtypeLabels[platform.cloud_subtype] || platform.cloud_subtype}` : ""}
-          </span>
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget && !provisioning) onClose(); }}>
+      <div className="platform-detail-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="platform-detail-modal__header">
+          <div className="platform-detail-modal__header-left">
+            <h2>
+              <span className="host-platform-card__code">{platform.platform_code}</span>
+              {platform.name}
+            </h2>
+            <span className={`host-platform-type-badge host-platform-type-badge--${platform.platform_type}`}>
+              {typeLabels[platform.platform_type] || platform.platform_type}
+              {platform.cloud_subtype ? ` \u00b7 ${subtypeLabels[platform.cloud_subtype] || platform.cloud_subtype}` : ""}
+            </span>
+            <StatusBadge status={badgeStatus} label={badgeLabel} />
+          </div>
+          <button type="button" className="modal-close" disabled={provisioning} onClick={onClose}>&times;</button>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)" }}>
-          {isPending && <span className="components-muted">Available next round</span>}
-          <StatusBadge status={badgeStatus} label={badgeLabel} />
+
+        {/* Body */}
+        <div className="platform-detail-modal__body">
+          {/* Locked banner */}
+          {isActive && (
+            <div className="platform-detail-modal__locked-banner">
+              This platform was approved in Round {platform.activated_round || "?"} and is now operational. No further changes can be made.
+            </div>
+          )}
+
+          {/* Meta info */}
+          <div className="platform-detail-modal__meta">
+            {platform.notes && <p>{platform.notes}</p>}
+            <p>Created: Round {platform.created_round || 1}</p>
+          </div>
+
+          {/* Services section */}
+          <div className="platform-detail-modal__section">
+            <h3 className="platform-detail-modal__section-title">Services ({services.length}/5)</h3>
+            {sortedServiceCategories.map((cat) => {
+              const catLabel = categories[cat] || cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+              return (
+                <div key={cat}>
+                  <div className="platform-detail-modal__group-label">{catLabel}</div>
+                  {servicesByCategory[cat].map((s) => (
+                    <div key={s.key} className="platform-detail-modal__item">
+                      <div className="platform-detail-modal__item-header">
+                        <strong>{s.name}</strong>
+                        <ServiceModelBadge model={s.model} />
+                        {s.vendor && <span className="components-muted" style={{ fontStyle: "italic" }}>{s.vendor}</span>}
+                      </div>
+                      <div className="platform-detail-modal__item-costs">
+                        <span>{s.placement}</span>
+                        <span>CAPEX {fmt$(s.capex)}</span>
+                        <span>OPEX {fmt$(s.opex)}/rd</span>
+                        {s.staffLoad > 0 && <span>{s.staffLoad.toFixed(1)} FTE</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+            {services.length === 0 && !showServiceCatalog && <p className="components-muted">No services provisioned yet.</p>}
+
+            {/* Inline service catalog */}
+            {showServiceCatalog && (
+              <ServiceCatalogBrowser
+                platform={platform}
+                team={team}
+                instanceId={instanceId}
+                categories={categories}
+                onBusyChange={setProvisioning}
+                onProvisioned={async (data, warning) => { await onPlatformDataUpdated?.(data, warning); setShowServiceCatalog(false); }}
+                onCancel={() => setShowServiceCatalog(false)}
+              />
+            )}
+            {canEdit && !showServiceCatalog && !showComponentCatalog && services.length < 5 && (
+              <button type="button" className="components-secondary" onClick={() => setShowServiceCatalog(true)}>+ Add a Service</button>
+            )}
+          </div>
+
+          {/* Components section */}
+          <div className="platform-detail-modal__section">
+            <h3 className="platform-detail-modal__section-title">Components ({components.length}/5)</h3>
+            {sortedComponentCategories.map((cat) => {
+              const catLabel = categories[cat] || cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+              return (
+                <div key={cat}>
+                  <div className="platform-detail-modal__group-label">{catLabel}</div>
+                  {componentsByCategory[cat].map((c) => (
+                    <div key={c.key} className="platform-detail-modal__item">
+                      <div className="platform-detail-modal__item-header">
+                        <strong>{c.name}</strong>
+                        {c.vendor && <span className="components-muted" style={{ fontStyle: "italic" }}>{c.vendor}</span>}
+                      </div>
+                      <div className="platform-detail-modal__item-costs">
+                        <span>{c.placement}</span>
+                        <span>CAPEX {fmt$(c.capex)}</span>
+                        <span>OPEX {fmt$(c.opex)}/rd</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+            {components.length === 0 && !showComponentCatalog && <p className="components-muted">No components provisioned yet.</p>}
+
+            {/* Inline component catalog */}
+            {showComponentCatalog && (
+              <ComponentCatalogBrowser
+                platform={platform}
+                team={team}
+                instanceId={instanceId}
+                categories={categories}
+                firmwideComponents={firmwideComponents}
+                onBusyChange={setProvisioning}
+                onProvisioned={async (data, warning) => { await onPlatformDataUpdated?.(data, warning); setShowComponentCatalog(false); }}
+                onCancel={() => setShowComponentCatalog(false)}
+              />
+            )}
+            {canEdit && !showComponentCatalog && !showServiceCatalog && components.length < 5 && (
+              <button type="button" className="components-secondary" onClick={() => setShowComponentCatalog(true)}>+ Add a Component</button>
+            )}
+          </div>
+
+          {/* Cost summary */}
+          {allItems.length > 0 && (
+            <div className="platform-detail-modal__cost-summary">
+              <div><span>Total CAPEX</span><strong>{fmt$(totalCapex)}</strong></div>
+              <div><span>Total OPEX</span><strong>{fmt$(totalOpex)}/round</strong></div>
+              <div><span>Staff Load</span><strong>{totalStaff.toFixed(1)} FTE</strong></div>
+              <div><span>Lead Time</span><strong>{maxLeadTime} round{maxLeadTime !== 1 ? "s" : ""}</strong></div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="platform-detail-modal__actions">
+            <button type="button" className="components-secondary" disabled={provisioning} onClick={onClose}>Close</button>
+          </div>
         </div>
       </div>
-      {platform.notes && <p className="components-muted" style={{ margin: 0 }}>{platform.notes}</p>}
-
-      {/* Services section */}
-      {services.length > 0 && (
-        <div className="host-platform-card__section">
-          <h3>Services ({services.length}/5)</h3>
-          {sortedServiceCategories.map((cat) => {
-            const catLabel = categories[cat] || cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-            return (
-              <div key={cat} className="platform-service-group">
-                <span className="platform-service-group__label">{catLabel}</span>
-                {servicesByCategory[cat].map((r) => (
-                  <div key={r.key} className="platform-service-item">
-                    <span className="platform-service-item__name">{r.name}</span>
-                    <ServiceModelBadge model={r.model} />
-                    {r.vendor && <span className="platform-service-item__vendor">{r.vendor.split(" / ")[0]}</span>}
-                    <span className="platform-service-item__status">{r.capacity ? `${r.capacity} cap` : r.status || "Active"}</span>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Components section */}
-      {components.length > 0 && (
-        <div className="host-platform-card__section">
-          <h3>Components ({components.length}/5)</h3>
-          {components.map((m) => {
-            const r = componentRow(m);
-            const catLabel = r.category ? (categories[r.category] || r.category) : "";
-            return (
-              <div key={r.key} className="platform-service-group">
-                {catLabel && <span className="platform-service-group__label">{catLabel}</span>}
-                <div className="platform-service-item">
-                  <span className="platform-service-item__name">{r.name}</span>
-                  {r.vendor && <span className="platform-service-item__vendor">{r.vendor.split(" / ")[0]}</span>}
-                  <span className="platform-service-item__status">{r.placement}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Action buttons */}
-      {isActive && !readOnly && !showServiceCatalog && !showComponentCatalog && (
-        <div className="host-platform-card__actions" style={{ display: "flex", gap: "var(--space-md)", justifyContent: "center" }}>
-          {services.length < 5 && (
-            <button type="button" className="components-secondary" onClick={() => setShowServiceCatalog(true)}>+ Add a Service</button>
-          )}
-          {components.length < 5 && (
-            <button type="button" className="components-secondary" onClick={() => setShowComponentCatalog(true)}>+ Add a Component</button>
-          )}
-        </div>
-      )}
-
-      {/* Service catalog browser */}
-      {showServiceCatalog && (
-        <ServiceCatalogBrowser
-          platform={platform}
-          team={team}
-          instanceId={instanceId}
-          categories={categories}
-          onProvisioned={(data) => { onPlatformDataUpdated(data); setShowServiceCatalog(false); }}
-          onCancel={() => setShowServiceCatalog(false)}
-        />
-      )}
-
-      {/* Component catalog browser */}
-      {showComponentCatalog && (
-        <ComponentCatalogBrowser
-          platform={platform}
-          team={team}
-          instanceId={instanceId}
-          categories={categories}
-          firmwideComponents={firmwideComponents}
-          onProvisioned={(data) => { onPlatformDataUpdated(data); setShowComponentCatalog(false); }}
-          onCancel={() => setShowComponentCatalog(false)}
-        />
-      )}
-    </section>
+    </div>
   );
 }
 
@@ -484,13 +560,20 @@ function PlatformCard({ platform, team, instanceId, categories, firmwideComponen
 
 export default function InfrastructurePage({ platformData, controlsData, instanceId, hostPlatforms: initialHostPlatforms }) {
   const [view, setView] = useState(platformData);
+  const [controlsView, setControlsView] = useState(controlsData);
+  const [activeTab, setActiveTab] = useState("hosting");
+  const [controlsRefreshing, setControlsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState("");
+  const [purchaseWarning, setPurchaseWarning] = useState("");
+  useEffect(() => setControlsView(controlsData), [controlsData]);
   const [hostPlatforms, setHostPlatforms] = useState(initialHostPlatforms || []);
   const [showNewPlatformForm, setShowNewPlatformForm] = useState(false);
+  const [selectedPlatformId, setSelectedPlatformId] = useState(null);
   useEffect(() => setView(platformData), [platformData]);
   useEffect(() => { if (initialHostPlatforms) setHostPlatforms(initialHostPlatforms); }, [initialHostPlatforms]);
 
   const team = view?.team;
-  const controlsTeam = controlsData?.team;
+  const controlsTeam = controlsView?.team;
   const displayTeam = team || controlsTeam;
   const categories = view?.infrastructure_categories || {};
   const firmwideComponents = team?.firmwide_components || [];
@@ -506,15 +589,70 @@ export default function InfrastructurePage({ platformData, controlsData, instanc
     } catch { /* ignore */ }
   }
 
-  function handlePlatformDataUpdated(data) {
+  async function handlePlatformDataUpdated(data, warning = "") {
     setView(data);
-    refreshHostPlatforms();
+    setPurchaseWarning(warning);
+    setControlsRefreshing(true);
+    setRefreshError("");
+    // A revision and its commands must come from the same snapshot.
+    setControlsView(null);
+    try {
+      const response = await apiClient.get(`/instances/${instanceId}/controls`);
+      setControlsView(response.data);
+    } catch {
+      setRefreshError("Your purchase was saved, but the decision controls could not be refreshed. Reload the page before making another decision.");
+    } finally {
+      setControlsRefreshing(false);
+    }
+    await refreshHostPlatforms();
   }
+
+  function handleControlsSaved(next) {
+    setControlsView(next);
+    setView((prior) => prior ? { ...prior, team: { ...prior.team, revision: next.team.revision, locked_revision: next.team.locked_revision } } : prior);
+  }
+
+  // Table columns
+  const columns = [
+    { key: "platform_code", title: "Code" },
+    { key: "name", title: "Name" },
+    { key: "type", title: "Type" },
+    { key: "services", title: "Services" },
+    { key: "components", title: "Components" },
+    { key: "status", title: "Status" },
+  ];
+
+  const rows = hostPlatforms.map((p) => {
+    const svcCount = p.members.filter((m) => m.member_kind === "service").length;
+    const cmpCount = p.members.filter((m) => m.member_kind === "component").length;
+    const [bStatus, bLabel] = statusBadgeMap[p.status] || ["neutral", p.status];
+    const typeParts = [typeLabels[p.platform_type] || p.platform_type];
+    if (p.cloud_subtype) typeParts.push(subtypeLabels[p.cloud_subtype] || p.cloud_subtype);
+    return {
+      key: p.id,
+      platform_code: p.platform_code,
+      name: p.name,
+      type: typeParts.join(" \u00b7 "),
+      services: svcCount,
+      components: cmpCount,
+      status: <StatusBadge status={bStatus} label={bLabel} />,
+    };
+  });
+
+  const selectedPlatform = selectedPlatformId ? hostPlatforms.find((p) => p.id === selectedPlatformId) : null;
+  const modalReadOnly = selectedPlatform ? (selectedPlatform.status === "active" || readOnly) : true;
 
   return (
     <div className="controls-page">
       <ContextBanner description="Provision and manage your firm's shared IT infrastructure &mdash; the hardware, software, and services that support the entire enterprise." />
 
+      {purchaseWarning && <p className="components-error" role="alert">{purchaseWarning}</p>}
+      {refreshError && <p className="components-error" role="alert">{refreshError} <button type="button" onClick={() => window.location.reload()}>Reload page</button></p>}
+      {controlsRefreshing && <p role="status">Refreshing saved decisions…</p>}
+      <PageTabs tabs={[{ key: "hosting", label: "Host platforms" }, { key: "security", label: "Security & data policies" }, { key: "people", label: "People" }]} activeKey={activeTab} onChange={setActiveTab} />
+      {activeTab === "security" && controlsView && <SecurityPanel view={controlsView} instanceId={instanceId} onSaved={handleControlsSaved} />}
+      {activeTab === "people" && controlsView && <PeoplePanel view={controlsView} instanceId={instanceId} onSaved={handleControlsSaved} />}
+      {activeTab === "hosting" && <>
       {readOnly && team?.locked_revision !== null && <section className="review-banner"><strong>This round is locked.</strong><span>Decisions reopen when the round advances.</span></section>}
 
       {/* Top-level action */}
@@ -534,28 +672,36 @@ export default function InfrastructurePage({ platformData, controlsData, instanc
         />
       )}
 
-      {/* Platform cards */}
-      {hostPlatforms.length > 0 && hostPlatforms.map((platform) => (
-        <PlatformCard
-          key={platform.id}
-          platform={platform}
-          team={team}
-          instanceId={instanceId}
-          categories={categories}
-          firmwideComponents={firmwideComponents}
-          onPlatformsUpdated={setHostPlatforms}
-          onPlatformDataUpdated={handlePlatformDataUpdated}
-        />
-      ))}
+      {/* Platform table */}
+      {hostPlatforms.length > 0 && (
+        <section className="components-table-panel">
+          <DetailTable columns={columns} rows={rows} onRowClick={(row) => setSelectedPlatformId(row.key)} />
+        </section>
+      )}
 
       {/* Empty state */}
       {hostPlatforms.length === 0 && !showNewPlatformForm && (
         <section className="controls-empty" style={{ textAlign: "center" }}>
           <h2>No platforms yet</h2>
-          <p>Create your first host platform to start building your firm's IT infrastructure.</p>
+          <p>Create your first host platform to start building your firm&apos;s IT infrastructure.</p>
           {!readOnly && <button type="button" className="components-primary" style={{ marginTop: "var(--space-md)" }} onClick={() => setShowNewPlatformForm(true)}>+ New Host Platform</button>}
         </section>
       )}
+
+      {/* Platform detail modal */}
+      {selectedPlatform && (
+        <PlatformDetailModal
+          platform={selectedPlatform}
+          team={team}
+          instanceId={instanceId}
+          categories={categories}
+          firmwideComponents={firmwideComponents}
+          readOnly={modalReadOnly}
+          onClose={() => setSelectedPlatformId(null)}
+          onPlatformDataUpdated={handlePlatformDataUpdated}
+        />
+      )}
+      </>}
     </div>
   );
 }

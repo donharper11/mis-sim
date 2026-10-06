@@ -1,0 +1,28 @@
+[
+  {
+    "label": "Standby copy for outages",
+    "status": 200,
+    "commands": [
+      {
+        "op": "buy_service",
+        "placement": "on_prem",
+        "units": 1,
+        "key": "platform_failover_cluster_on_prem",
+        "service": "failover_cluster"
+      }
+    ]
+  },
+  {
+    "label": "Central sign-on",
+    "status": 200,
+    "commands": [
+      {
+        "op": "buy_service",
+        "placement": "on_prem",
+        "units": 1,
+        "key": "platform_central_sign_on_on_prem",
+        "service": "central_sign_on"
+      }
+    ]
+  }
+]

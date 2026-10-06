@@ -24,9 +24,11 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from app.api import deps, instructor, platform
 from app.main import create_app
 from app.models.base import Base
+from app.models import host_platform as host_models
 from app.models.grading import GradeConfig, GradeOverride
 from app.models.platform import Casepack, Course, Enrollment, Section, SimulationInstance, Team, User
 from app.models.scheduling import RoundSchedule, RoundScheduleTeam
+from app.round import models as round_models
 from app.round.models import RoundResult, TeamStateRow
 from app.services.auth import create_access_token, hash_password
 from app.simulation.models import SimulationCheckpointV1, SimulationRunV1, SimulationSheetV1
@@ -52,9 +54,8 @@ async def _fixture(tmp_path):
         Casepack.__table__, RoundSchedule.__table__, RoundScheduleTeam.__table__,
         SimulationRunV1.__table__, SimulationSheetV1.__table__,
         SimulationCheckpointV1.__table__,
-        RoundResult.__table__, TeamStateRow.__table__,
         GradeOverride.__table__, GradeConfig.__table__,
-    ]
+    ] + [m.__table__ for m in (*round_models.ALL_TABLES, *host_models.ALL_TABLES)]
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all, tables=tables)
     factory = async_sessionmaker(engine, expire_on_commit=False)

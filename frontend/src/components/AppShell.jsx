@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Compass, Server, AppWindow, Rocket, Lock, Zap, ClipboardCheck, BarChart3, Settings, Radio, Eye, GraduationCap, Database } from "lucide-react";
+import { LayoutDashboard, Compass, Server, AppWindow, Rocket, Zap, ClipboardCheck, BarChart3, Settings, Radio, Eye, GraduationCap, Database } from "lucide-react";
 
 const resultItems = ["Dashboard", "Challenges", "Review & Budget", "Debrief"];
 
@@ -87,7 +87,7 @@ export default function AppShell({ me, instance, schedule, dashboard, activePath
           <h1>{PageIcon && <PageIcon size={26} />} {pageTitle}</h1>
           <div className="product-shell__topbar-meta">
             {team && <span className="product-shell__topbar-stat"><span>Capital</span><strong>{formatMoney(team.capital_remaining)}</strong></span>}
-            <span className="product-shell__topbar-stat"><span>Status</span><strong>{schedule?.decisions_locked ? "Locked" : "Open"}</strong></span>
+            <span className="product-shell__topbar-stat"><span>Status</span><strong>{instance?.status === "completed" ? "Completed" : instance?.status === "paused" ? "Paused" : schedule?.decisions_locked || team?.status === "locked" ? "Locked" : "Open"}</strong></span>
             <div className="product-shell__round" aria-label={round ? `Round ${round} of ${totalRounds}` : "Round unavailable"}>
               <span className="product-shell__round-label">Round</span>
               <strong>{round ? `${round} of ${totalRounds}` : "—"}</strong>

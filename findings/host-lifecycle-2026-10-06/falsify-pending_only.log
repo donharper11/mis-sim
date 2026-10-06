@@ -1,0 +1,104 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_pending_only_writes_and_authoritative_round[sqlite] ___________
+
+database = (Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-22/test_pending_only_writes_and_a0/lifecycle.db), 'sqlite+aiosqlite:////tmp/pytest-of-ubuntu/pytest-22/test_pending_only_writes_and_a0/lifecycle.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x727a45959580>
+
+    def test_pending_only_writes_and_authoritative_round(database, monkeypatch):
+        from httpx import ASGITransport, AsyncClient
+        from app.api import deps
+        from app.main import create_app
+        from app.services.auth import create_access_token
+        engine,url=database
+        service=service_for(engine)
+        service.lock(1,1,1,0);service.advance(1,1,1,0)
+        async def run():
+            ae=create_async_engine(url);factory=async_sessionmaker(ae,expire_on_commit=False)
+            async def session_dep():
+                async with factory() as s:yield s
+            app=create_app();app.dependency_overrides[deps.get_session]=session_dep
+            token=create_access_token(user_id=1,role='instructor')
+            try:
+                async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test',headers={'Authorization':'Bearer '+token}) as client:
+                    base='/api/instances/1/host-platforms'
+                    created=await client.post(base,json={'name':'New round','platform_type':'on_prem'})
+                    assert created.status_code==200,created.text
+                    new=next(p for p in created.json()['platforms'] if p['name']=='New round')
+                    assert (new['created_round'],new['activated_round'])==(2,3)
+                    path=f"{base}/{new['id']}"
+                    attached=await client.post(path+'/members',json={'asset_key':'asset','member_kind':'component'})
+                    assert attached.status_code==200,attached.text
+                    row=next(p for p in attached.json()['platforms'] if p['id']==new['id'])
+                    assert row['members'][0]['assigned_round']==2
+                    mid=row['members'][0]['id']
+                    assert (await client.patch(path,json={'name':'Renamed'})).status_code==200
+                    for status in ('active','retired'):
+                        async with factory() as s:
+                            (await s.get(HostPlatform,new['id'])).status=status;await s.commit()
+                        before=snapshot(engine)
+                        assert (await client.patch(path,json={'name':'Bad'})).status_code==409
+                        assert (await client.post(path+'/members',json={'asset_key':'other','member_kind':'component'})).status_code==409
+                        assert (await client.delete(path+f'/members/{mid}')).status_code==409
+                        assert snapshot(engine)==before
+                    for method,suffix,body in [('PATCH','',{'name':'Bad'}),('POST','/members',{'asset_key':'other','member_kind':'component'}),('DELETE','/members/2',None)]:
+                        r=await client.request(method,base+'/2'+suffix,json=body)
+                        assert r.status_code==404,r.text
+            finally:await ae.dispose()
+>       asyncio.run(run())
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_host_lifecycle.py:427: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def run():
+        ae=create_async_engine(url);factory=async_sessionmaker(ae,expire_on_commit=False)
+        async def session_dep():
+            async with factory() as s:yield s
+        app=create_app();app.dependency_overrides[deps.get_session]=session_dep
+        token=create_access_token(user_id=1,role='instructor')
+        try:
+            async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test',headers={'Authorization':'Bearer '+token}) as client:
+                base='/api/instances/1/host-platforms'
+                created=await client.post(base,json={'name':'New round','platform_type':'on_prem'})
+                assert created.status_code==200,created.text
+                new=next(p for p in created.json()['platforms'] if p['name']=='New round')
+                assert (new['created_round'],new['activated_round'])==(2,3)
+                path=f"{base}/{new['id']}"
+                attached=await client.post(path+'/members',json={'asset_key':'asset','member_kind':'component'})
+                assert attached.status_code==200,attached.text
+                row=next(p for p in attached.json()['platforms'] if p['id']==new['id'])
+                assert row['members'][0]['assigned_round']==2
+                mid=row['members'][0]['id']
+                assert (await client.patch(path,json={'name':'Renamed'})).status_code==200
+                for status in ('active','retired'):
+                    async with factory() as s:
+                        (await s.get(HostPlatform,new['id'])).status=status;await s.commit()
+                    before=snapshot(engine)
+>                   assert (await client.patch(path,json={'name':'Bad'})).status_code==409
+E                   assert 200 == 409
+E                    +  where 200 = <Response [200 OK]>.status_code
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_host_lifecycle.py:419: AssertionError
+=============================== warnings summary ===============================
+test_host_lifecycle.py::test_pending_only_writes_and_authoritative_round[sqlite]
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+test_host_lifecycle.py::test_pending_only_writes_and_authoritative_round[sqlite]
+test_host_lifecycle.py::test_pending_only_writes_and_authoritative_round[sqlite]
+test_host_lifecycle.py::test_pending_only_writes_and_authoritative_round[sqlite]
+test_host_lifecycle.py::test_pending_only_writes_and_authoritative_round[sqlite]
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/jose/jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/projects/mis-sim/backend/tests/test_host_lifecycle.py::test_pending_only_writes_and_authoritative_round[sqlite]
+1 failed, 5 warnings in 23.28s

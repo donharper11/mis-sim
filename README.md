@@ -15,22 +15,29 @@ Realised Value  =  Technology Capability × Organisational Readiness × Manageme
 Multiplication, not addition — Laudon's complementary-assets argument made mechanical.
 Buy the ideal system, train nobody, realise almost nothing.
 
-**Status (2026-09-14):** Phases 0–1 recorded closed: **11 of 47 original packets**.
-The headless scoring/event/round core and Riverside pack work with scripted estates;
-live decision-to-estate evolution and the student/instructor application remain unfinished.
-**M0 — trustworthy baseline is complete** on `build/north-star-foundation`: declared
-backend dependencies, PostgreSQL verification, complete calibration reporting and corrected,
-versioned scorecard units. Independent build audit and supervisor checks pass:
-**311 tests plus all guards and 44 fixtures** at M0 closeout. **M1 is underway:** its first
-engine-input packet is independently audited and integrated, with **406 tests plus all
-guards and 44 fixtures** passing and all historical payloads preserved. The master
-transition contract is being corrected after independent review. M1–M6 remain unfinished.
+**Status (2026-10-06):** A playable local platform with a decision-driven six-round
+simulation, authenticated student workflows, and substantial instructor operations.
+M0–M4 have recorded completion evidence; instructor setup/roster acceptance and browser
+proofs for round control, monitoring, grading/export, registry and lifecycle are recorded.
+Grounded persona backend support landed October 3. Full AI teaching support, roster
+onboarding, a substantive second vertical, and production/pilot acceptance remain open.
+
+**Paused checkpoint:** [next-agent handoff](handoffs/readiness-2026-10-06/NEXT-AGENT.md) records the resume point and accepted next contract.
+
+**Start with [BATTLECARD.md](BATTLECARD.md) and [TODO.md](TODO.md).** These supersede
+historical progress headlines in the north star and old handoffs; those files still govern
+contracts and preserve audit history. Do not interpret original packet counts as current
+product readiness. Latest committed baseline reviewed: `0a535ba` (2026-10-05); the working
+tree also contains ongoing infrastructure and rollout changes. Current verification results
+and remaining gates are recorded in the task list and [readiness report](docs/readiness-2026-10-06.md).
+The [student guide](docs/student-guide.md), [pilot acceptance script](docs/pilot-rehearsal.md)
+and [reproduction runbook](docs/readiness-runbook.md) support local rehearsal.
 
 ---
 
-> **Start with the [implementation north star](design/08-implementation-north-star.md).**
-> It defines the current delivery sequence, evidence gates, and agent boundaries.
-> [`BATTLECARD.md`](BATTLECARD.md) is the concise status; the original packet list preserves scope.
+> The [implementation north star](design/08-implementation-north-star.md) defines delivery
+> milestones and evidence gates. Its historical progress narrative is not current status.
+> [BATTLECARD.md](BATTLECARD.md) gives current status; [TODO.md](TODO.md) owns the next actions.
 > [Recovery execution and audits](handoffs/recovery/README.md) record exact candidates and limits.
 > [Backend development](docs/backend-development.md) provides the fresh-install and disposable PostgreSQL recipe.
 
@@ -107,32 +114,47 @@ Never guess at these — they are all inspectable. Full table in `GOVERNANCE.md 
 stack (FastAPI + React + Ant Design + Vite) · Balanced Scorecard as the visible score ·
 stakeholder layer adopted, market layer deferred.
 
-## Open blockers
+## Remaining work and verification
 
-See the north star's recovery ownership table and `findings/OPEN-REGISTER.md`.
-The immediate gap is a real decision-driven state transition, including validation,
-state carry-forward, atomic advance and consistent retry/unlock behaviour. Existing
-training/adoption, financial, freshness and UI-capture deferrals have explicit destination
-milestones there. Runtime, reporting and scorecard-unit recovery are audited and closed;
-Financial scoring remains an explicitly labelled partial proxy.
+Follow the ordered queue in [TODO.md](TODO.md): build on the independently accepted
+fixes and host scope/lifecycle migrations, implement the accepted instructor-start contract, repair SQLite archive, and execute the prepared pilot and
+deployment rehearsals, finish teaching support and onboarding,
+prove a second vertical, and polish the remaining visualizations/performance.
 
----
+Recorded evidence:
 
-## Phase gates
+- [October 6 readiness](docs/readiness-2026-10-06.md): 834 backend tests, all guards, frontend
+  lint/build, six-round browser loop, host/controls proofs, PostgreSQL migration and restore.
+  Fresh reviewers accepted the bounded backend/frontend corrections after rework; host
+  scope migration 0012 also passed [independent acceptance](docs/host-scope-2026-10-06.md).
+  Host activation/reset migration0013 also passed [independent acceptance](docs/host-lifecycle-2026-10-06.md).
+  Instructor startup, SQLite archive and production/pilot gates remain open.
 
-```
-0  Foundation             4 packets    CLOSED
-1  Engine                 7 packets    CLOSED with accepted deferrals
-   Historical gate: 6 rounds × 4 scripted teams; passed 2026-08-22
-2  Platform scaffolding   5 packets    specs require reconciliation
-3  Student core loop      8 packets    M3.1–M3.8 plus minimum controls; seeded loop passed locally
-4  Student + AI          11 packets    M4 coverage slices underway
-5  Instructor console     7 packets    direction only
-6  Second casepack        2 packets    direction only
-7  Pilot readiness        3 packets    direction only
-                         ──
-                         47 · 11 recorded complete
-```
+- [M3 browser loop](docs/m3-launch-readiness-audit.md): six rounds and persisted debriefs.
+- [M4 completion](docs/m4-coverage-slice.md) and [accepted balance review](docs/m4-strategy-playthrough-audit.md).
+- [Instructor setup audit](handoffs/m5/instructor-ops-audit.md): October 2 closure; 14 setup
+  browser proofs and 20 M5.3–5.7 proofs recorded; 773 backend tests passed, one skipped then.
+- [Operational rehearsal](docs/phase7-operational-audit.md): local migration, restore and
+  cohort smoke passed; production deployment and observed pilot remain unverified.
+- [M6 portability audit](handoffs/m6/portability-seam-audit.md): synthetic isolation is not
+  a substantive second vertical.
 
-Original scope: `design/06-plan-index.md`. Current execution gates:
-`design/08-implementation-north-star.md`. Packet counts do not measure product readiness.
+Run `make check` in the declared Python environment and `npm run lint` / `npm run build`
+in `frontend/`. Historical passes do not certify newer changes. See
+[backend development](docs/backend-development.md) for dependency setup and disposable
+PostgreSQL verification. Browser proofs must use disposable seeded data.
+
+## Delivery milestones
+
+| Milestone | Current disposition |
+|---|---|
+| M0 — baseline | Recorded complete |
+| M1 — decision-driven simulation | Recorded complete |
+| M2 — platform/auth/scheduling | Recorded complete for local/cohort scope |
+| M3 — playable browser loop | October 6 six-round/cross-panel proofs and bounded independent reviews passed; pilot acceptance remains open |
+| M4 — student coverage and balance | Recorded complete; balance accepted September 18 |
+| M5 — instructor operations and teaching support | Instructor tooling implemented; full AI and onboarding remain open |
+| M6 — second vertical and pilot | Open; no substantive second vertical or observed pilot acceptance |
+
+The [original 47-packet index](design/06-plan-index.md) preserves scope, not a current
+completion percentage. The original “11 closed” count predates the working application.

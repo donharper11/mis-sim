@@ -7,6 +7,7 @@ simulation checkpoint are both supported while the platform migrates between run
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Mapping
 from typing import Any
 
@@ -240,6 +241,21 @@ async def _team_dashboard(session: AsyncSession, instance: SimulationInstance, t
             state = checkpoint.state if checkpoint is not None and isinstance(checkpoint.state, Mapping) else {}
             strategy = state.get("strategy")
             capital_remaining = _number(state.get("capital_balance"))
+            # The checkpoint is the previous round's closing balance. Review owns
+            # the current grant/spend reducers; reuse them for headline capital.
+            from app.api.runtime_platform import _runtime_pack
+            from app.round.db import make_engine
+            from app.simulation.service import SimulationService
+            pack = await _runtime_pack(session, instance)
+            if pack is not None and run.status != "completed":
+                instance_id, team_id = instance.instance_id, team.id
+                def read_budget():
+                    engine = make_engine()
+                    try:
+                        return SimulationService(engine, pack).read_budget(instance_id, team_id)
+                    finally:
+                        engine.dispose()
+                capital_remaining = (await asyncio.to_thread(read_budget))["capital_remaining"]
             run_rate = _number(payload.get("financials", {}).get("opex_runrate")) if isinstance(payload, Mapping) else None
             units = _modern_units(state)
             fallback_signals = state.get("signal_ledger", []) if isinstance(state.get("signal_ledger"), list) else []

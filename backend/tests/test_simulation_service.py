@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from app.models.base import Base
+from app.models import host_platform as host_models
 from app.models import platform as platform_models
 from app.round import models as round_models
 from app.simulation import models as simulation_models
@@ -25,7 +26,7 @@ PACK = Path(__file__).parents[1] / "packs" / "riverside_grocery"
 def service(tmp_path):
     engine = create_engine(f"sqlite:///{tmp_path / 'simulation.db'}", future=True)
     # Tests create the already-migrated schema; production service never does so.
-    Base.metadata.create_all(engine, tables=[x.__table__ for x in (*platform_models.ALL_TABLES, *round_models.ALL_TABLES, *simulation_models.ALL_TABLES, *scheduling_models.ALL_TABLES)])
+    Base.metadata.create_all(engine, tables=[x.__table__ for x in (*host_models.ALL_TABLES, *platform_models.ALL_TABLES, *round_models.ALL_TABLES, *simulation_models.ALL_TABLES, *scheduling_models.ALL_TABLES)])
     yield SimulationService(engine, load_runtime_pack(PACK))
     engine.dispose()
 
@@ -114,3 +115,16 @@ def test_schedule_claim_is_verified_inside_mutation_transaction(service):
     with pytest.raises(SimulationError, match="schedule_claim_lost"):
         service.advance(1, 1, 1, 0, schedule_claim=(schedule_id, "reclaimed-token"))
     assert service.read(1, 1).status == "locked"
+
+
+def test_budget_read_matches_preview_without_repair_enumeration(service, monkeypatch):
+    service.initialize(1, 1, "cost_leadership")
+    edited = service.patch_sheet(1, 1, 1, 0, SheetPatchV1(version=1, replace_categories={
+        "platform_service": [CommandV1(key="budget_compute", op="buy_service", service="compute_pool", placement="cloud", units=1)]
+    }))
+    def no_quote(*args, **kwargs):
+        raise AssertionError("Budget headline must not enumerate full repair previews")
+    monkeypatch.setattr("app.simulation.service._quote", no_quote)
+    assert service.read_budget(1, 1)["capital_remaining"] == edited.preview.capital_remaining
+    with pytest.raises(SimulationError, match="not_found"):
+        service.read_budget(1, 2)

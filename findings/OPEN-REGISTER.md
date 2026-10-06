@@ -596,3 +596,50 @@ table. No residual is closed by adding an owner or by the historical gate ruling
 
 Every audit from here appends its findings to this register with an owner before the packet
 that produced them merges. A packet whose findings have no owner is not done.
+
+## October 6 readiness reconciliation (builder verification)
+
+Current action queue: [`../TODO.md`](../TODO.md). Evidence:
+[`../docs/readiness-2026-10-06.md`](../docs/readiness-2026-10-06.md).
+These are local correction results, not an independent audit or release approval.
+
+| ID | Finding | Owner / disposition | Closing check |
+|---|---|---|---|
+| READY-F01 | Seven frontend lint errors | Readiness builder — LOCAL FIX | `npm --prefix frontend run lint` |
+| READY-F02 | Rollout uses nonexistent placement-cost field; catalog fallback overrides specific host assignment | Readiness builder — LOCAL FIX | `test_rollout_metadata_uses_authored_costs_and_specific_asset_assignment` |
+| READY-F03 | Rollout sends unsupported budgets, fails save, loses other assets' category decisions and does not restore drafts | Readiness builder — LOCAL FIX | `frontend/tests/readiness-proof.mjs`: two saves, reload, command preservation |
+| READY-F04 | Unassigned student falls back to the sole team; host metadata can change after lock | Readiness builder — LOCAL FIX | `test_rollout_read_is_scoped_and_uninitialized_write_is_blocked` and host browser proof |
+| READY-F05 | Blocking external font stylesheet stalls page navigation | Readiness builder — LOCAL FIX | Local Barlow files/OFL; browser routes with zero external font requests |
+| READY-F06 | PostgreSQL verifier omits four current grading/host tables | Readiness builder — LOCAL FIX | Actual clean PostgreSQL migration: 32 models and six persisted rounds |
+| READY-F07 | Dashboard capital displays previous closing balance instead of current grant/commitments | Readiness builder — LOCAL FIX | `test_budget_read_matches_preview_without_repair_enumeration`; browser Review parity |
+| READY-F08 | Database failure still returns HTTP 200 from health endpoint | Readiness builder — LOCAL FIX | `test_health_outage_returns_503` |
+| READY-F09 | People/Security panels unreachable; sibling panels retain stale revisions; strategy/ownership replace one another; draft policies/owners not rehydrated | Readiness builder — LOCAL FIX | `frontend/tests/controls-proof.mjs`: five cross-panel and reload checks |
+| READY-001 | Host member lacks required non-null instance column; host/team FK can mismatch instance | Readiness builder — CLOSED, independent backend/browser ACCEPT and 816-test full gate | Migration0012, two-database populated round trips and integrity plants, additive host guard; docs/host-scope-2026-10-06.md |
+| READY-002 | Host activation/reset lifecycle is incomplete | Host lifecycle packet — CLOSED, independent backend/browser ACCEPT and 834-test full gate | Manual/scheduled advance and scoped reset browser/DB checks |
+| READY-003 | Instructor setup/clone cannot initialize a playable runtime through the UI | Instructor start packet — CONTRACT ACCEPTED; implementation paused at user request | Instructor creates/starts section; assigned student saves/locks/advances without DB edits |
+| READY-START-CLIENT | New requests from stale browser tabs have no generation token across reset/start | Platform/API versioning — OPEN, explicitly deferred by start v1 contract | Add client/server generation token and prove stale-tab mutation refusal; in-flight server requests are a separate start-packet obligation |
+| READY-004 | Repair-inclusive read/advance performance needs profiling before cohort claims | Operational performance packet — OPEN | Timed endpoint/profile evidence and representative cohort rehearsal |
+
+Current independent dispatch decisions are in `../handoffs/readiness-2026-10-06/`:
+accepted host scope, host lifecycle and instructor-start contracts. User authorized fresh
+reviewers; production/pilot details remain external dependencies. The old next-contract.md
+is historical preflight, not the current dispatch contract.
+
+## Independent readiness review follow-up
+
+User authorized fresh auditors. Backend review: `readiness-2026-10-06/backend-independent-review.md`;
+frontend review: `readiness-2026-10-06/frontend-independent-review.md`; contract review:
+`../handoffs/readiness-2026-10-06/contract-independent-review.md`.
+
+| ID | Finding | Owner / disposition | Evidence |
+|---|---|---|---|
+| READY-AUD-BE-001 | Fresh SQLite seed holds outer writer while nested initialization begins | Readiness builder — CLOSED after independent re-review | Fresh SQLite and PostgreSQL seeds: four runs/two active instances, repeat refusal; new seed regression test |
+| READY-AUD-BE-002 | SQLite migration0010 leaves status CHECK rejecting archive | Platform/migrations — OPEN, preexisting | Independent fresh-migration update rejects archived; real migration repair required |
+| READY-UI-001 | Partial Unit selection plus hiring removes prior communication when another unit remains | Readiness builder — CLOSED after independent re-review | Preserve unless both Unit and Method provide a replacement |
+| READY-UI-002 | Host component provisioning sends unsupported command/endpoint, always422 | Readiness builder — CLOSED after independent re-review | Supported buy_application command and application-category adapter; category siblings preserved |
+| READY-UI-003 | Stale rollout draft gives generic failure with no recovery | Readiness builder — CLOSED after independent re-review | Explicit conflict explanation and deliberate reload; unsaved choices retained until chosen |
+| READY-UI-004 | Successive host service purchases replace earlier saved service | Readiness builder — CLOSED after independent re-review | Fetch current scoped commands and preserve other service purchases |
+| READY-UI-005 | Dismissing purchase dialog before refresh exposes stale sibling controls | Readiness builder — CLOSED after independent re-review | Busy state prevents Close/X/backdrop/Cancel until saved decision snapshots refresh |
+
+The bounded host-scope contract passed independent dispatch review; READY-001 implementation
+and independent backend/browser audits plus the 816-test full gate now pass; READY-001 is closed. No lifecycle/start acceptance is implied.

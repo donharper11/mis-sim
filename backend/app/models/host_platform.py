@@ -13,6 +13,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    ForeignKeyConstraint,
     Integer,
     String,
     UniqueConstraint,
@@ -27,6 +28,9 @@ class HostPlatform(Base):
     __tablename__ = "host_platform"
     __table_args__ = (
         UniqueConstraint("instance_id", "team_id", "platform_code", name="uq_host_platform_code"),
+        UniqueConstraint("id", "instance_id", name="uq_host_platform_instance_identity"),
+        ForeignKeyConstraint(["team_id", "instance_id"], ["team.id", "team.instance_id"],
+                             name="fk_host_platform_team_instance", ondelete="CASCADE"),
         CheckConstraint(
             "platform_type IN ('on_prem', 'cloud')",
             name="ck_host_platform_type",
@@ -46,10 +50,7 @@ class HostPlatform(Base):
         ForeignKey("simulation_instance.instance_id", ondelete="CASCADE"),
         nullable=False,
     )
-    team_id: Mapped[int] = mapped_column(
-        ForeignKey("team.id", ondelete="CASCADE"),
-        nullable=False,
-    )
+    team_id: Mapped[int] = mapped_column(Integer, nullable=False)
     platform_code: Mapped[str] = mapped_column(String(16), nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
@@ -63,7 +64,7 @@ class HostPlatform(Base):
     )
 
     members: Mapped[list[HostPlatformMember]] = relationship(
-        back_populates="platform", passive_deletes=True,
+        back_populates="platform", passive_deletes="all",
     )
 
 
@@ -71,13 +72,16 @@ class HostPlatformMember(Base):
     __tablename__ = "host_platform_member"
     __table_args__ = (
         UniqueConstraint("platform_id", "asset_key", name="uq_host_platform_member_asset"),
+        ForeignKeyConstraint(["platform_id", "instance_id"], ["host_platform.id", "host_platform.instance_id"],
+                             name="fk_host_platform_member_platform_instance", ondelete="CASCADE"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    platform_id: Mapped[int] = mapped_column(
-        ForeignKey("host_platform.id", ondelete="CASCADE"),
+    instance_id: Mapped[int] = mapped_column(
+        ForeignKey("simulation_instance.instance_id", name="fk_host_platform_member_instance", ondelete="CASCADE"),
         nullable=False,
     )
+    platform_id: Mapped[int] = mapped_column(Integer, nullable=False)
     asset_key: Mapped[str] = mapped_column(String(64), nullable=False)
     member_kind: Mapped[str] = mapped_column(String(16), nullable=False)
     assigned_round: Mapped[int] = mapped_column(Integer, nullable=False)

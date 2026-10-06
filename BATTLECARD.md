@@ -1,126 +1,70 @@
 # MIS Simulation — current battlecard
 
-Updated 2026-09-14 against baseline `952aeac`. Current execution plan:
-[`design/08-implementation-north-star.md`](design/08-implementation-north-star.md).
-Read governance, quality, spec and field contracts before implementing an assigned handoff.
+Updated 2026-10-06. Baseline reviewed: `0a535ba` (2026-10-05), plus the readiness checkpoint
+including infrastructure/rollout work. **Current action queue: [TODO.md](TODO.md).**
 
-## The product
+## Product and guardrails
 
-Undergraduate MIS teams inherit a company's IT estate and manage it for six rounds.
-The decision hierarchy is strategy → platform → components → rollout, with ownership,
-information policy, staffing, challenges and a review/lock/debrief loop around it.
+Student teams manage an inherited IT estate across six rounds. The current navigation is
+Strategy → IT Infrastructure → Applications → Rollout & Adoption → Review & Budget,
+with Dashboard, Challenges and Debrief. Realised value is Technology × Organisation ×
+Management; weighted partial evidence and structural hard gates remain in the engine.
+AI may explain, role-play and teach; it must not recommend a plan or produce scored values.
+All numeric persona claims must come from scoped engine facts.
 
-`Realised Value = Technology Capability × Organisational Readiness × Management Quality`
+## What is available
 
-The interface speaks business: what does it cost, who does it affect, and what happens
-if it fails? The engine computes scores and causal evidence; AI may explain, role-play
-and teach, but may not score or advise on the team's plan. Every persona number comes
-from engine state. Stakeholder satisfaction uses realised value, not just purchases.
-
-## What exists
-
-| Area | Evidence-backed status |
+| Area | Evidence and limit |
 |---|---|
-| Foundation | FastAPI/React scaffold, migrations, semantic tokens, local IBM Plex fonts, 19 static reference mockups |
-| Content | One substantive Riverside pack: 7 capabilities, 14 catalog items, 8 entities, 8 watch rules, 13 events, 4 strategies, 14 stakeholders, 6 policy switches and 6 obligation rules |
-| Engine | Pure graph/scoring functions, policy scoring, event/precondition model, signal episodes, explanatory decompositions; audited optional capability-specific capacity/RTO inputs and deterministic paths |
-| Persistence | 16 runtime tables, instance-scoped snapshots, lock/advance, arrivals, result and ledger persistence |
-| Calibration | Four scripted archetypes × six rounds; all perspectives now visible in every round, 38 live marker sites and raw scale diagnostics; all scripts declare Cost Leadership; August ruling retained |
-| Verification | M1 P6 integration: 652 pytest tests, all guards, 44 fixtures; complete historical payloads preserved, plus 16 decision games/96 persisted reports and matching hash-seed digests. M0's actual PostgreSQL migrations/16 tables/six results and all 96 reconciled BSC values remain the baseline; Riverside zero errors/warnings |
-| Application | React token-preview page and 404 only; auth remains 501; student/instructor workflows unbuilt |
+| Simulation (M0–M2) | Typed decision sheets, state evolution, accounting, atomic progression, scoped persistence, auth, casepack registry and scheduling. Completion recorded in recovery audits. |
+| Student loop (M3) | October 6 six-round browser loop passed with persisted debriefs and zero diagnostics; cross-panel controls and host proofs also pass locally. |
+| Student coverage (M4) | TCO forecasts, project lifecycle, capital requests, freshness and full modern financial model implemented. Weighted scoring balance accepted September 18. Legacy scoring paths retain their contracts. |
+| Instructor operations (M5) | Setup, existing-user enrollment, assignment, round control, monitoring, grading/CSV export, registry, clone/archive/reset implemented. Setup audit closes all five findings October 2; 14 setup and 20 operations browser proofs recorded. CSV roster import/account provisioning remain open. |
+| AI | Provider fallback/grounding infrastructure and Riverside persona API implemented (October 3, `a292f8a`, 17 acceptance tests including grounding/advisor probes). Student interview UI, chapter-filtered coach and debrief narration remain open. The September AI audit predates A2 implementation. |
+| Content (M6) | Riverside is the substantive pack; `m2_isolation_fixture` is an isolation fixture, not a second industry. Runtime preference/authoring portability gaps remain. |
+| Release | Local operational rehearsal passed historically; manual, pilot script and local restore runbook prepared; production deployment, monitoring verification and observed pilot acceptance remain open. |
 
-The original packet count is **11 of 47 recorded closed**. Phase 1 closure covers the
-audited scripted-state model with accepted deferrals. It does not prove a decision-driven
-game, balance across all strategies, a usable application, or readiness for a cohort.
+## Current verification boundary
 
-**M0 is complete** on `build/north-star-foundation`: reporting (`94b85e7`), runtime
-(`4adafd8`) and the independently audited scorecard candidate (`ad5de38`). Scores now
-apply integer event points to normalized bases once and retain versioned base/delta/partial
-status. All other fields across 24 scripted results and historical result rows are preserved.
-Main remains at the historical baseline. [Evidence and limits](handoffs/recovery/README.md).
+October 6 local evidence: **834 backend tests passed, no skips, all guards green**, including
+PostgreSQL concurrency; frontend lint and production build pass. Seventeen browser checks
+cover four widths and six-round completion. Host-platform and five additional controls
+checks pass; People/Security are reachable, cross-panel saves share revisions, and pending
+strategy/ownership/policy decisions persist. PostgreSQL migration and restore checks pass.
+See [the readiness report](docs/readiness-2026-10-06.md) for the exact timing and limits:
+the full corrected-tree gate and independent browser closing checks passed after review rework.
 
-**M1 is complete.** Its bounded capacity/RTO/path packet passed a fresh build audit at
-`7dbb4c8`, and its entity-access/verified-repair packet passed at `1729a89`; both are
-integrated on the recovery branch. [P0 audit](findings/recovery-engine-inputs-2026-09-14.md)
-and [P0b audit](findings/recovery-production-inputs-2026-09-15.md). The corrected master
-contract passed independent Heavy review at `bee3977`, closing the four returned findings.
-[Master review](handoffs/recovery/decision-evolution/master-review-2.md). P1 typed content
-and runtime validation passed independent audit at `e4f4757` and is integrated in the
-current recovery branch. [P1 audit](findings/recovery-content-types-2026-09-15.md). P2
-estate passed independent audit at `b4bfec9` and is now integrated. [P2 audit](findings/recovery-estate-2026-09-15.md).
-P3 organisation passed independent audit at `2c42f24` and is now integrated. [P3 audit](findings/recovery-organisation-2026-09-15.md).
-P4 consequences passed independent audit at `f43ea7f8` and is now integrated. It adds
-pure accounting, consequence resolution, repairs, preview challenges, prevention, debt/TCO
-and the shared M0 scorer adapter. [P4 audit](findings/recovery-consequences-2026-09-15.md).
-P5 persistence passed independent audit at `58a75669` and is now integrated. It adds the
-three canonical simulation tables, strict 19-table migration verification and fresh
-transaction service operations. [P5 audit](findings/recovery-persistence-2026-09-15.md).
-P6 games passed independent audit at `3855188` and is integrated. It loads the frozen
-typed six-round fixture through `SimulationService`; final evidence covers 16 games,
-96 persisted reports, fresh-scope determinism, causal archetype differences and hash-seed
-stability. The nullable-command persistence and no-op/pending-liability affordability fixes
-are integrated in `3c2bb51`, `e2356e7`, `3624f2` and `8ef2411`. [P6 audit](findings/recovery-games-2026-09-15.md).
+Six tracked source files and untracked `CLAUDE.md`/sample screenshots predated this work;
+preserve them. The user requested a committed/pushed checkpoint on `build/readiness-2026-10-06` and a pause.
+Resume from [the next-agent note](handoffs/readiness-2026-10-06/NEXT-AGENT.md). Fresh independent backend and frontend corrections reviews passed after six reproduced
+defects were fixed and independently retested. Host scope0012 and lifecycle0013 passed independent backend/browser audits and the full gate. Nothing is merged to main or deployed. The ~1.1 MB frontend bundle remains open.
 
-## The important unfinished boundary
+## Next work, in order
 
-The scripts author a replacement post-decision estate each round. The runner scores that
-state; it does not yet apply the complete student decision set to the previous estate.
-Training decay, adoption/resistance evolution and general stakeholder-alignment inputs still
-need real producers. The Financial scorecard is a partial discipline proxy, although
-capex/opex/debt/TCO records exist. Distinct data freshness and full policy overrides remain
-deferred. See the north-star ownership table and `findings/OPEN-REGISTER.md`.
+1. Host [scope](docs/host-scope-2026-10-06.md) and [activation/reset](docs/host-lifecycle-2026-10-06.md) are independently accepted.
+   Next implement the accepted instructor-start contract, then close the SQLite archive-migration gap;
+   optimize the profiled repair-inclusive read without weakening pack isolation.
+2. Rehearse production and observed teaching acceptance using the prepared guides;
+   the destination and human participants are still needed.
+3. Finish M5 teaching support and roster onboarding, retaining scope and grounding checks.
+4. Author the selected second vertical, close portability contracts and prove six-round
+   operation without case-specific engine branches.
+5. Complete dashboard charts, responsive polish and measured bundle improvements.
 
-The first meaningful product checkpoint is **one initial estate followed only by real
-decision sheets for six rounds**, with coherent costs, timing, consequences and explanations.
-Historical scorer fixtures remain useful regression evidence; they are not that checkpoint.
+Use [TODO.md](TODO.md) for owners, acceptance evidence and decisions. Do not start work from
+an old OPEN/FAIL headline without checking later commits and the current implementation.
 
-## Current delivery order
+## Navigation for the next agent
 
-1. **M0 — trustworthy baseline — COMPLETE:** declared dependencies, disposable PostgreSQL
-   proof, complete calibration visibility, explicit scorecard units and owned gaps.
-2. **M1 — decision-driven simulation:** typed commands, actual state transitions, atomic
-   advance/retry semantics, organisational evolution, accounting and decision-only playthroughs.
-3. **M2 — platform — COMPLETE for local/cohort scope:** hierarchy, guarded scope/auth, pack versions and scheduling.
-   Packets 2.1 hierarchy, 2.2 instance scoping, 2.5 casepack registry, 2.4 auth/login, and
-   2.3 scheduling are accepted (`5d6b573`, `da339c5`, `67a034d`, `d89d5b6`, `d41edb3`);
-   2.2 covers all 19 runtime tables, restrictive instance FKs, orphan preflight, and
-   repository-guarded reads; 2.5 registers validated runtime tuples and pins semantic
-   digests; 2.4 supplies live-user guards, seeded accounts, and the login surface; 2.3
-   supplies fixed-time per-team lock/advance scheduling with database lease fencing inside
-   the production mutation transaction.
-4. **M3 — first playable browser loop:** required input controls, student review/debrief and
-   instructor advance, through six rounds on real state.
-5. **M4 — complete deterministic student experience:** all input capture, real producers,
-   financial/freshness follow-ups and balance review across declared strategies.
-6. **M5 — course operations and AI:** complete instructor workflow, grades/export/lifecycle,
-   grounded personas, interviews, concept coach and debrief narration.
-7. **M6 — second vertical and pilot:** content portability, cohort load, launch/recovery
-   audit, manual and observed rehearsal.
+- Current status: this file; ordered tasks and handoff: [TODO.md](TODO.md).
+- Rules: `GOVERNANCE.md`, `QUALITY_PROTOCOL.md`, `SPEC_PROTOCOL.md`, `CONTRACTS.md`.
+- Design and historical milestones: `design/08-implementation-north-star.md`.
+- M4 evidence: `docs/m4-coverage-slice.md`, `docs/m4-strategy-playthrough-audit.md`.
+- M5 evidence: `handoffs/m5/instructor-ops-audit.md`; AI source in `backend/app/ai/`
+  and `backend/app/api/runtime_persona.py` supersedes missing-A2 claims in the old audit.
+- M6 residuals: `handoffs/m6/portability-seam-audit.md`.
+- Release evidence: `docs/phase7-operational-audit.md`.
 
-Original packet IDs and full scope remain in `design/06-plan-index.md`. Milestones group
-work around user outcomes and include the old deferrals; they do not erase the history.
-
-## How a builder starts
-
-The supervisor supplies one exact branch/base commit and isolated worktree, one approved
-handoff, an allowed-file list, preflight checks and acceptance evidence. At most two
-implementation tracks run. Do not infer an assignment from this overview or start a later
-milestone because a nearby file looks ready. No `git add -A`, pushing, deployment or main
-merge by builders. Undefined semantics and scope changes return to the supervisor.
-
-Heavy contracts/scoring work gets independent spec review and build audit. Every builder's
-work is independently checked before integration. The supervisor records the candidate SHA,
-reproduced evidence, remaining findings and next gate. Browser evidence is required when
-there is a browser workflow; seed-based headless evidence is appropriate for the engine.
-
-## References and open product decisions
-
-- Design intent: `design/02-traceability-matrix.md`, `design/04-decisions-g1-g6.md`,
-  `design/07-decision-consequence-map.md`. A tick in the traceability matrix may mean an
-  identified design path, not an implemented runtime path.
-- Shared fields: `CONTRACTS.md`; historical audits and owned deferrals: `findings/`.
-- Reference systems and locations: `GOVERNANCE.md §4.1`. Inspect current source before
-  porting; old availability/version claims are not current verification.
-- Product decisions reserved for the user: substantive second vertical, optional LLM
-  rationale modifier, reflection grading, and pedagogical balance. The market/competitor
-  layer remains deliberately deferred.
+Update this summary and TODO together when a gate changes. Distinguish implemented,
+locally verified, independently audited and production accepted. Preserve old audits as
+history; never claim an independent audit from builder checks.

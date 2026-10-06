@@ -17,6 +17,7 @@ from sqlalchemy import create_engine
 
 from app.casepack.models import Casepack
 from app.models.base import Base
+from app.models import host_platform as host_models
 from app.models import platform as platform_models
 from app.models import scheduling as scheduling_models
 from app.round import models as round_models
@@ -156,7 +157,7 @@ def test_bound_pack_initializes_and_transitions_non_riverside_capability_state(t
     engine = create_engine(f"sqlite:///{tmp_path / 'simulation.db'}", future=True)
     Base.metadata.create_all(engine, tables=[
         x.__table__ for x in (
-            *platform_models.ALL_TABLES, *round_models.ALL_TABLES,
+            *host_models.ALL_TABLES, *platform_models.ALL_TABLES, *round_models.ALL_TABLES,
             *simulation_models.ALL_TABLES, *scheduling_models.ALL_TABLES,
         )
     ])

@@ -1,0 +1,28 @@
+
+> mis-sim-frontend@0.2.0 build
+> vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 3426 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                            0.40 kB │ gzip:   0.27 kB
+dist/assets/IBMPlexMono-Regular-C-SBB-bw.woff2            45.64 kB
+dist/assets/IBMPlexSans-Bold-CDYgCOW4.woff2               63.01 kB
+dist/assets/IBMPlexSans-Regular-BiEB_oxT.woff2            63.02 kB
+dist/assets/IBMPlexSans-Medium-BQLKo0ot.woff2             66.74 kB
+dist/assets/IBMPlexSans-SemiBold-KfaJl9PC.woff2           67.06 kB
+dist/assets/BarlowSemiCondensed-Light-DlBmAB_v.ttf       104.70 kB
+dist/assets/BarlowSemiCondensed-Medium-B-GaN-11.ttf      105.56 kB
+dist/assets/BarlowSemiCondensed-Regular-B0iUFITm.ttf     105.78 kB
+dist/assets/BarlowSemiCondensed-SemiBold-DrVP5hUr.ttf    109.77 kB
+dist/assets/BarlowSemiCondensed-Bold-DLnY5Gfv.ttf        111.77 kB
+dist/assets/index-DkZHuJRJ.css                            55.03 kB │ gzip:   8.71 kB
+dist/assets/index-DICHCZ_K.js                          1,103.06 kB │ gzip: 339.71 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.23s

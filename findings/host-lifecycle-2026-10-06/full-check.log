@@ -1,0 +1,237 @@
+== pytest ==
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 25%]
+........................................................................ [ 34%]
+........................................................................ [ 43%]
+........................................................................ [ 51%]
+........................................................................ [ 60%]
+........................................................................ [ 69%]
+........................................................................ [ 77%]
+........................................................................ [ 86%]
+........................................................................ [ 94%]
+..........................................                               [100%]
+=============================== warnings summary ===============================
+../../../../../tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+tests/test_auth.py: 1 warning
+tests/test_auth_guards.py: 5 warnings
+tests/test_components_runtime_api.py: 2 warnings
+tests/test_dashboard_api.py: 2 warnings
+tests/test_debrief_runtime_api.py: 2 warnings
+tests/test_grading_api.py: 23 warnings
+tests/test_host_lifecycle.py: 30 warnings
+tests/test_host_scope_api.py: 30 warnings
+tests/test_instructor_monitoring.py: 11 warnings
+tests/test_instructor_setup_api.py: 28 warnings
+tests/test_lifecycle_api.py: 21 warnings
+tests/test_persona_api.py: 11 warnings
+tests/test_platform_runtime_api.py: 2 warnings
+tests/test_registry_admin_api.py: 23 warnings
+tests/test_review_runtime_api.py: 2 warnings
+tests/test_rollout_runtime_api.py: 10 warnings
+tests/test_round_control_api.py: 22 warnings
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/jose/jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+834 passed, 226 warnings in 1208.74s (0:20:08)
+== tests/check_auth_invariants.py ==
+auth invariants: PASS (no stub, no client instance context, required secret)
+== tests/check_calibration_harness.py ==
+PASS  I1: no case-identity branching in app/calibrate/
+PASS  I6: no dominance assertion / build-failing exit in app/calibrate/
+PASS  I2: deterministic over score fields (3 runs -> 1 hash)
+PASS  I3: no raw engine keys in the default report
+PASS  I4: only the archetype instances have results (no leak)
+PASS  I4: each archetype has exactly `rounds` results after a re-run (idempotent wipe)
+PASS  I4: an instance never run has zero results
+PASS  I5: harness never mutates the pack (yaml md5 identical)
+
+all calibration-harness guards green
+== tests/check_casepack_registry_schema.py ==
+casepack registry schema: PASS (metadata-only, unique tuple, no instance_id)
+== tests/check_engine_purity.py ==
+PASS  CC8/I1+I2: no identity-branching, I/O, clock, randomness, or session
+PASS  I3: no displayed English in engine string literals
+PASS  I8: metric_kind confined to the evaluator / ledger writer (ledger.py)
+
+all engine purity guards green
+== tests/check_event_preconditions.py ==
+PASS  canonical set contains exactly eleven types
+PASS  signal_open: model load and round-trip
+PASS  signal_open: valid exact shape
+PASS  signal_open: missing severity rejected
+PASS  signal_open: foreign field capability rejected
+PASS  demand_exceeds_capacity: model load and round-trip
+PASS  demand_exceeds_capacity: valid exact shape
+PASS  demand_exceeds_capacity: missing capability rejected
+PASS  demand_exceeds_capacity: foreign field count rejected
+PASS  adoption_below: model load and round-trip
+PASS  adoption_below: valid exact shape
+PASS  adoption_below: missing capability rejected
+PASS  adoption_below: foreign field count rejected
+PASS  staffing_over: model load and round-trip
+PASS  staffing_over: valid exact shape
+PASS  staffing_over: missing ratio rejected
+PASS  staffing_over: foreign field capability rejected
+PASS  debt_above: model load and round-trip
+PASS  debt_above: valid exact shape
+PASS  debt_above: missing ratio rejected
+PASS  debt_above: foreign field capability rejected
+PASS  node_is_spof: model load and round-trip
+PASS  node_is_spof: valid exact shape
+PASS  node_is_spof: missing node rejected
+PASS  node_is_spof: foreign field capability rejected
+PASS  entity_unowned: model load and round-trip
+PASS  entity_unowned: valid exact shape
+PASS  entity_unowned: missing entity rejected
+PASS  entity_unowned: foreign field capability rejected
+PASS  placement_count: model load and round-trip
+PASS  placement_count: valid exact shape
+PASS  placement_count: missing count rejected
+PASS  placement_count: foreign field capability rejected
+PASS  policy_contradiction: model load and round-trip
+PASS  policy_contradiction: valid exact shape
+PASS  policy_contradiction: missing other_policy rejected
+PASS  policy_contradiction: foreign field capability rejected
+PASS  sponsor_unassigned: model load and round-trip
+PASS  sponsor_unassigned: valid exact shape
+PASS  sponsor_unassigned: missing capability rejected
+PASS  sponsor_unassigned: foreign field count rejected
+PASS  round_equals: model load and round-trip
+PASS  round_equals: valid exact shape
+PASS  round_equals: missing round rejected
+PASS  round_equals: foreign field capability rejected
+PASS  unknown precondition type rejected
+PASS  placement and count survive together
+PASS  policy and other_policy survive together
+PASS  closed precondition vocabularies are placement and severity
+PASS  out-of-vocabulary placement does not collapse to E00
+PASS  out-of-vocabulary placement raises E29 and nothing else
+PASS  E29 names events.yaml, the placement field, and the offending value
+PASS  out-of-vocabulary severity does not collapse to E00
+PASS  out-of-vocabulary severity raises E29 and nothing else
+PASS  E29 names events.yaml, the severity field, and the offending value
+PASS  minimal_valid still validates clean with the raw vocabulary check in place
+
+All focused precondition checks passed
+== tests/check_fixture_matrix.py ==
+fixture                      want  got  must raise / must not raise / codes raised
+minimal_valid                   0    0  +[-] -[*] got[-]   PASS
+broken_E00                      1    1  +[E00] -[-] got[E00]   PASS
+broken_E01                      1    1  +[E01] -[-] got[E01,E22,W08]   PASS
+broken_E02                      1    1  +[E02] -[-] got[E02,E22,W08]   PASS
+broken_E03                      1    1  +[E03] -[-] got[E03]   PASS
+broken_E04                      1    1  +[E04] -[-] got[E04]   PASS
+broken_E05                      1    1  +[E05] -[-] got[E05,W08]   PASS
+broken_E06                      1    1  +[E06] -[-] got[E06,W08]   PASS
+broken_E07                      1    1  +[E07] -[-] got[E07,W08]   PASS
+broken_E08                      1    1  +[E08] -[-] got[E08,W08]   PASS
+broken_E09                      1    1  +[E09] -[-] got[E09,W08]   PASS
+broken_E10                      1    1  +[E10] -[-] got[E10,W08]   PASS
+broken_E11                      1    1  +[E11] -[-] got[E11,W08]   PASS
+broken_E12                      1    1  +[E12] -[E20] got[E12,W08]   PASS
+broken_E13                      1    1  +[E13] -[-] got[E13,W08]   PASS
+broken_E14                      1    1  +[E14] -[-] got[E14,W08]   PASS
+broken_E15                      1    1  +[E15] -[-] got[E15]   PASS
+broken_E15_default              1    1  +[E15] -[-] got[E15]   PASS
+broken_E16                      1    1  +[E16] -[-] got[E16]   PASS
+broken_E17                      1    1  +[E17] -[E00] got[E17]   PASS
+broken_policy_aggregate         1    1  +[E03,E17] -[E00] got[E03,E17]   PASS
+broken_E18                      1    1  +[E18] -[E00] got[E18]   PASS
+broken_E19                      1    1  +[E19] -[E00] got[E19]   PASS
+broken_E24                      1    1  +[E24] -[-] got[E24]   PASS
+broken_E25                      1    1  +[E25] -[-] got[E25]   PASS
+broken_E26                      1    1  +[E26] -[-] got[E26]   PASS
+broken_E26_no_options           1    1  +[E26] -[-] got[E26]   PASS
+broken_E27                      1    1  +[E27] -[-] got[E27]   PASS
+broken_E28                      1    1  +[E28] -[-] got[E28]   PASS
+broken_E29                      1    1  +[E29] -[-] got[E29]   PASS
+broken_E30                      1    1  +[E30] -[-] got[E30]   PASS
+ok_obligations_valid            0    0  +[-] -[*] got[-]   PASS
+warn_W01_by_decision            0    0  +[W01] -[-] got[W01]   PASS
+broken_E20                      1    1  +[E20] -[-] got[E20,W08]   PASS
+broken_E20_mute                 1    1  +[E12,E20] -[-] got[E12,E20,E21,W08]   PASS
+broken_E21                      1    1  +[E21] -[E12,E20] got[E21,W08]   PASS
+broken_E22                      1    1  +[E22] -[-] got[E01,E22,W08]   PASS
+broken_E23                      1    1  +[E23] -[-] got[E23,W08]   PASS
+broken_I3                       1    1  +[I3] -[-] got[I3,W08]   PASS
+warn_W01                        0    0  +[W01] -[-] got[W01,W08]   PASS
+warn_heuristics                 0    0  +[W02,W03,W04,W05,W06,W07] -[-] got[W02,W03,W04,W05,W06,W07,W08]   PASS
+ok_presence_rule                0    0  +[-] -[*] got[-]   PASS
+broken_E21_presence_warning     1    1  +[E21] -[E12,E20] got[E21]   PASS
+ok_service_owns_entity          0    0  +[-] -[*] got[-]   PASS
+broken_W08                      0    0  +[W08] -[W05] got[W08]   PASS
+ok_obligations_empty            0    0  +[-] -[*] got[-]   PASS
+
+FIELD  broken_E19                 E19 field endswith '.employees'   PASS
+FIELD  broken_E15                 E15 field endswith '.options'   PASS
+FIELD  broken_E15_default         E15 field endswith '.default'   PASS
+FIELD  broken_E26                 E26 field endswith '.permissive_value'   PASS
+FIELD  broken_E26_no_options      E26 field endswith '.permissive_value'   PASS
+
+I1  implemented codes : 41 ['E00', 'E01', 'E02', 'E03', 'E04', 'E05', 'E06', 'E07', 'E08', 'E09', 'E10', 'E11', 'E12', 'E13', 'E14', 'E15', 'E16', 'E17', 'E18', 'E19', 'E20', 'E21', 'E22', 'E23', 'E24', 'E25', 'E26', 'E27', 'E28', 'E29', 'E30', 'I3', 'I8', 'W01', 'W02', 'W03', 'W04', 'W05', 'W06', 'W07', 'W08']
+I1  spec-named codes  : 41 ['E00', 'E01', 'E02', 'E03', 'E04', 'E05', 'E06', 'E07', 'E08', 'E09', 'E10', 'E11', 'E12', 'E13', 'E14', 'E15', 'E16', 'E17', 'E18', 'E19', 'E20', 'E21', 'E22', 'E23', 'E24', 'E25', 'E26', 'E27', 'E28', 'E29', 'E30', 'I3', 'I8', 'W01', 'W02', 'W03', 'W04', 'W05', 'W06', 'W07', 'W08']
+I1  set equality      : PASS
+
+I1v implemented variants: 4 ['E10_pack_key', 'E15_default', 'E26_no_options', 'E29_vocab']
+I1v spec-named variants : 4 ['E10_pack_key', 'E15_default', 'E26_no_options', 'E29_vocab']
+I1v set equality        : PASS
+
+I5  minimal_valid                      text=  0 json=  0 identical=yes
+I5  warn_heuristics                    text=  8 json=  8 identical=yes
+I5  riverside_grocery                  text=  0 json=  0 identical=yes
+I5  packs/  (directory mode)           text= 96 json= 96 identical=yes
+I5  directory-mode pack attribution    every record names its pack
+
+all 46 fixtures behave as named; 40 of 41 codes exercised, ['I8'] recorded as unfixturable
+I1/I1v set-equal against the spec; I5 identical in single-pack and directory mode
+== tests/check_host_scope_schema.py ==
+host scope guard green: two host tables, scoped member queries and composite ORM join
+== tests/check_instance_isolation.py ==
+PASS  every runtime table partitions strictly by instance_id
+PASS  instance 101 marker node is visible to 101 and invisible to 202
+PASS  instance 202 marker node is visible to 202 and invisible to 101
+PASS  each instance keeps its own declared strategy
+PASS  each instance has its own immutable RoundResult, no cross-read
+
+instance-isolation canary green -- zero cross-instance reads
+== tests/check_instance_scope_schema.py ==
+instance-scope schema guard green: 19 non-null direct restrictive FKs declared
+== tests/check_policy_options.py ==
+PASS  riverside declares options on its switches (fixture for the order check)  6 switches carry options: ['data_collection', 'data_retention', 'data_access', 'access_logging', 'data_egress', 'staff_monitoring']
+PASS  YAML list order survives loading unchanged (all six switches)  loaded options list is element-for-element identical to the authored YAML
+PASS  first and last option retain their positions (all six switches)  options[0] and options[-1] match the authored first/last
+PASS  index 0 is the permissive end (default and permissive_value both name it)  data_collection: index0='everything_by_default' default='everything_by_default' permissive='everything_by_default'; data_retention: index0='indefinite' default='indefinite' permissive='indefinite'; data_access: index0='open_to_all_staff' default='open_to_all_staff' permissive='open_to_all_staff'; access_logging: index0='unlogged' default='unlogged' permissive='unlogged'; data_egress: index0='unrestricted' default='unrestricted' permissive='unrestricted'; staff_monitoring: index0='untracked' default='untracked' permissive='untracked'
+PASS  default is distinct from permissive_value (compliant-start pack is valid)  default='standard_period' permissive_value='indefinite'
+PASS  on Riverside, default (PolicyOption) and permissive_value (ObligationRule) are separate attributes on separate models
+PASS  legacy PolicyOption (no options/default) loads with options==[] default==None  options=[] default=None
+PASS  legacy-shape pack ok_obligations_empty loads; every policy is options==[] default==None  2 policies, all legacy shape
+PASS  options order survives model_dump -> model_validate round-trip
+PASS  models.py declares options ORDINAL and carries no 'order is meaningless' statement  ordinal affirmed, no meaningless phrase
+PASS  CONTRACTS.md has a PolicyOption.options entry declaring the ordinal ordering  entry present, ordinal, index-0-permissive
+PASS  docs/casepack-schema.md declares options ordinal and carries no 'order is meaningless' statement  ordinal affirmed, no meaningless phrase
+PASS  model/contract describe the 1.4 policy-distance consumer as LIVE (closeout landed), producer deferred  consumer named live; no stale 'does not read yet'; producer deferral stated
+
+all 13 policy-option contract checks pass
+== tests/check_round_invariants.py ==
+PASS  I1: no pack-identity branching in app/round/
+PASS  I3: no displayed English in round string literals
+PASS  I4: every select() filters on instance_id
+PASS  I5: exactly one rescore marker in runner.py (single re-entry)
+PASS  I6: RoundResult is never UPDATEd (immutable)
+PASS  I7: opex is recomputed, never accumulated
+PASS  I9: signal ledger is append-only (no UPDATE / status mutation)
+
+all round invariant guards green
+== tests/check_scheduling_invariants.py ==
+scheduling invariants: PASS (BECSR source unavailable; amendment is binding)
+== tests/check_w08_rounds.py ==
+PASS  four-round pack with four draws passes W08
+PASS  four-round pack with three draws warns W08 with minimum 4
+PASS  empty affinity counts for W08 and still emits W03
+
+make check: all guards green

@@ -1,0 +1,2 @@
+PASS SQLite injected batch failure1: enforcement restored on same migration connection, no FK violation
+PASS SQLite injected batch failure2: enforcement restored on same migration connection, no FK violation

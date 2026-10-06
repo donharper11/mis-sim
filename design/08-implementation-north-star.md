@@ -1,5 +1,8 @@
 # Implementation north star
 
+> Current status and actions (2026-10-06): [../BATTLECARD.md](../BATTLECARD.md) and [../TODO.md](../TODO.md). Progress narratives below are historical; contracts and audit records remain in force.
+
+
 Date: 2026-09-14. Baseline: `952aeac`. Owner: supervising integration agent (Codex).
 Execution authorized by the user: preserve the useful core, establish a clear implementation
 plan, dispatch bounded agents, and independently audit their work.
