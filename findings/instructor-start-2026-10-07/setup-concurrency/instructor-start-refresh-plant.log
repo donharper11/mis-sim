@@ -1,0 +1,69 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_start_wins_setup_mutator_rechecks_cached_status[enrollment_assign-postgres] _
+
+database = namespace(engine=Engine(postgresql+psycopg2://readiness@127.0.0.1:44535/mis_sim_verify_instructor_start_review), url='...tion/supply_by_placement/saas/storage_gb":"GB"},"version":1}}')}, choices={1: 'cost_leadership', 2: 'differentiation'})
+operation = 'enrollment_assign'
+
+    @pytest.mark.parametrize("operation", OPERATIONS)
+    def test_start_wins_setup_mutator_rechecks_cached_status(database, operation):
+        db = database
+    
+        async def run():
+            async with db.factory() as winner, db.factory() as loser:
+                cached = await _cache_setup(loser)
+                winner_pid, loser_pid = await _pid(winner), await _pid(loser)
+                await start_instance(winner, 1, db.packs[1].pack_digest, db.choices)
+                task = asyncio.create_task(_mutate(loser, db, operation))
+                try:
+                    await _observe_wait(db, loser_pid, winner_pid, task)
+                    await winner.commit()
+                    expected = snapshot(db)
+                    rejection = DeletionBlocked if operation.endswith("delete") else PlatformConflict
+                    with pytest.raises(rejection):
+                        await asyncio.wait_for(task, 10)
+                    await loser.rollback()
+                    assert snapshot(db) == expected, operation
+                    assert cached
+                finally:
+                    await winner.rollback()
+                    if not task.done():
+                        task.cancel()
+                    await asyncio.gather(task, return_exceptions=True)
+>       asyncio.run(run())
+
+backend/tests/test_instructor_start_concurrency.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def run():
+        async with db.factory() as winner, db.factory() as loser:
+            cached = await _cache_setup(loser)
+            winner_pid, loser_pid = await _pid(winner), await _pid(loser)
+            await start_instance(winner, 1, db.packs[1].pack_digest, db.choices)
+            task = asyncio.create_task(_mutate(loser, db, operation))
+            try:
+                await _observe_wait(db, loser_pid, winner_pid, task)
+                await winner.commit()
+                expected = snapshot(db)
+                rejection = DeletionBlocked if operation.endswith("delete") else PlatformConflict
+>               with pytest.raises(rejection):
+E               Failed: DID NOT RAISE <class 'app.services.platform.PlatformConflict'>
+
+backend/tests/test_instructor_start_concurrency.py:120: Failed
+=============================== warnings summary ===============================
+../../../../tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_instructor_start_concurrency.py::test_start_wins_setup_mutator_rechecks_cached_status[enrollment_assign-postgres]
+1 failed, 16 deselected, 1 warning in 3.41s
+PASS falsification: removing refresh caused the expected concurrency regression

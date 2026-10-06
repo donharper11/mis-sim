@@ -1,6 +1,6 @@
 # Reproducing the October readiness checks
 
-Updated 2026-10-06. Use a disposable local database. Commands below assume the repository
+Updated 2026-10-07. Use a disposable local database. Commands below assume the repository
 root, Python 3.12, Node 22 and PostgreSQL 16 binaries. Production host details and acceptance
 are still pending; this runbook does not claim a deployed release.
 
@@ -17,9 +17,12 @@ npm --prefix frontend run build
 ```
 
 `make check` includes pytest, all `check_*.py` guards and validator fixtures. The explicit
-PostgreSQL concurrency test is skipped unless `M5_POSTGRES_URL` is supplied. That test drops
-its target's public schema: give it a **separate disposable database**, never the browser,
-restore, application or production database.
+PostgreSQL checks require `M5_POSTGRES_URL`, `HOST_SCOPE_POSTGRES_URL`,
+`HOST_LIFECYCLE_POSTGRES_URL` and `INSTRUCTOR_START_POSTGRES_URL` to avoid skips. Give each
+fixture a **separate disposable database**; they drop their target schemas. Never use browser,
+restore, application or production data. Scope/lifecycle/start fixtures enforce dedicated
+`mis_sim_verify_host_scope_`, `mis_sim_verify_host_lifecycle_`, `mis_sim_verify_instructor_start_`
+database prefixes respectively.
 
 ## PostgreSQL and browser seed
 
@@ -69,6 +72,31 @@ proof uses Section B team 2 and checks five cross-panel save/reload behaviors; i
 go to `/tmp/mis-sim-readiness-controls/`. These scripts mutate the seeded teams: use a fresh
 seeded database for an independent replay.
 
+## Instructor start rehearsal
+
+The preinitialized seed above verifies ongoing play, not instructor onboarding. For start
+acceptance use a different empty disposable browser database, migrate it, and create only
+ordinary demo identities/cohort:
+
+```bash
+cd backend
+DATABASE_URL="$READINESS_DATABASE_URL" /tmp/mis-sim-readiness-venv/bin/alembic upgrade head
+DATABASE_URL="$READINESS_DATABASE_URL" /tmp/mis-sim-readiness-venv/bin/python -m app.seed.demo --cohort --users
+```
+
+Do not pass `--schedule` or initialize runs. Sign in as the demo instructor, create a course/
+section, bind a case, create two teams, enroll/assign existing demo students and choose each
+team's initial strategy in Setup. Confirm start, open contextual round controls, then sign in
+as an assigned student and save/lock. Instructor advance must produce persisted debrief data.
+Replay the reusable proof after starting the API/frontend against that fresh fixture:
+
+```bash
+MIS_SIM_DISPOSABLE=1 MIS_SIM_BASE_URL=http://127.0.0.1:3000 node frontend/tests/instructor-start-proof.mjs
+```
+
+Artifacts go to a unique temporary directory unless `MIS_SIM_OUT` is supplied. See [the start browser evidence](../findings/instructor-start-2026-10-07/browser-review.md)
+for pending guards, distinct strategies, errors and responsive checks.
+
 ## Database and recovery evidence
 
 Run `backend/scripts/check_postgres_runtime.py --database-url <verification URL>` against
@@ -97,7 +125,7 @@ acceptance. No unknown destination is assumed by this runbook.
 
 ## Independent review evidence
 
-The October6 independent reviews live under `findings/readiness-2026-10-06/` (backend and
+The October 6 independent reviews live under `findings/readiness-2026-10-06/` (backend and
 frontend reports), with contract dispatch review under `handoffs/readiness-2026-10-06/`.
 The frontend reviewer authored separate browser probes in the `frontend-review/` evidence
 subdirectory. They use an isolated reviewer API/Vite and disposable cohort; read the report

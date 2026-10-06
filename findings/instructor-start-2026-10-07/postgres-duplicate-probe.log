@@ -1,0 +1,4 @@
+PASS second start observed waiting on section lock
+('success', {'instance_id': 1, 'status': 'active', 'current_round': 1, 'started_at': datetime.datetime(2026, 10, 6, 21, 51, 34, 381483, tzinfo=datetime.timezone.utc), 'team_ids': [1, 3]})
+('PlatformConflict', 'Only a section in setup at round 0 can be started. Existing simulation data must be cleared using Reset before starting this setup section.')
+PASS exactly one start; duplicate conflict; first timestamp and two initialized teams preserved

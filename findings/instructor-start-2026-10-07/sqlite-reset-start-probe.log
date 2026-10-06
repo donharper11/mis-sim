@@ -1,0 +1,5 @@
+BARRIER reset passed setup eligibility; before first schedule lock SELECT
+OTHER CONNECTION start committed {'instance_id': 1, 'status': 'active', 'current_round': 1, 'started_at': datetime.datetime(2026, 10, 6, 22, 18, 10, 311857, tzinfo=datetime.timezone.utc), 'team_ids': [1]}
+OLD RESET COMMITTED
+FINAL active 1 2026-10-06 22:18:10.311857 runs 0
+REPRODUCED reset erased newly started generation

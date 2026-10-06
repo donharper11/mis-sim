@@ -1,0 +1,72 @@
+{
+  "complete": false,
+  "checks": [
+    {
+      "name": "UI creates course/section/binding; no-team start blocked",
+      "data": {
+        "course": 5,
+        "section": 4,
+        "instance": 3,
+        "reasons": [
+          "Create at least one team before starting."
+        ]
+      }
+    },
+    {
+      "name": "Ready populated roster still requires explicit choices",
+      "data": {
+        "instance_id": 3,
+        "status": "setup",
+        "pack_digest": "b85cf5d4ff38c4365881eda1ce20769e64f4c6bdab50a9e2d4225e3a5eedfa8e",
+        "total_rounds": 6,
+        "ready": true,
+        "blocked_reasons": [],
+        "strategies": [
+          {
+            "key": "cost_leadership",
+            "label": "Cost Leadership"
+          },
+          {
+            "key": "differentiation",
+            "label": "Differentiation"
+          },
+          {
+            "key": "customer_supplier_intimacy",
+            "label": "Customer and Supplier Intimacy"
+          },
+          {
+            "key": "focus_strategy",
+            "label": "Focus Strategy"
+          }
+        ],
+        "teams": [
+          {
+            "team_id": 5,
+            "name": "Team 1",
+            "student_count": 2
+          },
+          {
+            "team_id": 6,
+            "name": "Team 2",
+            "student_count": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "Viewport overflow",
+      "data": {
+        "wide": 1440,
+        "narrow": 720,
+        "overflow": 0
+      }
+    },
+    {
+      "name": "Pending disables double-submit/cancel/context and ignores backdrop",
+      "data": {
+        "posts": 1
+      }
+    }
+  ],
+  "errors": []
+}

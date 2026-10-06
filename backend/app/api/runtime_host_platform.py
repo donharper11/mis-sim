@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import get_current_instance, get_current_user, get_session
 from app.models.host_platform import HostPlatform, HostPlatformMember
 from app.models.platform import Enrollment, SimulationInstance, Team, User
+from app.simulation.generation import same_generation
 from app.simulation.models import SimulationRunV1, SimulationSheetV1
 
 router = APIRouter(tags=["host-platform"])
@@ -90,10 +91,21 @@ async def _team_for_user(
 
 async def _require_editable(session: AsyncSession, instance: SimulationInstance, team: Team) -> SimulationRunV1:
     """Serialize metadata edits with the same run row used by lock/advance."""
+    expected_started_at = instance.started_at
+    if session.bind.dialect.name == "sqlite":
+        await session.execute(update(SimulationRunV1).where(
+            SimulationRunV1.instance_id == instance.instance_id,
+            SimulationRunV1.team_id == team.id,
+        ).values(current_round=SimulationRunV1.current_round).execution_options(synchronize_session=False))
     run = await session.scalar(select(SimulationRunV1).where(
         SimulationRunV1.instance_id == instance.instance_id,
         SimulationRunV1.team_id == team.id,
     ).with_for_update())
+    current = (await session.execute(select(SimulationInstance.started_at).where(
+        SimulationInstance.instance_id == instance.instance_id,
+    ))).first()
+    if current is None or not same_generation(current[0], expected_started_at):
+        raise HTTPException(status_code=409, detail="The simulation was restarted; refresh before changing platforms")
     if run is None or instance.status in {"paused", "completed", "archived"} or run.status == "completed":
         raise HTTPException(status_code=409, detail="Platform changes are unavailable for this round")
     sheet = await session.get(SimulationSheetV1, (instance.instance_id, team.id, run.current_round))

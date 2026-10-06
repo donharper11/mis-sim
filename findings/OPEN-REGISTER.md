@@ -616,13 +616,13 @@ These are local correction results, not an independent audit or release approval
 | READY-F09 | People/Security panels unreachable; sibling panels retain stale revisions; strategy/ownership replace one another; draft policies/owners not rehydrated | Readiness builder — LOCAL FIX | `frontend/tests/controls-proof.mjs`: five cross-panel and reload checks |
 | READY-001 | Host member lacks required non-null instance column; host/team FK can mismatch instance | Readiness builder — CLOSED, independent backend/browser ACCEPT and 816-test full gate | Migration0012, two-database populated round trips and integrity plants, additive host guard; docs/host-scope-2026-10-06.md |
 | READY-002 | Host activation/reset lifecycle is incomplete | Host lifecycle packet — CLOSED, independent backend/browser ACCEPT and 834-test full gate | Manual/scheduled advance and scoped reset browser/DB checks |
-| READY-003 | Instructor setup/clone cannot initialize a playable runtime through the UI | Instructor start packet — CONTRACT ACCEPTED; implementation paused at user request | Instructor creates/starts section; assigned student saves/locks/advances without DB edits |
+| READY-003 | Instructor setup/clone cannot initialize a playable runtime through the UI | Instructor start packet — CLOSED, independent backend/browser/concurrency ACCEPT;885-test full gate, no skips, all guards green | Instructor creates/starts section; assigned student saves/locks/advances without DB edits |
 | READY-START-CLIENT | New requests from stale browser tabs have no generation token across reset/start | Platform/API versioning — OPEN, explicitly deferred by start v1 contract | Add client/server generation token and prove stale-tab mutation refusal; in-flight server requests are a separate start-packet obligation |
 | READY-004 | Repair-inclusive read/advance performance needs profiling before cohort claims | Operational performance packet — OPEN | Timed endpoint/profile evidence and representative cohort rehearsal |
 
 Current independent dispatch decisions are in `../handoffs/readiness-2026-10-06/`:
 accepted host scope, host lifecycle and instructor-start contracts. User authorized fresh
-reviewers; production/pilot details remain external dependencies. The old next-contract.md
+reviewers; production destination remains an external dependency. Live participant recruitment and observed pilot follow seeded platform readiness. The old next-contract.md
 is historical preflight, not the current dispatch contract.
 
 ## Independent readiness review follow-up
@@ -643,3 +643,24 @@ frontend review: `readiness-2026-10-06/frontend-independent-review.md`; contract
 
 The bounded host-scope contract passed independent dispatch review; READY-001 implementation
 and independent backend/browser audits plus the 816-test full gate now pass; READY-001 is closed. No lifecycle/start acceptance is implied.
+
+## Instructor-start implementation review — 2026-10-07
+
+Owner for all corrections: READY-003 builder. Fresh independent backend/browser reviewers
+reproduced and retested each class; final packet gate passes885 tests, no skips, all guards green.
+
+| ID | Finding | Disposition / closing evidence |
+|---|---|---|
+| START-BE-001 | Scheduler captures replacement generation after operation entry | CLOSED by entry capture; SQLite/PG exact replacement snapshot regressions |
+| START-BE-002 | Old scheduler writes replacement schedule/participant metadata | CLOSED by shared generation guard before metadata;14 scheduler cases and valid missing-guard plant |
+| START-BE-003 | Expired tick/unlock ORM identities cause uncontrolled deletion errors | CLOSED by freezing complete work identities before commits; multi-schedule and PG reopen/reset regressions |
+| START-BE-004 | Review publishes old lock into replacement schedule after service commit | CLOSED by post-service lifecycle lock/generation check; actual route409 and exact replacement snapshot |
+| START-BE-005 | SQLite reset reads setup before a concurrent start, then deletes new runtime | CLOSED by pre-eligibility writer reservation; independent both-order contention/snapshot tests and missing-reservation plant pass;885-test final packet gate green |
+| START-UI-001 | Start route prefix mismatch prevents setup loading | CLOSED by accepted instructor route paths; fresh complete browser replay |
+| START-UI-002 | Undefined modal-card style makes confirmation transparent | CLOSED using existing modal-dialog/body;1440/720 screenshots and zero overflow |
+| START-UI-003 | Open round controls loses started section context | CLOSED by passing course/section router state; fresh replay selects exact new section |
+
+Evidence: [backend](instructor-start-2026-10-07/backend-final-review.md),
+[browser](instructor-start-2026-10-07/browser-review.md),
+[setup concurrency](instructor-start-2026-10-07/setup-concurrency-review.md).
+READY-START-CLIENT remains explicitly OPEN; no stale-tab or production-readiness closure is implied.

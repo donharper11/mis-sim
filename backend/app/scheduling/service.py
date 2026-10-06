@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.casepack.registry import RegistryError, resolve_runtime_pack
 from app.models.platform import SimulationInstance, Team
 from app.models.scheduling import RoundSchedule, RoundScheduleTeam
+from app.simulation.generation import require_generation
 from app.simulation.models import SimulationCheckpointV1, SimulationRunV1, SimulationSheetV1
 from app.simulation.service import SimulationService
 
@@ -204,7 +205,30 @@ class Scheduler:
             RoundScheduleTeam.instance_id == schedule.instance_id,
         ).order_by(RoundScheduleTeam.team_id)).all())
 
-    def _conditional_participant_update(self, row: RoundScheduleTeam, token: str | None, **values: Any) -> bool:
+    def _guard_generation(self, schedule_id: int, instance_id: int, expected_started_at) -> None:
+        """Fence metadata in each scheduler-owned transaction before autoflush.
+
+        Reset uses instance→schedule→run. Take only schedule here, then read the
+        generation without an instance lock; a waiting reset cannot invert us.
+        """
+        try:
+            with self.session.no_autoflush:
+                if self.session.get_bind().dialect.name == "sqlite":
+                    self.session.execute(update(RoundSchedule).where(
+                        RoundSchedule.id == schedule_id, RoundSchedule.instance_id == instance_id,
+                    ).values(round_number=RoundSchedule.round_number).execution_options(synchronize_session=False))
+                exists_now = self.session.scalar(select(RoundSchedule.id).where(
+                    RoundSchedule.id == schedule_id, RoundSchedule.instance_id == instance_id,
+                ).with_for_update())
+                if exists_now is None:
+                    raise SchedulingError("schedule no longer exists")
+                require_generation(self.session, instance_id, expected_started_at)
+        except Exception:
+            self.session.rollback()
+            raise
+
+    def _conditional_participant_update(self, row: RoundScheduleTeam, token: str | None, *, expected_started_at, **values: Any) -> bool:
+        self._guard_generation(row.schedule_id, row.instance_id, expected_started_at)
         statement = update(RoundScheduleTeam).where(
             RoundScheduleTeam.schedule_id == row.schedule_id,
             RoundScheduleTeam.instance_id == row.instance_id,
@@ -236,7 +260,7 @@ class Scheduler:
     def _failure(self, failures: list[dict[str, Any]], team_id: int, exc: Exception) -> None:
         failures.append({"team_id": team_id, "error": str(exc)})
 
-    def _lock(self, schedule: RoundSchedule, at: datetime, *, token: str | None, reason: str) -> list[dict[str, Any]]:
+    def _lock(self, schedule: RoundSchedule, at: datetime, *, token: str | None, reason: str, expected_started_at) -> list[dict[str, Any]]:
         failures: list[dict[str, Any]] = []
         service = self._service(self._instance(schedule.instance_id))
         for row in self._rows(schedule):
@@ -259,13 +283,15 @@ class Scheduler:
                 service.lock(
                     schedule.instance_id, row.team_id, schedule.round_number, revision,
                     schedule_claim=(schedule.id, token) if token is not None else None,
+                    expected_started_at=expected_started_at,
                 )
-                if not self._conditional_participant_update(row, token, locked_revision=revision, locked_at=at):
+                if not self._conditional_participant_update(row, token, expected_started_at=expected_started_at, locked_revision=revision, locked_at=at):
                     raise SchedulingError("schedule claim lost")
                 self.session.commit()
             except Exception as exc:
                 self._failure(failures, row.team_id, exc)
                 break
+        self._guard_generation(schedule.id, schedule.instance_id, expected_started_at)
         self.session.flush()
         rows = self._rows(schedule)
         if not failures and all(row.locked_revision is not None for row in rows):
@@ -274,7 +300,7 @@ class Scheduler:
             schedule.locked_at = schedule.locked_at or at
         return failures
 
-    def _advance(self, schedule: RoundSchedule, at: datetime, *, token: str | None) -> list[dict[str, Any]]:
+    def _advance(self, schedule: RoundSchedule, at: datetime, *, token: str | None, expected_started_at) -> list[dict[str, Any]]:
         failures: list[dict[str, Any]] = []
         service = self._service(self._instance(schedule.instance_id))
         for row in self._rows(schedule):
@@ -289,33 +315,42 @@ class Scheduler:
                 service.advance(
                     schedule.instance_id, row.team_id, schedule.round_number, row.locked_revision,
                     schedule_claim=(schedule.id, token) if token is not None else None,
+                    expected_started_at=expected_started_at,
                 )
-                if not self._conditional_participant_update(row, token, advanced_at=at):
+                if not self._conditional_participant_update(row, token, expected_started_at=expected_started_at, advanced_at=at):
                     raise SchedulingError("schedule claim lost")
                 self.session.commit()
             except Exception as exc:
                 self._failure(failures, row.team_id, exc)
                 break
+        self._guard_generation(schedule.id, schedule.instance_id, expected_started_at)
         self.session.flush()
         rows = self._rows(schedule)
         if not failures and all(row.advanced_at is not None for row in rows):
             schedule.advanced_at = schedule.advanced_at or at
         return failures
 
-    def _process(self, schedule: RoundSchedule, at: datetime, *, token: str | None, force_lock: bool = False, force_advance: bool = False) -> TickResult:
+    def _process(self, schedule: RoundSchedule, at: datetime, *, expected_started_at, token: str | None, force_lock: bool = False, force_advance: bool = False) -> TickResult:
+        instance_id, round_number, schedule_id = schedule.instance_id, schedule.round_number, schedule.id
         failures: list[dict[str, Any]] = []
-        if force_lock or at >= _db_utc(schedule.deadline):
-            reason = schedule.lock_reason or ("instructor_locked" if force_lock else "deadline_expired")
-            # Preserve the first cause even when one participant operation fails.
-            # A later deadline tick must not rewrite an instructor's explicit lock.
-            schedule.lock_reason = schedule.lock_reason or reason
-            failures.extend(self._lock(schedule, at, token=token, reason=reason))
-        if not failures and (force_advance or (schedule.auto_advance and at >= _db_utc(schedule.deadline) + timedelta(minutes=schedule.grace_period_minutes))):
-            failures.extend(self._advance(schedule, at, token=token))
-        state = "advanced" if schedule.advanced_at else "locked" if schedule.decisions_locked else "failed" if failures else "pending"
-        return TickResult(schedule.instance_id, schedule.round_number, state, tuple(failures))
+        try:
+            self._guard_generation(schedule_id, instance_id, expected_started_at)
+            if force_lock or at >= _db_utc(schedule.deadline):
+                reason = schedule.lock_reason or ("instructor_locked" if force_lock else "deadline_expired")
+                # Preserve the first cause even when one participant operation fails.
+                # A later deadline tick must not rewrite an instructor's explicit lock.
+                schedule.lock_reason = schedule.lock_reason or reason
+                failures.extend(self._lock(schedule, at, token=token, reason=reason, expected_started_at=expected_started_at))
+            if not failures and (force_advance or (schedule.auto_advance and at >= _db_utc(schedule.deadline) + timedelta(minutes=schedule.grace_period_minutes))):
+                failures.extend(self._advance(schedule, at, token=token, expected_started_at=expected_started_at))
+            state = "advanced" if schedule.advanced_at else "locked" if schedule.decisions_locked else "failed" if failures else "pending"
+            return TickResult(schedule.instance_id, schedule.round_number, state, tuple(failures))
+        except Exception as exc:
+            self.session.rollback()
+            return TickResult(instance_id, round_number, "failed", ({"error": str(exc)},))
 
-    def _claim(self, schedule: RoundSchedule, at: datetime) -> str | None:
+    def _claim(self, schedule: RoundSchedule, at: datetime, *, expected_started_at) -> str | None:
+        self._guard_generation(schedule.id, schedule.instance_id, expected_started_at)
         token = uuid.uuid4().hex
         result = self.session.execute(update(RoundSchedule).where(
             RoundSchedule.id == schedule.id,
@@ -330,63 +365,81 @@ class Scheduler:
 
     def tick(self, now: datetime) -> list[dict[str, Any]]:
         at = utc(now)
-        schedules = list(self.session.scalars(select(RoundSchedule).where(RoundSchedule.start_at <= at).order_by(RoundSchedule.instance_id, RoundSchedule.round_number)).all())
+        schedules = self.session.execute(select(RoundSchedule, SimulationInstance.started_at).join(
+            SimulationInstance, SimulationInstance.instance_id == RoundSchedule.instance_id,
+        ).where(RoundSchedule.start_at <= at).order_by(RoundSchedule.instance_id, RoundSchedule.round_number)).all()
+        # Freeze all work identities before a rollback can expire any ORM row.
+        work = [(row, generation, row.instance_id, row.round_number, row.id, row.advanced_at)
+                for row, generation in schedules]
         result: list[dict[str, Any]] = []
-        for schedule in schedules:
-            if schedule.advanced_at is not None:
-                result.append(TickResult(schedule.instance_id, schedule.round_number, "advanced").as_dict())
-                continue
-            token = self._claim(schedule, at)
-            if token is None:
-                result.append(TickResult(schedule.instance_id, schedule.round_number, "busy").as_dict())
+        for schedule, expected_started_at, instance_id, round_number, schedule_id, advanced_at in work:
+            if advanced_at is not None:
+                result.append(TickResult(instance_id, round_number, "advanced").as_dict())
                 continue
             try:
-                result.append(self._process(schedule, at, token=token).as_dict())
+                token = self._claim(schedule, at, expected_started_at=expected_started_at)
+            except Exception as exc:
+                result.append(TickResult(instance_id, round_number, "failed", ({"error": str(exc)},)).as_dict())
+                continue
+            if token is None:
+                result.append(TickResult(instance_id, round_number, "busy").as_dict())
+                continue
+            try:
+                result.append(self._process(schedule, at, token=token, expected_started_at=expected_started_at).as_dict())
                 self.session.commit()
             except Exception as exc:
                 self.session.rollback()
-                result.append(TickResult(schedule.instance_id, schedule.round_number, "failed", ({"error": str(exc),},)).as_dict())
+                result.append(TickResult(instance_id, round_number, "failed", ({"error": str(exc),},)).as_dict())
             finally:
-                self._clear_claim(schedule.id, token)
+                self._clear_claim(schedule_id, token)
         return result
 
     def lock_now(self, instance_id: int, round_number: int, at: datetime) -> dict[str, Any]:
+        expected_started_at = self.session.scalar(select(SimulationInstance.started_at).where(SimulationInstance.instance_id == instance_id))
         when = utc(at)
         schedule = self.session.scalar(select(RoundSchedule).where(RoundSchedule.instance_id == instance_id, RoundSchedule.round_number == round_number))
         if schedule is None:
             raise SchedulingError("schedule does not exist")
-        result = self._process(schedule, when, token=None, force_lock=True)
+        result = self._process(schedule, when, expected_started_at=expected_started_at, token=None, force_lock=True)
         self.session.commit()
         return result.as_dict()
 
     def advance_now(self, instance_id: int, round_number: int, at: datetime) -> dict[str, Any]:
+        expected_started_at = self.session.scalar(select(SimulationInstance.started_at).where(SimulationInstance.instance_id == instance_id))
         when = utc(at)
         schedule = self.session.scalar(select(RoundSchedule).where(RoundSchedule.instance_id == instance_id, RoundSchedule.round_number == round_number))
         if schedule is None:
             raise SchedulingError("schedule does not exist")
-        result = self._process(schedule, when, token=None, force_lock=False, force_advance=True)
+        result = self._process(schedule, when, expected_started_at=expected_started_at, token=None, force_lock=False, force_advance=True)
         self.session.commit()
         return result.as_dict()
 
     def unlock(self, instance_id: int, round_number: int) -> dict[str, Any]:
+        expected_started_at = self.session.scalar(select(SimulationInstance.started_at).where(SimulationInstance.instance_id == instance_id))
         schedule = self.session.scalar(select(RoundSchedule).where(RoundSchedule.instance_id == instance_id, RoundSchedule.round_number == round_number))
         if schedule is None:
             raise SchedulingError("schedule does not exist")
         if schedule.advanced_at is not None or self.session.scalar(select(RoundScheduleTeam).where(RoundScheduleTeam.schedule_id == schedule.id, RoundScheduleTeam.advanced_at.is_not(None))):
             raise SchedulingError("cannot unlock after advancement")
+        schedule_id = schedule.id
         service = self._service(self._instance(instance_id))
-        for row in self._rows(schedule):
-            if row.locked_revision is not None:
+        work = [(row, row.team_id, row.locked_revision) for row in self._rows(schedule)]
+        for row, team_id, revision in work:
+            if revision is not None:
                 reopen = getattr(service, "reopen", None)
                 if reopen is None:
                     raise SchedulingError("production service cannot reopen a locked round")
                 try:
-                    reopen(instance_id, row.team_id, round_number, row.locked_revision)
+                    self.session.commit()
+                    reopen(instance_id, team_id, round_number, revision, expected_started_at=expected_started_at)
                 except Exception as exc:
-                    raise SchedulingError(f"cannot reopen team {row.team_id}: {exc}") from exc
+                    raise SchedulingError(f"cannot reopen team {team_id}: {exc}") from exc
+            self._guard_generation(schedule_id, instance_id, expected_started_at)
             row.locked_revision = None
             row.locked_at = None
             row.advanced_at = None
+            self.session.commit()
+        self._guard_generation(schedule_id, instance_id, expected_started_at)
         schedule.decisions_locked = False
         schedule.lock_reason = None
         schedule.locked_at = None

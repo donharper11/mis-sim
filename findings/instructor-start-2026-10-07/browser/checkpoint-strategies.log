@@ -1,0 +1,8 @@
+ team_id | round |    strategy     
+---------+-------+-----------------
+       5 |     0 | cost_leadership
+       5 |     1 | cost_leadership
+       6 |     0 | differentiation
+       6 |     1 | differentiation
+(4 rows)
+

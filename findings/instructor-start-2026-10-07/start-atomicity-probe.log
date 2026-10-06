@@ -1,0 +1,5 @@
+PASS late second-team failure: entire SQL dump identical
+started {'instance_id': 1, 'status': 'active', 'current_round': 1, 'started_at': datetime.datetime(2026, 10, 6, 21, 50, 18, 659521, tzinfo=datetime.timezone.utc), 'team_ids': [1, 3]}
+PASS explicit different strategies yield exact initial state/digests; only six intended runtime rows
+duplicate PlatformConflict Only a section in setup at round 0 can be started. Existing simulation data must be cleared using Reset before starting this setup section.
+PASS duplicate start unchanged full SQL dump

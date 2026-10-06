@@ -1,0 +1,2 @@
+old_operation_result {'instance_id': 1, 'round_number': 1, 'state': 'failed', 'failures': [{'error': 'round_state: generation'}]}
+PASS old lock completed before restart; all replacement schedule/participant/run rows unchanged after old publication resumes

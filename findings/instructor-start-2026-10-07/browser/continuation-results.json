@@ -1,0 +1,208 @@
+{
+  "complete": false,
+  "checks": [
+    {
+      "name": "UI start succeeds and duplicateAPI conflicts"
+    },
+    {
+      "name": "Student initial strategy and capital",
+      "data": {
+        "strategy": "cost_leadership",
+        "dashboard": {
+          "instance_id": 3,
+          "current_round": 1,
+          "total_rounds": 6,
+          "status": "active",
+          "selected_team_id": 5,
+          "teams": [
+            {
+              "id": 5,
+              "name": "Team 1",
+              "current_round": 1,
+              "status": "draft",
+              "strategy": "cost_leadership",
+              "capital_remaining": 400000,
+              "run_rate": null,
+              "latest_result_round": null,
+              "scorecard": {
+                "financial": null,
+                "customer": null,
+                "internal_process": null,
+                "learning_growth": null
+              },
+              "open_signals": [],
+              "attention": [],
+              "units": [
+                {
+                  "key": "finance",
+                  "name": "finance",
+                  "people": null,
+                  "running": [],
+                  "implemented": [
+                    "trained 37",
+                    "process partial",
+                    "trained 84",
+                    "process partial",
+                    "trained 4",
+                    "process partial",
+                    "trained 84",
+                    "process unchanged",
+                    "trained 1",
+                    "process unchanged",
+                    "trained 4",
+                    "process unchanged"
+                  ],
+                  "adoption": 0.6,
+                  "process": null,
+                  "contributing": []
+                },
+                {
+                  "key": "firm",
+                  "name": "firm",
+                  "people": null,
+                  "running": [],
+                  "implemented": [
+                    "trained 37",
+                    "process partial",
+                    "trained 84",
+                    "process partial",
+                    "trained 4",
+                    "process partial",
+                    "trained 84",
+                    "process unchanged",
+                    "trained 1",
+                    "process unchanged",
+                    "trained 4",
+                    "process unchanged"
+                  ],
+                  "adoption": 0.6,
+                  "process": null,
+                  "contributing": []
+                },
+                {
+                  "key": "it",
+                  "name": "it",
+                  "people": null,
+                  "running": [],
+                  "implemented": [
+                    "trained 37",
+                    "process partial",
+                    "trained 84",
+                    "process partial",
+                    "trained 4",
+                    "process partial",
+                    "trained 84",
+                    "process unchanged",
+                    "trained 1",
+                    "process unchanged",
+                    "trained 4",
+                    "process unchanged"
+                  ],
+                  "adoption": 0.6,
+                  "process": null,
+                  "contributing": []
+                },
+                {
+                  "key": "marketing_sales",
+                  "name": "marketing_sales",
+                  "people": null,
+                  "running": [],
+                  "implemented": [
+                    "trained 37",
+                    "process partial",
+                    "trained 84",
+                    "process partial",
+                    "trained 4",
+                    "process partial",
+                    "trained 84",
+                    "process unchanged",
+                    "trained 1",
+                    "process unchanged",
+                    "trained 4",
+                    "process unchanged"
+                  ],
+                  "adoption": 0.6,
+                  "process": null,
+                  "contributing": []
+                },
+                {
+                  "key": "service",
+                  "name": "service",
+                  "people": null,
+                  "running": [],
+                  "implemented": [
+                    "trained 37",
+                    "process partial",
+                    "trained 84",
+                    "process partial",
+                    "trained 4",
+                    "process partial",
+                    "trained 84",
+                    "process unchanged",
+                    "trained 1",
+                    "process unchanged",
+                    "trained 4",
+                    "process unchanged"
+                  ],
+                  "adoption": 0.6,
+                  "process": null,
+                  "contributing": []
+                },
+                {
+                  "key": "store_operations",
+                  "name": "store_operations",
+                  "people": null,
+                  "running": [],
+                  "implemented": [
+                    "trained 37",
+                    "process partial",
+                    "trained 84",
+                    "process partial",
+                    "trained 4",
+                    "process partial",
+                    "trained 84",
+                    "process unchanged",
+                    "trained 1",
+                    "process unchanged",
+                    "trained 4",
+                    "process unchanged"
+                  ],
+                  "adoption": 0.6,
+                  "process": null,
+                  "contributing": []
+                },
+                {
+                  "key": "warehouse",
+                  "name": "warehouse",
+                  "people": null,
+                  "running": [],
+                  "implemented": [
+                    "trained 37",
+                    "process partial",
+                    "trained 84",
+                    "process partial",
+                    "trained 4",
+                    "process partial",
+                    "trained 84",
+                    "process unchanged",
+                    "trained 1",
+                    "process unchanged",
+                    "trained 4",
+                    "process unchanged"
+                  ],
+                  "adoption": 0.6,
+                  "process": null,
+                  "contributing": []
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Student and wrong-owner instructor readiness/start forbidden403"
+    }
+  ],
+  "errors": []
+}

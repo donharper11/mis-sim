@@ -1,0 +1,2 @@
+/api/instructor/instances/{instance_id}/start-readiness
+/api/instructor/instances/{instance_id}/start

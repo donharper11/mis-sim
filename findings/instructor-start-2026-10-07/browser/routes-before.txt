@@ -1,0 +1,2 @@
+/api/instances/{instance_id}/start-readiness
+/api/instances/{instance_id}/start

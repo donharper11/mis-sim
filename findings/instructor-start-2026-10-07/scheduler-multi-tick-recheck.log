@@ -1,0 +1,2 @@
+tick_result [{'instance_id': 1, 'round_number': 1, 'state': 'failed', 'failures': [{'error': 'round_state: generation'}]}, {'instance_id': 1, 'round_number': 2, 'state': 'failed', 'failures': [{'error': "Instance '<RoundSchedule at 0x7871c25ee6c0>' has been deleted, or its row is otherwise not present."}]}]
+new generation unchanged

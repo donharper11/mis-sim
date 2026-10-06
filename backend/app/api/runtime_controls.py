@@ -212,6 +212,7 @@ async def read_controls(instance: SimulationInstance = Depends(get_current_insta
 
 @router.patch("/instances/{instance_id}/controls/{section}", response_model=ControlsOut)
 async def patch_controls(section: str, payload: ControlsPatchIn, instance: SimulationInstance = Depends(get_current_instance), current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), team_id: int | None = Query(default=None)):  # noqa: B008
+    expected_started_at = instance.started_at
     allowed = _SECTIONS.get(section)
     if allowed is None:
         raise HTTPException(status_code=404, detail="Unknown Phase 4 control section")
@@ -251,7 +252,7 @@ async def patch_controls(section: str, payload: ControlsPatchIn, instance: Simul
     def apply_patch():
         engine = make_engine()
         try:
-            return SimulationService(engine, pack).patch_sheet(instance_id, team_id_value, current_round, payload.expected_revision, patch)
+            return SimulationService(engine, pack).patch_sheet(instance_id, team_id_value, current_round, payload.expected_revision, patch, expected_started_at=expected_started_at)
         finally:
             engine.dispose()
 

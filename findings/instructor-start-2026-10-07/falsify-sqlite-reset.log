@@ -1,0 +1,120 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_sqlite_reset_eligibility_boundary_blocks_start_until_commit[sqlite] ___
+
+database = namespace(engine=Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-60/test_sqlite_reset_eligibility_0/start.db), url='sqli...tion/supply_by_placement/saas/storage_gb":"GB"},"version":1}}')}, choices={1: 'cost_leadership', 2: 'differentiation'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x752a3bbdaf00>
+
+    def test_sqlite_reset_eligibility_boundary_blocks_start_until_commit(database, monkeypatch):
+        db = database
+        baseline = snapshot(db)
+        async def run():
+            async with db.factory() as resetting, db.factory() as starting:
+                eligible, release, entered = asyncio.Event(), asyncio.Event(), asyncio.Event()
+                original = AsyncSession.execute
+                async def pause_after_eligibility(current, statement, *args, **kwargs):
+                    if current is resetting and str(statement).startswith('SELECT round_schedule.') and not eligible.is_set():
+                        eligible.set()
+                        await release.wait()
+                    return await original(current, statement, *args, **kwargs)
+                monkeypatch.setattr(AsyncSession, 'execute', pause_after_eligibility)
+                reset_task = asyncio.create_task(reset_instance(resetting, 1))
+                await asyncio.wait_for(eligible.wait(), 5)
+                def before(conn, cursor, statement, parameters, context, many):
+                    if statement.startswith('UPDATE section'): entered.set()
+                event.listen(db.async_engine.sync_engine, 'before_cursor_execute', before)
+                start_task = asyncio.create_task(start_instance(starting, 1, db.packs[1].pack_digest, db.choices))
+                try:
+                    await observe_writer_wait(db, start_task, entered)
+                    assert snapshot(db) == baseline
+                    release.set()
+                    await asyncio.wait_for(reset_task, 5)
+                    await resetting.commit()
+                    published = await asyncio.wait_for(start_task, 10)
+                    await starting.commit()
+                    after = snapshot(db)
+                    with Session(db.engine) as session:
+                        instance = session.get(SimulationInstance, 1)
+                        assert (instance.status, instance.current_round) == ('active', 1)
+                        assert instance.started_at is not None and published['started_at'] is not None
+                        assert len(list(session.scalars(select(SimulationRunV1).where(SimulationRunV1.instance_id == 1)))) == 2
+                    for table, rows in baseline.items():
+                        if rows and 'instance_id' in rows[0]:
+                            assert [r for r in after[table] if r['instance_id'] != 1] == [r for r in rows if r['instance_id'] != 1]
+                        elif table != 'simulation_instance':
+                            assert after[table] == rows
+                    with pytest.raises(PlatformConflict): await reset_instance(resetting, 1)
+                    await resetting.rollback()
+                    assert snapshot(db) == after
+                finally:
+                    release.set()
+                    event.remove(db.async_engine.sync_engine, 'before_cursor_execute', before)
+                    await resetting.rollback()
+                    await starting.rollback()
+                    for task in (reset_task, start_task):
+                        if not task.done(): task.cancel()
+                    await asyncio.gather(reset_task, start_task, return_exceptions=True)
+>       asyncio.run(run())
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start_sqlite_reset.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start_sqlite_reset.py:81: in run
+    await observe_writer_wait(db, start_task, entered)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+db = namespace(engine=Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-60/test_sqlite_reset_eligibility_0/start.db), url='sqli...tion/supply_by_placement/saas/storage_gb":"GB"},"version":1}}')}, choices={1: 'cost_leadership', 2: 'differentiation'})
+task = <Task cancelled name='Task-7' coro=<start_instance() done, defined at /tmp/mis_sim_reset_start_plant_5wxt7orq/app/services/instructor_start.py:81>>
+entered = <asyncio.locks.Event object at 0x752a3a0c2c90 [set]>
+
+    async def observe_writer_wait(db, task, entered):
+        await asyncio.wait_for(entered.wait(), 5)
+        # No pg_stat_activity on SQLite: actual entered contender SQL, independent
+        # BEGIN IMMEDIATE failure, and pending task together demonstrate contention.
+        connection = sqlite3.connect(db.engine.url.database, timeout=0)
+        try:
+>           with pytest.raises(sqlite3.OperationalError, match='locked'):
+E           Failed: DID NOT RAISE <class 'sqlite3.OperationalError'>
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start_sqlite_reset.py:22: Failed
+=============================== warnings summary ===============================
+../mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+test_instructor_start_sqlite_reset.py::test_sqlite_reset_eligibility_boundary_blocks_start_until_commit[sqlite]
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/_pytest/threadexception.py:82: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-7
+  
+  Traceback (most recent call last):
+    File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/aiosqlite/core.py", line 117, in run
+      future.get_loop().call_soon_threadsafe(set_result, future, result)
+    File "/usr/lib/python3.12/asyncio/base_events.py", line 840, in call_soon_threadsafe
+      self._check_closed()
+    File "/usr/lib/python3.12/asyncio/base_events.py", line 541, in _check_closed
+      raise RuntimeError('Event loop is closed')
+  RuntimeError: Event loop is closed
+  
+  During handling of the above exception, another exception occurred:
+  
+  Traceback (most recent call last):
+    File "/usr/lib/python3.12/threading.py", line 1073, in _bootstrap_inner
+      self.run()
+    File "/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/aiosqlite/core.py", line 120, in run
+      future.get_loop().call_soon_threadsafe(set_exception, future, e)
+    File "/usr/lib/python3.12/asyncio/base_events.py", line 840, in call_soon_threadsafe
+      self._check_closed()
+    File "/usr/lib/python3.12/asyncio/base_events.py", line 541, in _check_closed
+      raise RuntimeError('Event loop is closed')
+  RuntimeError: Event loop is closed
+  
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start_sqlite_reset.py::test_sqlite_reset_eligibility_boundary_blocks_start_until_commit[sqlite]
+1 failed, 2 warnings in 3.66s

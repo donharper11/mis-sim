@@ -1,0 +1,118 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_every_runtime_inventory_blocks_start_and_reset_recovers[sqlite] _____
+
+database = namespace(engine=Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-54/test_every_runtime_inventory_b0/start.db), url='sqli...tion/supply_by_placement/saas/storage_gb":"GB"},"version":1}}')}, choices={1: 'cost_leadership', 2: 'differentiation'})
+
+    def test_every_runtime_inventory_blocks_start_and_reset_recovers(database):
+        """Real constrained residue, with parents when required, must never be adopted."""
+        from datetime import timedelta
+        from sqlalchemy import Boolean, Float, Integer, JSON
+        db = database
+        # An explicit independent inventory catches a forgotten registration as well.
+        expected = {m.__tablename__ for m in legacy.ALL_TABLES} | {
+            'round_schedule', 'round_schedule_team', 'host_platform', 'host_platform_member',
+            'simulation_run_v1', 'simulation_sheet_v1', 'simulation_checkpoint_v1', 'grade_config', 'grade_override',
+        }
+        assert len(expected) == 25 and {m.__tablename__ for m in RUNTIME_TABLES} == expected
+        before = snapshot(db)
+        async def run():
+            async with db.factory() as session:
+                for model in RUNTIME_TABLES:
+                    now = datetime.now(timezone.utc)
+                    if model in (SimulationRunV1, SimulationSheetV1, SimulationCheckpointV1):
+                        service = SimulationService(session.get_bind(), db.packs[1])
+                        await session.run_sync(lambda sync: service.initialize_in_session(sync, 1, 1, db.choices[1]))
+                    elif model in (RoundSchedule, RoundScheduleTeam):
+                        schedule = RoundSchedule(instance_id=1, round_number=1, start_at=now, deadline=now+timedelta(days=1), auto_advance=False, grace_period_minutes=0)
+                        session.add(schedule); await session.flush()
+                        if model is RoundScheduleTeam:
+                            session.add(RoundScheduleTeam(schedule_id=schedule.id, instance_id=1, team_id=1))
+                    elif model in (HostPlatform, HostPlatformMember):
+                        host = HostPlatform(instance_id=1, team_id=1, platform_code='RESIDUE', name='Residue', platform_type='on_prem', created_round=1)
+                        session.add(host); await session.flush()
+                        if model is HostPlatformMember:
+                            session.add(HostPlatformMember(platform_id=host.id, instance_id=1, asset_key='residue', member_kind='service', assigned_round=1))
+                    elif model in (GradeConfig, GradeOverride):
+                        values = {'instance_id': 1, 'updated_by': 1}
+                        if model is GradeOverride: values['team_id'] = 1
+                        session.add(model(**values))
+                    else:
+                        values = {'instance_id': 1, 'team_id': 1}
+                        for col in model.__table__.columns:
+                            if col.name in values or col.name == 'id' or col.nullable or col.default is not None: continue
+                            if isinstance(col.type, JSON): value = {}
+                            elif isinstance(col.type, Boolean): value = False
+                            elif isinstance(col.type, (Integer, Float)): value = 1
+                            else: value = 'residue'
+                            values[col.name] = value
+                        session.add(model(**values))
+                    await session.flush()
+                    report, _ = await inspect_start(session, await session.get(SimulationInstance, 1))
+                    assert not report['ready'] and any('Reset' in reason for reason in report['blocked_reasons']), model.__tablename__
+                    with pytest.raises(PlatformConflict, match='Reset'):
+                        await start_instance(session, 1, db.packs[1].pack_digest, db.choices)
+                    # Reset removes every seeded family without changing teams/roster.
+                    await reset_instance(session, 1)
+                    report, _ = await inspect_start(session, await session.get(SimulationInstance, 1))
+                    assert report['ready'], (model.__tablename__, report)
+                    await session.rollback()
+>       asyncio.run(run())
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def run():
+        async with db.factory() as session:
+            for model in RUNTIME_TABLES:
+                now = datetime.now(timezone.utc)
+                if model in (SimulationRunV1, SimulationSheetV1, SimulationCheckpointV1):
+                    service = SimulationService(session.get_bind(), db.packs[1])
+                    await session.run_sync(lambda sync: service.initialize_in_session(sync, 1, 1, db.choices[1]))
+                elif model in (RoundSchedule, RoundScheduleTeam):
+                    schedule = RoundSchedule(instance_id=1, round_number=1, start_at=now, deadline=now+timedelta(days=1), auto_advance=False, grace_period_minutes=0)
+                    session.add(schedule); await session.flush()
+                    if model is RoundScheduleTeam:
+                        session.add(RoundScheduleTeam(schedule_id=schedule.id, instance_id=1, team_id=1))
+                elif model in (HostPlatform, HostPlatformMember):
+                    host = HostPlatform(instance_id=1, team_id=1, platform_code='RESIDUE', name='Residue', platform_type='on_prem', created_round=1)
+                    session.add(host); await session.flush()
+                    if model is HostPlatformMember:
+                        session.add(HostPlatformMember(platform_id=host.id, instance_id=1, asset_key='residue', member_kind='service', assigned_round=1))
+                elif model in (GradeConfig, GradeOverride):
+                    values = {'instance_id': 1, 'updated_by': 1}
+                    if model is GradeOverride: values['team_id'] = 1
+                    session.add(model(**values))
+                else:
+                    values = {'instance_id': 1, 'team_id': 1}
+                    for col in model.__table__.columns:
+                        if col.name in values or col.name == 'id' or col.nullable or col.default is not None: continue
+                        if isinstance(col.type, JSON): value = {}
+                        elif isinstance(col.type, Boolean): value = False
+                        elif isinstance(col.type, (Integer, Float)): value = 1
+                        else: value = 'residue'
+                        values[col.name] = value
+                    session.add(model(**values))
+                await session.flush()
+                report, _ = await inspect_start(session, await session.get(SimulationInstance, 1))
+>               assert not report['ready'] and any('Reset' in reason for reason in report['blocked_reasons']), model.__tablename__
+E               AssertionError: round_schedule
+E               assert (not True)
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py:226: AssertionError
+=============================== warnings summary ===============================
+../mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py::test_every_runtime_inventory_blocks_start_and_reset_recovers[sqlite]
+1 failed, 1 warning in 3.82s

@@ -15,20 +15,24 @@ Realised Value  =  Technology Capability × Organisational Readiness × Manageme
 Multiplication, not addition — Laudon's complementary-assets argument made mechanical.
 Buy the ideal system, train nobody, realise almost nothing.
 
-**Status (2026-10-06):** A playable local platform with a decision-driven six-round
+**Status (2026-10-07):** A playable local platform with a decision-driven six-round
 simulation, authenticated student workflows, and substantial instructor operations.
 M0–M4 have recorded completion evidence; instructor setup/roster acceptance and browser
 proofs for round control, monitoring, grading/export, registry and lifecycle are recorded.
 Grounded persona backend support landed October 3. Full AI teaching support, roster
-onboarding, a substantive second vertical, and production/pilot acceptance remain open.
+onboarding, a substantive second vertical, deployment and final seeded acceptance remain open.
 
-**Paused checkpoint:** [next-agent handoff](handoffs/readiness-2026-10-06/NEXT-AGENT.md) records the resume point and accepted next contract.
+**Readiness scope (2026-10-07):** finish a usable platform and verify it ourselves with seeded
+instructor/student walkthroughs. Live participant recruitment and an observed teaching pilot
+follow readiness; they are not gates for this stage.
+
+**Current result:** instructor setup/start is implemented and independently accepted. The final gate passes 885 tests with no skips and all guards green. [Start evidence](docs/instructor-start-2026-10-07.md) and [next-agent handoff](handoffs/readiness-2026-10-06/NEXT-AGENT.md) record the exact boundary.
 
 **Start with [BATTLECARD.md](BATTLECARD.md) and [TODO.md](TODO.md).** These supersede
 historical progress headlines in the north star and old handoffs; those files still govern
 contracts and preserve audit history. Do not interpret original packet counts as current
-product readiness. Latest committed baseline reviewed: `0a535ba` (2026-10-05); the working
-tree also contains ongoing infrastructure and rollout changes. Current verification results
+product readiness. Latest pushed checkpoint: `da2ebf8` (2026-10-06); October 7 instructor-start work is additional
+working-tree work. Current verification results
 and remaining gates are recorded in the task list and [readiness report](docs/readiness-2026-10-06.md).
 The [student guide](docs/student-guide.md), [pilot acceptance script](docs/pilot-rehearsal.md)
 and [reproduction runbook](docs/readiness-runbook.md) support local rehearsal.
@@ -117,7 +121,7 @@ stakeholder layer adopted, market layer deferred.
 ## Remaining work and verification
 
 Follow the ordered queue in [TODO.md](TODO.md): build on the independently accepted
-fixes and host scope/lifecycle migrations, implement the accepted instructor-start contract, repair SQLite archive, and execute the prepared pilot and
+fixes and host scope/lifecycle migrations, implement the accepted instructor-start contract, repair SQLite archive, and execute seeded instructor/student and
 deployment rehearsals, finish teaching support and onboarding,
 prove a second vertical, and polish the remaining visualizations/performance.
 
@@ -128,7 +132,7 @@ Recorded evidence:
   Fresh reviewers accepted the bounded backend/frontend corrections after rework; host
   scope migration 0012 also passed [independent acceptance](docs/host-scope-2026-10-06.md).
   Host activation/reset migration0013 also passed [independent acceptance](docs/host-lifecycle-2026-10-06.md).
-  Instructor startup, SQLite archive and production/pilot gates remain open.
+  Instructor startup, SQLite archive and operational readiness gates remain open; a live pilot follows readiness.
 
 - [M3 browser loop](docs/m3-launch-readiness-audit.md): six rounds and persisted debriefs.
 - [M4 completion](docs/m4-coverage-slice.md) and [accepted balance review](docs/m4-strategy-playthrough-audit.md).

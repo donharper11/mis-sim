@@ -6,7 +6,7 @@ state ownership and instance guards are deliberately deferred to packet 2.2.
 
 from __future__ import annotations
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,6 +33,25 @@ async def _one(session: AsyncSession, model, ident: int, label: str):
     return row
 
 
+async def lock_setup_section(session: AsyncSession, section_id: int) -> Section:
+    """Serialize eligibility mutations; retain the caller's transaction and work."""
+    if session.get_bind().dialect.name == "sqlite":
+        await session.execute(update(Section).where(Section.id == section_id).values(
+            section_name=Section.section_name,
+        ).execution_options(synchronize_session=False))
+    section = await session.scalar(select(Section).where(Section.id == section_id)
+        .with_for_update().execution_options(populate_existing=True))
+    if section is None:
+        raise PlatformNotFound(f"Section {section_id} was not found")
+    return section
+
+
+async def setup_instance(session: AsyncSession, section_id: int) -> SimulationInstance | None:
+    return await session.scalar(select(SimulationInstance).where(
+        SimulationInstance.section_id == section_id,
+    ).with_for_update(key_share=True).execution_options(populate_existing=True))
+
+
 class CourseService:
     @staticmethod
     async def create(session: AsyncSession, **values) -> Course:
@@ -55,10 +74,11 @@ class CourseService:
     @staticmethod
     async def delete(session: AsyncSession, course_id: int) -> None:
         course = await CourseService.read(session, course_id)
-        sections = (await session.scalars(select(Section).where(Section.course_id == course.id))).all()
+        sections = (await session.scalars(select(Section).where(Section.course_id == course.id).order_by(Section.id))).all()
+        sections = [await lock_setup_section(session, section.id) for section in sections]
         instances = []
         for section in sections:
-            instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section.id))
+            instance = await setup_instance(session, section.id)
             if instance is not None:
                 instances.append(instance)
         blocked = next((item for item in instances if item.status != "setup"), None)
@@ -93,7 +113,8 @@ class SectionService:
 
     @staticmethod
     async def _delete_setup_section(session: AsyncSession, section: Section) -> None:
-        instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section.id))
+        section = await lock_setup_section(session, section.id)
+        instance = await setup_instance(session, section.id)
         if instance is not None:
             if instance.status != "setup":
                 raise DeletionBlocked(
@@ -146,7 +167,9 @@ class InstanceService:
 
     @staticmethod
     async def bind_pack(session: AsyncSession, instance_id: int, pack_key: str, pack_version: str) -> SimulationInstance:
-        instance = await InstanceService.read(session, instance_id)
+        section_id = (await InstanceService.read(session, instance_id)).section_id
+        await lock_setup_section(session, section_id)
+        instance = await setup_instance(session, section_id)
         if instance.current_round > 0 or instance.status != "setup":
             raise PlatformConflict("A simulation instance can only bind a pack during setup before round 1")
         runtime_pack = await aresolve_runtime_pack(session, pack_key, pack_version)
@@ -173,12 +196,12 @@ class InstanceService:
 class TeamService:
     @staticmethod
     async def create(session: AsyncSession, instance_id: int, section_id: int, **values) -> Team:
-        instance = await InstanceService.read(session, instance_id)
-        # Lock the section while checking the team count so concurrent setup
-        # requests cannot both observe a free final team slot on PostgreSQL.
-        section = await session.scalar(select(Section).where(Section.id == section_id).with_for_update())
-        if section is None:
-            raise PlatformNotFound(f"Section {section_id} was not found")
+        section = await lock_setup_section(session, section_id)
+        instance = await session.scalar(select(SimulationInstance).where(
+            SimulationInstance.instance_id == instance_id,
+        ).with_for_update(key_share=True).execution_options(populate_existing=True))
+        if instance is None:
+            raise PlatformNotFound(f"Simulation instance {instance_id} was not found")
         if instance.section_id != section_id:
             raise PlatformConflict("Team section_id must match the simulation instance's section")
         if instance.status != "setup":
@@ -201,7 +224,10 @@ class TeamService:
 
     @staticmethod
     async def rename(session: AsyncSession, team_id: int, *, instance_id: int, section_id: int, name: str) -> Team:
-        instance = await InstanceService.read(session, instance_id)
+        await lock_setup_section(session, section_id)
+        instance = await session.get(SimulationInstance, instance_id, populate_existing=True)
+        if instance is None or instance.section_id != section_id:
+            raise PlatformNotFound("Simulation instance was not found in this section")
         if instance.status != "setup":
             raise PlatformConflict("Teams can only be changed while the simulation instance is in setup")
         team = await TeamService.read(session, team_id, instance_id=instance_id, section_id=section_id)
@@ -233,9 +259,9 @@ class TeamService:
 class EnrollmentService:
     @staticmethod
     async def create(session: AsyncSession, section_id: int, user_id: int, team_id: int | None = None, **values) -> Enrollment:
-        section = await SectionService.read(session, section_id)
+        section = await lock_setup_section(session, section_id)
         await _one(session, User, user_id, "User")
-        instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section_id))
+        instance = await setup_instance(session, section_id)
         if instance is not None and instance.status != "setup":
             raise PlatformConflict("Roster can only be changed while the simulation instance is in setup")
         if section.max_teams < 1 or section.team_size_min < 1 or section.team_size_min > section.team_size_max:
@@ -277,11 +303,9 @@ class EnrollmentService:
         # Lock the section parent before reading source/target membership.  All
         # assignment mutations for a section therefore serialize on PostgreSQL,
         # including moves and null unassignments.
-        section = await session.scalar(select(Section).where(Section.id == section_id).with_for_update())
-        if section is None:
-            raise PlatformNotFound(f"Section {section_id} was not found")
+        section = await lock_setup_section(session, section_id)
         enrollment = await EnrollmentService.read(session, enrollment_id, section_id=section_id)
-        instance = await session.scalar(select(SimulationInstance).where(SimulationInstance.section_id == section_id))
+        instance = await setup_instance(session, section_id)
         if instance is None:
             raise PlatformConflict("A section must have a simulation instance before roster assignment")
         if instance.status != "setup":
@@ -423,6 +447,12 @@ async def reset_instance(session: AsyncSession, instance_id: int) -> SimulationI
     from app.round import models as round_models
     from app.simulation.models import SimulationCheckpointV1, SimulationRunV1, SimulationSheetV1
 
+    # SQLite ignores FOR UPDATE: reserve its writer before reading eligibility,
+    # otherwise a waiting reset could delete runs published by a concurrent start.
+    if session.bind.dialect.name == "sqlite":
+        await session.execute(update(SimulationInstance).where(
+            SimulationInstance.instance_id == instance_id,
+        ).values(current_round=SimulationInstance.current_round).execution_options(synchronize_session=False))
     # NO KEY UPDATE permits the FK key locks taken by an in-flight host insert.
     instance = await session.scalar(select(SimulationInstance).where(
         SimulationInstance.instance_id == instance_id,

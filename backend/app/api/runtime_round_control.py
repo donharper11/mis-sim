@@ -8,7 +8,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_instance, get_session, require_instructor_or_ta
@@ -18,6 +18,7 @@ from app.models.scheduling import RoundSchedule, RoundScheduleTeam
 from app.round.db import make_engine
 from app.simulation.models import SimulationRunV1, SimulationSheetV1
 from app.simulation.service import SimulationService
+from app.simulation.generation import same_generation
 from app.simulation.types import SimulationError
 
 router = APIRouter(tags=["round-control"])
@@ -94,6 +95,7 @@ async def advance_round(
     _staff: User = Depends(require_instructor_or_ta),  # noqa: B008
     session: AsyncSession = Depends(get_session),  # noqa: B008
 ):
+    expected_started_at = instance.started_at
     pack = await _runtime_pack(session, instance)
     if pack is None:
         raise HTTPException(status_code=409, detail="The registered runtime pack is unavailable")
@@ -148,9 +150,9 @@ async def advance_round(
                 service = SimulationService(engine, pack)
                 locked_revision = revision
                 if existing_locked_revision is None:
-                    locked = service.lock(instance_id, team_id_value, round_number, revision)
+                    locked = service.lock(instance_id, team_id_value, round_number, revision, expected_started_at=expected_started_at)
                     locked_revision = locked.locked_revision
-                return service.advance(instance_id, team_id_value, round_number, locked_revision)
+                return service.advance(instance_id, team_id_value, round_number, locked_revision, expected_started_at=expected_started_at)
             finally:
                 engine.dispose()
 
@@ -166,6 +168,10 @@ async def advance_round(
     # Reset can complete after the last per-team commit. Fence the final display
     # update with its instance lock and fresh scalar run rows, not cached ORM data.
     await session.rollback()
+    if session.bind.dialect.name == "sqlite":
+        await session.execute(update(SimulationInstance).where(
+            SimulationInstance.instance_id == instance_id_value,
+        ).values(current_round=SimulationInstance.current_round).execution_options(synchronize_session=False))
     instance = await session.scalar(select(SimulationInstance).where(
         SimulationInstance.instance_id == instance_id_value,
     ).with_for_update(key_share=True).execution_options(populate_existing=True))
@@ -173,7 +179,7 @@ async def advance_round(
         SimulationRunV1.team_id, SimulationRunV1.current_round,
         SimulationRunV1.advanced_round, SimulationRunV1.status,
     ).where(SimulationRunV1.instance_id == instance_id_value))).all()
-    if instance is None or {r.team_id for r in runs} != set(team_ids) or any(r.advanced_round < target_round for r in runs):
+    if instance is None or not same_generation(instance.started_at, expected_started_at) or {r.team_id for r in runs} != set(team_ids) or any(r.advanced_round < target_round for r in runs):
         raise HTTPException(status_code=409, detail="The instance changed while advancing; refresh its current status")
     active_rounds = {r.current_round for r in runs if r.status != "completed"}
     if len(active_rounds) > 1:
@@ -218,6 +224,7 @@ async def lock_round(
     _staff: User = Depends(require_instructor_or_ta),  # noqa: B008
     session: AsyncSession = Depends(get_session),  # noqa: B008
 ):
+    expected_started_at = instance.started_at
     pack = await _runtime_pack(session, instance)
     if pack is None:
         raise HTTPException(status_code=409, detail="The registered runtime pack is unavailable")
@@ -253,7 +260,7 @@ async def lock_round(
             engine = make_engine()
             try:
                 service = SimulationService(engine, pack)
-                return service.lock(iid, t, r, rev)
+                return service.lock(iid, t, r, rev, expected_started_at=expected_started_at)
             finally:
                 engine.dispose()
 
@@ -262,6 +269,8 @@ async def lock_round(
             locked = await asyncio.to_thread(lock_one)
             results.append(LockTeamResult(team_id=tid, status="locked", locked_revision=locked.locked_revision))
         except SimulationError as exc:
+            if exc.field == "generation":
+                raise HTTPException(status_code=409, detail="The simulation was restarted; refresh before changing the round") from exc
             results.append(LockTeamResult(team_id=tid, status=f"error:{exc.code}"))
 
     return LockOut(instance_id=instance_id_value, round=current_round, teams=results)
@@ -274,6 +283,7 @@ async def reopen_team(
     _staff: User = Depends(require_instructor_or_ta),  # noqa: B008
     session: AsyncSession = Depends(get_session),  # noqa: B008
 ):
+    expected_started_at = instance.started_at
     pack = await _runtime_pack(session, instance)
     if pack is None:
         raise HTTPException(status_code=409, detail="The registered runtime pack is unavailable")
@@ -294,7 +304,7 @@ async def reopen_team(
         engine = make_engine()
         try:
             service = SimulationService(engine, pack)
-            return service.reopen(iid, t, r, rev)
+            return service.reopen(iid, t, r, rev, expected_started_at=expected_started_at)
         finally:
             engine.dispose()
 

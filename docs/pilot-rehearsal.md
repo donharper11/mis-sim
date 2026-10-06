@@ -1,5 +1,10 @@
 # Instructor pilot rehearsal and acceptance
 
+**Scope clarification, 2026-10-07:** use these walkthroughs ourselves with seeded demo
+instructor/student accounts to verify platform readiness. Participant recruitment and the
+observed human acceptance record below belong to a later pilot and do not block readiness.
+Keep seeded technical results distinct from actual human observations.
+
 Prepared 2026-10-06. This is an acceptance script, not a record of observed acceptance.
 Use a disposable cohort for technical rehearsals; use a separately prepared class for an
 observed pilot. Current release blockers and ownership are in `../TODO.md`.
@@ -12,9 +17,10 @@ observed pilot. Current release blockers and ownership are in `../TODO.md`.
   version/digest, timezone, round deadlines, scheduler worker and instructor access.
 - Demonstrate restoration from a backup on a separate database. Record restored row counts
   and immutable report identity; a successful dump alone is not proof of recovery.
-- Ensure each team has a runtime at round 1. Current setup/clone workflows need explicit
-  runtime initialization; the disposable rehearsal seed supplies this. Do not mistake an
-  existing course/team record for a playable initialized game.
+- In Instructor Setup, bind the case, create teams and assign active demo students. Resolve
+  all start-readiness reasons, explicitly choose each team's agreed initial strategy, and
+  confirm Start simulation. Verify round1 and student access through the normal UI.
+  Existing course/team records alone do not mean a playable game has been started.
 - Provide `student-guide.md`, credentials and a route for reporting problems.
 
 ## Observed competent path

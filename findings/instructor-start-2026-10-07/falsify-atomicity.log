@@ -1,0 +1,37 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_atomic_start_state_parity_rollback_retry[sqlite] _____________
+
+database = namespace(engine=Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-53/test_atomic_start_state_parity0/start.db), url='sqli...tion/supply_by_placement/saas/storage_gb":"GB"},"version":1}}')}, choices={1: 'cost_leadership', 2: 'differentiation'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7c3de2f7a5a0>
+
+    def test_atomic_start_state_parity_rollback_retry(database,monkeypatch):
+        db=database;before=snapshot(db)
+        original=SimulationService.initialize_in_session
+        def fail_second(self,session,iid,tid,strategy):
+            result=original(self,session,iid,tid,strategy)
+            if tid==2:raise RuntimeError('second team injected failure')
+            return result
+        with monkeypatch.context() as patch:
+            patch.setattr(SimulationService,'initialize_in_session',fail_second)
+            with pytest.raises(RuntimeError,match='second team'):asyncio.run(start(db))
+>       assert snapshot(db)==before
+E       AssertionError: assert {'arch_edge':...', ...}], ...} == {'arch_edge':...', ...}], ...}
+E         
+E         Omitting 29 identical items, use -vv to show
+E         Differing items:
+E         {'simulation_run_v1': [{'advanced_round': 0, 'current_round': 1, 'instance_id': 1, 'pack_digest': 'b85cf5d4ff38c436588..._round': 1, 'instance_id': 1, 'pack_digest': 'b85cf5d4ff38c4365881eda1ce20769e64f4c6bdab50a9e2d4225e3a5eedfa8e', ...}]} != {'simulation_run_v1': []}
+E         {'simulation_checkpoint_v1': [{'instance_id': 1, 'pack_digest': 'b85cf5d4ff38c4365881eda1ce20769e64f4c6bdab50a9e2d4225...digest': 'b85cf5d4ff38c4365881eda1ce20769e64f4c6bdab50a9e2d4225e3a5eedfa8e', 'round': 0, 'sheet_revision': None, ...}]} != {'s...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py:100: AssertionError
+=============================== warnings summary ===============================
+../mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py::test_atomic_start_state_parity_rollback_retry[sqlite]
+1 failed, 1 warning in 3.95s

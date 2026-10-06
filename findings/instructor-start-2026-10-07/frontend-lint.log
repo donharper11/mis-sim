@@ -1,0 +1,4 @@
+
+> mis-sim-frontend@0.2.0 lint
+> eslint src --max-warnings=0
+

@@ -1,0 +1,69 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_readiness_eligibility_and_invalid_choices_are_read_only[sqlite] _____
+
+database = namespace(engine=Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-55/test_readiness_eligibility_and0/start.db), url='sqli...tion/supply_by_placement/saas/storage_gb":"GB"},"version":1}}')}, choices={1: 'cost_leadership', 2: 'differentiation'})
+
+    def test_readiness_eligibility_and_invalid_choices_are_read_only(database):
+        db=database
+        cases=[
+            (Course,1,'is_active',False,'Activate'),(Section,1,'is_active',False,'Activate'),
+            (SimulationInstance,1,'status','active','setup'),(SimulationInstance,1,'current_round',1,'round 0'),
+            (SimulationInstance,1,'pack_digest',None,'binding'),(SimulationInstance,1,'pack_digest','wrong','binding'),
+            (SimulationInstance,1,'pack_key','missing','unavailable'),(SimulationInstance,1,'total_rounds',3,'requires'),
+            (Section,1,'max_teams',1,'number'),(Section,1,'team_size_min',5,'needs'),
+            (Section,1,'team_size_max',3,'needs'),(Enrollment,1,'team_id',None,'Assign'),
+            (User,2,'is_active',False,'account'),(User,2,'role','instructor','account'),
+        ]
+        async def run():
+            async with db.factory() as s:
+                for model,ident,field,value,reason in cases:
+                    row=await s.get(model,ident);setattr(row,field,value);await s.flush()
+                    inst=await s.get(SimulationInstance,1)
+                    report,_=await inspect_start(s,inst)
+                    assert not report['ready'] and any(reason in r for r in report['blocked_reasons']),report
+                    with pytest.raises(PlatformConflict):await start_instance(s,1,inst.pack_digest or 'missing',db.choices)
+                    await s.rollback()
+                # Inactive enrollment is ignored; the remaining three students keep team eligible.
+                (await s.get(Enrollment,1)).is_active=False
+                await s.flush()
+                report,_=await inspect_start(s,await s.get(SimulationInstance,1))
+                assert report['ready'] and report['teams'][0]['student_count']==3
+                await s.rollback()
+                with pytest.raises(InvalidStart):await start_instance(s,1,db.packs[1].pack_digest,{1:'not_authored',2:db.choices[2]})
+                await s.rollback()
+                for choices,digest in [({1:'cost_leadership'},db.packs[1].pack_digest),(db.choices,'stale')]:
+                    with pytest.raises(PlatformConflict):await start_instance(s,1,digest,choices)
+                    await s.rollback()
+>       before=snapshot(db);asyncio.run(run());assert snapshot(db)==before
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py:156: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/asyncio/runners.py:194: in run
+    return runner.run(main)
+/usr/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+/usr/lib/python3.12/asyncio/base_events.py:687: in run_until_complete
+    return future.result()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def run():
+        async with db.factory() as s:
+            for model,ident,field,value,reason in cases:
+                row=await s.get(model,ident);setattr(row,field,value);await s.flush()
+                inst=await s.get(SimulationInstance,1)
+                report,_=await inspect_start(s,inst)
+>               assert not report['ready'] and any(reason in r for r in report['blocked_reasons']),report
+E               AssertionError: {'blocked_reasons': [], 'instance_id': 1, 'pack_digest': 'b85cf5d4ff38c4365881eda1ce20769e64f4c6bdab50a9e2d4225e3a5eedfa8e', 'ready': True, ...}
+E               assert (not True)
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py:142: AssertionError
+=============================== warnings summary ===============================
+../mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py::test_readiness_eligibility_and_invalid_choices_are_read_only[sqlite]
+1 failed, 1 warning in 4.48s

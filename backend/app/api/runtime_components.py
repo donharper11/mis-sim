@@ -179,6 +179,7 @@ async def read_components(instance: SimulationInstance = Depends(get_current_ins
 
 @router.patch("/instances/{instance_id}/components", response_model=ComponentsOut)
 async def patch_components(payload: ComponentsPatchIn, instance: SimulationInstance = Depends(get_current_instance), current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), team_id: int | None = Query(default=None)):  # noqa: B008
+    expected_started_at = instance.started_at
     team = await _team_for_user(session, instance, current_user, team_id)
     if team is None:
         raise HTTPException(status_code=409, detail="Select a team before editing component decisions")
@@ -198,7 +199,7 @@ async def patch_components(payload: ComponentsPatchIn, instance: SimulationInsta
     def apply_patch():
         engine = make_engine()
         try:
-            return SimulationService(engine, pack).patch_sheet(instance.instance_id, team.id, run.current_round, payload.expected_revision, patch)
+            return SimulationService(engine, pack).patch_sheet(instance.instance_id, team.id, run.current_round, payload.expected_revision, patch, expected_started_at=expected_started_at)
         finally:
             engine.dispose()
     try:

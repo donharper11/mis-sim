@@ -1,0 +1,2 @@
+tick_exception ObjectDeletedError Instance '<RoundSchedule at 0x7dfb9d20e090>' has been deleted, or its row is otherwise not present.
+new generation unchanged

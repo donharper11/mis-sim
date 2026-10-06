@@ -1,0 +1,27 @@
+# Root commands, repository root, Python3.12 / Node22. Disposable databases only.
+# Earlier focused runs are diagnostic; full-check.log is the final candidate gate.
+
+PATH=/tmp/mis-sim-readiness-venv/bin:$PATH \
+INSTRUCTOR_START_POSTGRES_URL=postgresql://readiness@127.0.0.1:44535/mis_sim_verify_instructor_start_build \
+HOST_SCOPE_POSTGRES_URL=postgresql://readiness@127.0.0.1:44535/mis_sim_verify_host_scope_build \
+HOST_LIFECYCLE_POSTGRES_URL=postgresql://readiness@127.0.0.1:44535/mis_sim_verify_host_lifecycle_build \
+M5_POSTGRES_URL=postgresql+asyncpg://readiness@127.0.0.1:44535/mis_sim_verify_concurrency \
+SECRET_KEY=mis-sim-test-only-secret make check
+
+PATH=/home/ubuntu/.nvm/versions/node/v22.23.2/bin:$PATH npm --prefix frontend run lint
+PATH=/home/ubuntu/.nvm/versions/node/v22.23.2/bin:$PATH npm --prefix frontend run build
+
+/tmp/mis-sim-readiness-venv/bin/python findings/instructor-start-2026-10-07/falsify-start.py
+# Four plants: generation, atomicity, runtime inventory, active student-account eligibility.
+# Additional independent plants/scripts are retained in this folder and setup-concurrency/.
+
+# Fresh dedicated PG verification, empty schema required; local-only rehearsal credentials.
+SECRET_KEY=mis-sim-test-only-secret /tmp/mis-sim-readiness-venv/bin/python \
+backend/scripts/check_postgres_runtime.py \
+--database-url postgresql+asyncpg://readiness:readiness@127.0.0.1:44535/mis_sim_verify_instructor_start_final
+
+sha256sum -c findings/instructor-start-2026-10-07/backend-final-source-hashes.txt
+sha256sum -c findings/instructor-start-2026-10-07/browser/reviewed-source.sha256
+
+# Independent browser command and isolated ordinary-cohort seed are in browser-review.md.
+# Independent setup/scheduler commands use reviewer-owned PG targets, never root's databases.

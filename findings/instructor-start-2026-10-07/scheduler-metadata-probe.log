@@ -1,0 +1,4 @@
+generations 2026-10-06T21:48:46.165296+00:00 2026-10-06T21:48:46.288749+00:00 schedule ids 1 1
+old_operation_result {'instance_id': 1, 'round_number': 1, 'state': 'failed', 'failures': [{'team_id': 1, 'error': 'round_state: generation'}]}
+new_schedule_reason instructor_locked
+new_generation_run draft locked_revision None

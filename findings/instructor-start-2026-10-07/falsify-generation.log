@@ -1,0 +1,34 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_generation_mutations_refuse_recreated_run[sqlite] ____________
+
+database = namespace(engine=Engine(sqlite:////tmp/pytest-of-ubuntu/pytest-52/test_generation_mutations_refu0/start.db), url='sqli...tion/supply_by_placement/saas/storage_gb":"GB"},"version":1}}')}, choices={1: 'cost_leadership', 2: 'differentiation'})
+
+    def test_generation_mutations_refuse_recreated_run(database):
+        db=database;old=asyncio.run(start(db))['started_at']
+        async def restart():
+            async with db.factory() as s:
+                (await s.get(SimulationInstance,1)).status='setup';await s.flush()
+                await reset_instance(s,1);await s.commit()
+            return await start(db)
+        new=asyncio.run(restart())['started_at'];assert new!=old
+        service=SimulationService(db.engine,db.packs[1]);before=snapshot(db)
+        actions=[lambda:service.patch_sheet(1,1,1,0,SheetPatchV1(version=1,replace_categories={}),expected_started_at=old),
+                 lambda:service.lock(1,1,1,0,expected_started_at=old),
+                 lambda:service.reopen(1,1,1,0,expected_started_at=old),
+                 lambda:service.advance(1,1,1,0,expected_started_at=old),
+                 lambda:service.lock(1,1,1,0,expected_started_at=None)]
+        for action in actions:
+>           with pytest.raises(SimulationError,match='generation'):action()
+E           Failed: DID NOT RAISE <class 'app.simulation.types.SimulationError'>
+
+/home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py:174: Failed
+=============================== warnings summary ===============================
+../mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../home/ubuntu/projects/mis-sim/backend/tests/test_instructor_start.py::test_generation_mutations_refuse_recreated_run[sqlite]
+1 failed, 1 warning in 8.51s

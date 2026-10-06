@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell.jsx";
 import StatusBadge from "../components/StatusBadge.jsx";
 import {
@@ -24,6 +24,9 @@ function roundStatusBadge(status) {
 
 export default function InstructorRoundControl() {
   const navigate = useNavigate();
+  const { state: navigationState } = useLocation();
+  const initialCourseId = navigationState?.courseId || null;
+  const initialSectionId = navigationState?.sectionId || null;
   const [state, setState] = useState({
     loading: true, me: null, courses: [], setup: null, courseId: null,
     sectionId: null, instance: null, teams: [], schedule: null, settings: {},
@@ -78,7 +81,7 @@ export default function InstructorRoundControl() {
     }
   }, [navigate]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(initialCourseId, initialSectionId); }, [load, initialCourseId, initialSectionId]);
 
   async function perform(action, success) {
     try {

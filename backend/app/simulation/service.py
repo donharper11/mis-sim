@@ -10,7 +10,7 @@ from copy import deepcopy
 from dataclasses import asdict, is_dataclass
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -22,6 +22,7 @@ from app.services.host_lifecycle import activate_due_hosts
 from .consequences import quote_transition, resolve_transition
 from .content import canonical_json, normalize_patch
 from .estate import initialize_state
+from .generation import UNSPECIFIED_GENERATION, require_generation
 from .models import SimulationCheckpointV1, SimulationRunV1, SimulationSheetV1
 from .types import (
     COMMAND_FIELDS,
@@ -206,6 +207,13 @@ class SimulationService:
     def _run(self, session: Session, instance_id: int, team_id: int, *, lock: bool = False) -> SimulationRunV1:
         statement = self._repo(session, instance_id, team_id).select(SimulationRunV1)
         if lock:
+            if session.bind.dialect.name == "sqlite":
+                # SQLite ignores FOR UPDATE. Reserve its writer before reading
+                # the run and generation so reset cannot interleave afterward.
+                session.execute(update(SimulationRunV1).where(
+                    SimulationRunV1.instance_id == instance_id,
+                    SimulationRunV1.team_id == team_id,
+                ).values(current_round=SimulationRunV1.current_round).execution_options(synchronize_session=False))
             statement = statement.with_for_update()
         run = session.execute(statement).scalar_one_or_none()
         if run is None:
@@ -259,40 +267,46 @@ class SimulationService:
             "state": state, "sheet": sheet_view,
         }, context={"capabilities": tuple(item.key for item in self.runtime_pack.casepack.capabilities)})
 
+    def initialize_in_session(self, session: Session, instance_id: int, team_id: int, strategy_key: str) -> SimulationRunV1:
+        """Construct initial rows without committing; caller owns scope locks/atomicity."""
+        instance_id, team_id = self._scope(instance_id, team_id)
+        # Refuse adoption of either historical runner state or a prior
+        # versioned run.  Every table is queried with the complete scope.
+        all_models = (*round_models.ALL_TABLES, SimulationRunV1, SimulationSheetV1, SimulationCheckpointV1)
+        for model in all_models:
+            if session.execute(self._repo(session, instance_id, team_id).select(model)).first() is not None:
+                raise SimulationError("scope_exists", "instance_id")
+        state = initialize_state(self.runtime_pack, strategy_key)
+        run = SimulationRunV1(
+            instance_id=instance_id, team_id=team_id, version=1,
+            pack_key=self.runtime_pack.casepack.metadata.pack_key,
+            pack_version=self.runtime_pack.casepack.metadata.pack_version,
+            pack_digest=self.runtime_pack.pack_digest, current_round=1,
+            advanced_round=0, status="draft",
+        )
+        session.add(run)
+        # The checkpoint and sheet carry composite foreign keys to the run.
+        # Flush the parent explicitly so PostgreSQL cannot order a child
+        # insert before its newly-created run row (SQLite did not expose
+        # this scheduling defect in the local loop).
+        session.flush()
+        session.add(SimulationCheckpointV1(
+            instance_id=instance_id, team_id=team_id, round=0, version=1,
+            pack_digest=self.runtime_pack.pack_digest, sheet_revision=None,
+            state=_state_payload(state), state_digest=_state_digest(state),
+        ))
+        session.add(SimulationSheetV1(
+            instance_id=instance_id, team_id=team_id, round=1, revision=0,
+            locked_revision=None, commands=[], sheet_digest=None,
+        ))
+        session.flush()
+        return run
+
     def initialize(self, instance_id: int, team_id: int, strategy_key: str) -> RunViewV1:
         instance_id, team_id = self._scope(instance_id, team_id)
         try:
             with self._transaction() as session:
-                # Refuse adoption of either historical runner state or a prior
-                # versioned run.  Every table is queried with the complete scope.
-                all_models = (*round_models.ALL_TABLES, SimulationRunV1, SimulationSheetV1, SimulationCheckpointV1)
-                for model in all_models:
-                    if session.execute(self._repo(session, instance_id, team_id).select(model)).first() is not None:
-                        raise SimulationError("scope_exists", "instance_id")
-                state = initialize_state(self.runtime_pack, strategy_key)
-                run = SimulationRunV1(
-                    instance_id=instance_id, team_id=team_id, version=1,
-                    pack_key=self.runtime_pack.casepack.metadata.pack_key,
-                    pack_version=self.runtime_pack.casepack.metadata.pack_version,
-                    pack_digest=self.runtime_pack.pack_digest, current_round=1,
-                    advanced_round=0, status="draft",
-                )
-                session.add(run)
-                # The checkpoint and sheet carry composite foreign keys to the run.
-                # Flush the parent explicitly so PostgreSQL cannot order a child
-                # insert before its newly-created run row (SQLite did not expose
-                # this scheduling defect in the local loop).
-                session.flush()
-                session.add(SimulationCheckpointV1(
-                    instance_id=instance_id, team_id=team_id, round=0, version=1,
-                    pack_digest=self.runtime_pack.pack_digest, sheet_revision=None,
-                    state=_state_payload(state), state_digest=_state_digest(state),
-                ))
-                session.add(SimulationSheetV1(
-                    instance_id=instance_id, team_id=team_id, round=1, revision=0,
-                    locked_revision=None, commands=[], sheet_digest=None,
-                ))
-                session.flush()
+                run = self.initialize_in_session(session, instance_id, team_id, strategy_key)
                 return self._view(session, run)
         except IntegrityError as exc:
             raise SimulationError("scope_exists", "instance_id") from exc
@@ -320,7 +334,7 @@ class SimulationService:
             prepared = prepare_effects(self.runtime_pack, _reducer_prior(prior), _commands(sheet.commands), run.current_round)
             return {"capital_remaining": prepared.capital_remaining}
 
-    def patch_sheet(self, instance_id: int, team_id: int, round: int, expected_revision: int, patch: SheetPatchV1) -> SheetViewV1:
+    def patch_sheet(self, instance_id: int, team_id: int, round: int, expected_revision: int, patch: SheetPatchV1, *, expected_started_at=UNSPECIFIED_GENERATION) -> SheetViewV1:
         instance_id, team_id = self._scope(instance_id, team_id)
         if type(round) is not int or round < 1 or type(expected_revision) is not int or expected_revision < 0:
             raise SimulationError("invalid_input", "revision")
@@ -342,6 +356,7 @@ class SimulationService:
                 # fixtures that predate the platform hierarchy.
                 pass
             run = self._run(session, instance_id, team_id, lock=True)
+            require_generation(session, instance_id, expected_started_at)
             if run.status == "completed" or round != run.current_round:
                 raise SimulationError("round_state", "round")
             sheet = self._sheet(session, instance_id, team_id, round)
@@ -377,11 +392,13 @@ class SimulationService:
         expected_revision: int,
         *,
         schedule_claim: tuple[int, str] | None = None,
+        expected_started_at=UNSPECIFIED_GENERATION,
     ) -> SheetViewV1:
         instance_id, team_id = self._scope(instance_id, team_id)
         with self._transaction() as session:
             self._verify_schedule_claim(session, schedule_claim)
             run = self._run(session, instance_id, team_id, lock=True)
+            require_generation(session, instance_id, expected_started_at)
             if run.status == "completed" or round != run.current_round:
                 raise SimulationError("round_state", "round")
             sheet = self._sheet(session, instance_id, team_id, round)
@@ -405,10 +422,11 @@ class SimulationService:
         prior = self._state(session, run.instance_id, run.team_id, run.advanced_round)
         return SheetViewV1(version=1, round=sheet.round, revision=sheet.revision, locked_revision=sheet.locked_revision, commands=list(commands), preview=_quote(self.runtime_pack, prior, commands, sheet.round))
 
-    def reopen(self, instance_id: int, team_id: int, round: int, expected_revision: int) -> SheetViewV1:
+    def reopen(self, instance_id: int, team_id: int, round: int, expected_revision: int, *, expected_started_at=UNSPECIFIED_GENERATION) -> SheetViewV1:
         instance_id, team_id = self._scope(instance_id, team_id)
         with self._transaction() as session:
             run = self._run(session, instance_id, team_id, lock=True)
+            require_generation(session, instance_id, expected_started_at)
             if run.status == "completed" or round != run.current_round or run.advanced_round >= round:
                 raise SimulationError("round_state", "round")
             sheet = self._sheet(session, instance_id, team_id, round)
@@ -431,6 +449,7 @@ class SimulationService:
         locked_revision: int,
         *,
         schedule_claim: tuple[int, str] | None = None,
+        expected_started_at=UNSPECIFIED_GENERATION,
     ) -> dict[str, Any]:
         instance_id, team_id = self._scope(instance_id, team_id)
         if type(round) is not int or round < 1 or type(locked_revision) is not int or locked_revision < 0:
@@ -438,6 +457,7 @@ class SimulationService:
         with self._transaction() as session:
             self._verify_schedule_claim(session, schedule_claim)
             run = self._run(session, instance_id, team_id, lock=True)
+            require_generation(session, instance_id, expected_started_at)
             # Older completed rounds are immutable and retryable.  The checkpoint's
             # sheet revision is the authoritative idempotency key.
             if run.advanced_round >= round:

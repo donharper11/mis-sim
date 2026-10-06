@@ -1,0 +1,4 @@
+controlled_conflict 409 {'code': 'round_state', 'field': 'generation'}
+new sheet None
+new schedule False new participant None
+PASS exact new generation unchanged

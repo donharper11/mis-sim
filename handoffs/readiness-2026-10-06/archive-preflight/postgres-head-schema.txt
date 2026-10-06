@@ -1,0 +1,16 @@
+  version_num  
+---------------
+ 20261006_0013
+(1 row)
+
+               conname                |                                                                                         pg_get_constraintdef                                                                                          
+--------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ ck_simulation_instance_current_round | CHECK ((current_round >= 0))
+ ck_simulation_instance_status        | CHECK (((status)::text = ANY ((ARRAY['setup'::character varying, 'active'::character varying, 'paused'::character varying, 'completed'::character varying, 'archived'::character varying])::text[])))
+ ck_simulation_instance_total_rounds  | CHECK ((total_rounds > 0))
+ fk_instance_section                  | FOREIGN KEY (section_id) REFERENCES section(id) ON DELETE CASCADE
+ simulation_instance_pkey             | PRIMARY KEY (instance_id)
+ uq_simulation_instance_identity      | UNIQUE (instance_id, section_id)
+ uq_simulation_instance_section       | UNIQUE (section_id)
+(7 rows)
+

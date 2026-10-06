@@ -1,0 +1,38 @@
+{
+  "complete": true,
+  "checks": [
+    {
+      "name": "Round controls link selected course",
+      "data": {
+        "expected": "5",
+        "actual": "1",
+        "url": "http://127.0.0.1:3004/instructor/round-control"
+      }
+    },
+    {
+      "name": "Styled confirmation",
+      "data": {
+        "width": 1440,
+        "bg": "rgb(255, 255, 255)",
+        "overflow": 0
+      }
+    },
+    {
+      "name": "Styled confirmation",
+      "data": {
+        "width": 720,
+        "bg": "rgb(255, 255, 255)",
+        "overflow": 0
+      }
+    },
+    {
+      "name": "Real stale-team conflict retains choices and gives refresh guidance",
+      "data": {
+        "alert": "The team list changed. Refresh and select a strategy for every team."
+      }
+    }
+  ],
+  "errors": [
+    "409 http://127.0.0.1:3004/api/instructor/instances/1/start"
+  ]
+}

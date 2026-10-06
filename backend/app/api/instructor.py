@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,6 +31,7 @@ from app.services.platform import (
     clone_section,
     reset_instance,
 )
+from app.services.instructor_start import InvalidStart, inspect_start, start_instance
 from app.simulation.models import SimulationCheckpointV1, SimulationRunV1
 
 
@@ -934,6 +935,57 @@ async def reset_instance_route(
             instance=InstanceSummary.model_validate(instance),
             message="Instance reset successfully. All runtime state has been cleared.",
         )
+    except Exception as exc:
+        await session.rollback()
+        raise _error(exc) from exc
+
+
+class TeamStartChoice(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    team_id: int = Field(gt=0)
+    strategy_key: str = Field(min_length=1)
+
+
+class StartIn(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    confirm_instance_id: int = Field(gt=0)
+    expected_pack_digest: str = Field(min_length=1)
+    team_strategies: list[TeamStartChoice]
+
+    @model_validator(mode="after")
+    def unique_teams(self):
+        ids = [choice.team_id for choice in self.team_strategies]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Choose exactly one strategy per team")
+        return self
+
+
+@router.get("/instructor/instances/{instance_id}/start-readiness")
+async def start_readiness(instance_id: int, session: AsyncSession = Depends(get_session),
+                          current_user: User = Depends(require_instructor)):
+    try:
+        _, instance = await _instance_for_instructor(session, instance_id, current_user)
+        readiness, _ = await inspect_start(session, instance)
+        return readiness
+    except Exception as exc:
+        raise _error(exc) from exc
+
+
+@router.post("/instructor/instances/{instance_id}/start")
+async def start_simulation(instance_id: int, payload: StartIn,
+                           session: AsyncSession = Depends(get_session),
+                           current_user: User = Depends(require_instructor)):
+    try:
+        await _instance_for_instructor(session, instance_id, current_user)
+        if payload.confirm_instance_id != instance_id:
+            raise HTTPException(status_code=422, detail="Confirm this section's instance before starting")
+        result = await start_instance(session, instance_id, payload.expected_pack_digest,
+                                      {choice.team_id: choice.strategy_key for choice in payload.team_strategies})
+        await session.commit()
+        return result
+    except InvalidStart as exc:
+        await session.rollback()
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:
         await session.rollback()
         raise _error(exc) from exc

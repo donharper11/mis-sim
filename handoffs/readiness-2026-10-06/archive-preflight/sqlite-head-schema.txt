@@ -1,0 +1,23 @@
+Read-only database: /tmp/pytest-of-ubuntu/pytest-57/test_public_start_routes_autho0/start.db
+Revision: [('20261006_0013',)]
+CREATE TABLE simulation_instance (
+	instance_id INTEGER NOT NULL, 
+	section_id INTEGER NOT NULL, 
+	pack_key VARCHAR(128) NOT NULL, 
+	pack_version VARCHAR(64) NOT NULL, 
+	current_round INTEGER NOT NULL, 
+	total_rounds INTEGER NOT NULL, 
+	status VARCHAR(16) NOT NULL, 
+	settings JSON NOT NULL, 
+	started_at DATETIME, 
+	completed_at DATETIME, pack_digest VARCHAR(64), 
+	PRIMARY KEY (instance_id), 
+	CONSTRAINT fk_instance_section FOREIGN KEY(section_id) REFERENCES section (id) ON DELETE CASCADE, 
+	CONSTRAINT uq_simulation_instance_section UNIQUE (section_id), 
+	CONSTRAINT uq_simulation_instance_identity UNIQUE (instance_id, section_id), 
+	CONSTRAINT ck_simulation_instance_status CHECK (status IN ('setup', 'active', 'paused', 'completed')), 
+	CONSTRAINT ck_simulation_instance_current_round CHECK (current_round >= 0), 
+	CONSTRAINT ck_simulation_instance_total_rounds CHECK (total_rounds > 0)
+)
+Table count including alembic_version: 33
+foreign_key_check: []

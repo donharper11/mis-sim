@@ -22,15 +22,15 @@ class FakeService:
         self.locked = []
         self.advanced = []
 
-    def lock(self, instance_id, team_id, round, expected_revision, *, schedule_claim=None):
+    def lock(self, instance_id, team_id, round, expected_revision, *, schedule_claim=None, expected_started_at=None):
         self.locked.append((instance_id, team_id, round, expected_revision))
         return SimpleNamespace(locked_revision=expected_revision)
 
-    def advance(self, instance_id, team_id, round, locked_revision, *, schedule_claim=None):
+    def advance(self, instance_id, team_id, round, locked_revision, *, schedule_claim=None, expected_started_at=None):
         self.advanced.append((instance_id, team_id, round, locked_revision))
         return {"round": round}
 
-    def reopen(self, instance_id, team_id, round, expected_revision):
+    def reopen(self, instance_id, team_id, round, expected_revision, *, expected_started_at=None):
         return SimpleNamespace(locked_revision=None, revision=expected_revision + 1)
 
 
@@ -118,7 +118,7 @@ def test_reclaimed_claim_suppresses_service_calls(seeded):
     schedule = scheduler.set_schedule(instance_id, 1, start, start + timedelta(hours=1), auto_advance=False)
     session.commit()
 
-    locked = scheduler._process(schedule, start + timedelta(hours=1), token="reclaimed-token")
+    locked = scheduler._process(schedule, start + timedelta(hours=1), token="reclaimed-token", expected_started_at=None)
     assert locked.state == "failed"
     assert locked.failures[0]["error"] == "schedule claim lost"
     assert fake.locked == []
@@ -126,6 +126,6 @@ def test_reclaimed_claim_suppresses_service_calls(seeded):
     for row in scheduler._rows(schedule):
         row.locked_revision = 0
     session.commit()
-    advanced = scheduler._advance(schedule, start + timedelta(hours=1), token="reclaimed-token")
+    advanced = scheduler._advance(schedule, start + timedelta(hours=1), token="reclaimed-token", expected_started_at=None)
     assert advanced[0]["error"] == "schedule claim lost"
     assert fake.advanced == []

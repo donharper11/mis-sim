@@ -694,6 +694,32 @@ Budget reads validate scope, pack/checkpoint digest and command payloads and do 
 repair candidates, write state or produce scores. The browser proof reconciles it to Review;
 the service regression verifies parity and no full-preview call.
 
+## Instructor start and runtime generation — 2026-10-07
+
+`GET /api/instructor/instances/{id}/start-readiness` returns scoped advisory eligibility,
+registered `{key,label}` strategies, `{team_id,name,student_count}` teams, pinned digest and
+blocked reasons. `POST .../start` requires `confirm_instance_id`, `expected_pack_digest` and
+exactly one `{team_id,strategy_key}` per current team. No strategy defaults. Owner instructor
+or admin only. Server eligibility, initialization and activation share one transaction;
+start creates only run/checkpoint0/sheet1 per team. Repeat/non-setup start conflicts409;
+invalid authored choice on eligible setup returns422. Preserve scoring and the authored horizon.
+
+`SimulationInstance.started_at` identifies a started generation. Production mutation callers
+capture it at request/operation entry and pass `expected_started_at` into SimulationService
+patch/lock/reopen/advance. Compare a fresh scalar value under the run lock before mutation,
+normalizing naive/aware UTC. ExplicitNone is an expected pre-start generation; it is distinct
+from the omitted legacy-call sentinel. Do not acquire an instance row lock while holding a
+run lock. Metadata written after a service transaction needs its own generation fence.
+Start/setup mutations lock section→instance; reset locks instance→schedule→run. SQLite uses
+scoped no-op updates for writer reservation where PostgreSQL uses row locks.
+
+Mismatch is `round_state/generation` (HTTP409 for manual APIs); scheduler records a controlled
+failure without changing the replacement generation. This protects in-flight requests only;
+new requests from stale tabs require separately owned client tokens (READY-START-CLIENT).
+Producers: instructor/platform services, runtime mutation APIs, Scheduler. Consumers:
+SimulationService, host metadata guard, scheduler/review publication and InstructorSetup.
+[Accepted contract](handoffs/readiness-2026-10-06/instructor-start-contract.md).
+
 ## How to add an entry
 
 Add when a field is consumed in more than one place and its format could plausibly be

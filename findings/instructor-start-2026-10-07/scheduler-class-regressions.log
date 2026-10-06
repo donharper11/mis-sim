@@ -1,0 +1,151 @@
+.............F                                                           [100%]
+=================================== FAILURES ===================================
+_ test_scheduler_post_service_publication_cannot_touch_replacement[postgres-unlock-reopen] _
+
+database = namespace(engine=Engine(postgresql+psycopg2://audit:***@127.0.0.1:48183/mis_sim_verify_instructor_start_tests), url='p...tion/supply_by_placement/saas/storage_gb":"GB"},"version":1}}')}, choices={1: 'cost_leadership', 2: 'differentiation'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73eb708c23c0>
+operation = 'unlock', service_method = 'reopen'
+
+    @pytest.mark.parametrize("operation,service_method", [("lock_now", "lock"), ("advance_now", "advance"), ("unlock", "reopen")])
+    def test_scheduler_post_service_publication_cannot_touch_replacement(database, monkeypatch, operation, service_method):
+        db = database
+        asyncio.run(start(db))
+        add_schedule(db)
+        now = datetime.now(timezone.utc)
+        if operation != "lock_now":
+            with Session(db.engine) as session:
+                assert Scheduler(session).lock_now(1, 1, now)["state"] == "locked"
+        replacement = None
+        original = getattr(SimulationService, service_method)
+        def after_service(self, *args, **kwargs):
+            nonlocal replacement
+            result = original(self, *args, **kwargs)
+            if replacement is None:
+                restart(db)
+                add_schedule(db)
+                replacement = snapshot(db)
+            return result
+        monkeypatch.setattr(SimulationService, service_method, after_service)
+        with Session(db.engine) as session:
+            try:
+>               result = invoke(Scheduler(session), operation, now)
+
+tests/test_instructor_start_scheduler.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_instructor_start_scheduler.py:45: in invoke
+    return scheduler.unlock(1, 1)
+app/scheduling/service.py:436: in unlock
+    self._guard_generation(schedule.id, instance_id, expected_started_at)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:566: in __get__
+    return self.impl.get(state, dict_)  # type: ignore[no-any-return]
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:1086: in get
+    value = self._fire_loader_callables(state, key, passive)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/attributes.py:1116: in _fire_loader_callables
+    return state._load_expired(state, passive)
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/state.py:803: in _load_expired
+    self.manager.expired_attribute_loader(self, toload, passive)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+mapper = <Mapper at 0x73eb73d49070; RoundSchedule>
+state = <sqlalchemy.orm.state.InstanceState object at 0x73eb633fdf10>
+attribute_names = {'advanced_at', 'auto_advance', 'claim_token', 'claim_until', 'deadline', 'decisions_locked', ...}
+passive = symbol('PASSIVE_OFF')
+
+    def load_scalar_attributes(mapper, state, attribute_names, passive):
+        """initiate a column-based attribute refresh operation."""
+    
+        # assert mapper is _state_mapper(state)
+        session = state.session
+        if not session:
+            raise orm_exc.DetachedInstanceError(
+                "Instance %s is not bound to a Session; "
+                "attribute refresh operation cannot proceed" % (state_str(state))
+            )
+    
+        no_autoflush = bool(passive & attributes.NO_AUTOFLUSH)
+    
+        # in the case of inheritance, particularly concrete and abstract
+        # concrete inheritance, the class manager might have some keys
+        # of attributes on the superclass that we didn't actually map.
+        # These could be mapped as "concrete, don't load" or could be completely
+        # excluded from the mapping and we know nothing about them.  Filter them
+        # here to prevent them from coming through.
+        if attribute_names:
+            attribute_names = attribute_names.intersection(mapper.attrs.keys())
+    
+        if mapper.inherits and not mapper.concrete:
+            # load based on committed attributes in the object, formed into
+            # a truncated SELECT that only includes relevant tables.  does not
+            # currently use state.key
+            statement = mapper._optimized_get_statement(state, attribute_names)
+            if statement is not None:
+                # undefer() isn't needed here because statement has the
+                # columns needed already, this implicitly undefers that column
+                stmt = FromStatement(mapper, statement)
+    
+                return load_on_ident(
+                    session,
+                    stmt,
+                    None,
+                    only_load_props=attribute_names,
+                    refresh_state=state,
+                    no_autoflush=no_autoflush,
+                )
+    
+        # normal load, use state.key as the identity to SELECT
+        has_key = bool(state.key)
+    
+        if has_key:
+            identity_key = state.key
+        else:
+            # this codepath is rare - only valid when inside a flush, and the
+            # object is becoming persistent but hasn't yet been assigned
+            # an identity_key.
+            # check here to ensure we have the attrs we need.
+            pk_attrs = [
+                mapper._columntoproperty[col].key for col in mapper.primary_key
+            ]
+            if state.expired_attributes.intersection(pk_attrs):
+                raise sa_exc.InvalidRequestError(
+                    "Instance %s cannot be refreshed - it's not "
+                    " persistent and does not "
+                    "contain a full primary key." % state_str(state)
+                )
+            identity_key = mapper._identity_key_from_state(state)
+    
+        if (
+            _none_set.issubset(identity_key) and not mapper.allow_partial_pks
+        ) or _none_set.issuperset(identity_key):
+            util.warn_limited(
+                "Instance %s to be refreshed doesn't "
+                "contain a full primary key - can't be refreshed "
+                "(and shouldn't be expired, either).",
+                state_str(state),
+            )
+            return
+    
+        result = load_on_ident(
+            session,
+            select(mapper).set_label_style(LABEL_STYLE_TABLENAME_PLUS_COL),
+            identity_key,
+            refresh_state=state,
+            only_load_props=attribute_names,
+            no_autoflush=no_autoflush,
+        )
+    
+        # if instance is pending, a refresh operation
+        # may not complete (even if PK attributes are assigned)
+        if has_key and result is None:
+>           raise orm_exc.ObjectDeletedError(state)
+E           sqlalchemy.orm.exc.ObjectDeletedError: Instance '<RoundSchedule at 0x73eb6336f260>' has been deleted, or its row is otherwise not present.
+
+/tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/sqlalchemy/orm/loading.py:1682: ObjectDeletedError
+=============================== warnings summary ===============================
+../../../../../tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854
+  /tmp/mis-sim-readiness-venv/lib/python3.12/site-packages/passlib/utils/__init__.py:854: DeprecationWarning: 'crypt' is deprecated and slated for removal in Python 3.13
+    from crypt import crypt as _crypt
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_instructor_start_scheduler.py::test_scheduler_post_service_publication_cannot_touch_replacement[postgres-unlock-reopen]
+1 failed, 13 passed, 1 warning in 116.46s (0:01:56)

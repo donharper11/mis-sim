@@ -10,7 +10,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_instance, get_current_user, get_session
@@ -23,6 +23,7 @@ from app.simulation.models import (
     SimulationRunV1,
     SimulationSheetV1,
 )
+from app.simulation.generation import same_generation
 from app.simulation.service import SimulationService
 from app.simulation.types import SimulationError
 
@@ -144,6 +145,7 @@ async def read_review(instance: SimulationInstance = Depends(get_current_instanc
 
 @router.post("/instances/{instance_id}/review/lock", response_model=ReviewOut)
 async def lock_review(payload: ReviewLockIn, instance: SimulationInstance = Depends(get_current_instance), current_user: User = Depends(get_current_user), session: AsyncSession = Depends(get_session), team_id: int | None = Query(default=None)):
+    expected_started_at = instance.started_at
     team = await _team_for_user(session, instance, current_user, team_id)
     if team is None:
         raise HTTPException(status_code=409, detail="Select a team before locking the round")
@@ -157,7 +159,7 @@ async def lock_review(payload: ReviewLockIn, instance: SimulationInstance = Depe
     def lock_run():
         engine = make_engine()
         try:
-            return SimulationService(engine, pack).lock(instance.instance_id, team.id, round_number, payload.expected_revision)
+            return SimulationService(engine, pack).lock(instance.instance_id, team.id, round_number, payload.expected_revision, expected_started_at=expected_started_at)
         finally:
             engine.dispose()
     try:
@@ -165,7 +167,23 @@ async def lock_review(payload: ReviewLockIn, instance: SimulationInstance = Depe
     except SimulationError as exc:
         status = 409 if exc.code in {"revision_conflict", "locked", "round_state", "not_found"} else 422
         raise HTTPException(status_code=status, detail={"code": exc.code, "field": exc.field}) from exc
-    schedule = await session.scalar(select(RoundSchedule).where(RoundSchedule.instance_id == instance.instance_id, RoundSchedule.round_number == round_number))
+    # The service transaction has ended. Take the lifecycle lock before publishing
+    # schedule metadata so reset cannot replace this generation between the check
+    # and the write. This follows reset's instance -> schedule lock order.
+    instance_id_value, team_id_value = instance.instance_id, team.id
+    await session.rollback()
+    if session.bind.dialect.name == "sqlite":
+        await session.execute(update(SimulationInstance).where(
+            SimulationInstance.instance_id == instance_id_value,
+        ).values(current_round=SimulationInstance.current_round).execution_options(synchronize_session=False))
+    instance = await session.scalar(select(SimulationInstance).where(
+        SimulationInstance.instance_id == instance_id_value,
+    ).with_for_update(key_share=True).execution_options(populate_existing=True))
+    if instance is None or not same_generation(instance.started_at, expected_started_at):
+        await session.rollback()
+        raise HTTPException(status_code=409, detail={"code": "round_state", "field": "generation"})
+    team = await session.get(Team, team_id_value)
+    schedule = await session.scalar(select(RoundSchedule).where(RoundSchedule.instance_id == instance_id_value, RoundSchedule.round_number == round_number))
     if schedule is not None:
         participant = await session.get(RoundScheduleTeam, (schedule.id, team.id))
         if participant is not None:

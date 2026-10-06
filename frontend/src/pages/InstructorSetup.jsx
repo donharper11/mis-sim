@@ -13,7 +13,8 @@ import {
 } from "../api/client.js";
 
 function requestError(error) {
-  return error.response?.data?.detail || "The instructor workspace could not complete that action.";
+  const detail = error.response?.data?.detail;
+  return typeof detail === "string" ? detail : "Check the selected settings and try again.";
 }
 
 export default function InstructorSetup() {
@@ -24,6 +25,7 @@ export default function InstructorSetup() {
   const [packKey, setPackKey] = useState("");
   const [studentId, setStudentId] = useState("");
   const loadSerial = useRef(0);
+  const [start, setStart] = useState({ readiness: null, choices: {}, confirm: false, pending: false });
 
   // M5.7 lifecycle modal state
   const [cloneModal, setCloneModal] = useState({ open: false, sectionId: null, code: "", name: "" });
@@ -42,7 +44,9 @@ export default function InstructorSetup() {
       const selectedSection = setup?.sections?.find((item) => item.id === selectedSectionId);
       const rosterResponse = selectedSectionId ? await getSectionRoster(selectedSectionId) : { data: [] };
       const teamsResponse = selectedSection?.instance ? await getInstanceTeams(selectedSection.instance.instance_id) : { data: [] };
+      const readiness = selectedSection?.instance ? (await apiClient.get(`/instructor/instances/${selectedSection.instance.instance_id}/start-readiness`)).data : null;
       if (serial !== loadSerial.current) return;
+      setStart((previous) => ({ ...previous, readiness, choices: previous.readiness?.instance_id === readiness?.instance_id ? previous.choices : {}, confirm: false }));
       setState((previous) => ({ ...previous, loading: false, me: meResponse.data, courses, packs: packsResponse.data, setup, courseId: selectedCourseId, sectionId: selectedSectionId, roster: rosterResponse.data, teams: teamsResponse.data, error: "" }));
       if (packsResponse.data[0]) setPackKey((previous) => previous || `${packsResponse.data[0].pack_key}@${packsResponse.data[0].pack_version}`);
     } catch (error) {
@@ -68,6 +72,27 @@ export default function InstructorSetup() {
       await load(state.courseId, state.sectionId);
     } catch (error) {
       setState((previous) => ({ ...previous, error: requestError(error), notice: "" }));
+    }
+  }
+
+  async function handleStart() {
+    if (start.pending || !start.readiness?.ready) return;
+    const readiness = start.readiness;
+    setStart((previous) => ({ ...previous, pending: true }));
+    try {
+      await apiClient.post(`/instructor/instances/${readiness.instance_id}/start`, {
+        confirm_instance_id: readiness.instance_id,
+        expected_pack_digest: readiness.pack_digest,
+        team_strategies: readiness.teams.map((team) => ({ team_id: team.team_id, strategy_key: start.choices[team.team_id] }))
+      });
+      setStart((previous) => ({ ...previous, confirm: false }));
+      setState((previous) => ({ ...previous, notice: "Simulation started. Round 1 is open.", error: "" }));
+      await load(state.courseId, state.sectionId);
+    } catch (error) {
+      setState((previous) => ({ ...previous, error: requestError(error), notice: "" }));
+      setStart((previous) => ({ ...previous, confirm: false }));
+    } finally {
+      setStart((previous) => ({ ...previous, pending: false }));
     }
   }
 
@@ -141,6 +166,7 @@ export default function InstructorSetup() {
   if (state.loading) return <main className="app-shell plain-state"><p>Loading instructor setup…</p></main>;
   return <AppShell me={state.me} activePath="/instructor/setup" pageTitle="Instructor setup">
     <div className="instructor-workspace">
+      <fieldset disabled={start.pending} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
       <header className="page-header">
         <p className="eyebrow">M5.1 / M5.2</p>
         <h2>Course, section, and roster setup</h2>
@@ -179,11 +205,42 @@ export default function InstructorSetup() {
             <form className="setup-inline-form" onSubmit={enrollStudent}><input aria-label="Existing student user ID" inputMode="numeric" placeholder="Existing student user ID" value={studentId} onChange={(event) => setStudentId(event.target.value)} required /><button type="submit" disabled={!selectedSection.instance}>Enroll existing identity</button></form>
             {state.roster.length === 0 ? <p className="muted-copy">No enrolled identities yet.</p> : <div className="setup-table-wrap"><table className="setup-table"><thead><tr><th>Student</th><th>Email</th><th>Role</th><th>Team</th></tr></thead><tbody>{state.roster.map((row) => <tr key={row.enrollment_id}><td>{row.name}<small>{row.student_id || "No student ID"}</small></td><td>{row.email}</td><td>{row.role}</td><td><select aria-label={`Team for ${row.name}`} value={row.team?.id || ""} onChange={(event) => assign(row.enrollment_id, event.target.value)}><option value="">Unassigned</option>{state.teams.map((team) => <option key={team.id} value={team.id}>{team.name} ({team.member_count})</option>)}</select></td></tr>)}</tbody></table></div>}
           </section>
+          {selectedSection.instance && <section className="setup-card" aria-labelledby="start-heading">
+            <h3 id="start-heading">Start simulation</h3>
+            {selectedSection.instance.status === "setup" ? <>
+              <p className="muted-copy">Choose each team’s agreed starting strategy. Changing strategy later incurs the case’s switching costs and organisational disruption.</p>
+              {!start.readiness ? <p>Checking section readiness…</p> : <>
+                {start.readiness.blocked_reasons.length > 0 && <ul>{start.readiness.blocked_reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>}
+                {start.readiness.teams.map((team) => <label key={team.team_id}>{team.name} — starting strategy
+                  <select aria-label={`Starting strategy for ${team.name}`} value={start.choices[team.team_id] || ""} onChange={(event) => setStart((previous) => ({ ...previous, choices: { ...previous.choices, [team.team_id]: event.target.value } }))}>
+                    <option value="">Choose the agreed strategy</option>
+                    {start.readiness.strategies.map((strategy) => <option key={strategy.key} value={strategy.key}>{strategy.label}</option>)}
+                  </select>
+                </label>)}
+                <button type="button" className="btn-primary" disabled={!start.readiness.ready || !start.readiness.teams.every((team) => start.readiness.strategies.some((strategy) => strategy.key === start.choices[team.team_id]))} onClick={() => setStart((previous) => ({ ...previous, confirm: true }))}>Start simulation</button>
+              </>}
+            </> : <>
+              <p>{selectedSection.instance.status} / round {selectedSection.instance.current_round}</p>
+              <button type="button" onClick={() => navigate("/instructor/round-control", { state: { courseId: state.courseId, sectionId: state.sectionId } })}>Open round controls</button>
+            </>}
+          </section>}
         </>}
       </>}
+      </fieldset>
     </div>
+    {start.confirm && <div className="modal-overlay" onClick={() => { if (!start.pending) setStart((previous) => ({ ...previous, confirm: false })); }}>
+      <div className="modal-dialog modal-body" role="dialog" aria-modal="true" aria-labelledby="start-confirm-heading" onClick={(event) => event.stopPropagation()}>
+        <h3 id="start-confirm-heading">Start this simulation?</h3>
+        <p>{selectedSection.section_name} · {selectedSection.instance.pack_key} · {start.readiness.total_rounds} rounds</p>
+        <ul>{start.readiness.teams.map((team) => <li key={team.team_id}>{team.name}: {start.readiness.strategies.find((strategy) => strategy.key === start.choices[team.team_id])?.label}</li>)}</ul>
+        <div className="modal-actions">
+          <button type="button" disabled={start.pending} onClick={() => setStart((previous) => ({ ...previous, confirm: false }))}>Cancel</button>
+          <button type="button" className="btn-primary" disabled={start.pending} onClick={handleStart}>{start.pending ? "Starting…" : "Confirm start"}</button>
+        </div>
+      </div>
+    </div>}
     {cloneModal.open && <div className="modal-overlay" onClick={() => setCloneModal({ open: false, sectionId: null, code: "", name: "" })}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-dialog modal-body" onClick={(e) => e.stopPropagation()}>
         <h3>Clone section</h3>
         <p>Create a new section with the same pack, teams, and settings. No enrollments or runtime state will be copied.</p>
         <label>Section code (optional)<input aria-label="Clone section code" placeholder="Leave blank for default" value={cloneModal.code} onChange={(e) => setCloneModal({ ...cloneModal, code: e.target.value })} /></label>
@@ -195,7 +252,7 @@ export default function InstructorSetup() {
       </div>
     </div>}
     {archiveModal.open && <div className="modal-overlay" onClick={() => setArchiveModal({ open: false, instanceId: null, confirmId: "" })}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-dialog modal-body" onClick={(e) => e.stopPropagation()}>
         <h3>Archive instance</h3>
         <p>This will mark instance <strong>{archiveModal.instanceId}</strong> as archived (read-only). This action cannot be undone.</p>
         <label>Type the instance ID to confirm<input aria-label="Confirm instance ID" placeholder={`${archiveModal.instanceId}`} value={archiveModal.confirmId} onChange={(e) => setArchiveModal({ ...archiveModal, confirmId: e.target.value })} /></label>
@@ -206,7 +263,7 @@ export default function InstructorSetup() {
       </div>
     </div>}
     {resetModal.open && <div className="modal-overlay" onClick={() => setResetModal({ open: false, instanceId: null, confirmId: "" })}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-dialog modal-body" onClick={(e) => e.stopPropagation()}>
         <h3>Reset instance</h3>
         <p>This will delete <strong>all runtime state</strong> (runs, sheets, checkpoints, results, schedules, grades) for instance <strong>{resetModal.instanceId}</strong>. Teams and settings are preserved. Export grades first if needed.</p>
         <label>Type the instance ID to confirm<input aria-label="Confirm instance ID" placeholder={`${resetModal.instanceId}`} value={resetModal.confirmId} onChange={(e) => setResetModal({ ...resetModal, confirmId: e.target.value })} /></label>

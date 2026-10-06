@@ -350,6 +350,7 @@ async def patch_platform(
     session: AsyncSession = Depends(get_session),
     team_id: int | None = Query(default=None),
 ):
+    expected_started_at = instance.started_at
     team = await _team_for_user(session, instance, current_user, team_id)
     if team is None:
         raise HTTPException(status_code=409, detail="Select a team before editing platform decisions")
@@ -367,7 +368,7 @@ async def patch_platform(
     def apply_patch():
         engine = make_engine()
         try:
-            return SimulationService(engine, pack).patch_sheet(instance.instance_id, team.id, run.current_round, payload.expected_revision, patch)
+            return SimulationService(engine, pack).patch_sheet(instance.instance_id, team.id, run.current_round, payload.expected_revision, patch, expected_started_at=expected_started_at)
         finally:
             engine.dispose()
 
